@@ -42,17 +42,17 @@ def main():
             except FileExistsError:
                 pass
             sys.argv.append(str(BASE_DIR / "apps" / sys.argv[-1]))
+
     elif "runserver" in sys.argv:
         from app import MyServer
-
         return MyServer.run()
+
     elif "runbot" in sys.argv:
         from app import MyBot
-
         return MyBot.run()
+
     elif "runapp" in sys.argv:
         from app import run_app
-
         return run_app()
 
     load_dotenv(BASE_DIR / "config" / ".env")

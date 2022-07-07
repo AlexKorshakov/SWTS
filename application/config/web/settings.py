@@ -12,12 +12,10 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 import os
 from pathlib import Path
 
-# from .. import DatabaseConfig, apps
 from .. import apps
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -29,7 +27,6 @@ SECRET_KEY = "django-insecure-w4tg(gh+92o1a@@6=vri+zkj&^drxq^#b+vp5&k-%sn*cdxye+
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -75,17 +72,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.web.wsgi.application"
 
-
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': BASE_DIR / 'HSEViolationsDataBase.db',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -105,7 +100,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
@@ -118,7 +112,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
@@ -148,6 +141,8 @@ CACHES = {
         }
     }
 }
+# LOGGING_LEVEL = 'DEBUG'
+LOGGING_LEVEL = 'INFO'
 
 LOGGING = {
     'version': 1,
@@ -166,7 +161,7 @@ LOGGING = {
             'formatter': 'rich'
         },
         'file': {
-            'level': 'INFO',
+            'level': LOGGING_LEVEL,
             'class': 'logging.FileHandler',
             'formatter': 'file',
             'filename': f'{BASE_DIR}/debug.log'
@@ -174,12 +169,12 @@ LOGGING = {
     },
     'loggers': {
         '': {
-            'level': 'INFO',
+            'level': LOGGING_LEVEL,
             'handlers': ['console', 'file'],
             'propagate': True
         },
         'django.request': {
-            'level': 'INFO',
+            'level': LOGGING_LEVEL,
             'handlers': ['console', 'file'],
             'propagate': True
         }
