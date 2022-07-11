@@ -1,0 +1,12 @@
+a {
+    text-decoration: none;
+}
+
+.media-body {
+    background: #fefefe; /* Цвет фона */
+    padding: 10px; /* Поля вокруг текста */
+    margin-right: 3%;
+    border: 1px solid black; /* Параметры рамки */
+    border-radius: 5px;
+    overflow: hidden;
+}

@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
     # Register installed apps
     *[app.Config.name for app in apps.INSTALLED_APPS],
 ]
@@ -57,7 +58,9 @@ ROOT_URLCONF = "config.web.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        'DIRS': [
+            os.path.join(BASE_DIR, 'templates'),
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -78,7 +81,7 @@ WSGI_APPLICATION = "config.web.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'HSEViolationsDataBase.db',
+        'NAME': BASE_DIR.parent / 'HSEViolationsDataBase.db',
     }
 }
 
@@ -116,7 +119,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
-STATIC_ROOT = BASE_DIR.parent / "static"
+STATIC_ROOT = BASE_DIR / "static"
 STATIC_URL = "/static/"
 
 # Default primary key field type
@@ -164,7 +167,7 @@ LOGGING = {
             'level': LOGGING_LEVEL,
             'class': 'logging.FileHandler',
             'formatter': 'file',
-            'filename': f'{BASE_DIR}/debug.log'
+            'filename': f'{BASE_DIR.parent}/debug.log'
         }
     },
     'loggers': {

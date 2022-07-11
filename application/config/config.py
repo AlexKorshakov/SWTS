@@ -41,7 +41,7 @@ WORK_PATH = os.getcwd()
 
 REPORT_NAME: str = "report_data___"
 BOT_DATA_PATH = WORK_PATH + "\\user_data\\"
-BD_FILE: str = BASE_DIR + '\\application\\HSEViolationsDataBase.db'
+BD_FILE: str = WORK_PATH + '\\application\\HSEViolationsDataBase.db'
 
 SEPARATOR = "___"
 

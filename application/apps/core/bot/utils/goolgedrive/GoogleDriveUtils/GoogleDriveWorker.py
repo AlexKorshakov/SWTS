@@ -69,32 +69,31 @@ async def drive_account_credentials(*, chat_id):
     # и создается автоматически при первом завершении процесса авторизации.
 
     if os.path.exists(WORK_PATH + PICKLE_PATH):
-        with open(WORK_PATH + PICKLE_PATH, 'rb') as token: +
-        credentials = pickle.load(token)
+        with open(WORK_PATH + PICKLE_PATH, 'rb') as token:
+            credentials = pickle.load(token)
 
+        if not credentials:
+            # Читаем ключи из файла
+            credentials = service_account.Credentials.from_service_account_file(
+                filename=SERVICE_ACCOUNT_FILE,
+                scopes=SCOPES)
 
-if not credentials:
-    # Читаем ключи из файла
-    credentials = service_account.Credentials.from_service_account_file(
-        filename=SERVICE_ACCOUNT_FILE,
-        scopes=SCOPES)
+            with open(WORK_PATH + PICKLE_PATH, 'wb') as token:
+                pickle.dump(credentials, token)
 
-    with open(WORK_PATH + PICKLE_PATH, 'wb') as token:
-        pickle.dump(credentials, token)
+        # Авторизуемся в системе
+        http_auth = credentials.authorize(httplib2.Http())
 
-# Авторизуемся в системе
-http_auth = credentials.authorize(httplib2.Http())
+        try:
+            # Выбираем работу с Google Drive и 3 версию API
+            google_drive_service = build('drive', 'v3', http=http_auth)
+            logger.info("авторизация пройдена")
+            logger.info("**Already authorized your Google Drive Account.**")
+            return google_drive_service
 
-try:
-    # Выбираем работу с Google Drive и 3 версию API
-    google_drive_service = build('drive', 'v3', http=http_auth)
-    logger.info("авторизация пройдена")
-    logger.info("**Already authorized your Google Drive Account.**")
-    return google_drive_service
-
-except Exception as authorized_err:
-    logger.error(f"авторизация успешно провалена! : {repr(authorized_err)} ")
-    # await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.authorized_google_drive)
+        except Exception as authorized_err:
+            logger.error(f"авторизация успешно провалена! : {repr(authorized_err)} ")
+            # await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.authorized_google_drive)
 
 
 async def drive_account_auth_with_oauth2client(*, chat_id):

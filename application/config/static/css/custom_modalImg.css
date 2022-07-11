@@ -1,0 +1,24 @@
+.image[tabindex="0"] {
+    border-radius: 5px;
+    transition: 0.3s;
+    cursor: zoom-in;
+}
+
+.image[tabindex="0"]:focus {
+  position: fixed;
+  z-index: 10;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  width: auto;
+  height: auto;
+  max-width: 93%;
+  max-height: 93%;
+  margin: auto;
+  box-shadow: 0 0 20px #000, 0 0 0 1000px rgba(59,59,59,.4);
+}
+.image[tabindex="0"]:focus,
+.image[tabindex="0"]:focus ~ * {
+  pointer-events: none;
+}

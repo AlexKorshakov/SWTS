@@ -5,7 +5,8 @@ from . import views
 # Register your urls here
 
 urlpatterns = [
-    path("", views.simple_view)
+    path("", views.simple_view),
+    path('test/', views.test, name='test'),
 ]
 
 # To register this URLS

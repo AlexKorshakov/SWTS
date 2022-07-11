@@ -1,0 +1,86 @@
+<!doctype html>
+{% load static %}
+<html lang="en" xmlns:column-count="http://www.w3.org/1999/xhtml">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/a-button.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/b-button.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/media-body_style.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/img_style.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/a-counter.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/scroll_panel.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/bubbles_background.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/media_container.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/icon-bar.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/custom_modalImg.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/container_card.css' %}">
+
+    <title>{% block title %} Новости со всего мира {% endblock %}</title>
+
+</head>
+<body>
+{% include 'inc/_nav.html'%}
+{% include 'inc/_bubbles.html'%}
+{% include 'inc/_icon-bar.html'%}
+
+<a-button href="#" style="--clr:#ff1867"><span>Меню</span><i></i></a-button>
+<a-button href="#" style="--clr:#ff1867"><span>Меню</span><i></i></a-button>
+
+<div class="container mt-3">
+    <div class="row">
+        <div class="col-md-2">
+            {% load cache %}
+            {% cache 30 sidebar %}
+            {% block sidebar %} SIDEBAR {% endblock %}
+            {% endcache %}
+
+        </div>
+        <div class="col-md-10">
+
+            {% if messages %}
+            {% for message in messages %}
+
+            {% if message.tags == 'error' %}
+            <div class="alert alert-danger" role="alert">
+                {{ message }}
+            </div>
+            {% else %}
+            <div class="alert alert-{{ message.tags }}" role="alert">
+                {{ message }}
+            </div>
+            {% endif %}
+
+            {% endfor %}
+            {% endif %}
+
+            {% block content %} CONTENT {% endblock %}
+
+            {% include 'inc/_pagination.html'%}
+
+        </div>
+    </div>
+</div>
+
+{% include 'inc/_scroll_panel.html'%}
+
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+<script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+<script src="https://snipp.ru/cdn/jquery/2.1.1/jquery.min.js"></script>
+
+<script type="text/javascript" src="{% static 'scripts/custom_scroll_bottom.js' %}"></script>
+<script type="text/javascript" src="{% static 'scripts/list_view_or_grid_view.js' %}"></script>
+
+</body>
+</html>
