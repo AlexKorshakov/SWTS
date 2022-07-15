@@ -1,6 +1,6 @@
 from django import template
 from django.db.models import Count, F
-from news.models import Category
+from apps.core.web.models import Category
 from django.core.cache import cache
 
 register = template.Library()

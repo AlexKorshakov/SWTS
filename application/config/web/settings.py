@@ -10,12 +10,13 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import os
+from datetime import timedelta
 from pathlib import Path
 
 from .. import apps
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent  # BASE_DIR = \\application\\config\\web
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -60,7 +61,9 @@ TEMPLATES = [
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         'DIRS': [
             os.path.join(BASE_DIR, 'templates'),
+            os.path.join(BASE_DIR.parent.parent, 'apps\\core\\web\\templates')  # BASE_DIR = \\application\\config\\web
         ],
+
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -81,7 +84,7 @@ WSGI_APPLICATION = "config.web.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR.parent / 'HSEViolationsDataBase.db',
+        'NAME': BASE_DIR.parent.parent / 'HSEViolationsDataBase.db',
     }
 }
 
@@ -89,18 +92,14 @@ DATABASES = {
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+     },
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+     },
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+     },
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+     },
 ]
 
 # Internationalization
@@ -109,6 +108,7 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = "ru"
 
 TIME_ZONE = "UTC"
+ZERO = timedelta(0)
 
 USE_I18N = True
 
@@ -119,7 +119,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
-STATIC_ROOT = BASE_DIR / "static"
+STATIC_ROOT = BASE_DIR.parent / "static"
 STATIC_URL = "/static/"
 
 # Default primary key field type
@@ -127,7 +127,7 @@ STATIC_URL = "/static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR.parent.parent.parent, 'media')
 MEDIA_URL = '/media/'
 
 INTERNAL_IPS = [
@@ -137,7 +137,7 @@ INTERNAL_IPS = [
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        'LOCATION': os.path.join(BASE_DIR, 'django_cache'),
+        'LOCATION': os.path.join(BASE_DIR.parent, 'django_cache'),
         'TIMEOUT': 60,
         'OPTIONS': {
             'MAX_ENTRIES': 100
@@ -174,7 +174,7 @@ LOGGING = {
         '': {
             'level': LOGGING_LEVEL,
             'handlers': ['console', 'file'],
-            'propagate': True
+            'propagate': False
         },
         'django.request': {
             'level': LOGGING_LEVEL,
@@ -182,4 +182,14 @@ LOGGING = {
             'propagate': True
         }
     }
+
 }
+
+
+if __name__ == '__main__':
+    from pathlib import Path
+
+    BASE_DIR = Path(__file__).resolve().parent  # BASE_DIR = \\application\\config\\web
+    print(f'{BASE_DIR =}')
+    print(f'{BASE_DIR.parent =}')
+    print(f'{BASE_DIR.parent.parent =}')

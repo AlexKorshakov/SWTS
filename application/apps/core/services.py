@@ -1,6 +1,6 @@
 from typing import Tuple
 
-from . import models
+from .web import models
 
 
 # Register your services here

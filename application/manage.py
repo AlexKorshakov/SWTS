@@ -6,7 +6,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-BASE_DIR = Path(__file__).resolve().parent
+MANAGE_DIR = Path(__file__).resolve().parent
 
 
 def main():
@@ -22,7 +22,7 @@ def main():
         ) from exc
 
     if "--help" in sys.argv:
-        load_dotenv(BASE_DIR / "config" / ".env")
+        load_dotenv(MANAGE_DIR / "config" / ".env")
         return execute_from_command_line(sys.argv)
 
     if "startapp" in sys.argv:
@@ -32,16 +32,16 @@ def main():
             sys.argv.insert(sys.argv.index("startapp") + 1, "--template")
             sys.argv.insert(
                 sys.argv.index("startapp") + 2,
-                str(BASE_DIR / "config" / "app_template"),
+                str(MANAGE_DIR / "config" / "app_template"),
             )
 
         if "--" in sys.argv[-3] or sys.argv[-2] == "startapp":
             # No folder
             try:
-                os.makedirs(BASE_DIR / "apps" / sys.argv[-1])
+                os.makedirs(MANAGE_DIR / "apps" / sys.argv[-1])
             except FileExistsError:
                 pass
-            sys.argv.append(str(BASE_DIR / "apps" / sys.argv[-1]))
+            sys.argv.append(str(MANAGE_DIR / "apps" / sys.argv[-1]))
 
     elif "runserver" in sys.argv:
         from app import MyServer
@@ -55,7 +55,7 @@ def main():
         from app import run_app
         return run_app()
 
-    load_dotenv(BASE_DIR / "config" / ".env")
+    load_dotenv(MANAGE_DIR / "config" / ".env")
 
     execute_from_command_line(sys.argv)
 

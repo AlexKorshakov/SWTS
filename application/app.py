@@ -46,11 +46,14 @@ class MyBot:
                 skip_updates=SKIP_UPDATES,
                 allowed_updates=cls.get_handled_updates_list(cls.dp)
             )
-        finally:
-            with suppress(RuntimeWarning, DeprecationWarning):
-                cls.dp.storage.close()
-                cls.dp.storage.wait_closed()
-                cls.bot.session.close()
+        except Exception as err:
+            logger.error(f"Bot start Exception {repr(err)}")
+
+        # finally:
+        #     with suppress(RuntimeWarning, DeprecationWarning):
+        #         cls.dp.storage.close()
+        #         cls.dp.storage.wait_closed()
+        #         cls.bot.session.close()
 
     @staticmethod
     async def on_startup(dp: Dispatcher):
@@ -60,8 +63,8 @@ class MyBot:
             import apps.core.bot.callbacks
             import apps.core.bot.handlers
             logger.info("Все части зарегистрированы...")
-        except ImportError as err:
-            logger.warning(f'Bye! ImportError in app.py {err}')
+        except Exception as err:
+            logger.warning(f'Exception in app.py {err}')
             quit()
 
         setup_middlewares(dp)
@@ -145,4 +148,7 @@ def run_app():
 
 
 if __name__ == "__main__":
-    run_app()
+    # run_app()
+
+    bot = Process(target=MyBot.run)
+    bot.start()
