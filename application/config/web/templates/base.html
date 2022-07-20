@@ -27,11 +27,13 @@
 {% include 'inc/_nav.html'%}
 {% include 'inc/_bubbles.html'%}
 {% include 'inc/_icon-bar.html'%}
+{% include 'inc/_pagination.html'%}
 
 <a-button href="#" style="--clr:#ff1867"><span>Меню</span><i></i></a-button>
 <a-button href="#" style="--clr:#ff1867"><span>Меню</span><i></i></a-button>
 
 <div class="container mt-3">
+
     <div class="row">
         <div class="col-md-2">
             {% load cache %}
@@ -81,6 +83,7 @@
 
 <script type="text/javascript" src="{% static 'scripts/custom_scroll_bottom.js' %}"></script>
 <script type="text/javascript" src="{% static 'scripts/list_view_or_grid_view.js' %}"></script>
+<script type="text/javascript" src="{% static 'scripts/background_by_value.js' %}"></script>
 
 </body>
 </html>

@@ -1,7 +1,7 @@
-{% extends 'base_news.html' %}
+{% extends 'base.html' %}
 
 {% block title %}
-{{ news_item.title }}::{{ block.super }}
+{{ violations_item.title }}::{{ block.super }}
 {% endblock %}
 
 {% block sidebar %}
@@ -12,23 +12,23 @@
 <div class="card mb-3">
     <div class="card-header">
         {{ forloop.counter }}
-        Категория: <a href="{{ news_item.category.get_absolute_url }}">{{ news_item.category }}</a>
+        Категория: <a href="{{ news_item.category.get_absolute_url }}">{{ violations_item.category }}</a>
     </div>
 
     <div class="card-body">
-        {% if news_item.photo %}
-        <img id="myImg" src="{{ news_item.photo.url }}" alt="Snow" style="width:100%;max-width:300px">
+        {% if violations_item.photo %}
+        <img id="myImg" src="{{ violations_item.photo.url }}" alt="Snow" style="width:100%;max-width:300px">
         {% else %}
         <img src="https://picsum.photos/id/1060/350/235/?blur=2" alt="Snow">
         {% endif %}
 
-        <h5 class="card-title">{{ news_item.title }}</h5>
-        <p class="card-text">{{ news_item.content|safe|linebreaks }} </p>
+        <h5 class="card-title">{{ violations_item.title }}</h5>
+        <p class="card-text">{{ violations_item.content|safe|linebreaks }} </p>
     </div>
 
     <div class="card-footer text-muted">
-        {{ news_item.created_at }}
-        {{ news_item.created_at|timesince }}
+        {{ violations_item.created_at }}
+        {{ violations_item.created_at|timesince }}
     </div>
 
 </div>
