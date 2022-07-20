@@ -1,9 +1,7 @@
 from loader import logger
 
 from config.config import SEPARATOR
-from apps.core.bot.utils.secondary_functions.get_day_message import get_day_message
-from apps.core.bot.utils.secondary_functions.get_month_message import get_month_message
-from apps.core.bot.utils.secondary_functions.get_year_message import get_year_message
+from apps.core.bot.utils.secondary_functions.get_part_date import get_day_message, get_month_message, get_year_message
 
 
 async def get_filename_msg_with_photo(message):

@@ -6,18 +6,16 @@ from app import MyBot
 from loader import logger
 
 from apps.core.bot.data import board_config
-from config.config import BOT_DATA_PATH
 
 from apps.core.bot.data.report_data import violation_data
 
 from apps.core.bot.utils.goolgedrive.googledrive_worker import write_data_on_google_drive
 from apps.core.bot.utils.json_worker.read_json_file import read_json_file
 from apps.core.bot.utils.misc import rate_limit
-from apps.core.bot.utils.secondary_functions.get_day_message import get_day_message
+from apps.core.bot.utils.secondary_functions.get_part_date import get_day_message, get_month_message, get_year_message
 from apps.core.bot.utils.secondary_functions.get_filename import get_filename_msg_with_photo
-from apps.core.bot.utils.secondary_functions.get_filepath import preparation_paths_on_pc
-from apps.core.bot.utils.secondary_functions.get_month_message import get_month_message
-from apps.core.bot.utils.secondary_functions.get_year_message import get_year_message
+from apps.core.bot.utils.secondary_functions.get_filepath import preparation_violations_paths_on_pc, \
+    get_user_registration_data_json_file
 from apps.core.bot.utils.select_start_category import select_start_category
 from apps.core.bot.utils.secondary_functions.check_user_registration import check_user_access
 
@@ -55,23 +53,22 @@ async def photo_handler(message: types.Message):
     violation_data["day"] = await get_day_message()
     violation_data["month"] = await get_month_message()
     violation_data["year"] = await get_year_message()
-
-    user_data_json_file = await read_json_file(file=f"{BOT_DATA_PATH}{chat_id}\\{chat_id}.json")
-
-
-    violation_data["location"] = user_data_json_file.get("name_location")
-    violation_data["work_shift"] = user_data_json_file.get("work_shift")
-    violation_data["function"] = user_data_json_file.get("function")
-    violation_data["name"] = user_data_json_file.get("name")
-    violation_data["parent_id"] = user_data_json_file.get("parent_id")
-
     violation_data["data"] = violation_data["day"] + ":" + violation_data["month"] + ":" + violation_data["year"]
+
+    user_registration_data = await read_json_file(
+        file=await get_user_registration_data_json_file(chat_id=chat_id))
+
+    violation_data["location"] = user_registration_data.get("name_location")
+    violation_data["work_shift"] = user_registration_data.get("work_shift")
+    violation_data["function"] = user_registration_data.get("function")
+    violation_data["name"] = user_registration_data.get("name")
+    violation_data["parent_id"] = user_registration_data.get("parent_id")
 
     if WORK_ON_HEROKU:
         await write_data_on_google_drive(message)
         return
 
     if WORK_ON_PC:
-        await preparation_paths_on_pc(message)
+        await preparation_violations_paths_on_pc(message)
 
     await select_start_category(message)

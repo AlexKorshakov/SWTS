@@ -11,8 +11,7 @@ from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.get_root_folder_id import 
 from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.set_user_violation_data_on_google_drave import JSON_FOLDER_NAME, \
     PHOTO_FOLDER_NAME
 from apps.core.bot.utils.goolgedrive.googledrive_worker import ROOT_REPORT_FOLDER_NAME
-from apps.core.bot.utils.secondary_functions.get_day_message import get_day_message
-from apps.core.bot.utils.secondary_functions.get_month_message import get_month_message
+from apps.core.bot.utils.secondary_functions.get_part_date import get_day_message, get_month_message
 
 INSTALL_REQUIRES = ['google-api-core',
                     'google-api-python-client',

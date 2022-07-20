@@ -2,9 +2,9 @@ from aiogram import types
 from aiogram.types import ReplyKeyboardRemove
 
 from app import MyBot
+from apps.core.bot.utils.secondary_functions.get_filepath import preparation_registration_paths_on_pc
 from loader import logger
 
-from config.config import BOT_DATA_PATH
 from apps.core.bot.database.entry_in_db import entry_in_db
 
 from apps.core.bot.messages.messages import Messages
@@ -19,9 +19,9 @@ async def registration_data(message: types.Message, user_data):
     :param user_data:
     :return:
     """
-    user_data["reg_json_full_name"] = f"{BOT_DATA_PATH}{message.from_user.id}\\{message.from_user.id}.json"
-    user_data["json_full_name"] = f"{BOT_DATA_PATH}{message.from_user.id}\\{message.from_user.id}.json"
-    user_data["reg_user_path"] = f"{BOT_DATA_PATH}{message.from_user.id}\\"
+    user_id = message.from_user.id
+
+    user_data = await preparation_registration_paths_on_pc(user_id=user_id, user_data=user_data)
 
     chat_id = message.chat.id
     await MyBot.dp.bot.send_message(chat_id=chat_id, text=Messages.Registration.user_registration)
@@ -39,9 +39,7 @@ async def set_user_registration_data(*, chat_id, user_data):
      :return:
      """
 
-    user_data["reg_json_full_name"] = f"{BOT_DATA_PATH}{chat_id}\\{chat_id}.json"
-    user_data["json_full_name"] = f"{BOT_DATA_PATH}{chat_id}\\{chat_id}.json"
-    user_data["reg_user_path"] = f"{BOT_DATA_PATH}{chat_id}\\"
+    user_data = await preparation_registration_paths_on_pc(user_id=chat_id, user_data=user_data)
 
     if await write_json_reg_user_file(data=user_data):
         logger.info(f"Данные сохранены на pc в файл {user_data['reg_user_file']}")

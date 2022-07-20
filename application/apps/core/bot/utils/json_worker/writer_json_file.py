@@ -3,8 +3,6 @@ import json
 
 from loader import logger
 
-from config.config import BOT_DATA_PATH
-
 SUFFIX: str = ".json"
 
 
@@ -30,14 +28,6 @@ async def write_json_violation_user_file(*, data: dict = None) -> bool:
 
     await write_json(name=name, data=data)
     return True
-
-
-async def write_global_json_file(*, data: dict = None) -> None:
-    """Запись регистрацтонных данных в json
-    """
-    name = BOT_DATA_PATH + "registration_db" + SUFFIX
-
-    await write_json(name=name, data=data)
 
 
 async def write_json(name, data):
