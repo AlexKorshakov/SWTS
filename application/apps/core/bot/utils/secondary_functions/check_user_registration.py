@@ -3,14 +3,15 @@ import os
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from app import MyBot
+from apps.core.bot.utils.secondary_functions.get_filepath import get_user_registration_data_json_file
 from loader import logger
 
 from apps.core.bot.data.board_config import TempStorage
-from apps.core.bot.data.category import get_names_from_json
-from config.config import BOT_DATA_PATH, ADMIN_ID, DEVELOPER_ID
+from apps.core.bot.data.category import get_data_list
+from config.config import ADMIN_ID, DEVELOPER_ID
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.utils.json_worker.read_json_file import read_json_file
-from apps.core.bot.utils.secondary_functions.get_json_files import get_dirs_files
+from apps.core.bot.utils.secondary_functions.get_json_files import get_dirs_files, get_registered_users
 
 
 async def check_user_access(*, chat_id) -> bool:
@@ -20,7 +21,7 @@ async def check_user_access(*, chat_id) -> bool:
     if chat_id == int(DEVELOPER_ID):
         return True
 
-    black_list = get_names_from_json("black_list")
+    black_list = get_data_list("black_list")
 
     if chat_id in black_list:
         await user_access_fail(chat_id)
@@ -30,12 +31,13 @@ async def check_user_access(*, chat_id) -> bool:
     if TempStorage.user_access:
         return True
 
-    files: list = await get_dirs_files(BOT_DATA_PATH)
+    _, files = await get_registered_users()
 
     for user_id in files:
         if user_id != str(chat_id): continue
 
-        file_path = f'{BOT_DATA_PATH}\\{chat_id}\\{chat_id}.json'
+        file_path = await get_user_registration_data_json_file(chat_id=chat_id)
+
         if not await check_user_registration_data_file(file_path):
             await user_access_fail(chat_id)
             return False

@@ -6,7 +6,7 @@ from aiogram.types import ReplyKeyboardMarkup, ReplyKeyboardRemove, CallbackQuer
 from app import MyBot
 
 from apps.core.bot.data import board_config
-from apps.core.bot.data.category import REGISTRATION_DATA_LIST, get_names_from_json
+from apps.core.bot.data.category import REGISTRATION_DATA_LIST, get_data_list
 from config.config import ADMIN_ID
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard
 from apps.core.bot.messages.messages import Messages
@@ -48,7 +48,7 @@ async def correct_registration_data_answer(call: types.CallbackQuery):
         logger.debug(f"Выбрано: {call.data}")
 
         menu_level = board_config.menu_level = 1
-        menu_list = board_config.menu_list = [item for item in get_names_from_json("WORK_SHIFT")]
+        menu_list = board_config.menu_list = [item for item in get_data_list("WORK_SHIFT")]
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
         await call.message.answer(text=Messages.Ask.work_shift, reply_markup=reply_markup)
@@ -65,7 +65,7 @@ async def correct_registration_data_answer(call: types.CallbackQuery):
         logger.debug(f"Выбрано: {call.data}")
 
         menu_level = board_config.menu_level = 1
-        menu_list = board_config.menu_list = [list(item.keys())[0] for item in get_names_from_json("METRO_STATION")]
+        menu_list = board_config.menu_list = [list(item.keys())[0] for item in get_data_list("METRO_STATION")]
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
         await call.message.answer(text=Messages.Ask.location, reply_markup=reply_markup)
@@ -85,7 +85,7 @@ async def cancel(message: types.Message, state: FSMContext):
 
 
 @MyBot.dp.callback_query_handler(is_private, lambda call: call.data in [list(item.keys())[0] for item in
-                                                                        get_names_from_json("METRO_STATION")],
+                                                                        get_data_list("METRO_STATION")],
                                  state=CorrectRegisterState.name_location)
 async def correct_registration_data_name_location_answer(call: types.CallbackQuery, state: FSMContext):
     """Обработка ответов содержащихся в METRO_STATION
@@ -103,7 +103,7 @@ async def correct_registration_data_name_location_answer(call: types.CallbackQue
 
 
 @MyBot.dp.callback_query_handler(is_private, lambda call: call.data in [item for item in
-                                                                        get_names_from_json("WORK_SHIFT")],
+                                                                        get_data_list("WORK_SHIFT")],
                                  state=CorrectRegisterState.work_shift)
 async def correct_registration_data_work_shift_answer(call: types.CallbackQuery, state: FSMContext):
     """Обработка ответов содержащихся в WORK_SHIFT
@@ -184,7 +184,7 @@ async def get_correct_data(*, chat_id: int, call: CallbackQuery, json_file_name:
     """Получение корректных данных из call: types.CallbackQuery и  state: FSMContext
     """
     correct_data: str = ''
-    correct_data_list = get_names_from_json(json_file_name)
+    correct_data_list = get_data_list(json_file_name)
     item_correct_data = correct_data_list[0]
 
     try:

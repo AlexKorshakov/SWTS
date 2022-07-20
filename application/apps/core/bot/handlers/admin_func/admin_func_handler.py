@@ -1,4 +1,3 @@
-import os
 import time
 
 from aiogram import types
@@ -6,19 +5,18 @@ from aiogram.dispatcher.filters import Command
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from app import MyBot
+from apps.core.bot.utils.secondary_functions.get_json_files import get_registered_users
 from loader import logger
 
 from apps.core.bot.data import board_config
 from apps.core.bot.data.category import ADMIN_MENU_LIST
-from config.config import ADMIN_ID, DEVELOPER_ID, BOT_DATA_PATH
+from config.config import ADMIN_ID, DEVELOPER_ID
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard
 
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.filters.custom_filters import is_private
-from apps.core.bot.utils.json_worker.read_json_file import read_json_file
 from apps.core.bot.utils.misc import rate_limit
 from apps.core.bot.utils.notify_admins import admin_notify
-from apps.core.bot.utils.secondary_functions.get_json_files import get_dirs_files
 from apps.core.bot.utils.secondary_functions.check_user_registration import check_user_access
 
 
@@ -65,30 +63,11 @@ async def admin_func_handler(message: types.Message) -> None:
 async def admin_function_answer(call: types.CallbackQuery):
     """Обработка ответов содержащихся в ADMIN_MENU_LIST
     """
-
-    files: list = await get_dirs_files(BOT_DATA_PATH)
+    users_datas, users_ids = await get_registered_users()
 
     if call.data == 'Показать всех пользователей':
-
-        users_data: list = []
-        for file in files:
-
-            file_path = f'{BOT_DATA_PATH}\\{file}\\{file}.json'
-            if not os.path.isfile(file_path):
-                continue
-            file_dict: dict = await read_json_file(file_path)
-
-            try:
-                name = file_dict['name'].lstrip(' ').rstrip(' ')
-            except KeyError:
-                name = 'Нет описания'
-
-            user_id: str = f"{file_dict['user_id']} {name.split(' ')[0]}"
-
-            users_data.append(user_id)
-
         menu_level = board_config.menu_level = 1
-        menu_list = board_config.menu_list = users_data
+        menu_list = board_config.menu_list = users_datas
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level)
         await call.message.answer(text=Messages.Admin.answer, reply_markup=reply_markup)
@@ -141,7 +120,7 @@ async def admin_function_answer(call: types.CallbackQuery):
                     'По всем вопросам - к разработчику\n' \
                     f'{Messages.help_message}'
 
-        for user_id in files:
+        for user_id in users_ids:
 
             if user_id == ADMIN_ID: continue
 

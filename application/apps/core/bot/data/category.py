@@ -2,11 +2,13 @@ import inspect
 import json
 import os.path
 from json import JSONDecodeError
+from pprint import pprint
 
+from apps.core.bot.database.DataBase import DataBase
 from loader import logger
 
 filename = inspect.getframeinfo(inspect.currentframe()).filename
-path = os.path.dirname(os.path.abspath(filename))
+PATH = os.path.dirname(os.path.abspath(filename))
 
 MAIN_CATEGORY: list = [
     "Охрана труда",
@@ -151,16 +153,52 @@ ALL_CATEGORY: dict = {
     'ADMIN_MENU_LIST': ADMIN_MENU_LIST,
 }
 
+ALL_CATEGORY_IN_DB: dict = {
+    'MAIN_CATEGORY': 'core_maincategory',
+    'CATEGORY': 'core_category',
+    'VIOLATION_CATEGORY': 'core_violationcategory',
+    'GENERAL_CONTRACTORS': 'core_generalcontractor',
+    'ACT_REQUIRED': 'core_actrequired',
+    'INCIDENT_LEVEL': 'core_incidentlevel',
+    'ELIMINATION_TIME': 'core_eliminationtime',
+    'LOCATIONS': 'core_location',
 
-def get_names_from_json(name: str = None) -> list:
+}
+
+
+def get_data_list(name: str = None) -> list:
     """ Функция получения настроек из файла json.
     :return: list
     """
+    data_list = []
+
+    db_table_name = ALL_CATEGORY_IN_DB[name]
+    if not db_table_name:
+        return []
+
+    query: str = f'SELECT * FROM {db_table_name}'
+
+    datas_query: list = DataBase().get_data_list(query=query)
+    if datas_query:
+        logger.debug(f'retrieved data from database: {datas_query}')
+        if isinstance(datas_query, list):
+            data_list = [data[1] for data in datas_query]
+            return data_list
+
+    if not data_list:
+        data_list = get_data_from_json(name=name)
+        logger.debug(f'retrieved data from json: {datas_query}')
+        return data_list
+
+    return []
+
+
+def get_data_from_json(name):
     if not name:
         return []
 
     try:
-        with open(path + "\\" + name + ".json", "r", encoding="UTF-8") as read_file:
+        with open(PATH + "\\" + name + ".json", "r", encoding="UTF-8") as read_file:
             list_value = json.loads(read_file.read())
             if not list_value:
 
@@ -174,3 +212,10 @@ def get_names_from_json(name: str = None) -> list:
     except (FileNotFoundError, JSONDecodeError) as err:
         logger.error(f" {name} {repr(err)}")
         return []
+
+
+if __name__ == "__main__":
+
+    for item in ALL_CATEGORY_IN_DB:
+        datas = get_data_list(name=item)
+        pprint(datas)

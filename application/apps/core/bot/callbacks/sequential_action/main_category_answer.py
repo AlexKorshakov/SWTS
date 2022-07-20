@@ -2,7 +2,7 @@ from aiogram import types
 
 from app import MyBot
 from apps.core.bot.data import board_config
-from apps.core.bot.data.category import get_names_from_json
+from apps.core.bot.data.category import get_data_list
 from apps.core.bot.data.report_data import violation_data
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard
 from apps.core.bot.messages.messages import Messages
@@ -11,11 +11,11 @@ from loader import logger
 logger.debug("main_category_answer")
 
 
-@MyBot.dp.callback_query_handler(lambda call: call.data in get_names_from_json("MAIN_CATEGORY"))
+@MyBot.dp.callback_query_handler(lambda call: call.data in get_data_list("MAIN_CATEGORY"))
 async def main_category_answer(call: types.CallbackQuery):
     """Обработка ответов содержащихся в MAIN_CATEGORY
     """
-    for i in get_names_from_json("MAIN_CATEGORY"):
+    for i in get_data_list("MAIN_CATEGORY"):
         try:
             if call.data == i:
                 logger.debug(f"Выбрано: {i}")
@@ -25,7 +25,7 @@ async def main_category_answer(call: types.CallbackQuery):
 
                 await call.message.edit_reply_markup()
                 menu_level = board_config.menu_level = 1
-                menu_list = board_config.menu_list = get_names_from_json("CATEGORY")
+                menu_list = board_config.menu_list = get_data_list("CATEGORY")
 
                 reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level)
                 await call.message.answer(text=Messages.Choose.category, reply_markup=reply_markup)

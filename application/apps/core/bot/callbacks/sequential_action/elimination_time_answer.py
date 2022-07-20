@@ -2,7 +2,7 @@ from aiogram import types
 
 from app import MyBot
 
-from apps.core.bot.data.category import get_names_from_json
+from apps.core.bot.data.category import get_data_list
 from apps.core.bot.data.report_data import violation_data
 from apps.core.bot.states import AnswerUserState
 from apps.core.bot.utils.json_worker.writer_json_file import write_json_file
@@ -13,11 +13,11 @@ from loader import logger
 logger.debug("elimination_time_answer")
 
 
-@MyBot.dp.callback_query_handler(lambda call: call.data in get_names_from_json("ELIMINATION_TIME"))
+@MyBot.dp.callback_query_handler(lambda call: call.data in get_data_list("ELIMINATION_TIME"))
 async def elimination_time_answer(call: types.CallbackQuery):
     """Обработка ответов содержащихся в ELIMINATION_TIME
     """
-    for i in get_names_from_json("ELIMINATION_TIME"):
+    for i in get_data_list("ELIMINATION_TIME"):
         try:
             if call.data == i:
                 logger.debug(f"Выбрано: {i}")

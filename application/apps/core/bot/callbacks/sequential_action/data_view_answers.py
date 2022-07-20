@@ -6,7 +6,7 @@ from aiogram.types import ReplyKeyboardRemove, InlineKeyboardMarkup, InlineKeybo
 from app import MyBot
 
 from apps.core.bot.data import board_config
-from config.config import BOT_DATA_PATH
+from apps.core.bot.utils.secondary_functions.get_filepath import get_file_path_user_data
 
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.states import DataUserState
@@ -89,7 +89,7 @@ async def view_user_data(*, chat_id: int, view_data, state_name: str):
         return
 
     params['all_files'] = True
-    params['file_path'] = f"{BOT_DATA_PATH}{user_chat_id}\\data_file"
+    params['file_path'] = await get_file_path_user_data(chat_id=user_chat_id)
 
     registration_text = await get_registration_text(registration_data)
 

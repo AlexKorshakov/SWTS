@@ -7,7 +7,7 @@ from app import MyBot
 from config.config import ADMIN_ID
 
 from apps.core.bot.data import board_config
-from apps.core.bot.data.category import get_names_from_json, HEADLINES_DATA_LIST
+from apps.core.bot.data.category import get_data_list, HEADLINES_DATA_LIST
 from apps.core.bot.data.report_data import headlines_data
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard
 from apps.core.bot.messages.messages import Messages
@@ -47,7 +47,7 @@ async def correct_headlines_data_answer(call: types.CallbackQuery):
         logger.debug(f"id {chat_id} Выбрано: {call.data}")
 
         menu_level = board_config.menu_level = 1
-        menu_list = board_config.menu_list = [item for item in get_names_from_json("GENERAL_CONTRACTORS")]
+        menu_list = board_config.menu_list = [item for item in get_data_list("GENERAL_CONTRACTORS")]
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
         await call.message.answer(text=Messages.Ask.contractor, reply_markup=reply_markup)
@@ -95,7 +95,7 @@ async def cancel(message: types.Message, state: FSMContext):
 
 
 @MyBot.dp.callback_query_handler(is_private, lambda call: call.data in [list(item.keys())[0] for item in
-                                                                        get_names_from_json("METRO_STATION")],
+                                                                        get_data_list("METRO_STATION")],
                                  state=CorrectHeadlinesState.name_location)
 async def correct_headlines_data_name_location_answer(call: types.CallbackQuery, state: FSMContext):
     """Обработка ответов содержащихся в METRO_STATION
@@ -161,7 +161,7 @@ async def get_correct_data(*, chat_id, call, json_file_name) -> str:
     """Получение корректных данных из call: types.CallbackQuery и  state: FSMContext
     """
     correct_data: str = ''
-    correct_data_list = get_names_from_json(json_file_name)
+    correct_data_list = get_data_list(json_file_name)
     item_correct_data = correct_data_list[0]
 
     try:

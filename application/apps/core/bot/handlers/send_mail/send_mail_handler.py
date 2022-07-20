@@ -15,7 +15,7 @@ from aiogram.dispatcher.filters import Command
 from app import MyBot
 from loader import logger
 
-from apps.core.bot.data.category import get_names_from_json
+from apps.core.bot.data.category import get_data_list
 from config.config import SENDER_ACCOUNT_GMAIL, SENDER_ACCOUNT_PASSWORD, SENDER
 
 from apps.core.bot.messages.messages import Messages
@@ -72,9 +72,9 @@ async def send_mail(message: types.Message, file_list: list = None, registration
 
     sent_to = []
     sent_to_cc = []
-    if location in [list(item.keys())[0] for item in get_names_from_json("METRO_STATION")]:
+    if location in [list(item.keys())[0] for item in get_data_list("METRO_STATION")]:
 
-        for item in get_names_from_json("METRO_STATION"):
+        for item in get_data_list("METRO_STATION"):
             if list(item.keys())[0] == location:
 
                 for item_to in item.get(location):
@@ -102,7 +102,7 @@ async def send_mail(message: types.Message, file_list: list = None, registration
         await MyBot.bot.send_message(message.from_user.id, Messages.Error.list_too_send_not_found)
         return
 
-    sent_to_cc = sent_to_cc + get_names_from_json("SENT_TO_СС")
+    sent_to_cc = sent_to_cc + get_data_list("SENT_TO_СС")
     if not sent_to_cc:
         logger.error(f"SENT_TO_CC is empty")
         return
@@ -192,7 +192,7 @@ async def send_mail(message: types.Message, file_list: list = None, registration
             server.ehlo()
             server.login(SENDER_ACCOUNT_GMAIL, password=SENDER_ACCOUNT_PASSWORD)
             server.sendmail(SENDER_ACCOUNT_GMAIL,
-                            to_addrs=sent_to + get_names_from_json("SENT_TO_СС"),
+                            to_addrs=sent_to + get_data_list("SENT_TO_СС"),
                             msg=msg_full)
             await MyBot.bot.send_message(message.from_user.id, Messages.Successfully.mail_send)
             logger.info(Messages.Successfully.mail_send)
