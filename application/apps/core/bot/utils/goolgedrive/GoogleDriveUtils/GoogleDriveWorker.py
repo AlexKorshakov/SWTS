@@ -4,6 +4,7 @@ import os
 import pickle
 import subprocess
 
+import asyncio
 from oauth2client.service_account import ServiceAccountCredentials
 
 from loader import logger
@@ -20,8 +21,8 @@ INSTALL_REQUIRES = ['google-api-core',
 
 
 def prepare_venv():
-    """ принудительное обновление / создание / подготовка виртуального окружения и venv с помощью subprocess.call
-        установка зацисимостей из requirements.txt
+    """ Принудительное обновление / создание / подготовка виртуального окружения и venv с помощью subprocess.call
+        установка зависимостей из requirements.txt
     """
     app_venv_name = "venv"
 
@@ -54,10 +55,10 @@ SCOPES = [SCOPE_DRIVE,
           SCOPE_DRIVE_FILE
           ]
 
-PICKLE_PATH = '.\\apps\\core\\bot\\utils\\goolgedrive\\token.pickle'
+PICKLE_PATH = '\\apps\\core\\bot\\utils\\goolgedrive\\GoogleDriveUtils\\token.pickle'
 
 
-async def drive_account_credentials(*, chat_id):
+async def drive_account_credentials():
     """Авторизация на Google
     :param delegate_user: - аккаунт которому делегируется авторизация
     :param service_account_file: - файл с ключами и данными аккаунта
@@ -68,7 +69,8 @@ async def drive_account_credentials(*, chat_id):
     # Файл token.pickle хранит токены доступа и обновления пользователя
     # и создается автоматически при первом завершении процесса авторизации.
 
-    if os.path.exists(WORK_PATH + PICKLE_PATH):
+    if os.path.exists(WORK_PATH):
+        logger.info(f'{WORK_PATH + PICKLE_PATH}')
         with open(WORK_PATH + PICKLE_PATH, 'rb') as token:
             credentials = pickle.load(token)
 
@@ -96,14 +98,14 @@ async def drive_account_credentials(*, chat_id):
             # await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.authorized_google_drive)
 
 
-async def drive_account_auth_with_oauth2client(*, chat_id):
+async def drive_account_auth_with_oauth2client(chat_id=None):
     """Авторизация на Google
     :param delegate_user: - аккаунт которому делегируется авторизация
     :param service_account_file: - файл с ключами и данными аккаунта
     :return:
     @rtype: object
     """
-    google_drive_service = await drive_account_credentials(chat_id=chat_id)
+    google_drive_service = await drive_account_credentials()
     return google_drive_service
 
 
@@ -119,3 +121,5 @@ async def move_file(service: object, *, file_id: str, add_parents: str, remove_p
         service.files().update(fileId=file_id, addParents=add_parents, removeParents=remove_parents).execute()
     except Exception as update_err:
         logger.error(f"move_folder err {file_id} to move in add_parents \n: {repr(update_err)}")
+
+

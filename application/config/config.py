@@ -40,8 +40,8 @@ NUM_BUTTONS = env.int("NUM_BUTTONS", 5)
 WORK_PATH = os.getcwd()
 
 REPORT_NAME: str = "report_data___"
-BOT_DATA_PATH = WORK_PATH + "\\user_data\\"
-BD_FILE: str = WORK_PATH + '\\application\\HSEViolationsDataBase.db'
+# BOT_DATA_PATH = os.path.join(BASE_DIR.parent.parent, 'user_data')
+# BD_FILE: str = WORK_PATH + '\\application\\HSEViolationsDataBase.db'
 
 SEPARATOR = "___"
 
