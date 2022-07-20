@@ -52,14 +52,13 @@ class HomeViolations(MyMixin, ListView):
     template_name = 'home_violations_list.html'  # страница
     context_object_name = 'violations'  # объект
     mixin_prop = 'hello world'  # переопределение поля миксины MyMixin
-    paginate_by = 10  # количество записей на странице
+    paginate_by = 16  # количество записей на странице
 
     def get_context_data(self, *, object_list=None, **kwargs):
         """Дополнение данных перед отправкой на рендер"""
         context = super(HomeViolations, self).get_context_data(**kwargs)
         context['title'] = self.get_upper('Главная страница')
         context['mixin_prop'] = self.get_prop()
-        # logger.info(f"{context=}")
         return context
 
     def get_queryset(self):
