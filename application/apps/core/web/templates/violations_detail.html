@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{{ violations_item.file_id }}::{{ block.super }}
+{% endblock %}
+
+{% block sidebar %}
+{% include 'inc/_sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="card" {% if violations_item.is_finished != True %} style="background-color: #ffcfcfe3;" {% endif %}>
+
+    <div class="card-header">
+        {% comment %}
+        <!--            {{ violations_item.main_category.get_absolute_url }}-->
+        {% endcomment %}
+        Основная категория: <a href="">{{ violations_item.main_category }}</a>
+    </div>
+    <div class="card-header">
+        {% comment %}
+        <!--            {{ violations_item.general_contractor.get_absolute_url }}-->
+        {% endcomment %}
+        Подрядчик: <a href="">{{ violations_item.location }}</a>
+    </div>
+    <div class="card-header">
+        {% comment %}
+        <!--            {{ violations_item.general_contractor.get_absolute_url }}-->
+        {% endcomment %}
+        Подрядчик: <a href="">{{ violations_item.general_contractor }}</a>
+    </div>
+    <div class="card-header">
+        {% comment %}
+        <!--            {{ violations_item.incident_level.get_absolute_url }}-->
+        {% endcomment %}
+        Уровень происшествия: <a href="">{{ violations_item.incident_level }}</a>
+    </div>
+
+    <h3 class="card-title">{{ violations_item.description }}</h3>
+
+    <div class="card-body">
+        <div class="media">
+            <div class="media_container">
+
+                {% if violations_item.photo %}
+                <img src="{{ violations_item.photo.url }}" alt="" width="400" class="image" tabindex="0">
+                {% else %}
+                <img src="https://picsum.photos/id/1060/350/235/?blur=2" alt="" width="200" class="image" tabindex="0">
+                {% endif %}
+                <div class="con_overlay">{{ violations_item.description }}</div>
+            </div>
+
+            <div class="card-body">
+
+                <h5 class="card-text"> Описание: {{ violations_item.description }}</h5>
+                <h5 class="card-text"> Площадка / участок: {{ violations_item.location }} </h5>
+                <h5 class="card-text"> Основная категория: {{ violations_item.main_category }} </h5>
+                <h5 class="card-text"> Требуется оформление Акта-предписания?: {{ violations_item.act_required }} </h5>
+
+                <h5 class="card-text"> Мероприятия по устранению: {{ violations_item.comment }} </h5>
+
+                {% if violations_item.is_finished %}
+                <h4 class="card-text"> Статус: Устранено </h4>
+                {% else %}
+                <h5 class="card-text"> Статус: Не устранено </h5>
+                {% endif %}
+
+                <h5 class="card-text"> Подрядчик: {{ violations_item.general_contractor }} </h5>
+                <h5 class="card-text"> Категория: {{ violations_item.category }} </h5>
+                <p class="card-text"> Подкатегория нарушения: {{ violations_item.violation_category }} </p>
+                <h5 class="card-text"> Уровень происшествия: {{ violations_item.incident_level }} </h5>
+                <p class="card-text"> Время на устранение: {{ violations_item.elimination_time }} </p>
+                <p class="card-text"> Дата регистрации: {{ violations_item.created_at }} </p>
+                <p class="card-text"> file_id: {{ violations_item.file_id }} </p>
+                <p class="card-text"> Координаты: {{ violations_item.coordinates }} </p>
+
+                {% if violations_item.coordinates %}
+                <p class="card-text">
+                    <a href="https://www.google.com/maps/place/{{ violations_item.latitude }}+{{ violations_item.longitude }}/@{{ violations_item.latitude }},{{ violations_item.longitude }},150/data=!3m1!1e3!4m5!3m4!1s0x0:0x8cfd44d13587d4e8!8m2!3d{{violations_item.latitude}}!4d{{violations_item.longitude}}" target="_blank">
+                        --> КАРТА <--
+                    </a>
+                </p>
+                {% else %}
+                {% endif %}
+
+                <h5 class="card-text"> Специалист зафиксировавший нарушение </h5>
+                <h5 class="card-text"> Должность: {{ violations_item.function }} </h5>
+                <h5 class="card-text"> ФИО: {{ violations_item.name }} </h5>
+                <p class="card-text"> Смена: {{ violations_item.work_shift }} </p>
+                <p class="card-text"> Id специалиста: {{ violations_item.user_id }} </p>
+
+                <p class="card-text">
+                    <a href="https://drive.google.com/drive/u/0/folders/{{ violations_item.parent_id }}">
+                        --> Раздел с данными специалиста в облаке <--
+                    </a>
+                </p>
+
+                {% comment %}
+                json = 'Json'
+                report_folder_id 'report_folder_id'
+                json_folder_id 'json_folder_id'
+                photo_folder_id 'photo_folder_id'
+                {% endcomment %}
+
+                <div class="box">
+                    <form action="{% url 'update_violations' %}" method="POST">
+                        {% csrf_token %}
+                        <button style="--clr:#4cd80f" type="submit">Редактировать</button>
+                    </form>
+
+                    <form action="{% url 'delete_violations' %}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="violation_file_id" value={{ violations_item.file_id }}>
+                        <button style="--clr:#ff1867" type="submit">Удалить</button>
+                    </form>
+
+                </div>
+            </div>
+
+            <div class="card-footer text-muted">
+                создано: {{ violations_item.created_at }}
+                обновлено :{{ violations_item.updated_at }}
+
+                {{ violations_item.created_at|timesince }}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+

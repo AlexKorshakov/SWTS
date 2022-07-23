@@ -28,7 +28,7 @@ from django.urls import reverse
 #         также, при наличии, позволяет переходить из админки на соответствующий раздел"""
 #         return reverse('view_news', kwargs={'pk': self.pk})
 
-#
+
 class Violations(models.Model):
     """Основная модель Описывающая все поля для Нарушения"""
     location = models.ForeignKey(to='Location', on_delete=models.PROTECT, verbose_name='Площадка', default='')

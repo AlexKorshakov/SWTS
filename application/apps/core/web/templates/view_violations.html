@@ -12,7 +12,7 @@
 <div class="card mb-3">
     <div class="card-header">
         {{ forloop.counter }}
-        Категория: <a href="{{ news_item.category.get_absolute_url }}">{{ violations_item.category }}</a>
+        Категория: <a href="{{ violations_item.category.get_absolute_url }}">{{ violations_item.category }}</a>
     </div>
 
     <div class="card-body">
@@ -25,6 +25,9 @@
         <h5 class="card-title">{{ violations_item.title }}</h5>
         <p class="card-text">{{ violations_item.content|safe|linebreaks }} </p>
     </div>
+
+
+
 
     <div class="card-footer text-muted">
         {{ violations_item.created_at }}
