@@ -64,6 +64,7 @@ async def call_del_current_violation(call: types.CallbackQuery, callback_data: t
 
                 await delete_violation_files_from_pc(call.message, file=file)
                 await delete_violation_files_from_gdrive(call.message, file=file, violation_file=violation_file)
+
                 board_config.current_file = None
 
                 break

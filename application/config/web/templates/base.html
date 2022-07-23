@@ -9,6 +9,7 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/a-button.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/buttons.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/b-button.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/media-body_style.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/img_style.css' %}">
@@ -19,6 +20,8 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/icon-bar.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/custom_modalImg.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/container_card.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/list_view_or_grid_view.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/box.css' %}">
 
     <title>{% block title %} Реестр нарушений {% endblock %}</title>
 
@@ -29,8 +32,16 @@
 {% include 'inc/_icon-bar.html'%}
 {% include 'inc/_pagination.html'%}
 
+{% comment %}
 <a-button href="#" style="--clr:#ff1867"><span>Меню</span><i></i></a-button>
 <a-button href="#" style="--clr:#ff1867"><span>Меню</span><i></i></a-button>
+{% endcomment %}
+
+<form action="{% url 'upload' %}" method="post">
+    {% csrf_token %}
+    <button style="--clr:#ff1867" type="submit">Обновить базу</button>
+</form>
+
 
 <div class="container mt-3">
 

@@ -1,8 +1,7 @@
 @import url('https://fonts.googleapis.com/css2? family=Poppins: wght@300;400;500;600;700;800;900&display=swap');
 
 
-a-button
-{
+button{
     position: relative;
     background: #c3bdbd;
     color: #fff;
@@ -14,22 +13,19 @@ a-button
     transition: 0.5s;
     border-radius: 5px;
 }
-a-button:hover
-{
+button:hover{
     letter-spacing: 0.25em;
     background: var(--clr);
      / color: var(--clr); /
     box-shadow: 0 0 35px var(--clr);
 }
-a-button::before
-{
+button::before{
     content: '';
     position: absolute;
     insert: 2px;
     background: #27282c;
 }
-a-button span
-{
+button span{
     position: relative;
     z-index: 1;
 }

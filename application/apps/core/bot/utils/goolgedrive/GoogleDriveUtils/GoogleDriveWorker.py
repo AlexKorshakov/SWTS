@@ -5,11 +5,13 @@ import pickle
 import subprocess
 
 import asyncio
+from pathlib import Path
+
 from oauth2client.service_account import ServiceAccountCredentials
 
 from loader import logger
 
-from config.config import SERVICE_ACCOUNT_FILE, WORK_PATH, PRIVATE_KEY
+from config.config import SERVICE_ACCOUNT_FILE, PRIVATE_KEY
 
 INSTALL_REQUIRES = ['google-api-core',
                     'google-api-python-client',
@@ -55,7 +57,9 @@ SCOPES = [SCOPE_DRIVE,
           SCOPE_DRIVE_FILE
           ]
 
-PICKLE_PATH = '\\apps\\core\\bot\\utils\\goolgedrive\\GoogleDriveUtils\\token.pickle'
+# PICKLE_PATH = '\\apps\\core\\bot\\utils\\goolgedrive\\GoogleDriveUtils\\token.pickle'
+PICKLE_PATH = '\\token.pickle'
+WORK_PATH = str(Path(__file__).resolve().parent)
 
 
 async def drive_account_credentials():
@@ -121,5 +125,3 @@ async def move_file(service: object, *, file_id: str, add_parents: str, remove_p
         service.files().update(fileId=file_id, addParents=add_parents, removeParents=remove_parents).execute()
     except Exception as update_err:
         logger.error(f"move_folder err {file_id} to move in add_parents \n: {repr(update_err)}")
-
-

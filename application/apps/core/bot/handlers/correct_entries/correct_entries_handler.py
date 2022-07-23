@@ -189,7 +189,7 @@ async def delete_violation_files_from_gdrive(message, file, violation_file):
     :return:
     """
 
-    drive_service = await drive_account_credentials(chat_id=message.chat.id)
+    drive_service = await drive_account_credentials()
 
     if file.get("violation_id"):
         name: str = file.get("violation_id")
@@ -204,7 +204,7 @@ async def delete_violation_files_from_gdrive(message, file, violation_file):
                                       violation_file=violation_data_file,
                                       parent_id=violation_data_parent_id):
         await message.answer(text=Messages.Error.file_not_found)
-    await message.answer(text=Messages.Removed.violation_data_gdrive)
+    await message.answer(text=Messages.Removed.violation_data_gdrive_delete)
 
     violation_photo_file = violation_file['photo_full_name']
     violation_photo_parent_id = violation_file['photo_folder_id']

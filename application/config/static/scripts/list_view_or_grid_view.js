@@ -6,22 +6,23 @@ var elements = document.getElementsByClassName("card-container");
 var i;
 
 // List View
-function listView() {
+function ListView() {
   for (i = 0; i < elements.length; i++) {
-    elements[i].style.columnCount  = 1;
+    elements[i].style.WebkitColumnCount = 1;
   }
 }
 
 // Grid View
-function gridView() {
+function GridView() {
   for (i = 0; i < elements.length; i++) {
-    elements[i].style.columnCount  = 2;
+    elements[i].style.WebkitColumnCount = 2;
   }
 }
 
 /* Optional: Add active class to the current button (highlight it) */
 var container = document.getElementById("btnContainer");
 var btns = container.getElementsByClassName("btn");
+
 for (var i = 0; i < btns.length; i++) {
   btns[i].addEventListener("click", function(){
     var current = document.getElementsByClassName("active");

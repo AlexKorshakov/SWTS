@@ -38,7 +38,7 @@ class Messages:
     class Removed:
         violation_data_pc: str = "Запись о нарушении удалена с сервера"
         violation_photo_pc: str = "Фотоматериалы нарушения удалены с сервера"
-        violation_data_gdrive: str = "Запись о нарушении удалена с Google Drive"
+        violation_data_gdrive_delete: str = "Запись о нарушении удалена с Google Drive"
         violation_photo_gdrive: str = "Фотоматериалы нарушения удалены с Google Drive"
 
     class Ask:

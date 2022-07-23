@@ -1,7 +1,7 @@
-.col-md-10 {
-    float: left;
-    width: 50%;
+.card-container {
     padding: 10px;
+    column-count: 2;
+    column-gap: 7px;
 }
 
 /* Clear floats after the columns */
