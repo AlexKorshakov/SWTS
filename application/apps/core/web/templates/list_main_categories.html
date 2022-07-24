@@ -1,0 +1,20 @@
+<div class="card-header" style="color: #ffffff">
+    Основная категория
+</div>
+<div class="list-group">
+    {% comment %}
+        {{ arg1 }} {{ arg2 }}
+    {% endcomment %}
+
+
+    {% for item in main_categories %}
+    {% comment %}
+        <a href="{% url 'main_category' item.pk %}" class="list-group-item list-group-item-action">{{ item.title }}</a>
+    {% endcomment %}
+    <a href="{{ item.get_absolute_url }}" class="list-group-item list-group-item-action"> {{ item.title }}
+        <a-counter>
+            <span class="badge badge-primary badge-pill"> {{ item.cnt }} </span>
+        </a-counter>
+    </a>
+    {% endfor %}
+</div>

@@ -1,18 +1,20 @@
-
-        {% comment %}
 {% load news_tags %}
-        {% endcomment %}
-
-{% comment %}
-<div class="list-group">
-    {% get_list_categories as categories %}
-    {% for item in categories  %}
-    <a href="{% url 'category' item.pk %}" class="list-group-item list-group-item-action">{{ item.title }}</a>
-    {% endfor %}
-</div>
-{% endcomment %}
+    {% comment %}
+    <div class="list-group">
+        {% get_list_main_categories as main_categories %}
+        {% for item in main_categories %}
+        <a href="{% url 'main_category' item.pk %}" class="list-group-item list-group-item-action">{{ item.title }}</a>
+        {% endfor %}
+    </div>
+    {% endcomment %}
+<br>
+{% show_main_categories %}
 <br>
 
-                {% comment %}
-{% show_categories %}
-                {% endcomment %}
+<br>
+{% show_incident_levels %}
+<br>
+{% show_locations %}
+<br>
+{% show_general_contractor %}
+<br>

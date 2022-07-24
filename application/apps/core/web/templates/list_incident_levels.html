@@ -1,0 +1,10 @@
+<div class="card-header" style="color: #ffffff">
+    Уровни происшествий
+</div>
+<div class="list-group">
+    {% for item in incident_levels %}
+    <a href="{{ item.get_absolute_url }}" class="list-group-item list-group-item-action"> {{ item.title }}
+        <a-counter><span class="badge badge-primary badge-pill"> {{ item.cnt }} </span></a-counter>
+    </a>
+    {% endfor %}
+</div>
