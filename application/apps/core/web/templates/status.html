@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{{ status.title }}::{{ block.super }}
+{% endblock %}
+
+{% block sidebar %}
+{% include 'inc/_sidebar.html' %}
+{% endblock %}
+
+<!--{% include 'inc/_list_grid_view.html'%}-->
+
+{% block content %}
+<!--{{ mixin_prop }}-->
+
+<div class="card-container">
+    {% for item in violations %}
+    <div class="card" {% if item.is_finished != True %} style="background-color: #ffcfcfe3;" {% endif %}>
+
+        <div class="card-header">
+            Основная категория: <a href="{{ item.main_category.get_absolute_url }}">{{ item.main_category }}</a>
+        </div>
+        <div class="card-header">
+            Площадка: <a href="{{ item.location.get_absolute_url }}">{{ item.location }}</a>
+        </div>
+        <div class="card-header">
+            Подрядчик: <a href="{{ item.general_contractor.get_absolute_url }}">{{ item.general_contractor }}</a>
+        </div>
+        <div class="card-header">
+            Уровень происшествия: <a href="{{ item.incident_level.get_absolute_url }}">{{ item.incident_level }}</a>
+        </div>
+
+        <div class="card-body">
+            <div class="media">
+                <div class="media_container">
+                    {% if item.photo %}
+                    <img src="{{ item.photo.url }}" alt="" width="200" class="image" tabindex="0">
+                    {% else %}
+                    <img src="https://picsum.photos/id/1060/350/235/?blur=2" alt="" width="200" class="image"
+                         tabindex="0">
+                    {% endif %}
+                    <div class="con_overlay">{{ item.description }}</div>
+                </div>
+                <div class="media-body">
+                    <div class="mt-3">
+                        <h5 class="card-title">{{ item.description }}</h5>
+                    </div>
+                </div>
+                <br>
+                <a href="{{ item.get_absolute_url }}">
+                    <a-button style="--clr:#1e9bff"><span>подробнее...</span></a-button>
+                </a>
+
+            </div>
+        </div>
+        <h6 class="card-title"> id записи: {{ item.file_id }}</h6>
+        <div class="card-footer text-muted">
+            {{ item.created_at }}
+            {{ item.created_at|timesince }}
+        </div>
+    </div>
+
+    {% empty %}
+    <li>Sorry, no violations in db.</li>
+    {% endfor %}
+</div>
+{% endblock %}
+

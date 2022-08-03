@@ -1,7 +1,5 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-
     <a class="navbar-brand" href="{% url 'home' %}">Реестр нарушений</a>
-
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
             aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -9,32 +7,43 @@
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
-
             <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Главная</a></li>
-
             {% if request.user.is_authenticated %}
-            <li class="nav-item"><a class="nav-link" href="{% url 'add_news' %}">Добавить новость</a></li>
+            {% comment %}
+            <li class="nav-item"><a class="nav-link" href="{% url 'add_news' %}">Добавить запись</a></li>
+            {% endcomment %}
             {% endif%}
+            {% comment %}
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
+                   aria-haspopup="true" aria-expanded="false">
+                    Dropdown
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <a class="dropdown-item" href="#">Action</a>
+                    <a class="dropdown-item" href="#">Another action</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="#">Something else here</a>
+                </div>
+            </li>
+            {% endcomment %}
+            <span class='navbar-text'>
+                {% if request.user.is_authenticated %}
+                Добро пожаловать {{ user.username }} <a href="{% url 'logout' %}">Выход</a>
+                {% else %}
+                <a href="{% url 'register' %}">Register</a> | <a href="{% url 'login' %}">Login</a>
+                {% endif%}
+            </span>
+
         </ul>
-
-        <span class='navbar-text'>
-            {% if request.user.is_authenticated %}
-            Добро пожаловать {{ user.username }} <a href="{% url 'logout' %}">Выход</a>
-            {% else %}
-                    {% comment %}
-            <a href="{% url 'register' %}">Register</a> | <a href="{% url 'login' %}">Login</a>
-                    {% endcomment %}
-            {% endif%}
-        </span>
-
         {% comment %}
         <form class="form-inline my-2 my-lg-0">
             <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
         </form>
         {% endcomment %}
-
+        {% comment %}
         {% include 'inc/_list_grid_view.html'%}
-
+        {% endcomment %}
     </div>
 </nav>
