@@ -50,6 +50,8 @@ async def photo_handler(message: types.Message):
 
     violation_data["now"] = str(datetime.datetime.now())
 
+    violation_data["status"] = 'В работе'
+
     violation_data["day"] = await get_day_message()
     violation_data["month"] = await get_month_message()
     violation_data["year"] = await get_year_message()

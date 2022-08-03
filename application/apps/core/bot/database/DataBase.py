@@ -1,13 +1,14 @@
 import os.path
 import sqlite3
 import asyncio
-import sys
+from os import makedirs
 from pathlib import Path
 from pprint import pprint
 
 from apps.core.bot.utils.json_worker.read_json_file import read_json_file
 from apps.core.bot.utils.json_worker.writer_json_file import write_json_file
 from apps.core.bot.utils.secondary_functions.get_json_files import get_files
+# from apps.core.bot.utils.sync_data.sync_data_local import local_to_google_drive
 from loader import logger
 
 BASE_DIR = Path(__file__).resolve()
@@ -21,6 +22,7 @@ ALL_CATEGORY_IN_DB: dict = {
     'act_required': 'core_actrequired',
     'incident_level': 'core_incidentlevel',
     'elimination_time': 'core_eliminationtime',
+    'status': 'core_status',
 }
 
 
@@ -81,16 +83,6 @@ class DataBase:
         location = violation.get("location", None)
         if violation.get("year") == '2021' and violation.get("name") == 'Коршаков Алексей Сергеевич':
             location = 'Ст. Аминьевская'
-
-        # location_id = self.get_location_id(location)
-        # work_shift_id = self.get_work_shift_id(violation.get("work_shift", None))
-        # main_category_id = self.get_main_category_id(violation.get('main_category', None))
-        # general_contractor_id = self.get_general_contractor_id(violation.get('general_contractor', None))
-        # category_id = self.get_category_id(violation.get('category', None))
-        # act_required_id = self.get_act_required_id(violation.get('act_required', None))
-        # elimination_time_id = self.get_elimination_time_id(violation.get('elimination_time', None))
-        # incident_level_id = self.get_incident_level_id(violation.get('incident_level', None))
-        # violation_category_id = self.get_violation_category_id(violation.get('violation_category', None))
 
         location_id = self.get_id(table='core_location', entry=location)
         work_shift_id = self.get_id(table='core_workshift', entry=violation.get("work_shift", None))
@@ -156,6 +148,16 @@ class DataBase:
         violation_category_id = self.get_id(table='core_violationcategory',
                                             entry=violation.get("violation_category", None))
 
+        status_id = self.get_id(table='core_status',
+                                entry=violation.get("status", None))
+
+        is_published = True
+
+        if status_id == 1:
+            is_finished = True
+        else:
+            is_finished = False
+
         function = violation.get("function", None)
         name = violation.get("name", None)
         parent_id = violation.get("parent_id", None)
@@ -181,9 +183,6 @@ class DataBase:
         photo = f'/{user_id}/data_file/{file_id.split("___")[0]}/photo/report_data___{file_id}.jpg'
         json = f'/{user_id}/data_file/{file_id.split("___")[0]}/json/report_data___{file_id}.json'
 
-        is_published = True
-        is_finished = False
-
         photo_file_path = violation.get('photo_file_path', None)
         photo_folder_id = violation.get('photo_folder_id', None)
         photo_full_name = violation.get('photo_full_name', None)
@@ -201,8 +200,8 @@ class DataBase:
                     "`main_category_id`,`general_contractor_id`,`category_id`,`comment`,`act_required_id`,"
                     "`description`,`elimination_time_id`,`incident_level_id`,`violation_category_id`, `coordinates`,"
                     "`latitude`,`longitude`,`json_folder_id`,`json_file_path`,`json_full_name`,"
-                    "`photo_file_path`,`photo_folder_id`,`photo_full_name`,`json`)"
-                    "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    "`photo_file_path`,`photo_folder_id`,`photo_full_name`,`json`, `status_id`)"
+                    "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                     (
                         location_id, work_shift_id, function, name, parent_id,
                         violation_id, user_id, user_fullname, report_folder_id, file_id, is_published,
@@ -210,7 +209,7 @@ class DataBase:
                         main_category_id, general_contractor_id, category_id, comment, act_required_id,
                         description, elimination_time_id, incident_level_id, violation_category_id, coordinates,
                         latitude, longitude, json_folder_id, json_file_path, json_full_name,
-                        photo_file_path, photo_folder_id, photo_full_name, json
+                        photo_file_path, photo_folder_id, photo_full_name, json, status_id
                     )
                 )
                 if is_add:
@@ -301,16 +300,39 @@ async def write_json(violation):
         date_violation = violation['file_id'].split('___')[0]
 
         violation['json_full_name'] = \
-            f"C:\\Users\\KDeusEx\\PycharmProjects\\HSE_Bot\\user_data\\373084462\\data_file" \
+            f"C:\\Users\\KDeusEx\\PycharmProjects\\SWTS\\application\\media\\{violation['user_id']}\\data_file" \
             f"\\{date_violation}\\json\\report_data___{violation['file_id']}.json"
+
+        await create_file_path(
+            f"C:\\Users\\KDeusEx\\PycharmProjects\\SWTS\\application\\media\\{violation['user_id']}\\data_file"
+            f"\\{date_violation}\\json\\"
+        )
         violation['photo_full_name'] = \
-            f"C:\\Users\\KDeusEx\\PycharmProjects\\HSE_Bot\\user_data\\373084462\\data_file" \
+            f"C:\\Users\\KDeusEx\\PycharmProjects\\SWTS\\application\\media\\{violation['user_id']}\\data_file" \
             f"\\{date_violation}\\photo\\report_data___{violation['file_id']}.jpg"
+
+        await create_file_path(
+            f"C:\\Users\\KDeusEx\\PycharmProjects\\SWTS\\application\\media\\{violation['user_id']}\\data_file"
+            f"\\{date_violation}\\photo\\"
+        )
 
         await write_json_file(data=violation, name=violation['json_full_name'])
         return
 
     await write_json_file(data=violation, name=violation['json_full_name'])
+
+
+async def create_file_path(path: str):
+    """Проверка и создание путей папок и файлов
+    :param path:
+    :return:
+    """
+    if not os.path.isdir(path):
+        # logger.info(f"user_path{path} is directory")
+        try:
+            makedirs(path)
+        except Exception as err:
+            logger.info(f"makedirs err {repr(err)}")
 
 
 async def get_entry(violation, query, user_data_json_file) -> int:
@@ -325,7 +347,10 @@ async def get_entry(violation, query, user_data_json_file) -> int:
     return query_id
 
 
-async def run(*, params: dict = None):
+async def upload_from_local(*, params: dict = None):
+    """Загрузка файлов в БД с локального хранилища media
+
+    """
     # if not os.path.exists(params['file_path']):
     #     print(f"ERROR file: {params['file_path']} don't exists")
     #     exit(0)
@@ -367,6 +392,10 @@ async def run(*, params: dict = None):
 
         if not violation.get("parent_id"):
             violation["parent_id"] = user_data_json_file.get("parent_id")
+            await write_json(violation=violation)
+
+        if not violation.get("status"):
+            violation["status"] = 'Устранено'
             await write_json(violation=violation)
 
         if not violation.get('general_contractor'):
@@ -425,16 +454,29 @@ async def run(*, params: dict = None):
     print(f"comment_counter {comment_counter} in {error_counter} items")
 
 
-if __name__ == '__main__':
-    user_chat_id = '373084462'
-    params: dict = {
-        'all_files': True,
-        'file_path': f"C:/Users/KDeusEx/PycharmProjects/SWTS/application/media/{user_chat_id}/data_file/",
-        'user_file': f"C:/Users/KDeusEx/PycharmProjects/SWTS/application/media/{user_chat_id}/{user_chat_id}.json"
-    }
+async def sync_files(*, params: dict = None):
+    """Синхронизация файлов между локальным хранилищем media и облаком google_drive """
 
-    asyncio.run(run(params=params))
-    print(f'count_violations {DataBase().count_violations()}')
+    # await local_to_google_drive()
+
+    await google_drive_to_local()
+
+
+async def google_drive_to_local():
+    """Синхронизация google_drive -> media"""
+    pass
+
+
+# if __name__ == '__main__':
+    # user_chat_id = '373084462'
+    # params: dict = {
+    #     'all_files': True,
+    #     'file_path': f"C:/Users/KDeusEx/PycharmProjects/SWTS/application/media/{user_chat_id}/data_file/",
+    #     'user_file': f"C:/Users/KDeusEx/PycharmProjects/SWTS/application/media/{user_chat_id}/{user_chat_id}.json"
+    # }
+
+    # asyncio.run(local_to_google_drive())
+    # print(f'count_violations {DataBase().count_violations()}')
 
     # work_shift_id = DataBase().get_work_shift_id(violation.get("work_shift", None))
     # main_category_id = DataBase().get_main_category_id(violation.get('main_category', None))
