@@ -30,7 +30,7 @@ class Core(AppConfig):
 
     default_auto_field = "django.db.models.BigAutoField"
     name = "apps.core"
-    verbose_name = "core"
+    verbose_name = "Реестр"
 
     def ready(self):
         from .web import admin  # type: ignore

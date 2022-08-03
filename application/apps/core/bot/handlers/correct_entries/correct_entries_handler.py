@@ -21,7 +21,7 @@ from apps.core.bot.messages.messages import Messages
 from apps.core.bot.utils.generate_report.get_file_list import get_json_file_list
 from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.GoogleDriveWorker import drive_account_credentials
 from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.find_folder import q_request_constructor, params_constructor, \
-    find_files_or_folders_list
+    find_files_by_params
 from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.folders_deleter import delete_folder
 from apps.core.bot.utils.json_worker.read_json_file import read_json_file
 from apps.core.bot.utils.misc import rate_limit
@@ -111,6 +111,7 @@ async def violation_id_answer(call: types.CallbackQuery):
             for file in board_config.violation_file:
                 if file['description'] != item:
                     continue
+
                 violation_file = await read_json_file(file['json_full_name'])
 
                 if not violation_file:
@@ -232,7 +233,7 @@ async def del_file_from_gdrive(drive_service, *, name, violation_file, parent_id
                                     mime_type=mime_type
                                     )
     params = await params_constructor(q=q, spaces="drive")
-    v_files = await find_files_or_folders_list(drive_service, params=params)
+    v_files = await find_files_by_params(drive_service, params=params)
     pprint(f"find_files {v_files}")
 
     for v in v_files:
