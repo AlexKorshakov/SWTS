@@ -6,7 +6,7 @@ from loader import logger
 
 from config.config import SEPARATOR
 from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.GoogleDriveWorker import drive_account_auth_with_oauth2client
-from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.get_root_folder_id import get_root_folder_id, get_user_folder_id, \
+from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.get_folder_id import get_root_folder_id, get_user_folder_id, \
     get_json_folder_id, get_photo_folder_id
 from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.set_user_violation_data_on_google_drave import JSON_FOLDER_NAME, \
     PHOTO_FOLDER_NAME
@@ -52,7 +52,7 @@ async def download_files_for_google_drive(chat_id, file_path, photo_path):
     :return:
     """
 
-    drive_service = await drive_account_auth_with_oauth2client(chat_id=chat_id)
+    drive_service = await drive_account_auth_with_oauth2client()
 
     if not drive_service:
         logger.info(f"🔒 **drive_service {drive_service} in Google Drive.**")

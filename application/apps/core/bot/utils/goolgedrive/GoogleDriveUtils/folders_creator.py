@@ -28,7 +28,7 @@ def create_folder(service, folder_name, parent_id=None):
     return root_folder['id']
 
 
-async def create_directory(drive_service, directory_name, parent_id: str = "") -> str:
+async def create_directory_on_google_drive(drive_service, directory_name, parent_id: str = "") -> str:
     """Создание директории на Google Drive
     :param drive_service:
     :param directory_name: имя директории

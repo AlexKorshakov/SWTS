@@ -1,13 +1,14 @@
 import asyncio
 from pathlib import Path
 from typing import List, Dict
+from apiclient import errors
 
 from loader import logger
 
 FIEDS = 'nextPageToken, files(id, name)'
 
 
-async def find_folder_with_name(drive_service, *, name: str, parent=None):
+async def find_folder_with_name_on_google_drive(drive_service, *, name: str, parent=None):
     """Получение id папки по имени
     """
     q = f"name='{name}' and mimeType='application/vnd.google-apps.folder'"
@@ -200,16 +201,44 @@ async def params_constructor(q: list = None, spaces=None, page_size: int = 100, 
     return params
 
 
-async def find_files_or_folders_list(drive_service, *, params: dict) -> list:
-    """Поик на drive_service по заданным параметрам
+async def find_files_by_params(drive_service, *, params: dict) -> list:
+    """Поиск на drive_service по заданным параметрам
     :return:
     """
     try:
 
-        get_folder = drive_service.files().list(**params).execute()
-        found_folders_by_name = get_folder.get('files', [])
-        return found_folders_by_name
+        result = []
+        page_token = None
+        while True:
+            try:
+                if page_token:
+                    params['pageToken'] = page_token
+                files = drive_service.files().list(**params).execute()
+
+                result.extend(files['files'])
+                page_token = files.get('nextPageToken')
+                if not page_token:
+                    break
+            except errors.HttpError as error:
+                print('An error occurred: %s' % error)
+                break
+        return result
 
     except Exception as err:
         logger.error(f"{repr(err)}")
         return []
+
+
+async def find_files_or_folders_list_by_parent_id(drive_service, folder_id, is_folder=True,
+                                                  mime_type='application/vnd.google-apps.folder') -> list:
+    if not drive_service:
+        return []
+
+    q = await q_request_constructor(is_folder=is_folder,
+                                    parent=folder_id,
+                                    mime_type=mime_type
+                                    )
+    params = await params_constructor(q=q, spaces="drive")
+    v_files = await find_files_by_params(drive_service, params=params)
+
+    return v_files

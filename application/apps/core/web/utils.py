@@ -2,7 +2,7 @@ import asyncio
 import os
 from pathlib import Path
 
-from apps.core.bot.database.DataBase import DataBase, run
+from apps.core.bot.database.DataBase import DataBase, upload_from_local
 from apps.core.bot.handlers.correct_entries.correct_entries_handler import del_file, del_file_from_gdrive
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.GoogleDriveWorker import drive_account_credentials
@@ -112,12 +112,12 @@ async def test():
     logger.info(content)
 
     for param in params:
-        await run(params=param)
+        await upload_from_local(params=param)
         logger.info(f'Данные загружены в БД')
 
 
 if __name__ == "__main__":
     # violation_file_id: str = '07.07.2022___373084462___21505'
     #
-    # asyncio.run(del_violations(violation_file_id=violation_file_id))
+    # asyncio.upload_from_local(del_violations(violation_file_id=violation_file_id))
     asyncio.run(test())

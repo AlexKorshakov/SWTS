@@ -3,7 +3,7 @@ from loader import logger
 from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.GoogleDriveWorker import drive_account_auth_with_oauth2client, \
     move_file
 from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.folders_deleter import del_by_name_old_data_google_drive
-from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.get_root_folder_id import get_root_folder_id, get_user_folder_id, \
+from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.get_folder_id import get_root_folder_id, get_user_folder_id, \
     get_report_folder_id
 from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.set_permissions import get_user_permissions
 from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.upload_data_on_gdrive import upload_report_file_on_gdrave
@@ -19,7 +19,7 @@ async def set_user_report_data_on_google_drive(*, chat_id, full_report_path: str
     :return:
     """
 
-    drive_service = await drive_account_auth_with_oauth2client(chat_id=chat_id)
+    drive_service = await drive_account_auth_with_oauth2client()
 
     if not drive_service:
         logger.info(f"🔒 **drive_service {drive_service} in Google Drive.**")

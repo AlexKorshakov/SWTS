@@ -66,7 +66,7 @@ async def get_json_full_filename(user_id: str = None, name: str = None):
 
 
 async def create_file_path(user_path: str):
-    """Провер+ка и создание путей папок и файлов
+    """Проверка и создание путей папок и файлов
     :param user_path:
     :return:
     """

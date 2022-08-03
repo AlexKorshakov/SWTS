@@ -9,7 +9,7 @@ from apps.core.bot.data.report_data import violation_data
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.GoogleDriveWorker import drive_account_auth_with_oauth2client, \
     drive_account_credentials
-from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.get_root_folder_id import get_root_folder_id, get_user_folder_id
+from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.get_folder_id import get_root_folder_id, get_user_folder_id
 
 WORK_ON_HEROKU: bool = False
 WORK_ON_PC: bool = True
@@ -19,17 +19,17 @@ ROOT_REPORT_FOLDER_ID: str = '1n4M_LHDG_QQ4EFuDYxQLe_MaK-k3wv96'
 
 
 async def write_data_on_google_drive(message: types.Message):
-    await message.answer(text="Данный раздел находится в разработке\n"
-                              "\n" + Messages.help_message)
+    # await message.answer(text="Данный раздел находится в разработке\n"
+    #                           "\n" + Messages.help_message)
 
     chat_id = message.chat.id
     drive_service = None
 
     if WORK_ON_HEROKU:
-        drive_service = await drive_account_auth_with_oauth2client(chat_id=chat_id)
+        drive_service = await drive_account_auth_with_oauth2client()
 
     if WORK_ON_PC:
-        drive_service = await drive_account_credentials(chat_id=chat_id)
+        drive_service = await drive_account_credentials()
 
     if not drive_service:
         logger.info(f"**drive_service {drive_service} in Google Drive.**")

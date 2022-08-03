@@ -102,7 +102,7 @@ async def drive_account_credentials():
             # await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.authorized_google_drive)
 
 
-async def drive_account_auth_with_oauth2client(chat_id=None):
+async def drive_account_auth_with_oauth2client():
     """Авторизация на Google
     :param delegate_user: - аккаунт которому делегируется авторизация
     :param service_account_file: - файл с ключами и данными аккаунта

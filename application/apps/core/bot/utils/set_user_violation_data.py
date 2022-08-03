@@ -4,7 +4,7 @@ from aiogram.types import ReplyKeyboardRemove
 from app import MyBot
 from apps.core.bot.database.DataBase import DataBase
 from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.GoogleDriveWorker import drive_account_auth_with_oauth2client
-from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.get_root_folder_id import get_root_folder_id, get_user_folder_id, \
+from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.get_folder_id import get_root_folder_id, get_user_folder_id, \
     get_json_folder_id, get_photo_folder_id, get_report_folder_id
 from apps.core.bot.utils.goolgedrive.googledrive_worker import ROOT_REPORT_FOLDER_NAME
 from loader import logger
@@ -40,17 +40,18 @@ async def pre_set_violation_data(message: types.Message):
     await cyclical_deletion_message(chat_id=chat_id)
 
 
-async def preparing_data_for_loading(chat_id) -> bool:
-    drive_service = await drive_account_auth_with_oauth2client()
+async def preparing_data_for_loading(chat_id, drive_service=None) -> dict:
+    if not drive_service:
+        drive_service = await drive_account_auth_with_oauth2client()
 
     if not drive_service:
         logger.error(f"drive_service is empty {drive_service = }")
-        return False
+        return {}
 
     root_folder_id = await get_root_folder_id(drive_service=drive_service,
                                               root_folder_name=ROOT_REPORT_FOLDER_NAME)
     if not root_folder_id:
-        return False
+        return {}
 
     user_folder_id = await get_user_folder_id(drive_service=drive_service,
                                               root_folder_name=str(chat_id),
@@ -72,13 +73,19 @@ async def preparing_data_for_loading(chat_id) -> bool:
                                                   root_report_folder_id=user_folder_id)
 
     if not json_folder_id:
-        return False
+        return {}
 
     violation_data["json_folder_id"] = json_folder_id
     violation_data["photo_folder_id"] = photo_folder_id
     violation_data["report_folder_id"] = report_folder_id
     violation_data["parent_id"] = user_folder_id
-    return True
+
+    return {
+        'json_folder_id': json_folder_id,
+        'photo_folder_id': photo_folder_id,
+        'report_folder_id': report_folder_id,
+        'user_folder_id': user_folder_id
+    }
 
 
 async def set_violation_data(*, chat_id):
