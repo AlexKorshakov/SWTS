@@ -1,7 +1,7 @@
 from django import template
 from django.db.models import Count, F
 from django.core.cache import cache
-from apps.core.web.models import MainCategory, Location, GeneralContractor, IncidentLevel, Violations
+from apps.core.web.models import MainCategory, Location, GeneralContractor, IncidentLevel, Violations, Status
 
 register = template.Library()
 
@@ -60,3 +60,13 @@ def show_incident_levels():
     return {'incident_levels': incident_levels}
 
 
+@register.inclusion_tag('list_statuses.html')
+def show_statuses():
+    statuses = cache.get("statuses")
+    if not statuses:
+        statuses = Status.objects.annotate(
+            cnt=Count('violations', filter=F('violations__is_published'))
+        ).filter(cnt__gt=0)
+        cache.set("statuses", statuses, 15)
+
+    return {'statuses': statuses}

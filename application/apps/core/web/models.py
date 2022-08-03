@@ -1,6 +1,6 @@
-from orm_converter.tortoise_to_django import ConvertedModel
 from tortoise import Tortoise, fields
 from tortoise.models import Model
+from orm_converter.tortoise_to_django import ConvertedModel
 from django.db import models
 from django.urls import reverse
 
@@ -41,6 +41,8 @@ class Violations(models.Model):
 
     main_category = models.ForeignKey(to='MainCategory', on_delete=models.PROTECT, verbose_name='Основная категория',
                                       default='')
+
+    status = models.ForeignKey(to='Status', on_delete=models.PROTECT, verbose_name='Статус', default=1)
 
     is_published = models.BooleanField(default=True, verbose_name='Опубликовано?')
     is_finished = models.BooleanField(default=False, verbose_name='Устранено?')
@@ -261,7 +263,24 @@ class ActRequired(models.Model):
         return reverse('act_required', kwargs={'act_required_id': self.pk})
 
 
-class User(Model, ConvertedModel):
+class Status(models.Model):
+    title = models.CharField(max_length=255, db_index=True, verbose_name='Статус')
+
+    class Meta:
+        verbose_name = "Статус"  # единственное число
+        verbose_name_plural = "Статусы"  # множественное число
+        ordering = ['title']  # порядок сортировки
+
+    def __str__(self):
+        return self.title
+
+    def get_absolute_url(self):
+        """Метод, согласно конвекции, для создания ссылок на части экземпляра модели (класса)
+        также, при наличии, позволяет переходить из админки на соответствующий раздел"""
+        return reverse('status', kwargs={'status_id': self.pk})
+
+
+class User(models.Model):
     tg_id = fields.BigIntField(unique=True, description="Telegram User ID")
     chat_id = fields.BigIntField(unique=False, description="Telegram Chat ID")
     first_name = fields.CharField(max_length=64, description="Telegram Firstname")
@@ -270,7 +289,10 @@ class User(Model, ConvertedModel):
         return f"{self.first_name} - {self.tg_id}"
 
     class Meta:
-        table = "user"
+
+        verbose_name = "Пользователь"  # единственное число
+        verbose_name_plural = "Пользователи"  # множественное число
+        ordering = ['title']  # порядок сортировки
 
 
 def register_models() -> None:
