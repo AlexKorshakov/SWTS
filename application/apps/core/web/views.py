@@ -2,8 +2,10 @@ import asyncio
 import os
 from pprint import pprint
 
-from django.http import HttpRequest, HttpResponse
+from django.db.models import Model
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.core.paginator import Paginator
+from django.views import View
 from django.views.generic import ListView, DetailView, CreateView
 from django.shortcuts import render, get_object_or_404, redirect
 
@@ -11,25 +13,28 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.contrib.auth import login, logout
 
-from apps.core.web.utils import MyMixin, del_violations, get_id_registered_users, get_params
+from apps.core.web.utils import MyMixin, del_violations, get_id_registered_users, get_params, \
+    update_violations_from_all_repo
 from loader import logger
-
-from .forms import UsrRegisterForm, UserLoginForm
-
-# from .models import News
+#
+from .forms import UsrRegisterForm, UserLoginForm, ViolationsForm
 from .models import Violations, MainCategory, Location, GeneralContractor, IncidentLevel, Status
-
-# Create your views here.
+#
+# # Create your views here.
 from ..bot.database.DataBase import upload_from_local
 
 
-def upload(request: HttpRequest):
+def upload_too_db_from_local_storage(request: HttpRequest):
+    """Загрузка записей из local storage в database
+
+    :return: redirect('home')
+    """
     #  https://ru.stackoverflow.com/questions/1313580/Запуск-функции-при-нажатии-кнопки-django
 
     if request.method == 'POST':
-        content: list = asyncio.run(get_id_registered_users())
-        params: list = asyncio.run(get_params(content))
-        logger.debug(content)
+        id_registered: list = asyncio.run(get_id_registered_users())
+        logger.debug(id_registered)
+        params: list = asyncio.run(get_params(id_registered_users=id_registered))
 
         for param in params:
             asyncio.run(upload_from_local(params=param))
@@ -38,12 +43,119 @@ def upload(request: HttpRequest):
 
 
 def update_violations(request: HttpRequest):
+    """Обновление данных в базе данных, в локальном репозитории, в Google Drive
+
+    :param request:
+    :return: redirect('greetings') if False or redirect('home') if True
+
+    {'act_required': '2',
+    'category': '22',
+    'comment': 'Комментарий',
+    'coordinates': '',
+    'created_at_day': '1',
+    'created_at_month': '1',
+    'created_at_year': '2022',
+    'csrfmiddlewaretoken': 'u0BB1mbVeAaaDZWOtp09iwrZffCrTrJWEXO4UpUcOjeSvBf4FSk6EtDCxMHTPwAc',
+    'description': 'Описание',
+    'elimination_time': '3',
+    'function': 'Должность',
+    'general_contractor': '66',
+    'incident_level': '1',
+    'is_finished': 'on',
+    'is_published': 'on',
+    'json': '',
+    'latitude': '',
+    'location': '18',
+    'longitude': '',
+    'main_category': '4',
+    'name': 'Имя пользователя',
+    'photo': '',
+    'status': '2',
+    'title': 'какой то текст',
+    'user_id': 'user_id',
+    'violation': '<tr',
+    'violation_category': '3',
+    'work_shift': '1'}
+    """
+
+    file_id = request.POST['file_id']
+    logger.debug(f"file_id = {request.POST['file_id']}")
+
+    if file_id:
+        logger.debug(f"file_id: {file_id = }")
+        result = asyncio.run(update_violations_from_all_repo(data=request.POST))
+        if result:
+            logger.info(f'Данные записи {file_id} обновлены')
+            return redirect('home')
+
+    return redirect('greetings')
+
+
+class PostEdit(CreateView):
+    """Просмотр категории"""
+    model = Violations
+    form_class = ViolationsForm
+    template_name = 'update_violations.html'
+    context_object_name = 'violations'
+    slug = None
+
+    def get_context_data(self, **kwargs):
+        """Дополнение данных перед отправкой на рендер"""
+        print(f"get_context_data")
+        print(f"{kwargs = }")
+
+        context = super(PostEdit, self).get_context_data(**kwargs)
+        print(f"{context = }")
+        if 'slug' in self.kwargs:
+            print(f"slug {self.kwargs.get('slug', None)}")
+
+            # context['object'] = get_object_or_404(MyObject, slug=self.kwargs['slug'])
+            # context['objects'] = get_objects_by_user(self.request.user)
+
+        return context
+
+    def get_queryset(self):
+        print(f"get_queryset")
+        return Violations.objects.get(pk=self.violations_id)
+
+    def get_object(self, queryset=None):
+        print(f"get_object")
+        self.slug = self.kwargs.get('slug', None)
+        return queryset.get(slug=self.slug)
+
+
+def post_edit(request: HttpRequest, violations_id):
+    form = None
+
+    if violations_id:
+        violation = Violations.objects.get(pk=violations_id)
+        # print(f"violation with pk {violation}")
+    else:
+        violation = Violations()
+        # print(f"violation")
+
     if request.method == 'POST':
-        logger.info(f'запись обновлена')
-        return redirect('home')
+        # print("request.method == 'POST'")
+
+        form = ViolationsForm(instance=violation)
+
+        if form.is_bound:
+            print(f"form is_bound ")
+
+        if form.is_valid():
+            print(f"form is_valid ")
+
+    context = {
+        'form': form,
+    }
+
+    return render(request, 'update_violations.html', context=context)
 
 
-def delete_violations(request):
+def delete_violations(request: HttpRequest):
+    """Удаление записи по violation_file_id из базы данных, локального репозитория, Google Drive
+
+    """
     violation_file_id = request.POST['violation_file_id']
 
     if request.method == 'POST':
@@ -54,11 +166,45 @@ def delete_violations(request):
         return redirect('home')
 
 
+def register(request: HttpRequest):
+    if request.method == 'POST':
+        form = UsrRegisterForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Вы успешно зарегистрировались')
+            return redirect("home")
+        else:
+            messages.error(request, 'Ошибка регистрации')
+
+    else:
+        form = UsrRegisterForm()
+
+    return render(request, 'news/register.html', {'form': form})
+
+
+def user_login(request: HttpRequest):
+    if request.method == 'POST':
+        form = UserLoginForm(data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            return redirect("home")
+    else:
+        form = UserLoginForm()
+
+    return render(request, 'news/login.html', {'form': form})
+
+
+def user_logout(request: HttpRequest):
+    logout(request)
+    return redirect("login")
+
+
 async def simple_view(request: HttpRequest) -> HttpResponse:
     return HttpResponse('Hello from "Core" app!')
 
 
-def test(request):
+def test(request: HttpRequest):
     objects = ['john1', 'paul2', 'george3', 'ringo4', 'john5', 'paul6', 'george7']
 
     paginator = Paginator(objects, 2)
@@ -202,37 +348,3 @@ class ViolationsByStatus(MyMixin, ListView):
             status_id=self.kwargs['status_id'],
             is_published=True
         ).prefetch_related('status')
-
-
-def register(request):
-    if request.method == 'POST':
-        form = UsrRegisterForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Вы успешно зарегистрировались')
-            return redirect("home")
-        else:
-            messages.error(request, 'Ошибка регистрации')
-
-    else:
-        form = UsrRegisterForm()
-
-    return render(request, 'news/register.html', {'form': form})
-
-
-def user_login(request):
-    if request.method == 'POST':
-        form = UserLoginForm(data=request.POST)
-        if form.is_valid():
-            user = form.get_user()
-            login(request, user)
-            return redirect("home")
-    else:
-        form = UserLoginForm()
-
-    return render(request, 'news/login.html', {'form': form})
-
-
-def user_logout(request):
-    logout(request)
-    return redirect("login")

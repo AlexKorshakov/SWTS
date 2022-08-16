@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Редактирование записи :: {{ block.super }}
+{% endblock %}
+
+{% block sidebar %}
+{% include 'inc/_sidebar.html' %}
+{% endblock %}
+
+{% block content %}
+
+<h1><font color="#fff">Редактирование записи </font></h1>
+
+<form action="{% url 'update_violations' %}" method='post'>
+    {{ form.non_field.errors }}
+
+    {% for field in form %}
+    <div class="form-group">
+        <label for="{{ field.id_for_label }}" class="form-label">
+            <p><font color="#fff">{{ field.label }}: </font></p>
+        </label> {{ field }}
+        <div class="invalid-feedback"><font color="red"> {{ field.errors }} </font></div>
+    </div>
+    </br>
+    {% endfor %}
+    <br/>
+
+    {% csrf_token %}
+
+    <button type="submit" style="--clr:#ff1867">Обновить</button>
+
+</form>
+
+{% endblock %}

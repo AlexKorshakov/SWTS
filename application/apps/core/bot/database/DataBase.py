@@ -1,28 +1,89 @@
 import os.path
 import sqlite3
-import asyncio
-from os import makedirs
 from pathlib import Path
 from pprint import pprint
 
+from apps.core.bot.database.db_utils import normalize_violation_data, write_json, data_violation_completion
 from apps.core.bot.utils.json_worker.read_json_file import read_json_file
-from apps.core.bot.utils.json_worker.writer_json_file import write_json_file
 from apps.core.bot.utils.secondary_functions.get_json_files import get_files
-# from apps.core.bot.utils.sync_data.sync_data_local import local_to_google_drive
 from loader import logger
 
 BASE_DIR = Path(__file__).resolve()
 
-ALL_CATEGORY_IN_DB: dict = {
-    'main_category': 'core_maincategory',
-    'location': 'core_location',
-    'category': 'core_category',
-    'violation_category': 'core_violationcategory',
-    'general_contractor': 'core_generalcontractor',
-    'act_required': 'core_actrequired',
-    'incident_level': 'core_incidentlevel',
-    'elimination_time': 'core_eliminationtime',
-    'status': 'core_status',
+# ALL_CATEGORY_IN_TABLES_DB: dict = {
+#     'main_category': 'core_maincategory',
+#     'location': 'core_location',
+#     'category': 'core_category',
+#     'violation_category': 'core_violationcategory',
+#     'general_contractor': 'core_generalcontractor',
+#     'act_required': 'core_actrequired',
+#     'incident_level': 'core_incidentlevel',
+#     'elimination_time': 'core_eliminationtime',
+#     'status': 'core_status',
+#     'work_shift': 'core_workshift',
+# }
+
+CATEGORY_ID_TRANSFORM: dict = {
+    'main_category': {
+        'item': 'main_category',
+        'column': 'main_category_id',
+        'table': 'core_maincategory',
+        'description': 'Основная категория'
+    },
+    'location': {
+        'item': 'location',
+        'column': 'location_id',
+        'table': 'core_location',
+        'description': 'Площадка'
+    },
+    'category': {
+        'item': 'category',
+        'column': 'category_id',
+        'table': 'core_category',
+        'description': 'Категория'
+    },
+    'violation_category': {
+        'item': 'violation_category',
+        'column': 'violation_category_id',
+        'table': 'core_violationcategory',
+        'description': 'Категория нарушения'
+    },
+    'general_contractor': {
+        'item': 'general_contractor',
+        'column': 'general_contractor_id',
+        'table': 'core_generalcontractor',
+        'description': 'Подрядчик'
+    },
+    'act_required': {
+        'item': 'act_required',
+        'column': 'act_required_id',
+        'table': 'core_actrequired',
+        'description': 'Требуется оформление Акта-предписания?'
+    },
+    'incident_level': {
+        'item': 'incident_level',
+        'column': 'incident_level_id',
+        'table': 'core_incidentlevel',
+        'description': 'Уровень происшествия'
+    },
+    'elimination_time': {
+        'item': 'elimination_time',
+        'column': 'elimination_time_id',
+        'table': 'core_eliminationtime',
+        'description': 'Время на устранение'
+    },
+    'status': {
+        'item': 'status',
+        'column': 'status_id',
+        'table': 'core_status',
+        'description': 'Статус'
+    },
+    'work_shift': {
+        'item': 'work_shift',
+        'column': 'work_shift_id',
+        'table': 'core_workshift',
+        'description': 'Смена'
+    },
 }
 
 
@@ -78,85 +139,81 @@ class DataBase:
         )
 
     def add_violation(self, *, violation: dict) -> bool:
-        """Наполнение таблицы при первом запуске"""
+        """Добавление записей в database
 
-        location = violation.get("location", None)
-        if violation.get("year") == '2021' and violation.get("name") == 'Коршаков Алексей Сергеевич':
-            location = 'Ст. Аминьевская'
+        :param violation: dict с данными для внесения
+        """
 
-        location_id = self.get_id(table='core_location', entry=location)
-        work_shift_id = self.get_id(table='core_workshift', entry=violation.get("work_shift", None))
+        file_id = violation.get('file_id', None)
 
-        general_contractor = violation.get("general_contractor", None)
-        if general_contractor == 'МИП - Строй 1(?)':
-            general_contractor = "МИП-Строй№1(?)"
+        location_id = self.get_id(
+            table='core_location',
+            entry=violation.get("location", None),
+            file_id=file_id,
+            name='location'
+        )
+        work_shift_id = self.get_id(
+            table='core_workshift',
+            entry=violation.get("work_shift", None),
+            file_id=file_id,
+            name='work_shift'
+        )
+        general_contractor_id = self.get_id(
+            table='core_generalcontractor',
+            entry=violation.get("general_contractor", None),
+            file_id=file_id,
+            name='general_contractor'
+        )
+        main_category_id = self.get_id(
+            table='core_maincategory',
+            entry=violation.get("main_category", None),
+            file_id=file_id,
+            name='main_category'
+        )
+        category_id = self.get_id(
+            table='core_category',
+            entry=violation.get("category", None),
+            file_id=file_id,
+            name='category'
+        )
+        act_required_id = self.get_id(
+            table='core_actrequired',
+            entry=violation.get("act_required", None),
+            file_id=file_id,
+            name='act_required'
+        )
+        elimination_time_id = self.get_id(
+            table='core_eliminationtime',
+            entry=violation.get("elimination_time", None),
+            file_id=file_id,
+            name='elimination_time'
+        )
+        incident_level_id = self.get_id(
+            table='core_incidentlevel',
+            entry=violation.get("incident_level", None),
+            file_id=file_id,
+            name='incident_level'
+        )
+        violation_category_id = self.get_id(
+            table='core_violationcategory',
+            entry=violation.get("violation_category", None),
+            file_id=file_id,
+            name='violation_category'
+        )
+        status_id = self.get_id(
+            table='core_status',
+            entry=violation.get("status", None),
+            file_id=file_id,
+            name='status'
+        )
 
-        if general_contractor == "'Прочее'(?)":
-            general_contractor = "Прочее"
-
-        if general_contractor == "СиАрСиСи Рус(?)" or general_contractor == "'СиАрСиСи'(?)":
-            general_contractor = "СиАрСиСи(?)"
-
-        if general_contractor == "'МИП-С№1('ССМ')":
-            general_contractor = "МИП-С№1('ССМ')"
-
-        if general_contractor == "'СиАрСиСи'('РБТ')":
-            general_contractor = "СиАрСиСи('РБТ')"
-
-        if general_contractor == "'СиАрСиСи'('Стройком')":
-            general_contractor = "СиАрСиСи('Стройком')"
-
-        if general_contractor == "'МИП-Строй№1(?)":
-            general_contractor = "МИП-Строй№1(?)"
-
-        if general_contractor == "'МИП-С№1('Строй-монтаж2002')":
-            general_contractor = "МИП-С№1('Строй-монтаж2002')"
-
-        if general_contractor == "'МИП-С№1('ТрансЭнергоСнаб')":
-            general_contractor = "МИП-С№1('ТрансЭнергоСнаб')"
-
-        if general_contractor == "'ГорИнжПроект'(?)":
-            general_contractor = "ГорИнжПроект(?)"
-
-        if general_contractor == "'Прочее(?)" or general_contractor == "Прочее(?)":
-            general_contractor = "Прочее"
-
-        general_contractor_id = self.get_id(table='core_generalcontractor', entry=general_contractor)
-
-        main_category = violation.get("main_category", None)
-        if main_category == 'Промышленная безопасность_':
-            main_category = 'Промышленная безопасность'
-
-        main_category_id = self.get_id(table='core_maincategory', entry=main_category)
-
-        category = violation.get("category", None)
-        if category == 'Электробезопасность_':
-            category = 'Электробезопасность'
-
-        if category == 'Экология_':
-            category = 'Отходы'
-
-        if category == 'Работы на высоте_':
-            category = 'Работы на высоте'
-
-        category_id = self.get_id(table='core_category', entry=category, violation=violation)
-
-        act_required_id = self.get_id(table='core_actrequired', entry=violation.get("act_required", None))
-        description = violation.get('description', None)
-        elimination_time_id = self.get_id(table='core_eliminationtime', entry=violation.get("elimination_time", None))
-        incident_level_id = self.get_id(table='core_incidentlevel', entry=violation.get("incident_level", None))
-        violation_category_id = self.get_id(table='core_violationcategory',
-                                            entry=violation.get("violation_category", None))
-
-        status_id = self.get_id(table='core_status',
-                                entry=violation.get("status", None))
-
-        is_published = True
-
+        is_finished = False
         if status_id == 1:
             is_finished = True
-        else:
-            is_finished = False
+
+        description = violation.get('description', None)
+
+        is_published = True
 
         function = violation.get("function", None)
         name = violation.get("name", None)
@@ -171,15 +228,17 @@ class DataBase:
 
         title = violation.get('comment', None)
         comment = violation.get('comment', None)
+
         coordinates = violation.get('coordinates', None)
         latitude = violation.get('latitude', None)
         longitude = violation.get('longitude', None)
+
         json_folder_id = violation.get('json_folder_id', None)
         json_file_path = violation.get('json_file_path', None)
         json_full_name = violation.get('json_full_name', None)
 
         user_id = violation.get('user_id', None)
-        file_id = violation.get('file_id', None)
+
         photo = f'/{user_id}/data_file/{file_id.split("___")[0]}/photo/report_data___{file_id}.jpg'
         json = f'/{user_id}/data_file/{file_id.split("___")[0]}/json/report_data___{file_id}.json'
 
@@ -187,8 +246,15 @@ class DataBase:
         photo_folder_id = violation.get('photo_folder_id', None)
         photo_full_name = violation.get('photo_full_name', None)
 
-        created_at = violation.get('data', None).split(':')
+        # created_at = violation.get('data', None)
+        # if created_at:
+        #     created_at.split(':')
+        #     created_at = '-'.join(created_at[::-1])
+        # else:
+
+        created_at = violation.get('file_id', None).split('___')[0].split('.')
         created_at = '-'.join(created_at[::-1])
+
         updated_at = created_at
 
         try:
@@ -214,18 +280,18 @@ class DataBase:
                 )
                 if is_add:
                     return True
+
+                logger.error(f'error in file {file_id}')
                 return False
 
         except sqlite3.IntegrityError as err:
             pprint(f"sqlite3.IntegrityError {err}")
 
-    def get_id(self, table, entry, violation=None) -> int:
-        file_id = '000000'
-        if violation:
-            file_id = violation.get('file_id', None)
+    def get_id(self, table: str, entry, file_id: str = None, name=None) -> int:
+        """Получение id записи по значению title из соответствующий таблицы table"""
 
         if not entry:
-            print(f"no entry {entry = }")
+            print(f" def get_id: no entry {entry = } {file_id = } entry name {name}")
             return 0
 
         query = f"SELECT `id` FROM `{table}` WHERE `title` = ?"
@@ -245,15 +311,37 @@ class DataBase:
                 print(f"no matches found {entry = } in {table} because entry_id file_id: {file_id}")
                 # sys.exit()
 
-    def get_table_info(self):
+    def get_id_violation(self, file_id: str = None) -> int:
+        """Получение id записи по значению file_id из таблицы core_violations"""
+
+        query = "SELECT `id` FROM `core_violations` WHERE `file_id` = ?"
+        with self.connection:
+            result = self.cursor.execute(query, (file_id,)).fetchall()
+            if not result:
+                logger.error(f"no matches found {file_id} in core_violations because "
+                             f".cursor.execute is none")
+                return 0
+
+            return result[0][0]
+
+    def get_table_headers(self) -> list[str]:
+        """Получение всех заголовков таблицы core_violations
+
+        :return: list[ ... ]
+        """
         with self.connection:
             result = self.cursor.execute("PRAGMA table_info('core_violations')").fetchall()
             return result
 
-    def get_violation(self, violation_file_id: str) -> list:
+    def get_violation(self, file_id: str) -> list:
+        """Получение записи по id
+
+        :param file_id: file_id из таблицы core_violations
+        :return: list[ ... ] or []
+        """
         with self.connection:
             result = self.cursor.execute('SELECT * FROM `core_violations` WHERE `file_id` = ?',
-                                         (violation_file_id,)).fetchall()
+                                         (file_id,)).fetchall()
             return result
 
     def violation_exists(self, file_id: int):
@@ -269,13 +357,14 @@ class DataBase:
             return self.cursor.execute("DELETE FROM `core_violations` WHERE `file_id` = ?", (file_id,))
 
     def get_info_violations(self, file_id: int):
-        # получение информации по юзеру
+        # получение информации
         with self.connection:
             return self.cursor.execute("SELECT * FROM `core_violations` WHERE `file_id` = ?",
                                        (file_id,)).fetchone()
 
     def count_violations(self):
-        # вывод кол-ва юзеров
+        """Вывод кол-ва записей из core_violations
+        """
         with self.connection:
             return self.cursor.execute('SELECT COUNT(*) FROM `core_violations`').fetchone()
 
@@ -291,173 +380,66 @@ class DataBase:
         with self.connection:
             return self.cursor.execute(query).fetchall()
 
+    def update_column_value(self, column_name: str, value: str, id: str):
+        """Обновление записи id  в database
 
-async def write_json(violation):
-    """Запись в файл"""
-    if not os.path.isfile(violation['json_full_name']):
-        print(f"FileNotFoundError {violation['json_full_name']} ")
+        :param id: id записи
+        :param value:  значение для записи в столбец
+        :param column_name: столбец
+        """
 
-        date_violation = violation['file_id'].split('___')[0]
-
-        violation['json_full_name'] = \
-            f"C:\\Users\\KDeusEx\\PycharmProjects\\SWTS\\application\\media\\{violation['user_id']}\\data_file" \
-            f"\\{date_violation}\\json\\report_data___{violation['file_id']}.json"
-
-        await create_file_path(
-            f"C:\\Users\\KDeusEx\\PycharmProjects\\SWTS\\application\\media\\{violation['user_id']}\\data_file"
-            f"\\{date_violation}\\json\\"
-        )
-        violation['photo_full_name'] = \
-            f"C:\\Users\\KDeusEx\\PycharmProjects\\SWTS\\application\\media\\{violation['user_id']}\\data_file" \
-            f"\\{date_violation}\\photo\\report_data___{violation['file_id']}.jpg"
-
-        await create_file_path(
-            f"C:\\Users\\KDeusEx\\PycharmProjects\\SWTS\\application\\media\\{violation['user_id']}\\data_file"
-            f"\\{date_violation}\\photo\\"
-        )
-
-        await write_json_file(data=violation, name=violation['json_full_name'])
-        return
-
-    await write_json_file(data=violation, name=violation['json_full_name'])
+        query: str = f"UPDATE `core_violations` SET {column_name} = ? WHERE `id` = ?"
+        logger.debug(f'{column_name = } {value = }')
+        with self.connection:
+            self.cursor.execute(query, (value, id,))
+        self.connection.commit()
 
 
-async def create_file_path(path: str):
-    """Проверка и создание путей папок и файлов
-    :param path:
-    :return:
-    """
-    if not os.path.isdir(path):
-        # logger.info(f"user_path{path} is directory")
-        try:
-            makedirs(path)
-        except Exception as err:
-            logger.info(f"makedirs err {repr(err)}")
-
-
-async def get_entry(violation, query, user_data_json_file) -> int:
-    table = ALL_CATEGORY_IN_DB[query]
-
-    if not violation.get(query):
-        violation[query] = user_data_json_file.get("name_location")
-        # await write_json(violation=violation)
-
-    entry = violation.get(query, None)
-    query_id = DataBase().get_id(table=table, entry=entry)
-    return query_id
+# async def get_entry(violation, query, user_data_json_file) -> int:
+#     table = ALL_CATEGORY_IN_TABLES_DB[query]
+#
+#     if not violation.get(query):
+#         violation[query] = user_data_json_file.get("name_location")
+#         # await write_json(violation=violation)
+#
+#     entry = violation.get(query, None)
+#     query_id = DataBase().get_id(table=table, entry=entry)
+#     return query_id
 
 
 async def upload_from_local(*, params: dict = None):
-    """Загрузка файлов в БД с локального хранилища media
+    """Проверка валидация и загрузка файлов в database из local storage
 
+    :param params: dict с путями к файлам для загрузки
+
+    params{
+        'file_path': '...',
+        'user_file': '...'
+        }
     """
-    # if not os.path.exists(params['file_path']):
-    #     print(f"ERROR file: {params['file_path']} don't exists")
-    #     exit(0)
-    #
-    # if not os.path.exists(params['user_file']):
-    #     print(f"ERROR file: {params['user_file']} don't exists")
-    #     exit(0)
-    #
-    # if not os.path.isfile(params['user_file']):
-    #     print(f"ERROR file: {params['user_file']} not a file")
-    #     exit(0)
 
     json_file_list = await get_files(params['file_path'], endswith=".json")
 
-    error_counter: int = 0
-    comment_counter: int = 0
-    act_required_counter: int = 0
-    elimination_time_counter: int = 0
-    general_contractor_counter: int = 0
-    incident_level_counter: int = 0
-
+    len_err = 0
     for counter, violation_file in enumerate(json_file_list, start=1):
 
-        violation = await read_json_file(file=violation_file)
-        user_data_json_file = await read_json_file(file=params['user_file'])
-        file_id = violation.get('file_id')
+        error_counter, violation = await data_violation_completion(violation_file=violation_file, params=params)
 
-        if not violation.get("work_shift"):
-            violation["work_shift"] = user_data_json_file.get("work_shift")
-            await write_json(violation=violation)
+        normalize_violation = await normalize_violation_data(violation=violation)
 
-        if not violation.get("function"):
-            violation["function"] = user_data_json_file.get("function")
-            await write_json(violation=violation)
-
-        if not violation.get("name"):
-            violation["name"] = user_data_json_file.get("name")
-            await write_json(violation=violation)
-
-        if not violation.get("parent_id"):
-            violation["parent_id"] = user_data_json_file.get("parent_id")
-            await write_json(violation=violation)
-
-        if not violation.get("status"):
-            violation["status"] = 'Устранено'
-            await write_json(violation=violation)
-
-        if not violation.get('general_contractor'):
-            print(f"ERROR file: {file_id} don't get 'general_contractor' parameter")
-            error_counter += 1
-            general_contractor_counter += 1
-
-            os.remove(violation_file)
-            print(f"file: {violation_file} is remove")
-            continue
-
-        if not violation.get('elimination_time'):
-            print(f"ERROR file: {file_id} don't get 'elimination_time' parameter")
-            error_counter += 1
-            elimination_time_counter += 1
-            violation['elimination_time'] = '1 день'
-            await write_json(violation=violation)
-            continue
-
-        if not violation.get('incident_level'):
-            print(f"ERROR file: {file_id} don't get 'incident_level' parameter")
-            error_counter += 1
-            incident_level_counter += 1
-            violation['incident_level'] = 'Без последствий'
-            await write_json(violation=violation)
-            continue
-
-        if not violation.get('act_required'):
-            print(f"ERROR file: {file_id} don't get 'act_required' parameter")
-            error_counter += 1
-            act_required_counter += 1
-            os.remove(violation_file)
-            print(f"file: {violation_file} is remove")
-            continue
-
-        if not violation.get('comment'):
-            print(f"ERROR file: {file_id} don't get 'comment' parameter")
-            error_counter += 1
-            comment_counter += 1
-            continue
-
-        if not DataBase().violation_exists(file_id):
-            # location_id = await get_entry(violation=violation, query="location",
-            #                               user_data_json_file=user_data_json_file)
-            # print(f'{location_id = }')
-
-            is_add = DataBase().add_violation(violation=violation)
+        if not DataBase().violation_exists(violation.get('file_id')):
+            is_add = DataBase().add_violation(violation=normalize_violation)
             if is_add:
-                logger.info(f"{counter} file {violation.get('file_id')} add in db {DataBase().db_file}")
+                logger.debug(f"{counter} file {violation.get('file_id')} add in db")
 
-    print(f"errors {error_counter} in {len(json_file_list)} items")
-    print(f"general_contractor_counter {general_contractor_counter} in {error_counter} items")
-    print(f"elimination_time_counter {elimination_time_counter} in {error_counter} items")
-    print(f"act_required_counter {act_required_counter} in {error_counter} items")
-    print(f"incident_level_counter {incident_level_counter} in {error_counter} items")
-    print(f"comment_counter {comment_counter} in {error_counter} items")
+            len_err += error_counter
+    print(f"errors {len_err} in {len(json_file_list)} items")
 
 
 async def sync_files(*, params: dict = None):
     """Синхронизация файлов между локальным хранилищем media и облаком google_drive """
 
-    # await local_to_google_drive()
+    # await sync_local_to_google_drive()
 
     await google_drive_to_local()
 
@@ -466,23 +448,22 @@ async def google_drive_to_local():
     """Синхронизация google_drive -> media"""
     pass
 
-
 # if __name__ == '__main__':
-    # user_chat_id = '373084462'
-    # params: dict = {
-    #     'all_files': True,
-    #     'file_path': f"C:/Users/KDeusEx/PycharmProjects/SWTS/application/media/{user_chat_id}/data_file/",
-    #     'user_file': f"C:/Users/KDeusEx/PycharmProjects/SWTS/application/media/{user_chat_id}/{user_chat_id}.json"
-    # }
+# user_chat_id = '373084462'
+# params: dict = {
+#     'all_files': True,
+#     'file_path': f"C:/Users/KDeusEx/PycharmProjects/SWTS/application/media/{user_chat_id}/data_file/",
+#     'user_file': f"C:/Users/KDeusEx/PycharmProjects/SWTS/application/media/{user_chat_id}/{user_chat_id}.json"
+# }
 
-    # asyncio.run(local_to_google_drive())
-    # print(f'count_violations {DataBase().count_violations()}')
+# asyncio.run(sync_local_to_google_drive())
+# print(f'count_violations {DataBase().count_violations()}')
 
-    # work_shift_id = DataBase().get_work_shift_id(violation.get("work_shift", None))
-    # main_category_id = DataBase().get_main_category_id(violation.get('main_category', None))
-    # general_contractor_id = DataBase().get_general_contractor_id(violation.get('general_contractor', None))
-    # category_id = DataBase().get_category_id(violation.get('category', None))
-    # act_required_id = DataBase().get_act_required_id(violation.get('act_required', None))
-    # elimination_time_id = DataBase().get_elimination_time_id(violation.get('elimination_time', None))
-    # incident_level_id = DataBase().get_incident_level_id(violation.get('incident_level', None))
-    # violation_category_id = DataBase().get_violation_category_id(violation.get('violation_category', None))
+# work_shift_id = DataBase().get_work_shift_id(violation.get("work_shift", None))
+# main_category_id = DataBase().get_main_category_id(violation.get('main_category', None))
+# general_contractor_id = DataBase().get_general_contractor_id(violation.get('general_contractor', None))
+# category_id = DataBase().get_category_id(violation.get('category', None))
+# act_required_id = DataBase().get_act_required_id(violation.get('act_required', None))
+# elimination_time_id = DataBase().get_elimination_time_id(violation.get('elimination_time', None))
+# incident_level_id = DataBase().get_incident_level_id(violation.get('incident_level', None))
+# violation_category_id = DataBase().get_violation_category_id(violation.get('violation_category', None))
