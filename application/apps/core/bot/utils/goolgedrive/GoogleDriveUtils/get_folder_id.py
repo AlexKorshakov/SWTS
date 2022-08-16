@@ -33,7 +33,7 @@ async def get_report_folder_id(drive_service, report_folder_name: str, parent_id
         )
         return report_folder_id
 
-    logger.info(f"**Find  https://drive.google.com/drive/folders/{report_folder_id} in Google Drive.**")
+    logger.debug(f"**Find  https://drive.google.com/drive/folders/{report_folder_id} in Google Drive.**")
 
     return report_folder_id
 
@@ -63,7 +63,7 @@ async def get_photo_folder_id(drive_service, photo_folder_name: str, parent_id=N
         )
         return photo_folder_id
 
-    logger.info(f"**Find  https://drive.google.com/drive/folders/{photo_folder_id} in Google Drive.**")
+    logger.debug(f"**Find https://drive.google.com/drive/folders/{photo_folder_id} in Google Drive.**")
 
     return photo_folder_id
 
@@ -92,7 +92,7 @@ async def get_json_folder_id(drive_service, json_folder_name: str, parent_id=Non
                         )
         return json_folder_id
 
-    logger.info(f"**Find  https://drive.google.com/drive/folders/{json_folder_id} in Google Drive.**")
+    logger.debug(f"**Find  https://drive.google.com/drive/folders/{json_folder_id} in Google Drive.**")
 
     return json_folder_id
 
@@ -114,7 +114,7 @@ async def get_root_folder_id(drive_service, root_folder_name: str):
         await gaining_access_drive(drive_service, folder_id=root_folder_id)
         return root_folder_id
 
-    logger.info(f"**Find  https://drive.google.com/drive/folders/{root_folder_id} in Google Drive.**")
+    logger.debug(f"**Find  https://drive.google.com/drive/folders/{root_folder_id} in Google Drive.**")
 
     return root_folder_id
 
@@ -138,7 +138,7 @@ async def get_user_folder_id(drive_service, root_folder_name: str, parent_id):
         await gaining_access_drive(drive_service, folder_id=user_folder_id)
         return user_folder_id
 
-    logger.info(f"**Find  https://drive.google.com/drive/folders/{user_folder_id} in Google Drive.**")
+    logger.debug(f"**Find  https://drive.google.com/drive/folders/{user_folder_id} in Google Drive.**")
 
     return user_folder_id
 

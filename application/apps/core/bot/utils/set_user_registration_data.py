@@ -5,16 +5,17 @@ from app import MyBot
 from apps.core.bot.utils.secondary_functions.get_filepath import preparation_registration_paths_on_pc
 from loader import logger
 
-from apps.core.bot.database.entry_in_db import entry_in_db
+from apps.core.bot.database.entry_in_db import write_data_in_database
 
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.set_user_registration_data_on_google_drave import \
-    set_user_registration_data_on_google_drive
-from apps.core.bot.utils.json_worker.writer_json_file import write_json_reg_user_file
+    write_user_registration_data_on_google_drive
+from apps.core.bot.utils.json_worker.writer_json_file import write_user_registration_data_on_json_on_local_storage
 
 
 async def registration_data(message: types.Message, user_data):
     """
+
     :param message:
     :param user_data:
     :return:
@@ -33,20 +34,20 @@ async def registration_data(message: types.Message, user_data):
 
 
 async def set_user_registration_data(*, chat_id, user_data):
-    """
-     :param chat_id:
-     :param user_data:
-     :return:
+    """Запись и сохранение данных в local storage, database, Google Drive
+
+     :param chat_id: id пользователя
+     :param user_data: данные для записи
      """
 
     user_data = await preparation_registration_paths_on_pc(user_id=chat_id, user_data=user_data)
 
-    if await write_json_reg_user_file(data=user_data):
-        logger.info(f"Данные сохранены на pc в файл {user_data['reg_user_file']}")
+    if await write_user_registration_data_on_json_on_local_storage(user_data=user_data):
+        logger.info(f"Данные сохранены в local storage в файл {user_data['reg_user_file']}")
 
-    if await entry_in_db(violation_data=user_data):
-        logger.info(f"Данные сохранены в local DB в файл {user_data['reg_user_file']}")
+    if await write_data_in_database(violation_data=user_data):
+        logger.info(f"Данные сохранены в database в файл {user_data['reg_user_file']}")
 
-    if await set_user_registration_data_on_google_drive(chat_id=chat_id, user_data=user_data):
+    if await write_user_registration_data_on_google_drive(chat_id=chat_id, user_data=user_data):
         logger.info(f"Данные сохранены в Google Drive в файл {user_data['reg_user_file']} \n"
                     f"https://drive.google.com/drive/folders/{user_data['parent_id']}")

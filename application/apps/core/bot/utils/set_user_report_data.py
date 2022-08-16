@@ -6,22 +6,22 @@ from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.set_user_report_data_on_go
     set_user_report_data_on_google_drive
 
 
-async def set_report_data(chat_id, full_report_path):
+async def set_report_data(chat_id: str, full_report_path: str):
     """Загрузка файла отчета на google drive
-    :param full_report_path:
+
     :param chat_id: id чата
-    :return: None
+    :param full_report_path: полный путь до файла с данными
     """
 
     await set_user_report_data(chat_id=chat_id, full_report_path=full_report_path)
     await MyBot.dp.bot.send_message(chat_id=chat_id, text=Messages.Successfully.registration_completed)
 
 
-async def set_user_report_data(chat_id, full_report_path):
+async def set_user_report_data(chat_id: str, full_report_path: str):
     """Сoхранение данных отчета различными методами
-    :param chat_id:
-    :param full_report_path:
-    :return:
+
+    :param chat_id: id чата
+    :param full_report_path: полный путь до файла с данными
     """
     if not full_report_path:
         await MyBot.dp.bot.send_message(chat_id=chat_id, text=Messages.Error.fill_report_path_not_found)

@@ -7,10 +7,10 @@ from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.folders_deleter import del
 from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.get_folder_id import get_root_folder_id, get_user_folder_id
 from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.upload_data_on_gdrive import upload_file_on_gdrave
 from apps.core.bot.utils.goolgedrive.googledrive_worker import ROOT_REPORT_FOLDER_NAME
-from apps.core.bot.utils.json_worker.writer_json_file import write_json_reg_user_file
+from apps.core.bot.utils.json_worker.writer_json_file import write_user_registration_data_on_json_on_local_storage
 
 
-async def set_user_registration_data_on_google_drive(*, chat_id, user_data):
+async def write_user_registration_data_on_google_drive(*, chat_id, user_data):
     """ Загрузка данных на Google Drive
     :param chat_id:
     :param user_data: данные для записи
@@ -33,7 +33,7 @@ async def set_user_registration_data_on_google_drive(*, chat_id, user_data):
                                          parent_id=root_folder_id)
     user_data["parent_id"] = folder_id
 
-    await write_json_reg_user_file(data=user_data)
+    await write_user_registration_data_on_json_on_local_storage(user_data=user_data)
 
     await del_by_name_old_data_google_drive(chat_id=chat_id,
                                             drive_service=drive_service,

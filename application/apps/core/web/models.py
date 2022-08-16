@@ -1,36 +1,11 @@
 from tortoise import Tortoise, fields
-from tortoise.models import Model
-from orm_converter.tortoise_to_django import ConvertedModel
 from django.db import models
 from django.urls import reverse
 
 
-# class News(models.Model):
-#     title = models.CharField(max_length=255, verbose_name='Наименование категории')
-#     content = models.TextField(blank=True, verbose_name='Контент')
-#     created_at = models.DateField(auto_now_add=True, verbose_name='Дата публикации')
-#     updated_at = models.DateField(auto_now=True, verbose_name='Обновлено')
-#     photo = models.ImageField(upload_to='photos/%Y/%m/%d/', verbose_name='Фото', blank=True)
-#     is_published = models.BooleanField(default=True, verbose_name='Опубликовано ?')
-#     category = models.ForeignKey('Category', on_delete=models.PROTECT, verbose_name='Категория')
-#     views = models.IntegerField(default=0)
-#
-#     class Meta:
-#         verbose_name = "Новость"  # единственное число
-#         verbose_name_plural = "Новости"  # множественное число
-#         ordering = ['-created_at', '-title']  # порядок сортировки
-#
-#     def __str__(self):
-#         return self.title
-#
-#     def get_absolute_url(self):
-#         """Метод, согласно конвекции, для создания ссылок на части экземпляра модели (класса)
-#         также, при наличии, позволяет переходить из админки на соответствующий раздел"""
-#         return reverse('view_news', kwargs={'pk': self.pk})
-
-
 class Violations(models.Model):
     """Основная модель Описывающая все поля для Нарушения"""
+
     location = models.ForeignKey(to='Location', on_delete=models.PROTECT, verbose_name='Площадка', default='')
     function = models.CharField(max_length=255, verbose_name='Должность', default='')
     name = models.CharField(max_length=255, verbose_name='ФИО', default='')
@@ -102,7 +77,7 @@ class Violations(models.Model):
         ordering = ['-created_at', '-title']  # порядок сортировки
 
     def __str__(self):
-        return self.title
+        return f'pk: {self.pk} file_id: {self.file_id} {self.title}'
 
     def get_absolute_url(self):
         """Метод, согласно конвекции, для создания ссылок на части экземпляра модели (класса)
@@ -289,7 +264,6 @@ class User(models.Model):
         return f"{self.first_name} - {self.tg_id}"
 
     class Meta:
-
         verbose_name = "Пользователь"  # единственное число
         verbose_name_plural = "Пользователи"  # множественное число
         ordering = ['title']  # порядок сортировки

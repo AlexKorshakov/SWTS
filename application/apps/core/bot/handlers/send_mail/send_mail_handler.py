@@ -29,12 +29,16 @@ from apps.core.bot.utils.secondary_functions.check_user_registration import chec
 
 @rate_limit(limit=360)
 @MyBot.dp.message_handler(Command('send_mail'))
-async def send_mail(message: types.Message, file_list: list = None, registration_data: dict = None):
-    """Отправка сообщения с отчетом
-    :param file_list:
-    :param message:
-    :param registration_data:
-    :return:
+async def send_mail(message: types.Message, file_list: list = None, registration_data: dict = None) -> None:
+    """Проверка доступа, получение файлов для отправки, получение списка адресатов для отправки писем
+    формирование тела письма, добавление вложений
+
+    Отправка сообщения с отчетом
+
+    :param message: объект сообщения от бота,
+    :param file_list: (опционально) список файлов для отправки,
+    :param registration_data: (опционально)регистрационные данные,
+    :return: сообщение об успешной отправке письма / сообщение об ошибке
     """
 
     chat_id = message.chat.id
@@ -123,11 +127,11 @@ async def send_mail(message: types.Message, file_list: list = None, registration
     email_message['To'] = ', '.join(sent_to)
     email_message['Cc'] = ', '.join(sent_to_cc)
 
-    isreportfile = []
+    is_report_file = []
     for report_file in file_list or []:
         if not os.path.isfile(report_file):
             logger.error(f"report_file {report_file} {Messages.Error.file_not_found}")
-            isreportfile.append(False)
+            is_report_file.append(False)
             continue
 
         mime_type, _ = mimetypes.guess_type(report_file)
@@ -140,13 +144,13 @@ async def send_mail(message: types.Message, file_list: list = None, registration
 
                 p.add_header('Content-Disposition', 'attachment', filename=name)
                 email_message.attach(p)
-                isreportfile.append(True)
+                is_report_file.append(True)
                 break
         except Exception as err:
             print(str(err))
             return
 
-    if any([file for file in isreportfile]):
+    if any([file for file in is_report_file]):
 
         await MyBot.bot.send_message(message.from_user.id, Messages.Successfully.letter_formed)
         logger.info(Messages.Successfully.letter_formed)

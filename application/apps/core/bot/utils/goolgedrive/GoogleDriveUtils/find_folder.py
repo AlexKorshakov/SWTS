@@ -26,7 +26,7 @@ async def find_folder_with_name_on_google_drive(drive_service, *, name: str, par
 
     found_folders_by_name = get_folder.get('files', [])
     for folder in found_folders_by_name:
-        logger.info(f"File name: {folder.get('name')} File id: {folder.get('id')}")
+        logger.debug(f"File name: {folder.get('name')} File id: {folder.get('id')}")
 
     if len(found_folders_by_name) == 1:
         return found_folders_by_name[0].get('id')
@@ -36,6 +36,7 @@ async def find_folder_with_name_on_google_drive(drive_service, *, name: str, par
 
 async def find_folder_with_drive_id(drive_service, drive_id, recursively=True):
     """Поиск папок в папке drive_id рекурсивно если recursively=True
+
     :param drive_service:
     :param drive_id:
     :param recursively:
@@ -66,7 +67,7 @@ async def find_all(service: object) -> list:
         found_folders = get_folder.get('items', [])
 
         for file in found_folders:
-            logger.info(f"Found file: {file.get('name')} File id: {file.get('id')}")
+            logger.debug(f"Found file: {file.get('name')} File id: {file.get('id')}")
 
         page_token = get_folder.get('nextPageToken', None)
         if page_token is None:
@@ -95,7 +96,8 @@ async def find_all_folders(drive_service) -> List[Dict[str, str]]:
 
 
 async def find_folder_by_name(service, name, spaces='drive'):
-    """Получение id папки по имени"""
+    """Получение id папки по имени
+    """
     get_folder = service.files().list(q=f"name='{name}' and mimeType='application/vnd.google-apps.folder'",
                                       spaces=spaces,
                                       fields=FIEDS,
@@ -104,7 +106,7 @@ async def find_folder_by_name(service, name, spaces='drive'):
     found_folders_by_name = get_folder.get('files', [])
 
     for folder in found_folders_by_name:
-        logger.info(f"File name: {folder.get('name')} File id: {folder.get('id')}")
+        logger.debug(f"File name: {folder.get('name')} File id: {folder.get('id')}")
 
     if len(found_folders_by_name) == 1:
         return found_folders_by_name.get('id')
@@ -168,16 +170,17 @@ async def q_request_constructor(*, name: str = None, is_folder: bool = None, par
     return q
 
 
-async def params_constructor(q: list = None, spaces=None, page_size: int = 100, order_by=None, p_fields: str = None,
-                             files: str = None):
+async def params_constructor(q: list = None, spaces: str = None, page_size: int = 100,
+                             order_by: str = None, p_fields: str = None, files: str = None) -> dict:
     """Конструктор параметров запроса
+
+    :param q:
     :param files:
     :param p_fields:
     :param order_by:
-    :param page_size:
+    :param page_size: количество запросов
     :param spaces:
-    :param q:
-    :return:
+    :return: dict с вложенными запросами
     """
 
     params = {'pageToken': None, 'pageSize': page_size}
@@ -201,9 +204,11 @@ async def params_constructor(q: list = None, spaces=None, page_size: int = 100, 
     return params
 
 
-async def find_files_by_params(drive_service, *, params: dict) -> list:
+async def find_files_by_params(drive_service: object, *, params: dict) -> list:
     """Поиск на drive_service по заданным параметрам
-    :return:
+    :param drive_service: объект авторизации
+    :param params: dict  с параметрами запроса
+    :return: list с найденными файлами или [ ]
     """
     try:
 
@@ -229,16 +234,24 @@ async def find_files_by_params(drive_service, *, params: dict) -> list:
         return []
 
 
-async def find_files_or_folders_list_by_parent_id(drive_service, folder_id, is_folder=True,
-                                                  mime_type='application/vnd.google-apps.folder') -> list:
+async def find_files_or_folders_list_by_parent_id(drive_service: object, folder_id: str, is_folder: bool = True,
+                                                  mime_type: str = 'application/vnd.google-apps.folder') -> list:
+    """Поиск директорий или файлов в родительской директории folder_id
+
+    :param drive_service: объект авторизации
+    :param folder_id:
+    :param is_folder:
+    :param mime_type:
+    """
     if not drive_service:
         return []
 
-    q = await q_request_constructor(is_folder=is_folder,
-                                    parent=folder_id,
-                                    mime_type=mime_type
-                                    )
+    q = await q_request_constructor(
+        is_folder=is_folder,
+        parent=folder_id,
+        mime_type=mime_type
+    )
     params = await params_constructor(q=q, spaces="drive")
-    v_files = await find_files_by_params(drive_service, params=params)
+    v_files = await find_files_by_params(drive_service=drive_service, params=params)
 
     return v_files

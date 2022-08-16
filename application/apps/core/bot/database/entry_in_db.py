@@ -4,10 +4,11 @@ from loader import logger
 from apps.core.bot.database.DataBase import DataBase
 
 
-async def entry_in_db(*, violation_data) -> bool:
-    """Поиск в database
+async def write_data_in_database(*, violation_data: dict) -> bool:
+    """Поиск записи по file_id в database
+
     :param violation_data:
-    :return:
+    :return: True or False
     """
 
     if not violation_data.get('file_id'):

@@ -6,10 +6,11 @@ from pandas import DataFrame
 from apps.core.bot.utils.json_worker.read_json_file import read_json_file
 
 
-async def create_dataframe_from_data(data) -> Optional[DataFrame]:
+async def create_dataframe_from_data(data: list) -> Optional[DataFrame]:
     """Создание dataframe из списка файлов file_list
-    :param data:
-    :return:
+
+    :param data: list с данными
+    :return: data or None
     """
 
     column_list = [

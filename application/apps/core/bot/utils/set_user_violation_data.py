@@ -11,12 +11,12 @@ from loader import logger
 
 import apps.core.bot.data.board_config
 from apps.core.bot.data.report_data import violation_data
-from apps.core.bot.database.entry_in_db import entry_in_db
+from apps.core.bot.database.entry_in_db import write_data_in_database
 
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.utils.del_messege import cyclical_deletion_message
 from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.set_user_violation_data_on_google_drave import \
-    set_user_violation_data_on_google_drive, JSON_FOLDER_NAME, PHOTO_FOLDER_NAME, REPORT_FOLDER_NAME
+    write_violation_data_on_google_drive, JSON_FOLDER_NAME, PHOTO_FOLDER_NAME, REPORT_FOLDER_NAME
 from apps.core.bot.utils.json_worker.writer_json_file import write_json_violation_user_file
 
 
@@ -29,7 +29,7 @@ async def pre_set_violation_data(message: types.Message):
     stop_violation_id = apps.core.bot.data.board_config.stop_violation_mes_id = message.message_id + 3
     logger.info(f"start_violation message.from_user.id {stop_violation_id}")
 
-    if not await preparing_data_for_loading(chat_id=chat_id):
+    if not await preparing_data_for_loading(user=chat_id):
         return False
 
     await set_violation_data(chat_id=chat_id)
@@ -40,9 +40,19 @@ async def pre_set_violation_data(message: types.Message):
     await cyclical_deletion_message(chat_id=chat_id)
 
 
-async def preparing_data_for_loading(chat_id, drive_service=None) -> dict:
-    if not drive_service:
-        drive_service = await drive_account_auth_with_oauth2client()
+async def preparing_data_for_loading(user: str, drive_service: object = None) -> dict:
+    """ Получение id основных папок для chat_id для загрузки в облачный репозиторий
+
+    Подготовка данных к загрузке на Google Drive
+
+    Дополнение violation_data
+
+    :param user: id пользователя
+    :param drive_service: объект авторизации
+
+    :return: {'user_folder_id', 'json_folder_id', 'photo_folder_id', 'report_folder_id',} or {}
+    """
+    if not drive_service: drive_service = await drive_account_auth_with_oauth2client()
 
     if not drive_service:
         logger.error(f"drive_service is empty {drive_service = }")
@@ -54,7 +64,7 @@ async def preparing_data_for_loading(chat_id, drive_service=None) -> dict:
         return {}
 
     user_folder_id = await get_user_folder_id(drive_service=drive_service,
-                                              root_folder_name=str(chat_id),
+                                              root_folder_name=str(user),
                                               parent_id=root_folder_id, )
 
     json_folder_id = await get_json_folder_id(drive_service=drive_service,
@@ -88,16 +98,16 @@ async def preparing_data_for_loading(chat_id, drive_service=None) -> dict:
     }
 
 
-async def set_violation_data(*, chat_id):
-    """запись нарушения на Google Drive
+async def set_violation_data(*, chat_id: str):
+    """Запись и сохранение данных в local storage, database, Google Drive
     """
 
     if await write_json_violation_user_file(data=violation_data):
-        logger.info(f"Данные сохранены на pc в файл {violation_data['json_full_name']}")
+        logger.info(f"Данные сохранены в local storage {violation_data['json_full_name']}")
 
-    if await set_user_violation_data_on_google_drive(chat_id=chat_id, violation_data=violation_data):
+    if await write_violation_data_on_google_drive(chat_id=chat_id, violation_data=violation_data):
         logger.info(f"Данные сохранены в Google Drive в директорию \n"
                     f"https://drive.google.com/drive/folders/{violation_data['json_folder_id']}")
 
-    if await entry_in_db(violation_data=violation_data):
-        logger.info(f"Данные сохранены в local DB в файл {DataBase().db_file}")
+    if await write_data_in_database(violation_data=violation_data):
+        logger.info(f"Данные сохранены в database в файл {DataBase().db_file}")

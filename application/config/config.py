@@ -23,6 +23,7 @@ except EnvError as env_err:
         quit()
 
 ADMIN_ID: str = env("ADMINS_ID")
+ADMIN_EMAIL: str = env("ADMIN_EMAIL")
 DEVELOPER_ID: int = env("DEVELOPER_ID")
 DEVELOPER_EMAIL: str = env("DEVELOPER_EMAIL")
 

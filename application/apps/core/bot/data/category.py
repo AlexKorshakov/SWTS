@@ -166,13 +166,14 @@ ALL_CATEGORY_IN_DB: dict = {
 }
 
 
-def get_data_list(name: str = None) -> list:
-    """ Функция получения настроек из файла json.
-    :return: list
+def get_data_list(category_name: str = None) -> list:
+    """ Функция получения настроек.
+
+    :return: data_list or [ ]
     """
     data_list = []
 
-    db_table_name = ALL_CATEGORY_IN_DB[name]
+    db_table_name = ALL_CATEGORY_IN_DB[category_name]
     if not db_table_name:
         return []
 
@@ -186,7 +187,7 @@ def get_data_list(name: str = None) -> list:
             return data_list
 
     if not data_list:
-        data_list = get_data_from_json(name=name)
+        data_list = get_data_from_json(name=category_name)
         logger.debug(f'retrieved data from json: {datas_query}')
         return data_list
 
@@ -217,5 +218,5 @@ def get_data_from_json(name):
 if __name__ == "__main__":
 
     for item in ALL_CATEGORY_IN_DB:
-        datas = get_data_list(name=item)
+        datas = get_data_list(category_name=item)
         pprint(datas)

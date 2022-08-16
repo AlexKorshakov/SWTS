@@ -6,9 +6,13 @@ from apps.core.bot.messages.messages import Messages
 
 async def bild_inlinekeyboar(message: types.Message, *, some_list, num_col=1) -> None:
     """Создание кнопок в чате для пользователя на основе some_list.
-    Колличество кнопок = колличество элементов в списке some_list
+
+    Количество кнопок = количество элементов в списке some_list
+
     Расположение в n_cols столбцов
+
     Текст на кнопках text=ss
+
     Возвращаемое значение, при нажатии кнопки в чате callback_data=ss
     """
 

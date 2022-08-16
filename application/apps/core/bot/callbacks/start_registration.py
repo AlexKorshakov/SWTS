@@ -15,6 +15,6 @@ async def callbacks_start_registration(call: types.CallbackQuery, callback_data:
     """
     action = callback_data["action"]
     if action == "start_registration":
-        logger.info(f'User @{call.message.from_user.username}:{call.message.from_user.id} начало регистрации')
+        logger.info(f'User @{call.message.chat.username}:{call.message.chat.id} начало регистрации')
         await bild_inlinekeyboar(call.message, some_list=MAIN_CATEGORY)
     await call.answer()

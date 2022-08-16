@@ -1,5 +1,8 @@
+from config.config import ADMIN_EMAIL
+
+
 async def get_user_permissions(drive_service, file_id: str):
-    """Получение прав на редактирование файла или папки
+    """Получение прав на редактирование файла или папки для администратора ADMIN_EMAIL
     :param drive_service:
     :param file_id:
     :return: access
@@ -7,7 +10,7 @@ async def get_user_permissions(drive_service, file_id: str):
 
     user_permission = {'type': 'user',
                        'role': 'writer',
-                       'emailAddress': 'kokkaina13@gmail.com'}
+                       'emailAddress': ADMIN_EMAIL}
 
     access = drive_service.permissions().create(fileId=file_id,
                                                 body=user_permission,
@@ -25,7 +28,7 @@ async def gaining_access_drive(service, folder_id):
 
     body = {'type': 'user',
             'role': 'owner',
-            'emailAddress': 'kokkaina13@gmail.com'}
+            'emailAddress': ADMIN_EMAIL}
 
     access = service.permissions().create(fileId=folder_id,
                                           transferOwnership=True,

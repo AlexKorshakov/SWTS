@@ -1,13 +1,12 @@
-from loader import logger
-
 from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.GoogleDriveWorker import drive_account_auth_with_oauth2client, \
     move_file
 from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.folders_deleter import del_by_name_old_data_google_drive
 from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.get_folder_id import get_root_folder_id, get_user_folder_id, \
     get_report_folder_id
 from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.set_permissions import get_user_permissions
-from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.upload_data_on_gdrive import upload_report_file_on_gdrave
+from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.upload_data_on_gdrive import upload_file_on_gdrave
 from apps.core.bot.utils.goolgedrive.googledrive_worker import ROOT_REPORT_FOLDER_NAME
+from loader import logger
 
 REPORT_FOLDER_NAME = "reports"
 
@@ -44,10 +43,10 @@ async def set_user_report_data_on_google_drive(*, chat_id, full_report_path: str
                                             parent=report_folder_id,
                                             name=report_name)
 
-    report_file_id = await upload_report_file_on_gdrave(chat_id=chat_id,
-                                                        drive_service=drive_service,
-                                                        parent=report_folder_id,
-                                                        file_path=full_report_path)
+    report_file_id = await upload_file_on_gdrave(chat_id=chat_id,
+                                                 drive_service=drive_service,
+                                                 parent=report_folder_id,
+                                                 file_path=full_report_path)
 
     await get_user_permissions(drive_service=drive_service, file_id=report_file_id)
 

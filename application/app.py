@@ -1,7 +1,6 @@
 import asyncio
 import os
 from multiprocessing import Process
-from contextlib import suppress
 from pathlib import Path
 
 import uvicorn
