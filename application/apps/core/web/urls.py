@@ -1,8 +1,10 @@
+from django.template.context_processors import request
 from django.urls import path
 
 from .views import HomeViolations, ViewViolations, ViolationsByMainCategory, ViolationsByLocation, \
-    ViolationsByGeneralContractor, ViolationsByIncidentLevel, ViolationsByStatus, user_login, user_logout, register
-from .views import test, simple_view, upload, delete_violations, update_violations
+    ViolationsByGeneralContractor, ViolationsByIncidentLevel, ViolationsByStatus, user_login, user_logout, register, \
+    post_edit, PostEdit
+from .views import test, simple_view, upload_too_db_from_local_storage, delete_violations, update_violations
 
 # Register your urls here
 
@@ -23,14 +25,17 @@ urlpatterns = [
          name='status'),
 
     # запуск скрипта по нажатию кнопки из base.html
-    path('upload/', upload, name='upload'),
+    path('upload/', upload_too_db_from_local_storage, name='upload'),
     # запуск скрипта по нажатию кнопки из violations_detail.html
     path('update_violations/', update_violations, name='update_violations'),
+
+    path('post_edit/<int:violations_id>/', post_edit, name='post_edit'),
+
     path('delete_violations/', delete_violations, name='delete_violations'),
 
-    path('news/register/', register, name='register'),
-    path('news/login/', user_login, name='login'),
-    path('news/logout/', user_logout, name='logout'),
+    path('register/', register, name='register'),
+    path('login/', user_login, name='login'),
+    path('logout/', user_logout, name='logout'),
 
     path('test/', test, name='test'),
 ]

@@ -105,8 +105,13 @@
                 {% endcomment %}
 
                 <div class="box">
-                    <form action="{% url 'update_violations' %}" method="POST">
+                    {% comment %}
+                    <form action="{% url 'update_violations' %}" method="POST"></form>
+                    {% endcomment %}
+
+                    <form action="{% url 'post_edit' violations_id=violations_item.pk %}" method="POST">
                         {% csrf_token %}
+
                         <button style="--clr:#4cd80f" type="submit">Редактировать</button>
                     </form>
 

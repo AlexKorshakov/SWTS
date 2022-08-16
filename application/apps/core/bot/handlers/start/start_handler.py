@@ -30,7 +30,7 @@ async def start(message: types.Message):
     user_data["user_id"] = user_id
     user_data['reg_user_file'] = await get_user_registration_file(user_id=user_id)
 
-    await create_file_path(user_path=user_data['reg_user_file'])
+    await create_file_path(path=user_data['reg_user_file'])
 
     logger.info(f'User @{message.from_user.username}:{message.from_user.id} start work')
     await message.answer(f'{Messages.hi}, {message.from_user.full_name}!')
