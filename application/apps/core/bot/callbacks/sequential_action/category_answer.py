@@ -10,6 +10,7 @@ from apps.core.bot.utils.json_worker.writer_json_file import write_json_file
 from apps.core.bot.messages.messages import Messages
 
 from loader import logger
+
 logger.debug("category_answer")
 
 
@@ -17,22 +18,34 @@ logger.debug("category_answer")
 async def category_answer(call: types.CallbackQuery):
     """Обработка ответов содержащихся в CATEGORY_LIST
     """
-    for i in get_data_list("CATEGORY"):
+    if call.data in get_data_list("CATEGORY"):
         try:
-            if call.data == i:
-                logger.debug(f"Выбрано: {i}")
-                violation_data["category"] = i
-                await call.message.answer(text=f"Выбрано: {i}")
-                await write_json_file(data=violation_data, name=violation_data["json_full_name"])
 
-                await call.message.edit_reply_markup()
-                menu_level = board_config.menu_level = 1
-                menu_list = board_config.menu_list = get_data_list("VIOLATION_CATEGORY")
+            logger.debug(f"Выбрано: {call.data}")
+            violation_data["category"] = call.data
+            await call.message.answer(text=f"Выбрано: {call.data}")
+            await write_json_file(data=violation_data, name=violation_data["json_full_name"])
 
-                reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level)
-                await call.message.answer(text=Messages.Choose.violation_category, reply_markup=reply_markup)
+            await call.message.edit_reply_markup()
 
-                break
+            data_list = get_data_list("NORMATIVE_DOCUMENTS",
+                                      category=violation_data["category"],
+                                      condition='short_title'
+                                      )
+            item_list = get_data_list("NORMATIVE_DOCUMENTS",
+                                      category=violation_data["category"],
+                                      condition='data_list'
+                                      )
+            menu_level = board_config.menu_level = 1
+            menu_list = board_config.menu_list = data_list
+
+            ziped_list: list = zip(data_list, item_list)
+
+            text = f'{Messages.Choose.normative_documents} \n\n' + \
+                   ' \n\n'.join(str(item[0]) + " : " + str(item[1]) for item in ziped_list)
+
+            reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=2, level=menu_level)
+            await call.message.answer(text=text, reply_markup=reply_markup)
 
         except Exception as callback_err:
             logger.error(f"{repr(callback_err)}")
