@@ -30,6 +30,7 @@ def create_folder(service, folder_name, parent_id=None):
 
 async def create_directory_on_google_drive(drive_service, directory_name, parent_id: str = "") -> str:
     """Создание директории на Google Drive
+
     :param drive_service:
     :param directory_name: имя директории
     :param parent_id: id родительской директории
@@ -54,6 +55,7 @@ async def create_directory_on_google_drive(drive_service, directory_name, parent
 
 async def create_user_permission(drive_service, file_id, user_email):
     """Назначение прав пользователя директории
+
     :param drive_service:
     :param file_id: id директории
     :param user_email:

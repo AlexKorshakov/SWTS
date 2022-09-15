@@ -5,31 +5,35 @@ from apiclient import errors
 
 from loader import logger
 
-FIEDS = 'nextPageToken, files(id, name)'
+FIEDS: str = 'nextPageToken, files(id, name)'
 
 
-async def find_folder_with_name_on_google_drive(drive_service, *, name: str, parent=None):
-    """Получение id папки по имени
+async def find_folder_with_name_on_google_drive(drive_service: object, *, name: str, parent: str = None):
+    """Получение списка файла по имени из всего пространства drive_service
+
+    :param parent: options родительская папка
+    :param name: имя файла для поиска
+    :param drive_service: объект авторизации
     """
-    q = f"name='{name}' and mimeType='application/vnd.google-apps.folder'"
+    q: str = f"name='{name}' and mimeType='application/vnd.google-apps.folder'"
 
     if parent:
-        q = f"name='{name}' and mimeType='application/vnd.google-apps.folder' and '{parent}' in parents"
+        q: str = f"name='{name}' and mimeType='application/vnd.google-apps.folder' and '{parent}' in parents"
 
-    get_folder = drive_service.files().list(
+    get_folder: dict = drive_service.files().list(
         q=q,
         spaces='drive',
         fields=FIEDS,
-        pageToken=None).execute()
+        pageToken=None
+    ).execute()
 
-    await asyncio.sleep(2)
+    found_folders_by_name: list = get_folder.get('files', [])
 
-    found_folders_by_name = get_folder.get('files', [])
     for folder in found_folders_by_name:
         logger.debug(f"File name: {folder.get('name')} File id: {folder.get('id')}")
 
-    if len(found_folders_by_name) == 1:
-        return found_folders_by_name[0].get('id')
+    if len(found_folders_by_name):
+        return found_folders_by_name[0].get('id', None)
     else:
         return []
 
@@ -37,7 +41,7 @@ async def find_folder_with_name_on_google_drive(drive_service, *, name: str, par
 async def find_folder_with_drive_id(drive_service, drive_id, recursively=True):
     """Поиск папок в папке drive_id рекурсивно если recursively=True
 
-    :param drive_service:
+    :param drive_service: объект авторизации
     :param drive_id:
     :param recursively:
     :return:
@@ -58,41 +62,41 @@ async def find_folder_with_drive_id(drive_service, drive_id, recursively=True):
     return returnval
 
 
-async def find_all(service: object) -> list:
-    """Получение id папки по имени
-    """
-    while True:
-        get_folder = service.files().list().execute()
+# async def find_all(service: object) -> list:
+#     """Получение id папки по имени
+#     """
+#     while True:
+#         get_folder = service.files().list().execute()
+#
+#         found_folders = get_folder.get('items', [])
+#
+#         for file in found_folders:
+#             logger.debug(f"Found file: {file.get('name')} File id: {file.get('id')}")
+#
+#         page_token = get_folder.get('nextPageToken', None)
+#         if page_token is None:
+#             break
+#
+#     return found_folders
 
-        found_folders = get_folder.get('items', [])
 
-        for file in found_folders:
-            logger.debug(f"Found file: {file.get('name')} File id: {file.get('id')}")
-
-        page_token = get_folder.get('nextPageToken', None)
-        if page_token is None:
-            break
-
-    return found_folders
-
-
-async def find_all_folders(drive_service) -> List[Dict[str, str]]:
-    """Получение id папки по имени
-    """
-    page_token = None
-    while True:
-        get_folder = drive_service.files().list(q="mimeType='application/vnd.google-apps.folder'",
-                                                spaces='drive',
-                                                pageSize=400,
-                                                fields='nextPageToken, files(id, name, parents)',
-                                                pageToken=page_token).execute()
-
-        found_folders = get_folder.get('files', [])
-
-        page_token = get_folder.get('nextPageToken', None)
-        if page_token is None:
-            break
-    return found_folders
+# async def find_all_folders(drive_service) -> List[Dict[str, str]]:
+#     """Получение файлов / директорий по имени
+#     """
+#     page_token = None
+#     while True:
+#         get_folder = drive_service.files().list(q="mimeType='application/vnd.google-apps.folder'",
+#                                                 spaces='drive',
+#                                                 pageSize=400,
+#                                                 fields='nextPageToken, files(id, name, parents)',
+#                                                 pageToken=page_token).execute()
+#
+#         found_folders = get_folder.get('files', [])
+#
+#         page_token = get_folder.get('nextPageToken', None)
+#         if page_token is None:
+#             break
+#     return found_folders
 
 
 async def find_folder_by_name(service, name, spaces='drive'):
@@ -116,7 +120,7 @@ async def find_folder_by_name(service, name, spaces='drive'):
 
 async def find_file_by_name(service: object, name: str = None, is_folder: str = None, parent: str = None,
                             mime_type: str = 'application/vnd.google-apps.folder',
-                            order_by="folder,name"):
+                            order_by="folder,name") -> list:
     """Получение id папки по имени
     """
 
@@ -138,9 +142,9 @@ async def find_file_by_name(service: object, name: str = None, is_folder: str = 
     if q:
         params['q'] = ' and '.join(q)
 
-    get_folder = service.files().list(**params).execute()
+    get_folder: dict = service.files().list(**params).execute()
 
-    found_folders_by_name = get_folder.get('files', [])
+    found_folders_by_name: list = get_folder.get('files', [])
 
     return found_folders_by_name
 
@@ -148,6 +152,7 @@ async def find_file_by_name(service: object, name: str = None, is_folder: str = 
 async def q_request_constructor(*, name: str = None, is_folder: bool = None, parent: str = None,
                                 mime_type: str = 'application/vnd.google-apps.folder') -> list:
     """Конструктор q части запроса
+
     :param mime_type:
     :param is_folder: является ли папкой
     :param name:

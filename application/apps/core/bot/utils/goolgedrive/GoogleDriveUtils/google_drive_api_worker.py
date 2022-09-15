@@ -1,5 +1,6 @@
 async def drive_service_files_create(drive_service, file_metadata):
     """
+
     :param drive_service:
     :param file_metadata:
     :return:
@@ -9,7 +10,8 @@ async def drive_service_files_create(drive_service, file_metadata):
 
 async def driveservice_files_create(drive_service, body, media_body, fields='id'):
     """
-    :param drive_service:
+
+    :param drive_service: объект авторизации
     :param body:
     :param media_body:
     :param fields:
