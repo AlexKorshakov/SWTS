@@ -81,10 +81,12 @@ WSGI_APPLICATION = "config.web.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
+DB_NAME = 'UdocanHSEViolationsDataBase.db'
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR.parent.parent / 'HSEViolationsDataBase.db',
+        'NAME': BASE_DIR.parent.parent / DB_NAME,
     }
 }  # BASE_DIR = \\application\\config\\web
 

@@ -1,1 +1,50 @@
 {% extends 'base.html' %}
+
+
+{% block content %}
+<div class="card-container"style="column-count:1">
+    <div class="card" >
+
+        <div class="card-header">
+            <h4><font color="#fff">Планируемые обновления: </font></h4>
+        </div>
+
+        <div class="card-body">
+            <div class="media">
+                {% comment %}
+                <div class="media_container">
+                    {% if item.photo %}
+                    <img src="{{ item.photo.url }}" alt="" width="200" class="image" tabindex="0">
+                    {% else %}
+                    <img src="https://picsum.photos/id/1060/350/235/?blur=2" alt="" width="200" class="image"
+                         tabindex="0">
+                    {% endif %}
+                    <div class="con_overlay">{{ item.description }}</div>
+                </div>
+                {% endcomment %}
+
+                <div class="media-body">
+                    <div class="mt-9">
+                        <p>* Страница с progress при загрузке записей из local storage</p>
+                        <p>* Страница с progress при загрузке записей из google storage</p>
+                        <p>* Страница статистики</p>
+                        <p>* Страница добавления записей на странице view_violations.html</p>
+                        <p>* Добавить модель Workers</p>
+                        <p>* Добавить координаты в locations</p>
+                        <p>* Добавить модель normative_acts в модели и в бота</p>
+                        <br>
+                        <p>Исправить:</p>
+                        <p>* модель Violations</p>
+                        <p>* форму корректировки записи</p>
+                        <p>* форму добавления записи</p>
+                        <p>* Type hints</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<a href="{% url 'home' %}">
+    <a-button style="--clr:#1e9bff"><span>в реестр...</span></a-button>
+</a>
+{% endblock %}
