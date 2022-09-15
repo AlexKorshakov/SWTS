@@ -6,22 +6,10 @@ from pprint import pprint
 from apps.core.bot.database.db_utils import normalize_violation_data, write_json, data_violation_completion
 from apps.core.bot.utils.json_worker.read_json_file import read_json_file
 from apps.core.bot.utils.secondary_functions.get_json_files import get_files
+from config.web.settings import DB_NAME
 from loader import logger
 
 BASE_DIR = Path(__file__).resolve()
-
-# ALL_CATEGORY_IN_TABLES_DB: dict = {
-#     'main_category': 'core_maincategory',
-#     'location': 'core_location',
-#     'category': 'core_category',
-#     'violation_category': 'core_violationcategory',
-#     'general_contractor': 'core_generalcontractor',
-#     'act_required': 'core_actrequired',
-#     'incident_level': 'core_incidentlevel',
-#     'elimination_time': 'core_eliminationtime',
-#     'status': 'core_status',
-#     'work_shift': 'core_workshift',
-# }
 
 CATEGORY_ID_TRANSFORM: dict = {
     'main_category': {
@@ -42,6 +30,12 @@ CATEGORY_ID_TRANSFORM: dict = {
         'table': 'core_category',
         'description': 'Категория'
     },
+    'normative_documents': {
+        'item': 'normative_documents',
+        'column': 'normative_documents_id',
+        'table': 'core_normativedocuments',
+        'description': 'Под Категория'
+    },
     'violation_category': {
         'item': 'violation_category',
         'column': 'violation_category_id',
@@ -52,7 +46,8 @@ CATEGORY_ID_TRANSFORM: dict = {
         'item': 'general_contractor',
         'column': 'general_contractor_id',
         'table': 'core_generalcontractor',
-        'description': 'Подрядчик'
+        'description': 'Подрядчик',
+        'json_file_name': 'GENERAL_CONTRACTORS'
     },
     'act_required': {
         'item': 'act_required',
@@ -91,7 +86,7 @@ class DataBase:
 
     def __init__(self):
 
-        self.db_file: str = os.path.join(BASE_DIR.parent.parent.parent.parent.parent, 'HSEViolationsDataBase.db')
+        self.db_file: str = os.path.join(BASE_DIR.parent.parent.parent.parent.parent, DB_NAME)
         self.connection = sqlite3.connect(self.db_file)
         self.cursor = self.connection.cursor()
 
@@ -120,6 +115,7 @@ class DataBase:
             main_category VARCHAR NOT NULL,
             general_contractor VARCHAR NOT NULL,
             category VARCHAR NOT NULL,
+            normative_documents VARCHAR,
             comment VARCHAR NOT NULL,
             act_required VARCHAR NOT NULL,
             description VARCHAR NOT NULL,
@@ -134,7 +130,8 @@ class DataBase:
             json_full_name VARCHAR,
             photo_file_path VARCHAR,
             photo_folder_id VARCHAR (100) NOT NULL,
-            photo_full_name VARCHAR)
+            photo_full_name VARCHAR
+            )
             """
         )
 
@@ -175,6 +172,12 @@ class DataBase:
             entry=violation.get("category", None),
             file_id=file_id,
             name='category'
+        )
+        normative_documents_id = self.get_id(
+            table='core_normativedocuments',
+            entry=violation.get("normative_documents", None),
+            file_id=file_id,
+            name='normative_documents'
         )
         act_required_id = self.get_id(
             table='core_actrequired',
@@ -263,16 +266,18 @@ class DataBase:
                     "INSERT INTO `core_violations` (`location_id`,`work_shift_id` ,`function` ,`name` ,`parent_id`,"
                     "`violation_id`, `user_id`, `user_fullname`, `report_folder_id`, `file_id`, `is_published`,"
                     "`day`,`month`, `year`, `title`, `photo`,`created_at`,`updated_at`, `is_finished`,"
-                    "`main_category_id`,`general_contractor_id`,`category_id`,`comment`,`act_required_id`,"
+                    "`main_category_id`,`general_contractor_id`,`category_id`,`normative_documents_id`,`comment`,"
+                    "`act_required_id`,"
                     "`description`,`elimination_time_id`,`incident_level_id`,`violation_category_id`, `coordinates`,"
                     "`latitude`,`longitude`,`json_folder_id`,`json_file_path`,`json_full_name`,"
                     "`photo_file_path`,`photo_folder_id`,`photo_full_name`,`json`, `status_id`)"
-                    "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                     (
                         location_id, work_shift_id, function, name, parent_id,
                         violation_id, user_id, user_fullname, report_folder_id, file_id, is_published,
                         day, month, year, title, photo, created_at, updated_at, is_finished,
-                        main_category_id, general_contractor_id, category_id, comment, act_required_id,
+                        main_category_id, general_contractor_id, category_id, normative_documents_id, comment,
+                        act_required_id,
                         description, elimination_time_id, incident_level_id, violation_category_id, coordinates,
                         latitude, longitude, json_folder_id, json_file_path, json_full_name,
                         photo_file_path, photo_folder_id, photo_full_name, json, status_id
@@ -324,11 +329,17 @@ class DataBase:
 
             return result[0][0]
 
-    def get_table_headers(self) -> list[str]:
+    def get_table_headers(self, table_name: str = None) -> list[str]:
         """Получение всех заголовков таблицы core_violations
 
         :return: list[ ... ]
         """
+        if table_name:
+            query: str = f"PRAGMA table_info('{table_name}')"
+            with self.connection:
+                result = self.cursor.execute(query).fetchall()
+                return result
+
         with self.connection:
             result = self.cursor.execute("PRAGMA table_info('core_violations')").fetchall()
             return result
@@ -394,6 +405,20 @@ class DataBase:
             self.cursor.execute(query, (value, id,))
         self.connection.commit()
 
+    def get_full_title(self, table_name: str, short_title: str):
+        """Получение полного имени из короткого
+
+        :param short_title: данные для поиска (короткое имя)
+        :param table_name:имя таблицы для запроса
+        """
+
+        query: str = f'SELECT * FROM {table_name}'
+
+        datas_query: list = self.get_data_list(query=query)
+        full_title = [item[1] for item in datas_query if item[2] == short_title][0]
+
+        return full_title
+
 
 # async def get_entry(violation, query, user_data_json_file) -> int:
 #     table = ALL_CATEGORY_IN_TABLES_DB[query]
@@ -448,16 +473,57 @@ async def google_drive_to_local():
     """Синхронизация google_drive -> media"""
     pass
 
-# if __name__ == '__main__':
-# user_chat_id = '373084462'
-# params: dict = {
-#     'all_files': True,
-#     'file_path': f"C:/Users/KDeusEx/PycharmProjects/SWTS/application/media/{user_chat_id}/data_file/",
-#     'user_file': f"C:/Users/KDeusEx/PycharmProjects/SWTS/application/media/{user_chat_id}/{user_chat_id}.json"
-# }
 
-# asyncio.run(sync_local_to_google_drive())
-# print(f'count_violations {DataBase().count_violations()}')
+if __name__ == '__main__':
+    user_chat_id = '373084462'
+    params: dict = {
+        'all_files': True,
+        'file_path': f"C:/Users/KDeusEx/PycharmProjects/SWTS/application/media/{user_chat_id}/data_file/",
+        'user_file': f"C:/Users/KDeusEx/PycharmProjects/SWTS/application/media/{user_chat_id}/{user_chat_id}.json"
+    }
+    # file: str = f'C:/Users/KDeusEx/PycharmProjects/SWTS/application/media/{user_chat_id}/' \
+    #             f'data_file/report_data___14.09.2022___373084462___23815.json'
+    violation: dict = {
+        "act_required": "Не требуется*",
+        "category": "Электробезопасность",
+        "comment": "олыкраппк",
+        "data": "14:09:2022",
+        "day": "14",
+        "description": "оыврмоы",
+        "elimination_time": "1 день",
+        "file_id": "14.09.2022___373084462___23815",
+        "function": "Специалист 1й категории",
+        "general_contractor": "ООО Удоканская Медь",
+        "incident_level": "Без последствий",
+        "json_file_path": "C:\\Users\\KDeusEx\\PycharmProjects\\SWTS\\application\\media\\373084462\\data_file\\14.09.2022\\json\\",
+        "json_folder_id": "1F0veHLGWg0cVNUUu9XEXG1IGSzbUYzfb",
+        "json_full_name": "C:\\Users\\KDeusEx\\PycharmProjects\\SWTS\\application\\media\\373084462\\data_file\\14.09.2022\\json\\report_data___14.09.2022___373084462___23815.json",
+        "location": "Ст. Текстильщики, пл. 7",
+        "main_category": "Охрана труда",
+        "month": "09",
+        "name": "Коршаков Алексей Сергеевич",
+        "normative_documents": "По окончании работы неиспользуемый баллон(-ы) с газом(-ами)  хранятся с неснятым редуктором и шлангом",
+        "normative_documents_normative": "Правила по охране труда при выполнении электросварочных и газосварочных работ, (утв. Приказом Минтруда от 11 декабря 2020 г. N 884н) п.117",
+        "normative_documents_procedure": "Провести внеплановый инструктаж сотрудникам",
+        "now": "2022-09-14 11:54:28.323981",
+        "parent_id": "11tgNSKSNSuXZQDauWZkB87pybkTkHtjn",
+        "photo_file_path": "C:\\Users\\KDeusEx\\PycharmProjects\\SWTS\\application\\media\\373084462\\data_file\\14.09.2022\\photo\\",
+        "photo_folder_id": "1hJJpuq3bqGJ8kT5QTHtvz6SoDFBnYORk",
+        "photo_full_name": "C:\\Users\\KDeusEx\\PycharmProjects\\SWTS\\application\\media\\373084462\\data_file\\14.09.2022\\photo\\report_data___14.09.2022___373084462___23815.jpg",
+        "report_folder_id": "1jqPlTNt2S0sjj4Rjq0-tIqSG36DTsRJR",
+        "status": "В работе",
+        "user_fullname": "Alex Kor",
+        "user_id": 373084462,
+        "violation_category": "Опасные действия*",
+        "violation_id": 23815,
+        "work_shift": "Ночная смена",
+        "year": "2022"
+    }
+
+    DataBase().add_violation(violation=violation)
+
+    # asyncio.run(sync_local_to_google_drive())
+    # print(f'count_violations {DataBase().count_violations()}')
 
 # work_shift_id = DataBase().get_work_shift_id(violation.get("work_shift", None))
 # main_category_id = DataBase().get_main_category_id(violation.get('main_category', None))

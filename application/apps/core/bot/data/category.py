@@ -3,6 +3,7 @@ import json
 import os.path
 from json import JSONDecodeError
 from pprint import pprint
+from typing import Union
 
 from apps.core.bot.database.DataBase import DataBase
 from loader import logger
@@ -153,45 +154,201 @@ ALL_CATEGORY: dict = {
     'ADMIN_MENU_LIST': ADMIN_MENU_LIST,
 }
 
-ALL_CATEGORY_IN_DB: dict = {
-    'MAIN_CATEGORY': 'core_maincategory',
-    'CATEGORY': 'core_category',
-    'VIOLATION_CATEGORY': 'core_violationcategory',
-    'GENERAL_CONTRACTORS': 'core_generalcontractor',
-    'ACT_REQUIRED': 'core_actrequired',
-    'INCIDENT_LEVEL': 'core_incidentlevel',
-    'ELIMINATION_TIME': 'core_eliminationtime',
-    'LOCATIONS': 'core_location',
-
-}
+_PREFIX_ND: str = 'nrm_doc_'
 
 
-def get_data_list(category_name: str = None) -> list:
-    """ Функция получения настроек.
-
-    :return: data_list or [ ]
+def convert_category_name(category_in_db: str) -> str:
     """
-    data_list = []
 
-    db_table_name = ALL_CATEGORY_IN_DB[category_name]
-    if not db_table_name:
+    :param category_in_db:
+    :return:
+    """
+    all_category_in_db: dict = {
+        'MAIN_CATEGORY': 'core_maincategory',
+        'CATEGORY': 'core_category',
+        'VIOLATION_CATEGORY': 'core_violationcategory',
+        'GENERAL_CONTRACTORS': 'core_generalcontractor',
+        'ACT_REQUIRED': 'core_actrequired',
+        'INCIDENT_LEVEL': 'core_incidentlevel',
+        'ELIMINATION_TIME': 'core_eliminationtime',
+        'LOCATIONS': 'core_location',
+        'NORMATIVE_DOCUMENTS': 'core_normativedocuments'
+
+    }
+
+    db_table_name = all_category_in_db[category_in_db]
+    return db_table_name
+
+
+def add_null_value_to_ziped_list(zip_list: list) -> list:
+    """
+    
+    :param zip_list: 
+    :return: 
+    """
+
+    zip_list.append(
+        {
+            'title': 'Нет нужной записи'
+        }
+    )
+
+    return zip_list
+
+
+def add_null_value_to_list(zip_list: list, condition) -> list:
+    """
+
+    :param zip_list:
+    :return:
+    """
+
+    if condition == 'data_list':
+        zip_list.append(f'Нет нужной записи')
+
+    if condition == 'short_title':
+        zip_list.append(_PREFIX_ND + '0')
+
+    return zip_list
+
+
+def get_category_data_list_whits_single_condition(db_table_name, category_id, single_condition) -> list:
+    """ Получение данных если single_condition
+
+    :return:
+    """
+    query: str = f'SELECT * FROM {db_table_name} WHERE `category_id` == {category_id}'
+    datas_query: list = DataBase().get_data_list(query=query)
+
+    if not datas_query:
+        return []
+    if not isinstance(datas_query, list):
         return []
 
-    query: str = f'SELECT * FROM {db_table_name}'
+    if single_condition == 'short_title':
+        clean_datas_query: list = [_PREFIX_ND + str(item[0]) for item in datas_query]
+        return clean_datas_query
 
+    if single_condition == 'data_list':
+        clean_datas_query: list = [item[2] for item in datas_query]
+        return clean_datas_query
+
+
+def get_category_data_list_whits_dict_condition(db_table_name, dict_condition) -> list:
+    """ Получение данных если single_condition
+
+    :return:
+    """
+
+    if not isinstance(dict_condition, dict):
+        return []
+
+    if not dict_condition.get("data", None):
+        return []
+
+    item_id = dict_condition.get("data", None).replace(_PREFIX_ND, '')
+
+    # category_in_db = dict_condition.get("category_in_db", None)
+    # category_name = dict_condition.get("category_name", None)
+
+    query: str = f'SELECT * FROM {db_table_name} WHERE `id` == {item_id}'
     datas_query: list = DataBase().get_data_list(query=query)
+
+    if not datas_query:
+        return []
+    if not isinstance(datas_query, list):
+        return []
+
+    table_headers = DataBase().get_table_headers(table_name=db_table_name)
+    headers = [item[1] for item in table_headers]
+    item_datas = list(datas_query[0])
+
+    data_dict: dict = {}
+    for header, item_data in zip(headers, item_datas):
+        data_dict[header] = item_data
+
+    condition = dict_condition.get("condition", None)
+    if not condition:
+        return [data_dict]
+
+
+def get_category_data_list_whits_condition(db_table_name: str, category, condition: Union[str, dict]) -> list:
+    """Получение
+    :type condition: Union[str, dict]
+
+    """
+    category_id = DataBase().get_id(table='core_category', entry=category)
+    if not category_id:
+        return []
+
+    if isinstance(condition, str):
+        datas_from_bd: list = get_category_data_list_whits_single_condition(db_table_name=db_table_name,
+                                                                            category_id=category_id,
+                                                                            single_condition=condition)
+        datas_from_bd = add_null_value_to_list(datas_from_bd, condition)
+        return datas_from_bd
+
+    if isinstance(condition, dict):
+        datas_from_bd = get_category_data_list_whits_dict_condition(db_table_name=db_table_name,
+                                                                    dict_condition=condition)
+        datas_from_bd = add_null_value_to_ziped_list(datas_from_bd)
+        return datas_from_bd
+    return []
+
+
+def get_data_from_db(db_table_name: str) -> list:
+    """Получение
+    """
+
+    query: str = f'SELECT * FROM {db_table_name}'
+    datas_query: list = DataBase().get_data_list(query=query)
+    headers: list = [item[1] for item in DataBase().get_table_headers(table_name=db_table_name)]
+
+    if not isinstance(datas_query, list):
+        return []
+
+    if 'short_title' in headers:
+        data_list = [data[2] for data in datas_query]
+        return data_list
+
     if datas_query:
         logger.debug(f'retrieved data from database: {datas_query}')
-        if isinstance(datas_query, list):
-            data_list = [data[1] for data in datas_query]
-            return data_list
-
-    if not data_list:
-        data_list = get_data_from_json(name=category_name)
-        logger.debug(f'retrieved data from json: {datas_query}')
+        data_list = [data[1] for data in datas_query]
         return data_list
 
     return []
+
+
+def get_data_list(category_in_db: str = None, category: str = None, condition: Union[str, dict] = None) -> list:
+    """ Функция получения данных из базы данных. При отсутствии данных поиск в json.
+    При наличии condition - формирование данных согласно  condition
+
+    :type condition: Union[str, dict]
+    :return: data_list or [ ]
+    """
+
+    db_table_name = convert_category_name(category_in_db)
+    if not db_table_name:
+        return []
+
+    if category and condition:
+        clean_datas_query = get_category_data_list_whits_condition(
+            db_table_name=db_table_name, category=category,
+            condition=condition
+        )
+        logger.debug(f'get_category_data_list from db with condition: {clean_datas_query}')
+        return clean_datas_query
+
+    data_list = get_data_from_db(db_table_name=db_table_name)
+
+    if data_list:
+        logger.debug(f'get data from db: {data_list}')
+        return data_list
+
+    if not data_list:
+        data_list = get_data_from_json(name=category_in_db)
+        logger.debug(f'retrieved data from json:')
+        return data_list
 
 
 def get_data_from_json(name):
@@ -216,7 +373,62 @@ def get_data_from_json(name):
 
 
 if __name__ == "__main__":
+    # for item in ALL_CATEGORY_IN_DB:
+    #     datas = get_data_list(category_name=item)
+    #
+    #     for i in datas:
+    #         if len(i.encode('utf-8')) > 62:
+    #             print(f" {i} : {len(i.encode('utf-8'))}")
+    #
+    #             while int(len(i.encode('utf-8'))) > 62:
+    #                 i = i[:-1]
+    #                 print(f" {i} : {len(i.encode('utf-8'))}")
+    #
+    #             i = i[:-2] + '...'
+    #             print(f" {i} : {len(i.encode('utf-8'))}")
 
-    for item in ALL_CATEGORY_IN_DB:
-        datas = get_data_list(category_name=item)
-        pprint(datas)
+    # pprint(datas)
+
+    # data_list: list = get_data_list(category_name='NORMATIVE_DOCUMENTS', category='Промышленная безопасность_')
+    #
+    # pprint(data_list)
+    category = 'Замкнутые пространства'
+
+    dict_condition: dict = {
+        # "condition": "short_title",
+        "data": _PREFIX_ND + '11',
+        "category_in_db": "NORMATIVE_DOCUMENTS",
+        # "category_name": violation_data["category"]
+    }
+
+    # menu_list: list = get_data_list("NORMATIVE_DOCUMENTS",
+    #                                 category=category,
+    #                                 condition='short_title'
+    #                                 )
+    # item_list: list = get_data_list("NORMATIVE_DOCUMENTS",
+    #                                 category=category,
+    #                                 condition='data_list'
+    #                                 )
+    # ziped_list: list = zip(menu_list, item_list)
+    #
+    #
+    # text = f'{"Выберете нарушение нажав на кнопку соответствующего нарушения."}\n \n' + \
+    #        ' \n'.join(str(item[0]) + " : " + str(item[1]) for item in ziped_list)
+    # print(text)
+
+    nd_data: list = get_data_list("NORMATIVE_DOCUMENTS",
+                                  category=category,
+                                  condition=dict_condition
+                                  )
+    pprint(nd_data)
+
+    if not nd_data:
+        quit()
+
+    violation_data = {
+        "normative_documents": nd_data[0].get('title', None),
+        "normative_documents_normative": nd_data[0].get('normative', None),
+        "normative_documents_procedure": nd_data[0].get('procedure', None)
+    }
+
+    pprint(violation_data)

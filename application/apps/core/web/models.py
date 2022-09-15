@@ -6,7 +6,9 @@ from django.urls import reverse
 class Violations(models.Model):
     """Основная модель Описывающая все поля для Нарушения"""
 
-    location = models.ForeignKey(to='Location', on_delete=models.PROTECT, verbose_name='Площадка', default='')
+    location = models.ForeignKey(to='Location', on_delete=models.PROTECT, verbose_name='Закрепленный участок',
+                                 default='')
+
     function = models.CharField(max_length=255, verbose_name='Должность', default='')
     name = models.CharField(max_length=255, verbose_name='ФИО', default='')
     work_shift = models.ForeignKey(to='WorkShift', on_delete=models.PROTECT, verbose_name='Смена', default='')
@@ -29,6 +31,8 @@ class Violations(models.Model):
                                            default='')
 
     category = models.ForeignKey(to='Category', on_delete=models.PROTECT, verbose_name='Категория', default='')
+    normative_documents = models.ForeignKey(to='NormativeDocuments', on_delete=models.PROTECT,
+                                            verbose_name='Нормативная документация', default='')
 
     violation_category = models.ForeignKey(to='ViolationCategory', on_delete=models.PROTECT,
                                            verbose_name='Категория нарушения', default='')
@@ -103,11 +107,11 @@ class MainCategory(models.Model):
 
 
 class Location(models.Model):
-    title = models.CharField(max_length=255, db_index=True, verbose_name='Площадка')
+    title = models.CharField(max_length=255, db_index=True, verbose_name='Закрепленный участок')
 
     class Meta:
-        verbose_name = "Площадка"  # единственное число
-        verbose_name_plural = "Площадки"  # множественное число
+        verbose_name = "Закрепленный участок"  # единственное число
+        verbose_name_plural = "Закрепленные участки"  # множественное число
         ordering = ['title']  # порядок сортировки
 
     def __str__(self):
@@ -117,6 +121,9 @@ class Location(models.Model):
         """Метод, согласно конвекции, для создания ссылок на части экземпляра модели (класса)
         также, при наличии, позволяет переходить из админки на соответствующий раздел"""
         return reverse('location', kwargs={'location_id': self.pk})
+
+
+
 
 
 class WorkShift(models.Model):
@@ -151,6 +158,25 @@ class Category(models.Model):
         """Метод, согласно конвекции, для создания ссылок на части экземпляра модели (класса)
         также, при наличии, позволяет переходить из админки на соответствующий раздел"""
         return reverse('category', kwargs={'category_id': self.pk})
+
+
+class NormativeDocuments(models.Model):
+    title = models.CharField(max_length=255, db_index=True, verbose_name='Наименование подкатегории')
+    normative = models.CharField(max_length=255, db_index=True, verbose_name='Наименование подкатегории')
+    procedure = models.CharField(max_length=255, db_index=True, verbose_name='Наименование подкатегории')
+
+    class Meta:
+        verbose_name = "Нормативная документация"  # единственное число
+        verbose_name_plural = "Нормативная документация"  # множественное число
+        ordering = ['title']  # порядок сортировки
+
+    def __str__(self):
+        return self.title
+
+    def get_absolute_url(self):
+        """Метод, согласно конвекции, для создания ссылок на части экземпляра модели (класса)
+        также, при наличии, позволяет переходить из админки на соответствующий раздел"""
+        return reverse('normative_documents', kwargs={'normative_documents_id': self.pk})
 
 
 class EliminationTime(models.Model):

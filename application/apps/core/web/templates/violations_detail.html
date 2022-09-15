@@ -53,11 +53,23 @@
             <div class="card-body">
 
                 <h5 class="card-text"> Описание: {{ violations_item.description }}</h5>
-                <h5 class="card-text"> Площадка / участок: {{ violations_item.location }} </h5>
-                <h5 class="card-text"> Основная категория: {{ violations_item.main_category }} </h5>
-                <h5 class="card-text"> Требуется оформление Акта-предписания?: {{ violations_item.act_required }} </h5>
+                <h5 class="card-text"> Площадка: {{ violations_item.main_location }} </h5>
+                <h5 class="card-text"> Под площадка / участок: {{ violations_item.sub_location }} </h5>
+                <h5 class="card-text"> Подрядчик: {{ violations_item.general_contractor }} </h5>
 
-                <h5 class="card-text"> Мероприятия по устранению: {{ violations_item.comment }} </h5>
+                <h5 class="card-text"> Основная категория: {{ violations_item.main_category }} </h5>
+                <h5 class="card-text"> Категория: {{ violations_item.category }} </h5>
+
+                <h5 class="card-text"> Типовое несоответствие: {{ violations_item.normative_documents.title }} </h5>
+                <h5 class="card-text"> НД: {{ violations_item.normative_documents.normative }} </h5>
+                <h5 class="card-text"> Устранение: {{ violations_item.normative_documents.procedure }} </h5>
+
+                <p class="card-text"> Подкатегория нарушения: {{ violations_item.violation_category }} </p>
+                <h5 class="card-text"> Уровень происшествия: {{ violations_item.incident_level }} </h5>
+
+                <h5 class="card-text"> Комментарий: {{ violations_item.comment }} </h5>
+
+                <h5 class="card-text"> Требуется оформление Акта-предписания?: {{ violations_item.act_required }} </h5>
 
                 <h5 class="card-text"> Статус: {{ violations_item.status }} </h5>
 
@@ -67,10 +79,6 @@
                 <h5 class="card-text"> В процессе устранения </h5>
                 {% endif %}
 
-                <h5 class="card-text"> Подрядчик: {{ violations_item.general_contractor }} </h5>
-                <h5 class="card-text"> Категория: {{ violations_item.category }} </h5>
-                <p class="card-text"> Подкатегория нарушения: {{ violations_item.violation_category }} </p>
-                <h5 class="card-text"> Уровень происшествия: {{ violations_item.incident_level }} </h5>
                 <p class="card-text"> Время на устранение: {{ violations_item.elimination_time }} </p>
                 <p class="card-text"> Дата регистрации: {{ violations_item.created_at }} </p>
                 <p class="card-text"> file_id: {{ violations_item.file_id }} </p>
@@ -88,6 +96,7 @@
                 <h5 class="card-text"> Специалист зафиксировавший нарушение </h5>
                 <h5 class="card-text"> Должность: {{ violations_item.function }} </h5>
                 <h5 class="card-text"> ФИО: {{ violations_item.name }} </h5>
+                <p class="card-text"> Заклепленный участок: {{ violations_item.location }} </p>
                 <p class="card-text"> Смена: {{ violations_item.work_shift }} </p>
                 <p class="card-text"> Id специалиста: {{ violations_item.user_id }} </p>
 
