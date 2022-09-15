@@ -68,10 +68,18 @@ async def get_photo_folder_id(drive_service, photo_folder_name: str, parent_id=N
     return photo_folder_id
 
 
-async def get_json_folder_id(drive_service, json_folder_name: str, parent_id=None, root_json_folder_id=None):
-    """Создание основной директории хранения json в директории пользователя на Google Drive
+async def get_json_folder_id(drive_service: object, json_folder_name: str, parent_id: str = None,
+                             root_json_folder_id: str = None) -> str:
+    """Поиск и получение json_folder_id из parent_id
+    если не найдено - создается директория хранения json в директории root_json_folder_id на Google Drive
+
+    :param root_json_folder_id: options
+    :param parent_id: options
+    :param json_folder_name:
+    :param drive_service
+    :return: json_folder_id:str
     """
-    json_folder_id = await find_folder_with_name_on_google_drive(
+    json_folder_id: str = await find_folder_with_name_on_google_drive(
         drive_service=drive_service,
         name=str(json_folder_name),
         parent=parent_id
@@ -97,8 +105,11 @@ async def get_json_folder_id(drive_service, json_folder_name: str, parent_id=Non
     return json_folder_id
 
 
-async def get_root_folder_id(drive_service, root_folder_name: str):
+async def get_root_folder_id(drive_service: object, root_folder_name: str):
     """Создание основной директории в корневой директории Google Drive
+
+    :param root_folder_name: имя директории
+    :param drive_service: объект авторизации
     """
     root_folder_id = await find_folder_with_name_on_google_drive(
         drive_service=drive_service,
@@ -141,5 +152,3 @@ async def get_user_folder_id(drive_service, root_folder_name: str, parent_id):
     logger.debug(f"**Find  https://drive.google.com/drive/folders/{user_folder_id} in Google Drive.**")
 
     return user_folder_id
-
-

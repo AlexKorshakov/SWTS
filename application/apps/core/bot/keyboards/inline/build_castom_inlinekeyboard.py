@@ -5,6 +5,7 @@ from aiogram.utils.callback_data import CallbackData
 from apps.core.bot.data import board_config
 
 from app import MyBot
+from loader import logger
 
 NUM_COL = 1
 STEP_MENU = 8
@@ -22,6 +23,8 @@ async def build_inlinekeyboard(*, some_list, num_col=1, level=1, step=None,
     """
     button_list: list = []
 
+    some_list = check_list_bytes_len(some_list)
+
     if addition:
         button_list = [item for item in addition]
 
@@ -32,12 +35,15 @@ async def build_inlinekeyboard(*, some_list, num_col=1, level=1, step=None,
         return InlineKeyboardMarkup(resize_keyboard=True, inline_keyboard=menu)
 
     if len(some_list) <= STEP_MENU:
+        logger.debug(f'len(some_list) <= STEP_MENU {len(some_list) <= STEP_MENU}')
+
         button_list = button_list + [InlineKeyboardButton(text=ss, callback_data=ss) for ss in some_list]
         menu = await _build_menu(buttons=button_list, n_cols=num_col)
 
         return InlineKeyboardMarkup(resize_keyboard=True, inline_keyboard=menu)
 
     if STEP_MENU < len(some_list):
+        logger.debug(f'STEP_MENU < len(some_list) {STEP_MENU < len(some_list)}')
         end_list = len(some_list)
         start_index, stop_index = await define_indices(level, end_list)
 
@@ -50,6 +56,45 @@ async def build_inlinekeyboard(*, some_list, num_col=1, level=1, step=None,
                                                        stop_index=stop_index, end_list=end_list)
 
         return finally_reply_markup
+
+
+def check_list_bytes_len(some_list: list) -> list:
+    """Проверка длинны записи в байтах для формирования надписей кнопок
+    текст длиннее 64 байт обрезается, добавляются точки
+    """
+    processed_values: len = []
+    for item in some_list:
+        if len(item.encode('utf-8')) > 62:
+            logger.debug(f" {item} : {len(item.encode('utf-8'))}")
+
+            while int(len(item.encode('utf-8'))) > 60:
+                item = item[:-1]
+                logger.debug(f" {item} : {len(item.encode('utf-8'))}")
+
+            item = item[:-2] + '...'
+            logger.debug(f" {item} : {len(item.encode('utf-8'))}")
+
+        processed_values.append(item)
+
+    return processed_values
+
+
+async def check_text_bytes_len(some_text: str) -> str:
+    """Проверка длинны записи в байтах для формирования надписей кнопок
+    текст длиннее 64 байт обрезается, добавляются точки
+    """
+
+    if len(some_text.encode('utf-8')) > 62:
+        logger.debug(f" {some_text} : {len(some_text.encode('utf-8'))}")
+
+        while int(len(some_text.encode('utf-8'))) > 60:
+            some_text = some_text[:-1]
+            logger.debug(f" {some_text} : {len(some_text.encode('utf-8'))}")
+
+        some_text = some_text[:-2] + '...'
+        logger.debug(f" {some_text} : {len(some_text.encode('utf-8'))}")
+
+    return some_text
 
 
 async def define_indices(level, end_list):
@@ -98,6 +143,7 @@ async def _build_menu(buttons, n_cols: int = 1, header_buttons: list = None, foo
     """Создание меню кнопок
     """
     menu = [buttons[i:i + n_cols] for i in range(0, len(buttons), n_cols)]
+
     if header_buttons:
         menu.insert(0, [header_buttons])
     if footer_buttons:

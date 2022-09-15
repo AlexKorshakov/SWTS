@@ -3,10 +3,13 @@ import os
 from pathlib import Path
 from pprint import pprint
 
+from apps.core.bot.data.report_data import violation_data
 from apps.core.bot.database.DataBase import DataBase, upload_from_local, CATEGORY_ID_TRANSFORM
 from apps.core.bot.handlers.correct_entries.correct_entries_handler import del_file, del_file_from_gdrive
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.GoogleDriveWorker import drive_account_credentials
+from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.set_user_violation_data_on_google_drave import \
+    update_user_violation_data_on_google_drive
 from apps.core.bot.utils.json_worker.read_json_file import read_json_file
 from apps.core.bot.utils.json_worker.writer_json_file import write_json
 from apps.core.bot.utils.secondary_functions.get_filepath import get_json_full_filename
@@ -27,32 +30,6 @@ class MyMixin(object):
             return s.upper()
         else:
             return s.title.upper()
-
-
-async def del_violations(violation_file_id: str) -> bool:
-    """Удаление записи по id из Google Drive, local storage, db
-
-    :param violation_file_id: id записи для удаления
-    :return: bool True если успешно or False если не успешно
-    """
-    if not violation_file_id:
-        logger.error(f'violation: {violation_file_id} - запись не найдена')
-
-    violation_list: list = DataBase().get_violation(file_id=violation_file_id)
-    if not violation_list:
-        logger.error(f'violation: {violation_file_id} - запись не найдена')
-        return False
-
-    headers = [row[1] for row in DataBase().get_table_headers()]
-    violation_dict = dict(zip(headers, violation_list[0]))
-
-    await delete_violation_files_from_gdrive(violation=violation_dict)
-
-    await delete_violation_files_from_pc(violation=violation_dict)
-
-    await del_violations_from_db(violation=violation_dict)
-
-    return True
 
 
 async def delete_violation_files_from_gdrive(violation: dict):
@@ -145,48 +122,52 @@ async def get_params(id_registered_users: list) -> list[dict]:
     return user_params
 
 
-async def test():
-    content = await get_id_registered_users()
-    params = await get_params(content)
-    logger.info(content)
-
-    for param in params:
-        await upload_from_local(params=param)
-        logger.info(f'Данные загружены в БД')
-
-
-async def update_violation_files_from_gdrive(data: dict = None):
+async def update_violation_files_from_gdrive(data_for_update: dict = None):
     """Обновление данных violation в Google Drive
 
-    :param data dict данные записи для обновления
+    :param data_for_update dict данные записи для обновления
     """
+
+    user_id: str = str(data_for_update.get('user_id'))
+    file_id: str = str(data_for_update.get('file_id'))
+    date: str = str(file_id).split("___")[0]
+
+    file_full_name = LOCAL_MEDIA_STORAGE + f'/{user_id}/data_file/{date}/json/report_data___{file_id}.json'
+
+    await update_user_violation_data_on_google_drive(
+        chat_id=user_id,
+        violation_data=data_for_update,
+        file_full_name=file_full_name,
+        notify_user=False
+    )
+
     logger.info(f'данные обновлены в Google Drive!')
 
 
-async def check_data_before_update(data: dict = None) -> dict:
+async def check_data_before_update(request_data: dict = None) -> dict:
     """Проверка данных data ( request.POST )
 
-    :param data: dict с данными из request.POST
+    :param request_data: dict с данными из request.POST
     :return: dict с данными записи
     """
-    user_id = data.get('user_id', None)
+    user_id = request_data.get('user_id', None)
     if not user_id:
         logger.error(f'Not found user_id {user_id}')
         return {}
 
-    file_id = data.get('file_id', None)
+    file_id = request_data.get('file_id', None)
     if not user_id:
         logger.error(f'Not found file_id {file_id}')
         return {}
 
-    return data
+    return request_data
 
 
-async def check_key(violation_data: dict, key: str) -> bool:
+async def check_key(violation_data_for_check: dict, key: str) -> bool:
     """Проверка наличие key in violation_data
 
     :param key: ключ словаря
-    :param violation_data данные для проверки
+    :param violation_data_for_check данные для проверки
     :return: True if key in violation_data or False
     """
     if key in [
@@ -195,10 +176,8 @@ async def check_key(violation_data: dict, key: str) -> bool:
     ]:
         return False
 
-    # if not violation_data.get(key + '_id', None) and not violation_data.get(key, None):
-    if not violation_data.get(key, None):
+    if not violation_data_for_check.get(key, None):
         logger.error(f'Not found {key} in data')
-        # return False
 
     if key in [k for k, v in CATEGORY_ID_TRANSFORM.items()]:
 
@@ -207,7 +186,7 @@ async def check_key(violation_data: dict, key: str) -> bool:
         if db_table_name:
             return True
 
-        logger.error(f'Not found table_name {key} in ALL_CATEGORY_IN_DB')
+        logger.error(f'Not found table_name {key} in CATEGORY_ID_TRANSFORM')
         return False
 
     return False
@@ -236,8 +215,9 @@ async def generation_query(key: str, id_item: int) -> str:
         return ''
 
     db_table_name = CATEGORY_ID_TRANSFORM.get(key, None)
+    table_name = db_table_name['table']
 
-    query: str = f'SELECT `title` FROM {db_table_name} WHERE id = {id_item}'
+    query: str = f'SELECT `title` FROM {table_name} WHERE id = {id_item}'
 
     return query
 
@@ -260,8 +240,9 @@ async def conversion_value(key: str, value: str) -> str:
 
     if key in [k for k, v in CATEGORY_ID_TRANSFORM.items()]:
 
-        db_table_name = CATEGORY_ID_TRANSFORM.get(key, None)
-        if not db_table_name:
+        db_table_name: dict = CATEGORY_ID_TRANSFORM.get(key, None)
+        table_name: str = db_table_name['table']
+        if not table_name:
             logger.error(f'Not found table_name {key} in ALL_CATEGORY_IN_DB')
             return value
 
@@ -276,10 +257,12 @@ async def conversion_value(key: str, value: str) -> str:
     return value
 
 
-async def get_data_before_update(data: dict, get_from: str = 'local') -> dict:
-    """
+async def get_data_fore_update(data: dict, get_from: str = 'local') -> dict:
+    """Получение данных из локального репозитория (local) или из базы данных (data_base)
 
-    :param
+    :param get_from: (local) or (data_base)
+    :param data: данные из формы
+    :return: dict
     """
 
     if get_from == 'local':
@@ -308,33 +291,28 @@ async def get_data_before_update(data: dict, get_from: str = 'local') -> dict:
             return {}
 
 
-async def get_violation_data_to_update(data: dict) -> dict:
+async def normalize_violation_data(data_from_form: dict, received_data: dict) -> dict:
+    """Нормализация данных
+
+    :param data_from_form: данные из формы
+    :param received_data: данные для нормализации
     """
-
-    :return:
-    """
-
-    violation_data: dict = await check_data_before_update(data=data)
-    violation_data: dict = await get_data_before_update(data=violation_data, get_from='data_base')
-
-    if not violation_data: return {}
-
-    for key, value in data.items():
+    for key, value in data_from_form.items():
         logger.info(f'{key = }')
 
         if key + '_id' in [v['column'] for k, v in CATEGORY_ID_TRANSFORM.items()]:
-            violation_data.pop(key + '_id')
-            violation_data[key] = value
+            received_data.pop(key + '_id')
+            received_data[key] = value
 
-        if not await check_key(violation_data, key):
-            violation_data[key] = value
+        if not await check_key(received_data, key):
+            received_data[key] = value
             continue
 
         value = await conversion_value(key=key, value=value)
 
-        violation_data[key] = value
+        received_data[key] = value
 
-    return violation_data
+    return received_data
 
 
 async def update_violation_files_from_local(data: dict = None):
@@ -349,11 +327,7 @@ async def update_violation_files_from_local(data: dict = None):
 
     name = await get_json_full_filename(user_id=user_id, file_name=file_name, date=date)
 
-    # await write_json(name=name, data=data)
-
-    await write_json(
-        name=f'C:/Users/KDeusEx/Desktop/report_data___{data["file_id"]}.json',
-        data=data)
+    await write_json(name=name, data=data)
 
     logger.info(f'данные обновлены в local storage!')
 
@@ -387,37 +361,92 @@ async def update_violations_from_db(data: dict = None):
         DataBase().update_column_value(
             column_name=key,
             value=value,
-            id=vi_id
+            id=str(vi_id)
         )
 
     logger.info(f'данные обновлены в DataBase!')
 
 
-async def update_violations_from_all_repo(data: dict = None) -> bool:
+async def get_violation_data_to_update(data_from_form: dict) -> dict:
+    """Проверка, обработка и нормализация данных их формы ViolationsForm
+
+    :return: dict нормализованные данные
+    """
+
+    verified_data: dict = await check_data_before_update(request_data=data_from_form)
+    if not verified_data: return {}
+
+    received_data: dict = await get_data_fore_update(data=verified_data, get_from='data_base')
+    if not received_data: return {}
+
+    normalize_data: dict = await normalize_violation_data(data_from_form=data_from_form, received_data=received_data)
+    if not normalize_data: return {}
+
+    return normalize_data
+
+
+async def update_violations_from_all_repo(data_from_form: dict = None) -> bool:
     """Обновление данных в базе данных, в локальном репозитории, в Google Drive
 
-    :param data dict request.POST с данными из формы ViolationsForm с данными для обновления записи и файлов
+    :param data_from_form dict request.POST с данными из формы ViolationsForm с данными для обновления записи и файлов
     :return: bool
     """
-    if not isinstance(data, dict):
+    if not isinstance(data_from_form, dict):
         logger.error(f'data: dict не содержит данных!')
         return False
 
-    logger.debug(data)
+    logger.debug(data_from_form)
 
-    violation_data = await get_violation_data_to_update(data)
-    if not violation_data:
+    normalize_data = await get_violation_data_to_update(data_from_form)
+    if not normalize_data:
         logger.error(f'data: violation_data не содержит данных!')
         return False
 
     # TODO проверить переключатели is_finished is_published
-    await update_violations_from_db(data=violation_data)
 
-    await update_violation_files_from_local(data=violation_data)
+    await update_violations_from_db(data=normalize_data)
 
-    await update_violation_files_from_gdrive(data=violation_data)
+    await update_violation_files_from_local(data=normalize_data)
+
+    await update_violation_files_from_gdrive(data_for_update=normalize_data)
 
     return True
+
+
+async def delete_violations_from_all_repo(violation_file_id: str) -> bool:
+    """Удаление записи по id из Google Drive, local storage, db
+
+    :param violation_file_id: id записи для удаления
+    :return: bool True если успешно or False если не успешно
+    """
+    if not violation_file_id:
+        logger.error(f'violation: {violation_file_id} - запись не найдена')
+
+    violation_list: list = DataBase().get_violation(file_id=violation_file_id)
+    if not violation_list:
+        logger.error(f'violation: {violation_file_id} - запись не найдена')
+        return False
+
+    headers = [row[1] for row in DataBase().get_table_headers()]
+    violation_dict = dict(zip(headers, violation_list[0]))
+
+    await delete_violation_files_from_gdrive(violation=violation_dict)
+
+    await delete_violation_files_from_pc(violation=violation_dict)
+
+    await del_violations_from_db(violation=violation_dict)
+
+    return True
+
+
+async def test():
+    content = await get_id_registered_users()
+    params = await get_params(content)
+    logger.info(content)
+
+    for param in params:
+        await upload_from_local(params=param)
+        logger.info(f'Данные загружены в БД')
 
 
 if __name__ == "__main__":
@@ -447,4 +476,4 @@ if __name__ == "__main__":
 
     }
 
-    asyncio.run(update_violations_from_all_repo(data=data))
+    asyncio.run(update_violations_from_all_repo(data_from_form=data))

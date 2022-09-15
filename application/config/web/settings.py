@@ -175,7 +175,7 @@ LOGGING = {
         '': {
             'level': LOGGING_LEVEL,
             'handlers': ['console', 'file'],
-            'propagate': False
+            'propagate': True
         },
         'django.request': {
             'level': LOGGING_LEVEL,

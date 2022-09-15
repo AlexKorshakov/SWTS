@@ -120,14 +120,15 @@ async def get_registration_text(registration_data) -> str:
     :return:
     """
     if registration_data:
-        registration_data_text: str = f"Данные регистрации: \n\n" \
-                                      f"ФИО: {registration_data.get('name')} \n" \
-                                      f"Должность: {registration_data.get('function')} \n" \
-                                      f"Место работы: {registration_data.get('name_location')} \n" \
-                                      f"Смена: {registration_data.get('work_shift')} \n" \
-                                      f"Телефон: {registration_data.get('phone_number')} \n" \
-                                      f"user_id {registration_data.get('user_id')} \n" \
-                                      f"folder id https://drive.google.com/drive/folders/{registration_data.get('parent_id')} \n"
+        registration_data_text: str = \
+            f"Данные регистрации: \n\n" \
+            f"ФИО: {registration_data.get('name')} \n" \
+            f"Должность: {registration_data.get('function')} \n" \
+            f"Место работы: {registration_data.get('name_location')} \n" \
+            f"Смена: {registration_data.get('work_shift')} \n" \
+            f"Телефон: {registration_data.get('phone_number')} \n" \
+            f"user_id {registration_data.get('user_id')} \n" \
+            f"folder id https://drive.google.com/drive/folders/{registration_data.get('parent_id')} \n"
 
         return registration_data_text
     return ''

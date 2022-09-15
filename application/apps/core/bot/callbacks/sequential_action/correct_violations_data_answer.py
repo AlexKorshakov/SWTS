@@ -143,7 +143,6 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
         await CorrectViolationsState.incident_level.set()
 
 
-
 @MyBot.dp.message_handler(is_private, Text(equals=Messages.correct_cancel), state=CorrectViolationsState.all_states)
 async def cancel(message: types.Message, state: FSMContext):
     """Отмена регистрации
@@ -280,17 +279,17 @@ async def get_state_storage_name(state, chat_id):
     return state_name
 
 
-async def all_states(*, chat_id, correct_data, state_name):
+async def all_states(*, chat_id: str, correct_data: str, state_name: str):
     """Обработка состояний из get_state_storage_name и данных correct_data
 
-    :param chat_id:
-    :param correct_data:
-    :param state_name:
+    :param chat_id: id пользователя / чата
+    :param correct_data: данне для коррекции параметра state_name
+    :param state_name: имя параметра для коррекции
     :return:
     """
     violations_file_path: str = ''
 
-    violations_files_list = await get_json_file_list(chat_id)
+    violations_files_list: list = await get_json_file_list(chat_id)
     if not violations_files_list:
         logger.warning(Messages.Error.file_list_not_found)
         await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.file_list_not_found)
@@ -311,11 +310,11 @@ async def all_states(*, chat_id, correct_data, state_name):
 
     violation_data: dict = await read_json_file(file=violations_file_path)
 
-    violation_data[f'{state_name}'] = correct_data
+    violation_data[state_name] = correct_data
 
     await write_json_file(data=violation_data, name=violation_data["json_full_name"])
 
-    await update_user_violation_data_on_google_drive(chat_id=chat_id, violation_data=violation_data)
+    await update_user_violation_data_on_google_drive(chat_id=chat_id, violation_data=violation_data, notify_user=True)
 
     if violation_data:
         violation_text = await get_violations_text(violation_data)
