@@ -7,11 +7,16 @@
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
-            <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Главная</a></li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'greetings' %}">Главная</a></li>
             {% if request.user.is_authenticated %}
-            {% comment %}
-            <li class="nav-item"><a class="nav-link" href="{% url 'add_news' %}">Добавить запись</a></li>
-            {% endcomment %}
+
+
+            <li class="nav-item">
+                <form action="{% url 'add_violations' %}" method='post'>
+                    <a class="nav-link" href="{% url 'add_violations' %}" >Добавить запись</a>
+                </form>
+            </li>
+
             {% endif%}
             {% comment %}
             <li class="nav-item dropdown">
@@ -27,6 +32,7 @@
                 </div>
             </li>
             {% endcomment %}
+
             <span class='navbar-text'>
                 {% if request.user.is_authenticated %}
                 Добро пожаловать {{ user.username }} <a href="{% url 'logout' %}">Выход</a>
@@ -36,12 +42,14 @@
             </span>
 
         </ul>
+
         {% comment %}
         <form class="form-inline my-2 my-lg-0">
             <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
             <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
         </form>
         {% endcomment %}
+
         {% comment %}
         {% include 'inc/_list_grid_view.html'%}
         {% endcomment %}

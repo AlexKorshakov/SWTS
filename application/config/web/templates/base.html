@@ -25,6 +25,8 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/container_card.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/list_view_or_grid_view.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/box.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/scrollmenu.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/btn-group.css' %}">
 
     <title>{% block title %} Реестр нарушений {% endblock %}</title>
 
@@ -33,18 +35,22 @@
 {% include 'inc/_nav.html'%}
 {% include 'inc/_bubbles.html'%}
 {% include 'inc/_icon-bar.html'%}
+
+
+{% if request.user.is_authenticated %}
+    <div class="btn-group">
+        <form action="{% url 'upload' %}" method="post">
+            {% csrf_token %}
+            <button style="--clr:#ff1867" type="submit">Обновить базу</button>
+        </form>
+
+        <form action="{% url 'statistic' %}" method="post">
+            {% csrf_token %}
+            <button style="--clr:#ff1867" type="submit">Статистика</button>
+        </form>
+    </div>
+{% endif %}
 {% include 'inc/_pagination.html'%}
-
-{% comment %}
-<a-button href="#" style="--clr:#ff1867"><span>Меню</span><i></i></a-button>
-<a-button href="#" style="--clr:#ff1867"><span>Меню</span><i></i></a-button>
-{% endcomment %}
-
-<form action="{% url 'upload' %}" method="post">
-    {% csrf_token %}
-    <button style="--clr:#ff1867" type="submit">Обновить базу</button>
-</form>
-
 
 <div class="container mt-3">
 

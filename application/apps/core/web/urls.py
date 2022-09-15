@@ -3,14 +3,15 @@ from django.urls import path
 
 from .views import HomeViolations, ViewViolations, ViolationsByMainCategory, ViolationsByLocation, \
     ViolationsByGeneralContractor, ViolationsByIncidentLevel, ViolationsByStatus, user_login, user_logout, register, \
-    post_edit, PostEdit
-from .views import test, simple_view, upload_too_db_from_local_storage, delete_violations, update_violations
+    post_edit, PostEdit, test, simple_view, upload_too_db_from_local_storage, delete_violations, update_violations, \
+    add_violations, statistic
 
 # Register your urls here
 
 urlpatterns = [
     # path("", simple_view),
-    path('', HomeViolations.as_view(), name='home'),
+    path('', HomeViolations.as_view(),
+         name='home'),
     path('violations/<int:pk>/', ViewViolations.as_view(),
          name='view_violations'),
     path('main_category/<int:main_category_id>/', ViolationsByMainCategory.as_view(),
@@ -26,12 +27,14 @@ urlpatterns = [
 
     # запуск скрипта по нажатию кнопки из base.html
     path('upload/', upload_too_db_from_local_storage, name='upload'),
+    path('statistic/', statistic, name='statistic'),
     # запуск скрипта по нажатию кнопки из violations_detail.html
-    path('update_violations/', update_violations, name='update_violations'),
 
     path('post_edit/<int:violations_id>/', post_edit, name='post_edit'),
 
+    path('update_violations/', update_violations, name='update_violations'),
     path('delete_violations/', delete_violations, name='delete_violations'),
+    path('add_violations/', add_violations, name='add_violations'),
 
     path('register/', register, name='register'),
     path('login/', user_login, name='login'),

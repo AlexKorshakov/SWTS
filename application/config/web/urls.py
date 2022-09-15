@@ -20,11 +20,11 @@ from django.urls import include, path
 
 from django.views.generic.base import TemplateView
 
-
 urlpatterns = [
                   path("core/", include("apps.core.web.urls")),
                   path("admin/", admin.site.urls),
                   path("", TemplateView.as_view(template_name='greetings.html'), name='greetings'),
 
-              ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) \
+              ] \
+              + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) \
               + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

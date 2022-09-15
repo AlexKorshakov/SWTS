@@ -13,11 +13,11 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.contrib.auth import login, logout
 
-from apps.core.web.utils import MyMixin, del_violations, get_id_registered_users, get_params, \
+from apps.core.web.utils import MyMixin, delete_violations_from_all_repo, get_id_registered_users, get_params, \
     update_violations_from_all_repo
 from loader import logger
 #
-from .forms import UsrRegisterForm, UserLoginForm, ViolationsForm
+from .forms import UsrRegisterForm, UserLoginForm, ViolationsForm, ViolationsAddForm
 from .models import Violations, MainCategory, Location, GeneralContractor, IncidentLevel, Status
 #
 # # Create your views here.
@@ -40,6 +40,45 @@ def upload_too_db_from_local_storage(request: HttpRequest):
             asyncio.run(upload_from_local(params=param))
             logger.info(f'Данные загружены в БД')
         return redirect('home')
+
+
+def add_violations(request: HttpRequest):
+    """Добавление данных в базу данных, в локальный репозиторий, в Google Drive"""
+    form = None
+
+    print(f'{request = }')
+
+    violation = Violations()
+        # print(f"violation")
+
+    if request.method == 'GET':
+        form = ViolationsAddForm(instance=violation)
+
+    context = {
+        'form': form,
+    }
+
+    return render(request, 'add_violations.html', context=context)
+
+
+def statistic(request: HttpRequest):
+    """Добавление данных в базу данных, в локальный репозиторий, в Google Drive"""
+    # form = None
+    # print(f'{request = }')
+    #
+    # violation = Violations()
+    #
+    # if request.method == 'GET':
+    #     form = ViolationsAddForm(instance=violation)
+    #
+    # context = {
+    #     'form': form,
+    # }
+
+    return render(
+        request, 'statistic.html',
+        # context=context
+    )
 
 
 def update_violations(request: HttpRequest):
@@ -83,7 +122,7 @@ def update_violations(request: HttpRequest):
 
     if file_id:
         logger.debug(f"file_id: {file_id = }")
-        result = asyncio.run(update_violations_from_all_repo(data=request.POST))
+        result = asyncio.run(update_violations_from_all_repo(data_from_form=request.POST))
         if result:
             logger.info(f'Данные записи {file_id} обновлены')
             return redirect('home')
@@ -160,7 +199,7 @@ def delete_violations(request: HttpRequest):
 
     if request.method == 'POST':
         logger.debug(violation_file_id)
-        result = asyncio.run(del_violations(violation_file_id))
+        result = asyncio.run(delete_violations_from_all_repo(violation_file_id))
         if result:
             logger.info(f'запись {violation_file_id} удалена')
         return redirect('home')
@@ -179,7 +218,7 @@ def register(request: HttpRequest):
     else:
         form = UsrRegisterForm()
 
-    return render(request, 'news/register.html', {'form': form})
+    return render(request, 'register.html', {'form': form})
 
 
 def user_login(request: HttpRequest):
@@ -192,7 +231,7 @@ def user_login(request: HttpRequest):
     else:
         form = UserLoginForm()
 
-    return render(request, 'news/login.html', {'form': form})
+    return render(request, 'login.html', {'form': form})
 
 
 def user_logout(request: HttpRequest):
