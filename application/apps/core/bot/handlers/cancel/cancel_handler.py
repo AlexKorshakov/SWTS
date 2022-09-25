@@ -40,7 +40,7 @@ async def cancel_handler(call: types.CallbackQuery, state: FSMContext):
     :return:
     """
 
-    chat_id = call.message.chat.id
+    chat_id = call.chat.id
     if not await check_user_access(chat_id=chat_id):
         return
 

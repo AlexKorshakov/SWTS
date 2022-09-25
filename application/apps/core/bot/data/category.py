@@ -407,64 +407,62 @@ def get_data_from_json(name):
         logger.error(f" {name} {repr(err)}")
         return []
 
-
-if __name__ == "__main__":
-    # for item in ALL_CATEGORY_IN_DB:
-    #     datas = get_data_list(category_name=item)
-    #
-    #     for i in datas:
-    #         if len(i.encode('utf-8')) > 62:
-    #             print(f" {i} : {len(i.encode('utf-8'))}")
-    #
-    #             while int(len(i.encode('utf-8'))) > 62:
-    #                 i = i[:-1]
-    #                 print(f" {i} : {len(i.encode('utf-8'))}")
-    #
-    #             i = i[:-2] + '...'
-    #             print(f" {i} : {len(i.encode('utf-8'))}")
-
-    # pprint(datas)
-
-    # data_list: list = get_data_list(category_name='NORMATIVE_DOCUMENTS', category='Промышленная безопасность_')
-    #
-    # pprint(data_list)
-    category = 'Замкнутые пространства'
-
-    dict_condition: dict = {
-        # "condition": "short_title",
-        "data": _PREFIX_ND + '11',
-        "category_in_db": "NORMATIVE_DOCUMENTS",
-        # "category_name": violation_data["category"]
-    }
-
-    # menu_list: list = get_data_list("NORMATIVE_DOCUMENTS",
-    #                                 category=category,
-    #                                 condition='short_title'
-    #                                 )
-    # item_list: list = get_data_list("NORMATIVE_DOCUMENTS",
-    #                                 category=category,
-    #                                 condition='data_list'
-    #                                 )
-    # ziped_list: list = zip(menu_list, item_list)
-    #
-    #
-    # text = f'{"Выберете нарушение нажав на кнопку соответствующего нарушения."}\n \n' + \
-    #        ' \n'.join(str(item[0]) + " : " + str(item[1]) for item in ziped_list)
-    # print(text)
-
-    nd_data: list = get_data_list("NORMATIVE_DOCUMENTS",
-                                  category=category,
-                                  condition=dict_condition
-                                  )
-    pprint(nd_data)
-
-    if not nd_data:
-        quit()
-
-    violation_data = {
-        "normative_documents": nd_data[0].get('title', None),
-        "normative_documents_normative": nd_data[0].get('normative', None),
-        "normative_documents_procedure": nd_data[0].get('procedure', None)
-    }
-
-    pprint(violation_data)
+# if __name__ == "__main__":
+# for item in ALL_CATEGORY_IN_DB:
+#     datas = get_data_list(category_name=item)
+#
+#     for i in datas:
+#         if len(i.encode('utf-8')) > 62:
+#             print(f" {i} : {len(i.encode('utf-8'))}")
+#
+#             while int(len(i.encode('utf-8'))) > 62:
+#                 i = i[:-1]
+#                 print(f" {i} : {len(i.encode('utf-8'))}")
+#
+#             i = i[:-2] + '...'
+#             print(f" {i} : {len(i.encode('utf-8'))}")
+#
+# pprint(datas)
+#
+# data_list: list = get_data_list(category_name='NORMATIVE_DOCUMENTS', category='Промышленная безопасность_')
+#
+# pprint(data_list)
+# category = 'ТК ГОК'
+#
+# dict_condition: dict = {
+#     # "condition": "short_title",
+#     "data": _PREFIX_ND + '1',
+#     "category_in_db": "SUB_LOCATIONS",
+#     # "category_name": violation_data["category"]
+# }
+#
+# menu_list: list = get_data_list("SUB_LOCATIONS",
+#                                 category=category,
+#                                 condition='short_title'
+#                                 )
+# item_list: list = get_data_list("SUB_LOCATIONS",
+#                                 category=category,
+#                                 condition='data_list'
+#                                 )
+# ziped_list: list = zip(menu_list, item_list)
+#
+# text = f'{"Выберете нарушение нажав на кнопку соответствующего нарушения."}\n \n' + \
+#        ' \n'.join(str(item[0]) + " : " + str(item[1]) for item in ziped_list)
+# print(text)
+#
+# nd_data: list = get_data_list("NORMATIVE_DOCUMENTS",
+#                               category=category,
+#                               condition=dict_condition
+#                               )
+# pprint(nd_data)
+#
+# if not nd_data:
+#     quit()
+#
+# violation_data = {
+#     "normative_documents": nd_data[0].get('title', None),
+#     "normative_documents_normative": nd_data[0].get('normative', None),
+#     "normative_documents_procedure": nd_data[0].get('procedure', None)
+# }
+#
+# pprint(violation_data)

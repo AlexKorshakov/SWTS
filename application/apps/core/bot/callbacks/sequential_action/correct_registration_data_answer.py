@@ -26,7 +26,7 @@ async def correct_registration_data_answer(call: types.CallbackQuery):
     """Обработка ответов содержащихся в REGISTRATION_DATA_LIST
 
     """
-    chat_id = call.message.chat.id
+    chat_id = call.chat.id
     await call.message.edit_reply_markup()
 
     reply_markup = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
@@ -91,7 +91,7 @@ async def correct_registration_data_name_location_answer(call: types.CallbackQue
     """Обработка ответов содержащихся в METRO_STATION
     """
 
-    chat_id = call.message.chat.id
+    chat_id = call.chat.id
     correct_data = await get_correct_data(chat_id=chat_id, call=call, json_file_name="METRO_STATION")
     if not correct_data:
         await state.finish()
@@ -108,7 +108,7 @@ async def correct_registration_data_name_location_answer(call: types.CallbackQue
 async def correct_registration_data_work_shift_answer(call: types.CallbackQuery, state: FSMContext):
     """Обработка ответов содержащихся в WORK_SHIFT
     """
-    chat_id = call.message.chat.id
+    chat_id = call.chat.id
     correct_data = await get_correct_data(chat_id=chat_id, call=call, json_file_name="WORK_SHIFT")
     if not correct_data:
         await state.finish()

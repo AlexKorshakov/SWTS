@@ -8,11 +8,8 @@ from .. import services
 
 def register_handlers(dp: Dispatcher):
     dp.register_message_handler(start, commands=["start"])
-
     dp.register_message_handler(send_my_id, commands=["id"])
-
     dp.register_message_handler(send_my_apps, commands=["apps"])
-
     dp.register_message_handler(simple_handler, commands=["core"])
 
 

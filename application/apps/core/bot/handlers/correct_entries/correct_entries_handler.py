@@ -35,6 +35,7 @@ len_description = 25
 @MyBot.dp.message_handler(Command('correct_entries'))
 async def correct_entries(message: types.Message):
     """Корректирование уже введённых значений на локальном pc и на google drive
+
     :return:
     """
 
@@ -101,6 +102,7 @@ async def correct_entries(message: types.Message):
 @MyBot.dp.callback_query_handler(lambda call: call.data in board_config.violation_menu_list)
 async def violation_id_answer(call: types.CallbackQuery):
     """Обработка ответов содержащихся в board_config.violation_menu_list
+
     """
     for item in board_config.violation_menu_list:
         try:
@@ -157,7 +159,8 @@ async def act_required(call: types.CallbackQuery):
 
 
 async def delete_violation_files_from_pc(message: types.Message, file):
-    """Удаление файлов из памяти pc
+    """Удаление файлов из памяти
+
     :param message:
     :param file:
     :return:
@@ -173,6 +176,7 @@ async def delete_violation_files_from_pc(message: types.Message, file):
 
 async def del_file(path) -> bool:
     """Удаление файла из памяти pc
+
     :param path:
     :return:
     """
@@ -184,6 +188,7 @@ async def del_file(path) -> bool:
 
 async def delete_violation_files_from_gdrive(message, file, violation_file):
     """Удаление файлов из google drive
+
     :param violation_file:
     :param file:
     :param message:
@@ -220,6 +225,7 @@ async def delete_violation_files_from_gdrive(message, file, violation_file):
 
 async def del_file_from_gdrive(drive_service, *, name, violation_file, parent_id) -> bool:
     """Удаление файлов из google drive
+
     :param parent_id:
     :param violation_file:
     :param name:

@@ -154,6 +154,7 @@ async def _build_menu(buttons, n_cols: int = 1, header_buttons: list = None, foo
 @MyBot.dp.callback_query_handler(move_action.filter(action=["move_down", "move_up"]))
 async def build_inlinekeyboard_answer(call: types.CallbackQuery, callback_data: dict):
     """Обработка ответа клавиш переключения уровня меню в inlinekeyboard в сообщении
+
     :type callback_data: object
     :param call:
     :param callback_data:

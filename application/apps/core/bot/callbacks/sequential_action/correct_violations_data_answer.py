@@ -28,7 +28,7 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
     """Обработка ответов содержащихся в VIOLATIONS_DATA_LIST
 
     """
-    chat_id = call.message.chat.id
+    chat_id = call.chat.id
     await call.message.edit_reply_markup()
     reply_markup = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     reply_markup.add(Messages.correct_cancel)
@@ -160,7 +160,7 @@ async def cancel(message: types.Message, state: FSMContext):
 async def correct_headlines_data_work_shift_answer(call: types.CallbackQuery, state: FSMContext):
     """Обработка ответов содержащихся в WORK_SHIFT
     """
-    chat_id = call.message.chat.id
+    chat_id = call.chat.id
     correct_data = await get_correct_data(chat_id=chat_id, call=call, json_file_name="MAIN_CATEGORY")
     if not correct_data:
         await state.finish()
@@ -177,7 +177,7 @@ async def correct_headlines_data_work_shift_answer(call: types.CallbackQuery, st
 async def correct_headlines_data_work_shift_answer(call: types.CallbackQuery, state: FSMContext):
     """Обработка ответов содержащихся в state и call
     """
-    chat_id = call.message.chat.id
+    chat_id = call.chat.id
     correct_data = await get_correct_data(chat_id=chat_id, call=call, json_file_name="ACT_REQUIRED")
     if not correct_data:
         await state.finish()
@@ -194,7 +194,7 @@ async def correct_headlines_data_work_shift_answer(call: types.CallbackQuery, st
 async def correct_headlines_data_work_shift_answer(call: types.CallbackQuery, state: FSMContext):
     """Обработка ответов содержащихся в WORK_SHIFT
     """
-    chat_id = call.message.chat.id
+    chat_id = call.chat.id
     correct_data = await get_correct_data(chat_id=chat_id, call=call, json_file_name="CATEGORY")
     if not correct_data:
         await state.finish()
@@ -211,7 +211,7 @@ async def correct_headlines_data_work_shift_answer(call: types.CallbackQuery, st
 async def correct_headlines_data_work_shift_answer(call: types.CallbackQuery, state: FSMContext):
     """Обработка ответов содержащихся в WORK_SHIFT
     """
-    chat_id = call.message.chat.id
+    chat_id = call.chat.id
     correct_data = await get_correct_data(chat_id=chat_id, call=call, json_file_name="ELIMINATION_TIME")
     if not correct_data:
         await state.finish()
@@ -229,7 +229,7 @@ async def correct_headlines_data_work_shift_answer(call: types.CallbackQuery, st
 async def correct_headlines_data_work_shift_answer(call: types.CallbackQuery, state: FSMContext):
     """Обработка ответов содержащихся в WORK_SHIFT
     """
-    chat_id = call.message.chat.id
+    chat_id = call.chat.id
     correct_data = await get_correct_data(chat_id=chat_id, call=call, json_file_name="GENERAL_CONTRACTORS")
     if not correct_data:
         await state.finish()
@@ -246,7 +246,7 @@ async def correct_headlines_data_work_shift_answer(call: types.CallbackQuery, st
 async def correct_headlines_data_work_shift_answer(call: types.CallbackQuery, state: FSMContext):
     """Обработка ответов содержащихся в WORK_SHIFT
     """
-    chat_id = call.message.chat.id
+    chat_id = call.chat.id
     correct_data = await get_correct_data(chat_id=chat_id, call=call, json_file_name="VIOLATION_CATEGORY")
     if not correct_data:
         await state.finish()
