@@ -86,7 +86,7 @@ async def del_violations_from_db(violation: dict) -> list:
     """
 
     file_id = violation['file_id']
-    result = DataBase().delete_violation(file_id=file_id)
+    result = DataBase().delete_single_violation(file_id=file_id)
     return result
 
 
@@ -280,7 +280,7 @@ async def get_data_fore_update(data: dict, get_from: str = 'local') -> dict:
     if get_from == 'data_base':
         try:
             if DataBase().violation_exists(data.get('file_id')):
-                violation_list: list = DataBase().get_violation(file_id=data.get('file_id'))
+                violation_list: list = DataBase().get_single_violation(file_id=data.get('file_id'))
 
                 headers: list[str] = [row[1] for row in DataBase().get_table_headers()]
                 violation_dict: dict = dict(zip(headers, violation_list[0]))
@@ -422,7 +422,7 @@ async def delete_violations_from_all_repo(violation_file_id: str) -> bool:
     if not violation_file_id:
         logger.error(f'violation: {violation_file_id} - запись не найдена')
 
-    violation_list: list = DataBase().get_violation(file_id=violation_file_id)
+    violation_list: list = DataBase().get_single_violation(file_id=violation_file_id)
     if not violation_list:
         logger.error(f'violation: {violation_file_id} - запись не найдена')
         return False

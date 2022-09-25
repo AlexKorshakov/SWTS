@@ -1,21 +1,22 @@
 import datetime
 import os
 from math import ceil
-
-from app import MyBot
-from loader import logger
 from openpyxl.drawing.image import Image
 
-from apps.core.bot.data.category import CATEGORY, ELIMINATION_TIME
-from apps.core.bot.data.report_data import headlines_data, user_data
+from pandas import DataFrame
+
+from app import MyBot
+from apps.core.bot.data.category import ELIMINATION_TIME, get_data_list
+from apps.core.bot.data.report_data import headlines_data
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.utils.generate_report.get_file_list import get_registration_json_file_list
-from apps.core.bot.utils.generate_report.mip_report_settings import CATEGORY_LIST_VALUES
+from apps.core.bot.utils.generate_report.settings_mip_report import CATEGORY_LIST_VALUES
 from apps.core.bot.utils.generate_report.sheet_formatting.set_alignment import set_mip_alignment
 from apps.core.bot.utils.generate_report.sheet_formatting.set_font import sets_report_font, set_report_font
 from apps.core.bot.utils.generate_report.sheet_formatting.set_frame_border import set_range_border
 from apps.core.bot.utils.img_processor.insert_img import image_preparation, insert_images
 from apps.core.bot.utils.json_worker.read_json_file import read_json_file
+from loader import logger
 
 not_found: str = 'не выявлено'
 not_tested: str = 'не проверялось'
@@ -30,7 +31,9 @@ photo_height: int = 400
 
 
 async def set_headlines_data_values(chat_id):
-    """ Формирование заголовков отчета
+    """Формирование заголовков отчета
+
+    :param chat_id: id пользователя для которого заполняется отчет
     :return:
     """
 
@@ -62,13 +65,13 @@ async def set_headlines_data_values(chat_id):
     headlines_data["year"] = (datetime.datetime.now()).strftime("%Y")
 
     # if not user_data:
-    registration_file_list = await get_registration_json_file_list(chat_id=chat_id)
+    registration_file_list: list = await get_registration_json_file_list(chat_id=chat_id)
     if not registration_file_list:
         logger.warning(Messages.Error.registration_file_list_not_found)
         await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.file_list_not_found)
         return
 
-    registration_data = await read_json_file(registration_file_list)
+    registration_data: dict = await read_json_file(registration_file_list)
 
     headlines_data['function'] = registration_data.get("function")
     headlines_data['name'] = registration_data.get("name")
@@ -92,8 +95,9 @@ async def set_headlines_data_values(chat_id):
 
 
 async def set_report_body_values(worksheet):
-    """
-    :param worksheet:
+    """Заполнение первоначальных данных отчета
+
+    :param worksheet: страница для заполнения
     :return:
     """
     values = [
@@ -257,7 +261,8 @@ async def set_report_body_values(worksheet):
 
 async def set_report_header_values(worksheet, dataframe):
     """Заполнение заголовка отчета
-    :param worksheet:
+
+    :param worksheet: страница для заполнения
     :return:
     """
 
@@ -307,29 +312,32 @@ async def set_report_header_values(worksheet, dataframe):
             return None
 
 
-async def set_report_violation_values(worksheet, dataframe):
-    """ установить значения нарушения
-    :param worksheet:
-    :param dataframe:
-    :return:
+async def set_report_violation_values(worksheet, dataframe: DataFrame):
+    """Заполнение акта значениями из dataframe
+
+    :param worksheet: страница для заполнения
+    :param dataframe: dataframe с данными нарушений
+    :return: None
     """
 
     serial_number = 0
-    val = []
-    for category in CATEGORY:
+    violation_value = []
+    for category in get_data_list("CATEGORY"):
         for item in range(1, dataframe.category.size):
             if dataframe.loc[item]["category"] != category:
                 continue
 
             try:
                 elimination_time = await get_elimination_time(dataframe, item)
-                val.append({"description": dataframe.loc[item]["description"] + ' \\',
-                            "elimination_time": elimination_time + ' \\'})
+                violation_value.append(
+                    {"description": dataframe.loc[item]["description"] + ' \\',
+                     "elimination_time": elimination_time + ' \\'}
+                )
             except Exception as err:
                 logger.error(f"{repr(err)}")
-                return
+                continue
 
-        if not val:
+        if not violation_value:
             continue
 
         serial_number += 1
@@ -338,10 +346,43 @@ async def set_report_violation_values(worksheet, dataframe):
             if category != item['value']:
                 continue
 
-            await set_worksheet_cell_value(worksheet, item, serial_number, val)
-
-            val = []
+            await set_worksheet_cell_value(worksheet, item, serial_number, violation_value)
+            violation_value = []
             break
+
+
+async def set_act_violation_values(worksheet, dataframe: DataFrame):
+    """Заполнение акта значениями из dataframe
+
+    :param worksheet: страница для заполнения
+    :param dataframe: dataframe с данными нарушений
+    :return: None
+    """
+
+    serial_number = 0
+    violation_value = []
+    for category in get_data_list("CATEGORY"):
+        for item in range(1, dataframe.category.size):
+            if dataframe.loc[item]["category"] != category:
+                continue
+
+            try:
+                elimination_time = await get_elimination_time(dataframe, item)
+                violation_value.append(
+                    {"description": dataframe.loc[item]["description"] + ' \\',
+                     "elimination_time": elimination_time + ' \\'}
+                )
+            except Exception as err:
+                logger.error(f"{repr(err)}")
+                continue
+
+        if not violation_value:
+            continue
+
+        serial_number += 1
+        if category in [item['value'] for item in CATEGORY_LIST_VALUES]:
+            await set_worksheet_cell_value(worksheet, category, serial_number, violation_value)
+            violation_value = []
 
 
 async def get_elimination_time(dataframe, item) -> str:
@@ -360,7 +401,8 @@ async def get_elimination_time(dataframe, item) -> str:
 
 async def set_worksheet_cell_value(worksheet, item, serial_number, val):
     """
-    :param worksheet:
+
+    :param worksheet: страница для заполнения
     :param item:
     :param serial_number:
     :return:

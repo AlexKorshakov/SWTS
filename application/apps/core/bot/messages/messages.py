@@ -61,12 +61,14 @@ class Messages:
     class Report:
         done: str = f"Отчет сформирован на сервере"
         start: str = f"Начинаю генерацию отчетов"
+        start_act: str = 'Начало генерации актов-предписания'
         sent_successfully: str = f"Отчет успешно отправлен"
-        generated_successfully: str= f"Отчет успешно создан"
+        generated_successfully: str = f"Отчет успешно создан"
         begin: str = f"Запись загружается"
         completed_successfully: str = f"Запись загружена"
         convert_successfully: str = f"Отчет успешно конвертирован в pdf"
         error: str = 'не удалось конвертировать отчет в pdf'
+        acts_generated_successfully: str = 'Акт(-ы) успешно созданы'
 
     class Successfully:
         bot_start: str = f"Бот успешно запущен..."
@@ -120,7 +122,8 @@ class Messages:
                                                 f'чтобы написать разработчику нажмите /developer'
         authorized_google_drive: str = f"Не удалось авторизоваться на Google Drive!"
         upload_on_web: str = "Файл не обнаружен, загрузка на web прервана"
-        file_not_found: str = "Файлы не найдены. Вероятно они были удалёны"
+        file_not_found: str = "Файлы не найдены. Вероятно они были удалены"
+        date_not_found: str = "Данные для составления Акта не найдены."
         location_name_not_found: str = "Не найдены данные о местоположении!"
         invalid_input: str = f"Отправь мне свой номер телефона с кодом (пример +7xxxxxxxxxx)"
         no_file_too_send: str = "Нет файлов для отправки"

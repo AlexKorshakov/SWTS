@@ -80,7 +80,7 @@ async def call_correct_registration_data(call: types.CallbackQuery, callback_dat
     :param callback_data:
     :return:
     """
-    chat_id = call.message.chat.id
+    chat_id = call.chat.id
     action: str = callback_data['action']
     registration_text: str = ''
 
@@ -124,7 +124,7 @@ async def call_correct_commission_composition(call: types.CallbackQuery, callbac
     :return:
     """
 
-    chat_id = call.message.chat.id
+    chat_id = call.chat.id
     action: str = callback_data['action']
     headlines_text = ''
 
@@ -152,7 +152,7 @@ async def call_correct_current_post(call: types.CallbackQuery, callback_data: ty
     :param callback_data:
     :return:
     """
-    chat_id = call.message.chat.id
+    chat_id = call.chat.id
     action: str = callback_data['action']
     violations_file_path = ''
 

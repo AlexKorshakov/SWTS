@@ -74,3 +74,17 @@ async def create_dataframe(file_list) -> Optional[DataFrame]:
     except Exception as err:
         logger.error(F"create_dataframe {repr(err)}")
         return None
+
+
+async def create_lite_dataframe(data_list: list, header_list: list) -> Optional[DataFrame]:
+    """Создание dataframe
+
+    :param header_list: список с заголовками
+    :param data_list: список с данными
+    """
+    try:
+        dataframe = DataFrame(data_list, columns=header_list)
+        return dataframe
+    except Exception as err:
+        logger.error(F"create_dataframe {repr(err)}")
+        return None

@@ -1,7 +1,8 @@
-
 from app import MyBot
+from apps.core.bot.utils.generate_report.sheet_formatting.set_act_basic_value import set_act_body_values
+from apps.core.bot.utils.generate_report.sheet_formatting.set_akt_value import set_act_header_values, \
+    get_act_headlines_data_values
 from loader import logger
-
 
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.utils.generate_report.convert_xlsx_to_pdf import convert_report_to_pdf
@@ -11,11 +12,13 @@ from apps.core.bot.utils.generate_report.get_file_list import get_json_file_list
 from apps.core.bot.utils.generate_report.get_report_path import get_full_report_name
 from apps.core.bot.utils.generate_report.get_workbook import get_workbook
 from apps.core.bot.utils.generate_report.get_worksheet import get_worksheet
-from apps.core.bot.utils.generate_report.sheet_formatting.set_value import set_report_body_values, set_report_header_values, \
+from apps.core.bot.utils.generate_report.sheet_formatting.set_value import \
+    set_report_header_values, \
     set_report_violation_values, set_photographic_materials_values, set_photographic_materials, \
-    set_headlines_data_values
-from apps.core.bot.utils.generate_report.sheet_formatting.sheet_formatting import format_sheets, format_mip_report_sheet, \
-    format_mip_photographic
+    set_headlines_data_values, set_report_body_values, set_act_violation_values
+from apps.core.bot.utils.generate_report.sheet_formatting.sheet_formatting import format_sheets, \
+    format_mip_report_sheet, \
+    format_mip_photographic, format_act_prescription_sheet
 from apps.core.bot.utils.img_processor.insert_img import insert_images_to_sheet, insert_signalline_to_report_body
 from apps.core.bot.utils.json_worker.read_json_file import read_json_file
 
@@ -177,3 +180,64 @@ async def create_mip_report(chat_id, dataframe=None, full_mip_report_path=None,
     workbook.save(full_mip_report_path)
 
     await convert_report_to_pdf(chat_id=chat_id, path=full_mip_report_path)
+
+
+async def create_act_prescription(chat_id, dataframe=None, full_act_path=None, violation_data=None,
+                                  act_date=None,general_contractor= None):
+    """Создание Акта-предписания
+    """
+
+    if not full_act_path:
+        logger.warning(Messages.Error.fill_report_path_not_found)
+        return
+
+    is_created: bool = await create_new_xlsx(report_file=full_act_path)
+    if is_created is None:
+        logger.warning(Messages.Error.workbook_not_create)
+        await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.workbook_not_create)
+        return
+
+    workbook = await get_workbook(fill_report_path=full_act_path)
+    if workbook is None:
+        logger.warning(Messages.Error.workbook_not_found)
+        await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.workbook_not_found)
+        return
+
+    worksheet = await get_worksheet(workbook, index=0)
+    if worksheet is None:
+        logger.warning(Messages.Error.worksheet_not_found)
+        await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.worksheet_not_found)
+        return
+
+    await format_act_prescription_sheet(worksheet)
+
+    await set_act_body_values(worksheet)
+
+    headlines_data_values: dict = await get_act_headlines_data_values(chat_id=chat_id, dataframe=dataframe,
+                                                                      act_date=act_date)
+
+    await set_act_header_values(worksheet, headlines_data_values, general_contractor)
+
+    try:
+        await set_act_violation_values(worksheet, dataframe)
+    except Exception as err:
+        await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.file_not_found + str(f' {err} '))
+        return
+
+    # if violation_data is None:
+    #     violation_data = await get_json_file_list(chat_id=chat_id)
+    #
+    # if violation_data:
+    #     await set_photographic_materials_values(worksheet)
+    #
+    #     await format_mip_photographic(worksheet)
+    #
+    #     num_data: int = 0
+    #     for v_data in violation_data:
+    #         is_add = await set_photographic_materials(worksheet, v_data, num_data)
+    #         if is_add:
+    #             num_data += 1
+
+    workbook.save(full_act_path)
+
+    # await convert_report_to_pdf(chat_id=chat_id, path=full_act_path)

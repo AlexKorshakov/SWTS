@@ -1,14 +1,19 @@
+from apps.core.bot.utils.generate_report.settings_act_prescription import ACT_RANGE_COLUMNS, ACT_MERGED_CELLS, \
+    ACT_CELL_RANGES, ACT_ROW_DIMENSIONS, ACT_CELL_RANGES_BASIC_ALIGNMENT, ACT_CELL_RANGES_SET_REPORT_FONT
 from loader import logger
 from xlsxwriter.worksheet import Worksheet
 
-from apps.core.bot.utils.generate_report.mip_report_settings import RANGE_COLUMNS, MERGED_CELLS, ROW_DIMENSIONS, CELL_RANGES, \
-    CELL_RANGE_BACKGROUND_COLOR, CELL_RANGES_ALIGNMENT, CELL_RANGES_BASIC_ALIGNMENT, CELL_RANGES_SET_REPORT_FONT
-from apps.core.bot.utils.generate_report.sheet_formatting.set_alignment import set_alignment, set_mip_alignment
+from apps.core.bot.utils.generate_report.settings_mip_report import RANGE_COLUMNS, MERGED_CELLS, ROW_DIMENSIONS, \
+    CELL_RANGE_BACKGROUND_COLOR, CELL_RANGES_ALIGNMENT, CELL_RANGES_BASIC_ALIGNMENT, \
+    CELL_RANGES_SET_REPORT_FONT, CELL_RANGES
+from apps.core.bot.utils.generate_report.sheet_formatting.set_alignment import set_alignment, set_mip_alignment, \
+    set_act_alignment
 from apps.core.bot.utils.generate_report.sheet_formatting.set_background_color import set_background_color
 from apps.core.bot.utils.generate_report.sheet_formatting.set_column_widths import set_column_widths
 from apps.core.bot.utils.generate_report.sheet_formatting.set_font import set_font, set_report_font, sets_report_font
-from apps.core.bot.utils.generate_report.sheet_formatting.set_frame_border import set_border, set_range_border
-from apps.core.bot.utils.generate_report.sheet_formatting.set_page_setup import set_page_setup
+from apps.core.bot.utils.generate_report.sheet_formatting.set_frame_border import set_border, set_range_border, \
+    set_act_range_border
+from apps.core.bot.utils.generate_report.sheet_formatting.set_page_setup import set_page_setup, set_act_page_setup
 from apps.core.bot.utils.generate_report.sheet_formatting.set_row_height import set_row_height
 
 
@@ -57,6 +62,43 @@ async def format_mip_report_sheet(worksheet: Worksheet):
         await set_mip_alignment(worksheet, cell_range, horizontal='center', vertical='center')
 
     for item, cell_range in enumerate(CELL_RANGES_SET_REPORT_FONT, start=1):
+        await sets_report_font(worksheet, cell_range[0], params=cell_range[1])
+
+
+async def format_act_prescription_sheet(worksheet: Worksheet):
+    """Пошаговое форматирование страницы
+    """
+
+    for item in ACT_RANGE_COLUMNS:
+        try:
+            worksheet.column_dimensions[item[0]].width = item[1]
+        except Exception as err:
+            logger.error(f"set_column_widths {repr(err)}")
+
+    await set_act_page_setup(worksheet)
+
+    for merged_cell in ACT_MERGED_CELLS:
+        worksheet.merge_cells(merged_cell)
+
+    for item in ACT_CELL_RANGES:
+        await set_act_range_border(worksheet, cell_range=item[0], border=item[1])
+
+    for item in ACT_ROW_DIMENSIONS:
+        worksheet.row_dimensions[int(item[0])].height = float(item[1])
+
+    for num, item_range in enumerate(ACT_CELL_RANGES_BASIC_ALIGNMENT, start=1):
+        await set_report_font(worksheet, cell_range=item_range[0], font_size=item_range[2], font_name=item_range[1])
+
+    # for item in CELL_RANGE_BACKGROUND_COLOR:
+    #     await set_background_color(worksheet, item[0], rgb=item[1])
+
+    for item, item_range in enumerate(ACT_CELL_RANGES_BASIC_ALIGNMENT, start=1):
+        await set_act_alignment(worksheet, item_range[0], horizontal=item_range[3], vertical=item_range[4])
+
+    # for item, cell_range in enumerate(CELL_RANGES_ALIGNMENT, start=1):
+    #     await set_mip_alignment(worksheet, cell_range, horizontal='center', vertical='center')
+
+    for item, cell_range in enumerate(ACT_CELL_RANGES_SET_REPORT_FONT, start=1):
         await sets_report_font(worksheet, cell_range[0], params=cell_range[1])
 
 

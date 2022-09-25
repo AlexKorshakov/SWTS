@@ -13,16 +13,14 @@ async def set_font(ws):
                 logger.error(f"sets_report_font {repr(err)}")
 
 
-async def set_report_font(worksheet, cell_range, font_size=14, name='Arial'):
+async def set_report_font(worksheet, cell_range, font_size=14, font_name='Arial'):
     """Форматирование ячейки: размер шрифта
     """
     cells = [cell for row in worksheet[cell_range] for cell in row]
 
     for item, cell in enumerate(cells, start=1):
         try:
-
-            cell.font = Font(size=font_size, name=name)
-
+            cell.font = Font(size=font_size, name=font_name)
         except Exception as err:
             logger.error(f"item {item} cell {cell}")
             logger.error(f"set_report_font {repr(err)}")
