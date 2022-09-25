@@ -8,7 +8,9 @@ class Violations(models.Model):
 
     location = models.ForeignKey(to='Location', on_delete=models.PROTECT, verbose_name='Закрепленный участок',
                                  default='')
-
+    main_location = models.ForeignKey(to='MainLocation', on_delete=models.PROTECT, verbose_name='Площадка', default='')
+    sub_location = models.ForeignKey(to='SubLocation', on_delete=models.PROTECT, verbose_name='Под площадка / участок',
+                                     default='')
     function = models.CharField(max_length=255, verbose_name='Должность', default='')
     name = models.CharField(max_length=255, verbose_name='ФИО', default='')
     work_shift = models.ForeignKey(to='WorkShift', on_delete=models.PROTECT, verbose_name='Смена', default='')
@@ -123,7 +125,38 @@ class Location(models.Model):
         return reverse('location', kwargs={'location_id': self.pk})
 
 
+class SubLocation(models.Model):
+    title = models.CharField(max_length=255, db_index=True, verbose_name='Под площадка / участок')
 
+    class Meta:
+        verbose_name = "Под площадка / участок"  # единственное число
+        verbose_name_plural = "Под площадки / участки"  # множественное число
+        ordering = ['title']  # порядок сортировки
+
+    def __str__(self):
+        return self.title
+
+    def get_absolute_url(self):
+        """Метод, согласно конвекции, для создания ссылок на части экземпляра модели (класса)
+        также, при наличии, позволяет переходить из админки на соответствующий раздел"""
+        return reverse('sub_location', kwargs={'location_id': self.pk})
+
+
+class MainLocation(models.Model):
+    title = models.CharField(max_length=255, db_index=True, verbose_name='Площадка')
+
+    class Meta:
+        verbose_name = "Площадка"  # единственное число
+        verbose_name_plural = "Площадки"  # множественное число
+        ordering = ['title']  # порядок сортировки
+
+    def __str__(self):
+        return self.title
+
+    def get_absolute_url(self):
+        """Метод, согласно конвекции, для создания ссылок на части экземпляра модели (класса)
+        также, при наличии, позволяет переходить из админки на соответствующий раздел"""
+        return reverse('main_location', kwargs={'main_location_id': self.pk})
 
 
 class WorkShift(models.Model):

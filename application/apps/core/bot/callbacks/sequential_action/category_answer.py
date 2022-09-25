@@ -1,3 +1,6 @@
+import asyncio
+from pprint import pprint
+
 from aiogram import types
 
 from app import MyBot
@@ -16,7 +19,7 @@ logger.debug("category_answer")
 
 @MyBot.dp.callback_query_handler(lambda call: call.data in get_data_list("CATEGORY"))
 async def category_answer(call: types.CallbackQuery):
-    """Обработка ответов содержащихся в CATEGORY_LIST
+    """Обработка ответов содержащихся в CATEGORY
     """
     if call.data in get_data_list("CATEGORY"):
         try:
@@ -28,21 +31,21 @@ async def category_answer(call: types.CallbackQuery):
 
             await call.message.edit_reply_markup()
 
+            short_title = get_data_list("NORMATIVE_DOCUMENTS",
+                                        category=violation_data["category"],
+                                        condition='short_title'
+                                        )
             data_list = get_data_list("NORMATIVE_DOCUMENTS",
-                                      category=violation_data["category"],
-                                      condition='short_title'
-                                      )
-            item_list = get_data_list("NORMATIVE_DOCUMENTS",
                                       category=violation_data["category"],
                                       condition='data_list'
                                       )
             menu_level = board_config.menu_level = 1
-            menu_list = board_config.menu_list = data_list
+            menu_list = board_config.menu_list = short_title
 
-            ziped_list: list = zip(data_list, item_list)
+            zipped_list: list = list(zip(short_title, data_list))
 
             text = f'{Messages.Choose.normative_documents} \n\n' + \
-                   ' \n\n'.join(str(item[0]) + " : " + str(item[1]) for item in ziped_list)
+                   ' \n\n'.join(str(item[0]) + " : " + str(item[1]) for item in zipped_list)
 
             reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=2, level=menu_level)
             await call.message.answer(text=text, reply_markup=reply_markup)

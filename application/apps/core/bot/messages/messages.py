@@ -93,6 +93,7 @@ class Messages:
         elimination_time: str = f"Выберите количество дней на устранение"
         violation_category: str = f"Выберете степень опасности ситуации"
         normative_documents: str = f"Выберете нарушение нажав на кнопку соответствующего нарушения"
+        sub_location: str = f"Выберете площадку нажав на соответствую кнопку "
         act_required: str = f"Выберите требуется ли оформление акта - предписания"
         general_constractor: str = f"Выберите подрядную организацию"
         category: str = f"Выберите категорию нарушения"

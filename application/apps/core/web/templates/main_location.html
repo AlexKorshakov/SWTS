@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}
-{{ location.title }}::{{ block.super }}
+{{ main_location.title }}::{{ block.super }}
 {% endblock %}
 
 {% block sidebar %}
@@ -21,7 +21,7 @@
             Основная категория: <a href="{{ item.main_category.get_absolute_url }}">{{ item.main_category }}</a>
         </div>
         <div class="card-header">
-            Площадка: <a href="{{ item.location.get_absolute_url }}">{{ item.location }}</a>
+            Площадка: <a href="{{ item.main_location.get_absolute_url }}">{{ item.main_location }}</a>
         </div>
         <div class="card-header">
             Подрядчик: <a href="{{ item.general_contractor.get_absolute_url }}">{{ item.general_contractor }}</a>

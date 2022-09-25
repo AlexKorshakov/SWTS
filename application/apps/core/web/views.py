@@ -18,7 +18,7 @@ from apps.core.web.utils import MyMixin, delete_violations_from_all_repo, get_id
 from loader import logger
 #
 from .forms import UsrRegisterForm, UserLoginForm, ViolationsForm, ViolationsAddForm
-from .models import Violations, MainCategory, Location, GeneralContractor, IncidentLevel, Status
+from .models import Violations, MainCategory, Location, GeneralContractor, IncidentLevel, Status, MainLocation
 #
 # # Create your views here.
 from ..bot.database.DataBase import upload_from_local
@@ -104,7 +104,7 @@ def update_violations(request: HttpRequest):
     'is_published': 'on',
     'json': '',
     'latitude': '',
-    'location': '18',
+    'main_location': '18',
     'longitude': '',
     'main_category': '4',
     'name': 'Имя пользователя',
@@ -301,7 +301,7 @@ class ViolationsByMainCategory(MyMixin, ListView):
         ).prefetch_related('main_category')
 
 
-class ViolationsByLocation(MyMixin, ListView):
+class ViolationsByMainLocation(MyMixin, ListView):
     """Просмотр категории"""
     model = Violations
     template_name = 'home_violations_list.html'
@@ -312,15 +312,15 @@ class ViolationsByLocation(MyMixin, ListView):
     def get_context_data(self, *, object_list=None, **kwargs):
         """Дополнение данных перед отправкой на рендер"""
         context = super().get_context_data(**kwargs)
-        context['title'] = self.get_upper(Location.objects.get(pk=self.kwargs['location_id']))
+        context['title'] = self.get_upper(MainLocation.objects.get(pk=self.kwargs['main_location_id']))
         logger.debug(f"{context=}")
         return context
 
     def get_queryset(self):
         return Violations.objects.filter(
-            location_id=self.kwargs['location_id'],
+            main_location_id=self.kwargs['main_location_id'],
             is_published=True
-        ).prefetch_related('location')
+        ).prefetch_related('main_location')
 
 
 class ViolationsByGeneralContractor(MyMixin, ListView):

@@ -1,8 +1,9 @@
 <div class="card-header" style="color: #ffffff">
-    Локации
+    Основные локации
 </div>
+
 <div class="list-group">
-    {% for item in locations %}
+    {% for item in main_locations %}
     <a href="{{ item.get_absolute_url }}" class="list-group-item list-group-item-action"> {{ item.title }}
         <a-counter><span class="badge badge-primary badge-pill"> {{ item.cnt }} </span></a-counter>
     </a>

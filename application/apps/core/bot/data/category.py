@@ -2,7 +2,6 @@ import inspect
 import json
 import os.path
 from json import JSONDecodeError
-from pprint import pprint
 from typing import Union
 
 from apps.core.bot.database.DataBase import DataBase
@@ -155,6 +154,7 @@ ALL_CATEGORY: dict = {
 }
 
 _PREFIX_ND: str = 'nrm_doc_'
+_PREFIX_POZ: str = 'nrm_poz_'
 
 
 def convert_category_name(category_in_db: str) -> str:
@@ -172,7 +172,9 @@ def convert_category_name(category_in_db: str) -> str:
         'INCIDENT_LEVEL': 'core_incidentlevel',
         'ELIMINATION_TIME': 'core_eliminationtime',
         'LOCATIONS': 'core_location',
-        'NORMATIVE_DOCUMENTS': 'core_normativedocuments'
+        'NORMATIVE_DOCUMENTS': 'core_normativedocuments',
+        'MAIN_LOCATIONS': 'core_mainlocation',
+        'SUB_LOCATIONS': 'core_sublocation',
 
     }
 
@@ -196,9 +198,10 @@ def add_null_value_to_ziped_list(zip_list: list) -> list:
     return zip_list
 
 
-def add_null_value_to_list(zip_list: list, condition) -> list:
+def add_null_value_to_list(zip_list: list, condition: str, db_table_name: str) -> list:
     """
 
+    :param condition:
     :param zip_list:
     :return:
     """
@@ -207,17 +210,30 @@ def add_null_value_to_list(zip_list: list, condition) -> list:
         zip_list.append(f'Нет нужной записи')
 
     if condition == 'short_title':
-        zip_list.append(_PREFIX_ND + '0')
+        if db_table_name == 'core_normativedocuments':
+            zip_list.append(_PREFIX_ND + '0')
+
+        if db_table_name == 'core_sublocation':
+            zip_list.append(_PREFIX_POZ + '0')
 
     return zip_list
 
 
-def get_category_data_list_whits_single_condition(db_table_name, category_id, single_condition) -> list:
+def get_category_data_list_whits_single_condition(db_table_name: str, item_id: int, single_condition: str) -> list:
     """ Получение данных если single_condition
 
+    :param single_condition:
+    :param item_id:
+    :param db_table_name:
     :return:
     """
-    query: str = f'SELECT * FROM {db_table_name} WHERE `category_id` == {category_id}'
+
+    if db_table_name == 'core_sublocation':
+        query: str = f'SELECT * FROM {db_table_name} WHERE `main_location_id` == {item_id}'
+
+    if db_table_name == 'core_normativedocuments':
+        query: str = f'SELECT * FROM {db_table_name} WHERE `category_id` == {item_id}'
+
     datas_query: list = DataBase().get_data_list(query=query)
 
     if not datas_query:
@@ -226,7 +242,13 @@ def get_category_data_list_whits_single_condition(db_table_name, category_id, si
         return []
 
     if single_condition == 'short_title':
-        clean_datas_query: list = [_PREFIX_ND + str(item[0]) for item in datas_query]
+
+        if db_table_name == 'core_sublocation':
+            clean_datas_query: list = [_PREFIX_POZ + str(item[0]) for item in datas_query]
+
+        if db_table_name == 'core_normativedocuments':
+            clean_datas_query: list = [_PREFIX_ND + str(item[0]) for item in datas_query]
+
         return clean_datas_query
 
     if single_condition == 'data_list':
@@ -246,10 +268,11 @@ def get_category_data_list_whits_dict_condition(db_table_name, dict_condition) -
     if not dict_condition.get("data", None):
         return []
 
-    item_id = dict_condition.get("data", None).replace(_PREFIX_ND, '')
+    if db_table_name == 'core_sublocation':
+        item_id = dict_condition.get("data", None).replace(_PREFIX_POZ, '')
 
-    # category_in_db = dict_condition.get("category_in_db", None)
-    # category_name = dict_condition.get("category_name", None)
+    if db_table_name == 'core_normativedocuments':
+        item_id = dict_condition.get("data", None).replace(_PREFIX_ND, '')
 
     query: str = f'SELECT * FROM {db_table_name} WHERE `id` == {item_id}'
     datas_query: list = DataBase().get_data_list(query=query)
@@ -274,18 +297,29 @@ def get_category_data_list_whits_dict_condition(db_table_name, dict_condition) -
 
 def get_category_data_list_whits_condition(db_table_name: str, category, condition: Union[str, dict]) -> list:
     """Получение
+
+    :param category:
+    :param db_table_name:
     :type condition: Union[str, dict]
 
     """
-    category_id = DataBase().get_id(table='core_category', entry=category)
+    main_table_name: str = 'core_violations'
+
+    if db_table_name == 'core_normativedocuments':
+        main_table_name = 'core_category'
+
+    if db_table_name == 'core_sublocation':
+        main_table_name = 'core_mainlocation'
+
+    category_id = DataBase().get_id(table=main_table_name, entry=category)
     if not category_id:
         return []
 
     if isinstance(condition, str):
         datas_from_bd: list = get_category_data_list_whits_single_condition(db_table_name=db_table_name,
-                                                                            category_id=category_id,
+                                                                            item_id=category_id,
                                                                             single_condition=condition)
-        datas_from_bd = add_null_value_to_list(datas_from_bd, condition)
+        datas_from_bd = add_null_value_to_list(datas_from_bd, condition, db_table_name)
         return datas_from_bd
 
     if isinstance(condition, dict):
@@ -323,6 +357,8 @@ def get_data_list(category_in_db: str = None, category: str = None, condition: U
     """ Функция получения данных из базы данных. При отсутствии данных поиск в json.
     При наличии condition - формирование данных согласно  condition
 
+    :param category:
+    :param category_in_db:
     :type condition: Union[str, dict]
     :return: data_list or [ ]
     """

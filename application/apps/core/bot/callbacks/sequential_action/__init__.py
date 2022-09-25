@@ -2,6 +2,8 @@ from loader import logger
 
 logger.debug("sequential_action")
 
+from . import main_location_answer
+from . import sub_location_answer
 from . import main_category_answer
 from . import category_answer
 from . import general_contractors_answer

@@ -1,7 +1,7 @@
 from django.template.context_processors import request
 from django.urls import path
 
-from .views import HomeViolations, ViewViolations, ViolationsByMainCategory, ViolationsByLocation, \
+from .views import HomeViolations, ViewViolations, ViolationsByMainCategory, ViolationsByMainLocation, \
     ViolationsByGeneralContractor, ViolationsByIncidentLevel, ViolationsByStatus, user_login, user_logout, register, \
     post_edit, PostEdit, test, simple_view, upload_too_db_from_local_storage, delete_violations, update_violations, \
     add_violations, statistic
@@ -16,8 +16,8 @@ urlpatterns = [
          name='view_violations'),
     path('main_category/<int:main_category_id>/', ViolationsByMainCategory.as_view(),
          name='main_category'),
-    path('location/<int:location_id>/', ViolationsByLocation.as_view(),
-         name='location'),
+    path('main_location/<int:main_location_id>/', ViolationsByMainLocation.as_view(),
+         name='main_location'),
     path('general_contractor/<int:general_contractor_id>/', ViolationsByGeneralContractor.as_view(),
          name='general_contractor'),
     path('incident_level/<int:incident_level_id>/', ViolationsByIncidentLevel.as_view(),

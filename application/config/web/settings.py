@@ -13,6 +13,7 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
+from loader import DjangoColorsFormatter
 from .. import apps
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -147,45 +148,91 @@ CACHES = {
         }
     }
 }
-# LOGGING_LEVEL = 'DEBUG'
-LOGGING_LEVEL = 'INFO'
+LOGGING_LEVEL = 'DEBUG'
+# LOGGING_LEVEL = 'INFO'
 
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    "formatters": {
-        "rich": {
-            "datefmt": "[%X]"
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
         },
-        'file': {
-            'format': '%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
-        }
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue'
+        },
+    },
+    'formatters': {
+        'main_formatter': {
+            'format': '%(levelname)s:%(name)s (%(asctime)s; %(filename)s:%(lineno)d): %(message)s',
+            'datefmt': "%Y-%m-%d %H:%M:%S",
+        },
+        'colored': {
+            '()': DjangoColorsFormatter,
+            'format': '%(asctime)s - %(levelname)s - %(message)s',
+            "datefmt": "%X",
+        },
     },
     'handlers': {
-        'console': {
-            'class': 'rich.logging.RichHandler',
-            'formatter': 'rich'
+        'mail_admins': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'django.utils.log.AdminEmailHandler'
         },
-        'file': {
+        'console': {
             'level': LOGGING_LEVEL,
-            'class': 'logging.FileHandler',
-            'formatter': 'file',
-            'filename': f'{BASE_DIR.parent}/debug.log'
+            # 'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+            'formatter': 'colored',
+        },
+        'production_file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': f'{BASE_DIR.parent.parent}/logs/main.log',
+            'maxBytes': 1024 * 1024 * 5,  # 5 MB
+            'backupCount': 7,
+            'formatter': 'main_formatter',
+            # 'filters': ['require_debug_false'],
+        },
+        'debug_file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': f'{BASE_DIR.parent.parent}/logs/main_debug.log',
+            'maxBytes': 1024 * 1024 * 5,  # 5 MB
+            'backupCount': 7,
+            'formatter': 'main_formatter',
+            'filters': ['require_debug_true'],
+        },
+        'warning_file': {
+            'level': 'WARNING',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': f'{BASE_DIR.parent.parent}/logs/warning.log',
+            'maxBytes': 1024 * 1024 * 5,  # 5 MB
+            'backupCount': 7,
+            'formatter': 'main_formatter',
+        },
+        'null': {
+            "class": 'logging.NullHandler',
         }
     },
     'loggers': {
-        '': {
-            'level': LOGGING_LEVEL,
-            'handlers': ['console', 'file'],
+        'django.request': {
+            'handlers': ['mail_admins', 'console'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+        'django': {
+            'handlers': ['null', ],
+        },
+        'py.warnings': {
+            'handlers': ['null', ],
             'propagate': True
         },
-        'django.request': {
-            'level': LOGGING_LEVEL,
-            'handlers': ['console', 'file'],
-            'propagate': True
-        }
+        '': {
+            'handlers': ['console', 'production_file', 'debug_file', 'warning_file', ],
+            'level': "DEBUG",
+        },
     }
-
 }
 
 STATICFILES_FINDERS = (
@@ -193,6 +240,7 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
+
 if __name__ == '__main__':
     from pathlib import Path
 

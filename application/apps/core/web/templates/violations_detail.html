@@ -21,7 +21,7 @@
         {% comment %}
         <!--            {{ violations_item.general_contractor.get_absolute_url }}-->
         {% endcomment %}
-        Подрядчик: <a href="">{{ violations_item.location }}</a>
+        Площадка: <a href="">{{ violations_item.main_location }}</a>
     </div>
     <div class="card-header">
         {% comment %}
@@ -96,7 +96,7 @@
                 <h5 class="card-text"> Специалист зафиксировавший нарушение </h5>
                 <h5 class="card-text"> Должность: {{ violations_item.function }} </h5>
                 <h5 class="card-text"> ФИО: {{ violations_item.name }} </h5>
-                <p class="card-text"> Заклепленный участок: {{ violations_item.location }} </p>
+                <p class="card-text"> Закреплённый участок: {{ violations_item.location }} </p>
                 <p class="card-text"> Смена: {{ violations_item.work_shift }} </p>
                 <p class="card-text"> Id специалиста: {{ violations_item.user_id }} </p>
 

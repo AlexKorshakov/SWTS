@@ -7,6 +7,8 @@ from .models import Violations, Location, WorkShift, MainCategory, Status, Gener
     ActRequired, EliminationTime, ViolationCategory, NormativeDocuments
 from django.contrib.auth.models import User
 
+EMPTY_LABEL: str = "***********"
+
 
 class UserLoginForm(AuthenticationForm):
     username = forms.CharField(label='Имя пользователя:',
@@ -39,8 +41,18 @@ class ViolationsForm(forms.ModelForm):
     """
     """
     location = forms.ModelChoiceField(
+        label='Закрепленный участок',
+        queryset=Location.objects.all(), empty_label=EMPTY_LABEL,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    main_location = forms.ModelChoiceField(
         label='Площадка',
-        queryset=Location.objects.all(), empty_label="***********",
+        queryset=Location.objects.all(), empty_label=EMPTY_LABEL,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    sub_location = forms.ModelChoiceField(
+        label='Под площадка / участок',
+        queryset=Location.objects.all(), empty_label=EMPTY_LABEL,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
     function = forms.CharField(
@@ -55,28 +67,22 @@ class ViolationsForm(forms.ModelForm):
     )
     work_shift = forms.ModelChoiceField(
         label='Смена',
-        queryset=WorkShift.objects.all(), empty_label="***********",
+        queryset=WorkShift.objects.all(), empty_label=EMPTY_LABEL,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
-    # created_at = forms.DateField(
-    #     label='Дата регистрации',
-    #     widget=forms.SelectDateWidget(attrs={'class': 'form-control'}),
-    #     help_text="Введите дату",
-    # )
-    # updated_at = models.DateField(auto_now=True, verbose_name='Обновлено')
     main_category = forms.ModelChoiceField(
         label='Основная Категория',
-        queryset=MainCategory.objects.all(), empty_label="***********",
+        queryset=MainCategory.objects.all(), empty_label=EMPTY_LABEL,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
     violation_category = forms.ModelChoiceField(
         label='Категория нарушения',
-        queryset=ViolationCategory.objects.all(), empty_label="***********",
+        queryset=ViolationCategory.objects.all(), empty_label=EMPTY_LABEL,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
     status = forms.ModelChoiceField(
         label='Статус',
-        queryset=Status.objects.all(), empty_label="***********",
+        queryset=Status.objects.all(), empty_label=EMPTY_LABEL,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
     is_published = forms.BooleanField(
@@ -101,32 +107,32 @@ class ViolationsForm(forms.ModelForm):
     )
     general_contractor = forms.ModelChoiceField(
         label='Подрядчик',
-        queryset=GeneralContractor.objects.all(), empty_label="***********",
+        queryset=GeneralContractor.objects.all(), empty_label=EMPTY_LABEL,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
     category = forms.ModelChoiceField(
         label='Категория',
-        queryset=Category.objects.all(), empty_label="***********",
+        queryset=Category.objects.all(), empty_label=EMPTY_LABEL,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
     normative_documents = forms.ModelChoiceField(
         label='ПодКатегория',
-        queryset=NormativeDocuments.objects.all(), empty_label="***********",
+        queryset=NormativeDocuments.objects.all(), empty_label=EMPTY_LABEL,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
     incident_level = forms.ModelChoiceField(
         label='Уровень происшествия',
-        queryset=IncidentLevel.objects.all(), empty_label="***********",
+        queryset=IncidentLevel.objects.all(), empty_label=EMPTY_LABEL,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
     act_required = forms.ModelChoiceField(
         label='Требуется оформление Акта-предписания?',
-        queryset=ActRequired.objects.all(), empty_label="***********",
+        queryset=ActRequired.objects.all(), empty_label=EMPTY_LABEL,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
     elimination_time = forms.ModelChoiceField(
         label='Время на устранение',
-        queryset=EliminationTime.objects.all(), empty_label="***********",
+        queryset=EliminationTime.objects.all(), empty_label=EMPTY_LABEL,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
     title = forms.CharField(
@@ -140,115 +146,12 @@ class ViolationsForm(forms.ModelForm):
         help_text="ID пользователя",
     )
 
-    # file_id = forms.CharField(
-    #     label='ID записи',
-    #     widget=forms.Textarea(attrs={'class': 'form-control', 'cols': 10, 'rows': 3}),
-    #     help_text="Введите ID записи",
-    # )
-    # photo = forms.ImageField(
-    #     label='Путь к фотофайлу',
-    #     widget=forms.FileInput(attrs={'class': 'form-control', 'cols': 10, 'rows': 3}),
-    #     localize=f'{user_id}/data_file/{str(file_id).split("___")[0]}/photo/',
-    #     help_text="Выберите файл",
-    # )
-    # json = forms.FileField(
-    #     label='Путь к данными нарушения',
-    #     widget=forms.FileInput(attrs={'class': 'form-control', 'cols': 10, 'rows': 3}),
-    #     localize=f'{user_id}/data_file/{str(file_id).split("___")[0]}/json/',
-    #     help_text="Выберите файл",
-    # )
-    # day = forms.CharField(
-    #     label='День',
-    #     widget=forms.TextInput(attrs={'class': 'form-control', 'cols': 10, 'rows': 3}),
-    #     help_text="День",
-    #     disabled=True
-    # )
-    # month = forms.CharField(
-    #     label='Месяц',
-    #     widget=forms.TextInput(attrs={'class': 'form-control', 'cols': 10, 'rows': 3}),
-    #     help_text="Месяц",
-    #     disabled=True
-    # )
-    # year = forms.CharField(
-    #     label='Год',
-    #     widget=forms.TextInput(attrs={'class': 'form-control', 'cols': 10, 'rows': 3}),
-    #     help_text="Год",
-    #     disabled=True
-    # )
-    # violation_id = forms.CharField(
-    #     label='violation_id',
-    #     widget=forms.TextInput(attrs={'class': 'form-control', 'cols': 10, 'rows': 3}),
-    #     help_text="violation_id",
-    #     disabled=True
-    # )
-    # report_folder_id = forms.CharField(
-    #     label='report_folder_id',
-    #     widget=forms.TextInput(attrs={'class': 'form-control', 'cols': 10, 'rows': 3}),
-    #     help_text="report_folder_id",
-    #     disabled=True
-    # )
-    # parent_id = forms.CharField(
-    #     label='parent_id',
-    #     widget=forms.TextInput(attrs={'class': 'form-control', 'cols': 10, 'rows': 3}),
-    #     help_text="parent_id",
-    #     disabled=True
-    # )
-    # json_folder_id = forms.CharField(
-    #     label='json_folder_id',
-    #     widget=forms.TextInput(attrs={'class': 'form-control', 'cols': 10, 'rows': 3}),
-    #     help_text="json_folder_id",
-    #     disabled=True
-    # )
-    # photo_folder_id = forms.CharField(
-    #     label='photo_folder_id',
-    #     widget=forms.TextInput(attrs={'class': 'form-control', 'cols': 10, 'rows': 3}),
-    #     help_text="photo_folder_id",
-    #     disabled=True
-    # )
-    # coordinates = models.CharField(max_length=255, verbose_name='Координаты', blank=True, null=True)
-    # latitude = models.CharField(max_length=255, verbose_name='Широта', blank=True, null=True)
-    # longitude = models.CharField(max_length=255, verbose_name='Долгота', blank=True, null=True)
-    # json_file_path = forms.CharField(
-    #     label='json_file_path',
-    #     widget=forms.TextInput(attrs={'class': 'form-control', 'cols': 10, 'rows': 3}),
-    #     help_text="json_file_path",
-    #     disabled=True
-    # )
-    # json_full_name = forms.CharField(
-    #     label='json_full_name',
-    #     widget=forms.TextInput(attrs={'class': 'form-control', 'cols': 10, 'rows': 3}),
-    #     help_text="json_full_name",
-    #     disabled=True
-    # )
-    # photo_file_path = forms.CharField(
-    #     label='photo_file_path',
-    #     widget=forms.TextInput(attrs={'class': 'form-control', 'cols': 10, 'rows': 3}),
-    #     help_text="photo_file_path",
-    #     disabled=True
-    # )
-    # photo_full_name = forms.CharField(
-    #     label='photo_full_name',
-    #     widget=forms.TextInput(attrs={'class': 'form-control', 'cols': 10, 'rows': 3}),
-    #     help_text="photo_full_name",
-    #     disabled=True
-    # )
-    # user_fullname = forms.CharField(
-    #     label='Имя пользователя как в telegram',
-    #     widget=forms.TextInput(attrs={'class': 'form-control', 'cols': 10, 'rows': 3}),
-    #     help_text="user_fullname",
-    #     disabled=True
-    # )
-
     class Meta:
         model = Violations
-        # fields = '__all__'
         fields = [
-            'name', 'function', 'work_shift', 'user_id', 'location', 'main_category', 'status', 'is_published',
-            'incident_level', 'is_finished', 'act_required', 'description', 'comment', 'general_contractor', 'category',
-            'normative_documents', 'violation_category', 'elimination_time', 'title',
-            # 'file_id', 'photo', 'json','violation_id','report_folder_id', 'parent_id',
-            # 'photo_full_name','day', 'month', 'year','user_fullname', 'created_at',
-            # 'json_folder_id', 'photo_folder_id', 'json_file_path', 'json_full_name', 'photo_file_path',
+            'name', 'function', 'work_shift', 'user_id', 'location', 'main_location', 'sub_location', 'main_category',
+            'status', 'is_published', 'incident_level', 'is_finished', 'act_required', 'description', 'comment',
+            'general_contractor', 'category', 'normative_documents', 'violation_category', 'elimination_time', 'title',
         ]
         # fields_order = [
         # ]
@@ -261,11 +164,21 @@ class ViolationsForm(forms.ModelForm):
 
 
 class ViolationsAddForm(forms.ModelForm):
-    """
+    """Форма при добавлении записи
     """
     location = forms.ModelChoiceField(
+        label='Закрепленный участок',
+        queryset=Location.objects.all(), empty_label=EMPTY_LABEL,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    main_location = forms.ModelChoiceField(
         label='Площадка',
-        queryset=Location.objects.all(), empty_label="***********",
+        queryset=Location.objects.all(), empty_label=EMPTY_LABEL,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    sub_location = forms.ModelChoiceField(
+        label='Под площадка / участок',
+        queryset=Location.objects.all(), empty_label=EMPTY_LABEL,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
     function = forms.CharField(
@@ -280,29 +193,22 @@ class ViolationsAddForm(forms.ModelForm):
     )
     work_shift = forms.ModelChoiceField(
         label='Смена',
-        queryset=WorkShift.objects.all(), empty_label="***********",
+        queryset=WorkShift.objects.all(), empty_label=EMPTY_LABEL,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
-    # created_at = forms.DateField(
-    #     label='Дата регистрации',
-    #     widget=forms.SelectDateWidget(attrs={'class': 'form-control'}),
-    #     help_text="Введите дату",
-    # )
-    # updated_at = models.DateField(auto_now=True, verbose_name='Обновлено')
     main_category = forms.ModelChoiceField(
         label='Основная Категория',
-        queryset=MainCategory.objects.all(), empty_label="***********",
+        queryset=MainCategory.objects.all(), empty_label=EMPTY_LABEL,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
     violation_category = forms.ModelChoiceField(
         label='Категория нарушения',
-        queryset=ViolationCategory.objects.all(), empty_label="***********",
+        queryset=ViolationCategory.objects.all(), empty_label=EMPTY_LABEL,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
-
     status = forms.ModelChoiceField(
         label='Статус',
-        queryset=Status.objects.all(), empty_label="***********",
+        queryset=Status.objects.all(), empty_label=EMPTY_LABEL,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
     is_published = forms.BooleanField(
@@ -327,32 +233,32 @@ class ViolationsAddForm(forms.ModelForm):
     )
     general_contractor = forms.ModelChoiceField(
         label='Подрядчик',
-        queryset=GeneralContractor.objects.all(), empty_label="***********",
+        queryset=GeneralContractor.objects.all(), empty_label=EMPTY_LABEL,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
     category = forms.ModelChoiceField(
         label='Категория',
-        queryset=Category.objects.all(), empty_label="***********",
+        queryset=Category.objects.all(), empty_label=EMPTY_LABEL,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
     ormative_documents = forms.ModelChoiceField(
         label='ПодКатегория',
-        queryset=NormativeDocuments.objects.all(), empty_label="***********",
+        queryset=NormativeDocuments.objects.all(), empty_label=EMPTY_LABEL,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
     incident_level = forms.ModelChoiceField(
         label='Уровень происшествия',
-        queryset=IncidentLevel.objects.all(), empty_label="***********",
+        queryset=IncidentLevel.objects.all(), empty_label=EMPTY_LABEL,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
     act_required = forms.ModelChoiceField(
         label='Требуется оформление Акта-предписания?',
-        queryset=ActRequired.objects.all(), empty_label="***********",
+        queryset=ActRequired.objects.all(), empty_label=EMPTY_LABEL,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
     elimination_time = forms.ModelChoiceField(
         label='Время на устранение',
-        queryset=EliminationTime.objects.all(), empty_label="***********",
+        queryset=EliminationTime.objects.all(), empty_label=EMPTY_LABEL,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
     title = forms.CharField(
@@ -382,54 +288,12 @@ class ViolationsAddForm(forms.ModelForm):
         localize=f'{user_id}/data_file/{str(file_id).split("___")[0]}/json/',
         help_text="Выберите файл",
     )
-    # day = forms.CharField(
-    #     label='День',
-    #     widget=forms.TextInput(attrs={'class': 'form-control', 'cols': 10, 'rows': 3}),
-    #     help_text="День",
-    #     disabled=True
-    # )
-    # month = forms.CharField(
-    #     label='Месяц',
-    #     widget=forms.TextInput(attrs={'class': 'form-control', 'cols': 10, 'rows': 3}),
-    #     help_text="Месяц",
-    #     disabled=True
-    # )
-    # year = forms.CharField(
-    #     label='Год',
-    #     widget=forms.TextInput(attrs={'class': 'form-control', 'cols': 10, 'rows': 3}),
-    #     help_text="Год",
-    #     disabled=True
-    # )
     violation_id = forms.CharField(
         label='violation_id',
         widget=forms.TextInput(attrs={'class': 'form-control', 'cols': 10, 'rows': 3}),
         help_text="violation_id",
         disabled=True
     )
-    # report_folder_id = forms.CharField(
-    #     label='report_folder_id',
-    #     widget=forms.TextInput(attrs={'class': 'form-control', 'cols': 10, 'rows': 3}),
-    #     help_text="report_folder_id",
-    #     disabled=True
-    # )
-    # parent_id = forms.CharField(
-    #     label='parent_id',
-    #     widget=forms.TextInput(attrs={'class': 'form-control', 'cols': 10, 'rows': 3}),
-    #     help_text="parent_id",
-    #     disabled=True
-    # )
-    # json_folder_id = forms.CharField(
-    #     label='json_folder_id',
-    #     widget=forms.TextInput(attrs={'class': 'form-control', 'cols': 10, 'rows': 3}),
-    #     help_text="json_folder_id",
-    #     disabled=True
-    # )
-    # photo_folder_id = forms.CharField(
-    #     label='photo_folder_id',
-    #     widget=forms.TextInput(attrs={'class': 'form-control', 'cols': 10, 'rows': 3}),
-    #     help_text="photo_folder_id",
-    #     disabled=True
-    # )
     coordinates = forms.CharField(
         label='Координаты',
         widget=forms.TextInput(attrs={'class': 'form-control', 'cols': 10, 'rows': 3}),
@@ -449,58 +313,17 @@ class ViolationsAddForm(forms.ModelForm):
         # disabled=True
     )
 
-    # json_file_path = forms.CharField(
-    #     label='json_file_path',
-    #     widget=forms.TextInput(attrs={'class': 'form-control', 'cols': 10, 'rows': 3}),
-    #     help_text="json_file_path",
-    #     disabled=True
-    # )+
-    # json_full_name = forms.CharField(
-    #     label='json_full_name',
-    #     widget=forms.TextInput(attrs={'class': 'form-control', 'cols': 10, 'rows': 3}),
-    #     help_text="json_full_name",
-    #     disabled=True
-    # )
-    # photo_file_path = forms.CharField(
-    #     label='photo_file_path',
-    #     widget=forms.TextInput(attrs={'class': 'form-control', 'cols': 10, 'rows': 3}),
-    #     help_text="photo_file_path",
-    #     disabled=True
-    # )
-    # photo_full_name = forms.CharField(
-    #     label='photo_full_name',
-    #     widget=forms.TextInput(attrs={'class': 'form-control', 'cols': 10, 'rows': 3}),
-    #     help_text="photo_full_name",
-    #     disabled=True
-    # )
-    # user_fullname = forms.CharField(
-    #     label='Имя пользователя как в telegram',
-    #     widget=forms.TextInput(attrs={'class': 'form-control', 'cols': 10, 'rows': 3}),
-    #     help_text="user_fullname",
-    #     disabled=True
-    # )
-
     class Meta:
         model = Violations
-        # fields = '__all__'
+
         fields = [
             'name', 'function', 'work_shift', 'user_id',
-            'location', 'main_category',
+            'location', 'main_location', 'sub_location', 'main_category',
             'status', 'is_published', 'incident_level', 'is_finished', 'act_required',
             'description', 'comment', 'general_contractor', 'category', 'normative_documents', 'violation_category',
             'elimination_time', 'title',
-            # 'file_id', 'photo', 'json','violation_id','report_folder_id', 'parent_id',
-            # 'photo_full_name','day', 'month', 'year','user_fullname', 'created_at',
-            # 'json_folder_id', 'photo_folder_id', 'json_file_path', 'json_full_name', 'photo_file_path',
         ]
-        # fields_order = [
-        #     'main_category', 'is_published', 'is_finished', 'status', 'category', 'violation_category',
-        #     'incident_level', 'act_required', 'general_contractor', 'description', 'comment',
-        #     'elimination_time', 'title', 'user_id', 'file_id',
-        #     'violation_id',
-        #     'report_folder_id', 'parent_id',
-        #     'photo', 'json', 'day', 'month', 'year',
-        # ]
+        # fields_order = []
 
     def clean_title(self):
         title = self.cleaned_data['title']

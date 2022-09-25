@@ -1,7 +1,7 @@
 from django import template
 from django.db.models import Count, F
 from django.core.cache import cache
-from apps.core.web.models import MainCategory, Location, GeneralContractor, IncidentLevel, Violations, Status
+from apps.core.web.models import MainCategory, MainLocation, GeneralContractor, IncidentLevel, Status
 
 register = template.Library()
 
@@ -24,16 +24,16 @@ def show_main_categories(arg1='hello', arg2='world'):
     return {'main_categories': main_categories, 'arg1': arg1, 'arg2': arg2}
 
 
-@register.inclusion_tag('list_locations.html')
-def show_locations():
-    locations = cache.get("locations")
-    if not locations:
-        locations = Location.objects.annotate(
+@register.inclusion_tag('list_main_locations.html')
+def show_main_locations():
+    main_locations = cache.get("main_locations")
+    if not main_locations:
+        main_locations = MainLocation.objects.annotate(
             cnt=Count('violations', filter=F('violations__is_published'))
         ).filter(cnt__gt=0)
-        cache.set("locations", locations, 15)
+        cache.set("main_locations", main_locations, 15)
 
-    return {'locations': locations}
+    return {'main_locations': main_locations}
 
 
 @register.inclusion_tag('list_general_contractors.html')

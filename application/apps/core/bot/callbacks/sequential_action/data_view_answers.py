@@ -25,6 +25,7 @@ logger.debug("data_view_answers")
 # ,state=DataUserState.user_data)
 async def view_user_data_states_answer(call: types.CallbackQuery, state: FSMContext):
     """Отмена регистрации
+
     :param call:
     :param state:
     :return:
@@ -41,6 +42,7 @@ async def view_user_data_states_answer(call: types.CallbackQuery, state: FSMCont
 @MyBot.dp.message_handler(is_private, Text(equals=Messages.correct_cancel), state=DataUserState.all_states)
 async def cancel(message: types.Message, state: FSMContext):
     """Отмена регистрации
+
     :param message:
     :param state:
     :return:
@@ -51,6 +53,7 @@ async def cancel(message: types.Message, state: FSMContext):
 
 async def get_state_storage_name(state: FSMContext, chat_id: int):
     """Получение имени состояния state[state]
+
     """
     state_storage: dict = dict(state.storage.data)
     state_name: str = state_storage.get(f'{chat_id}').get(f'{chat_id}').get('state').split(':')[-1]
@@ -114,8 +117,8 @@ async def view_user_data(*, chat_id: int, view_data, state_name: str):
 
 
 async def get_registration_text(registration_data) -> str:
-    """
-    Получение данных о регистрации в текстовом виде
+    """Получение данных о регистрации в текстовом виде
+
     :param registration_data:
     :return:
     """
