@@ -15,7 +15,15 @@
 
 <div class="card-container">
     {% for item in violations %}
-    <div class="card" {% if item.is_finished != True %} style="background-color: #ffcfcfe3;" {% endif %}>
+    <div class="card"
+         {% if item.finished_id == 0 %}
+            style="--not_finished:#c7b191"
+         {% elif item.finished_id == 1 %}
+            style="--not_finished:#cfe8dc"
+         {% elif item.finished_id == 2 %}
+            style="--not_finished:#e0b1bc"
+         {% endif %}
+    >
 
         <div class="card-header">
             Основная категория: <a href="{{ item.main_category.get_absolute_url }}">{{ item.main_category }}</a>
@@ -28,6 +36,9 @@
         </div>
         <div class="card-header">
             Уровень происшествия: <a href="{{ item.incident_level.get_absolute_url }}">{{ item.incident_level }}</a>
+        </div>
+        <div class="card-header">
+            Неделя: <a href="{{ item.week.get_absolute_url }}">{{ item.week }}</a>
         </div>
 
         <div class="card-body">
@@ -64,6 +75,7 @@
     <li>Sorry, no violations in db.</li>
     {% endfor %}
 </div>
+
 {% endblock %}
 
 

@@ -2,8 +2,11 @@
 .card {
   break-inside: avoid;
   page-break-inside: avoid;
-  background-color: rgb(207, 232, 220);
+  background-color: var(--not_finished, #cfe8dc);
   border: 2px solid rgb(79, 185, 227);
   padding: 10px;
   margin: 0 0 7px 0;
+}
+.card-header {
+  padding: 3px;
 }
