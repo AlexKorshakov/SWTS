@@ -122,7 +122,7 @@ class Messages:
         authorized_google_drive: str = f"Не удалось авторизоваться на Google Drive!"
         upload_on_web: str = "Файл не обнаружен, загрузка на web прервана"
         file_not_found: str = "Файлы не найдены. Вероятно они были удалены"
-        date_not_found: str = "Данные для составления Акта не найдены."
+        data_not_found: str = "Данные для составления Акта не найдены."
         location_name_not_found: str = "Не найдены данные о местоположении!"
         invalid_input: str = f"Отправь мне свой номер телефона с кодом (пример +7xxxxxxxxxx)"
         no_file_too_send: str = "Нет файлов для отправки"

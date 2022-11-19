@@ -47,7 +47,7 @@ async def correct_registration_data_answer(call: types.CallbackQuery):
     if call.data == "Смена":
         logger.debug(f"Выбрано: {call.data}")
 
-        menu_level = board_config.menu_level = 1
+        menu_level = board_config.menu_level = 2
         menu_list = board_config.menu_list = [item for item in get_data_list("WORK_SHIFT")]
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
@@ -64,7 +64,7 @@ async def correct_registration_data_answer(call: types.CallbackQuery):
     if call.data == "Место работы":
         logger.debug(f"Выбрано: {call.data}")
 
-        menu_level = board_config.menu_level = 1
+        menu_level = board_config.menu_level = 2
         menu_list = board_config.menu_list = [list(item.keys())[0] for item in get_data_list("METRO_STATION")]
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))

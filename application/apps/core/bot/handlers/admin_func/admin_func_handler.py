@@ -48,7 +48,7 @@ async def admin_func_handler(message: types.Message) -> None:
         return
 
     if chat_id == int(ADMIN_ID) or message.from_user.id == int(DEVELOPER_ID):
-        menu_level = board_config.menu_level = 1
+        menu_level = board_config.menu_level = 2
         menu_list = board_config.menu_list = ADMIN_MENU_LIST
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level)
@@ -66,7 +66,7 @@ async def admin_function_answer(call: types.CallbackQuery):
     users_datas, users_ids = await get_registered_users()
 
     if call.data == 'Показать всех пользователей':
-        menu_level = board_config.menu_level = 1
+        menu_level = board_config.menu_level = 2
         menu_list = board_config.menu_list = users_datas
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level)

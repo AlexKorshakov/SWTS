@@ -11,7 +11,7 @@ async def set_default_commands(dp):
         types.BotCommand(command="/help", description="Вызов справки"),
         types.BotCommand(command="/cancel", description="Отмена всех действий"),
         types.BotCommand(command="/generate", description="Формирование отчета"),
-        types.BotCommand(command="/generate_act", description="Формирование отчета"),
+        types.BotCommand(command="/generate_act", description="Формирование акта"),
         types.BotCommand(command="/correct_entries", description="Изменение данных"),
         types.BotCommand(command="/admin_func", description="Админка"),
         types.BotCommand(command="/send_mail", description="Отправка отчета"),

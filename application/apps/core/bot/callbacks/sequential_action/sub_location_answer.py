@@ -17,7 +17,8 @@ logger.debug("sub_location_answer")
 @MyBot.dp.callback_query_handler(
     lambda call: call.data in get_data_list("SUB_LOCATIONS",
                                             category=violation_data["main_location"],
-                                            condition='short_title')
+                                            condition='short_title'
+                                            )
 )
 async def sub_location_answer(call: types.CallbackQuery):
     """Обработка ответов содержащихся в NORMATIVE_DOCUMENTS

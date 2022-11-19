@@ -1,8 +1,7 @@
 import json
-from typing import Optional
 
 
-async def read_json_file(file: str) -> Optional[list, dict, str]:
+async def read_json_file(file: str):
     """Получение данных из json.
 
     :param file: полный путь к файлу

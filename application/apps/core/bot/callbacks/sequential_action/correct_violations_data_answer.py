@@ -50,7 +50,7 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
     if call.data == "Основное направление":
         logger.debug(f"id {chat_id} Выбрано: {call.data}")
 
-        menu_level = board_config.menu_level = 1
+        menu_level = board_config.menu_level = 2
         menu_list = board_config.menu_list = [item for item in get_data_list("MAIN_CATEGORY")]
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
@@ -62,7 +62,7 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
     if call.data == "Количество дней на устранение":
         logger.debug(f"id {chat_id} Выбрано: {call.data}")
 
-        menu_level = board_config.menu_level = 1
+        menu_level = board_config.menu_level = 2
         menu_list = board_config.menu_list = [item for item in get_data_list("ELIMINATION_TIME")]
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
@@ -74,7 +74,7 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
     if call.data == "Степень опасности ситуации":
         logger.debug(f"id {chat_id} Выбрано: {call.data}")
 
-        menu_level = board_config.menu_level = 1
+        menu_level = board_config.menu_level = 2
         menu_list = board_config.menu_list = [item for item in get_data_list("INCIDENT_LEVEL")]
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
@@ -86,7 +86,7 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
     if call.data == "Требуется ли оформление акта?":
         logger.debug(f"id {chat_id} Выбрано: {call.data}")
 
-        menu_level = board_config.menu_level = 1
+        menu_level = board_config.menu_level = 2
         menu_list = board_config.menu_list = [item for item in get_data_list("ACT_REQUIRED")]
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
@@ -110,7 +110,7 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
     if call.data == "Степень опасности ситуации":
         logger.debug(f"id {chat_id} Выбрано: {call.data}")
 
-        menu_level = board_config.menu_level = 1
+        menu_level = board_config.menu_level = 2
         menu_list = board_config.menu_list = [item for item in get_data_list("VIOLATION_CATEGORY")]
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
@@ -122,7 +122,7 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
     if call.data == "Категория нарушения":
         logger.debug(f"id {chat_id} Выбрано: {call.data}")
 
-        menu_level = board_config.menu_level = 1
+        menu_level = board_config.menu_level = 2
         menu_list = board_config.menu_list = [item for item in get_data_list("CATEGORY")]
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
@@ -134,7 +134,7 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
     if call.data == "Уровень происшествия":
         logger.debug(f"id {chat_id} Выбрано: {call.data}")
 
-        menu_level = board_config.menu_level = 1
+        menu_level = board_config.menu_level = 2
         menu_list = board_config.menu_list = [item for item in get_data_list("INCIDENT_LEVEL")]
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))

@@ -19,8 +19,7 @@ ROOT_REPORT_FOLDER_ID: str = '1n4M_LHDG_QQ4EFuDYxQLe_MaK-k3wv96'
 
 
 async def write_data_on_google_drive(message: types.Message):
-    """
-
+    """Сохранение данных в облако Google Drive
     """
 
     chat_id = message.chat.id

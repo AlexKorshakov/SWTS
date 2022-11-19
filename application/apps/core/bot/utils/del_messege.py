@@ -3,9 +3,7 @@ from contextlib import suppress
 
 from aiogram.utils.exceptions import (MessageToEditNotFound, MessageCantBeEdited, MessageCantBeDeleted,
                                       MessageToDeleteNotFound)
-
 from apps.core.bot.data import board_config
-
 from config.config import BOT_DELETE_MESSAGE
 
 from app import MyBot

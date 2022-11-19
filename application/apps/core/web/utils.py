@@ -21,12 +21,16 @@ LOCAL_MEDIA_STORAGE = str(DIRECTORY.parent.parent.parent) + '/media'
 
 
 class MyMixin(object):
+    """Миксина дополнения классов
+
+    """
     mixin_prop = ''
 
     def get_prop(self):
         return self.mixin_prop.upper()
 
     def get_upper(self, s):
+        """Приведение к верхнему регистру"""
         if isinstance(s, str):
             return s.upper()
         else:
@@ -267,7 +271,7 @@ async def conversion_value(key: str, value: str) -> str:
     return value
 
 
-async def get_data_fore_update(data: dict, get_from: str = 'local') -> dict:
+async def get_data_for_update(data: dict, get_from: str = 'local') -> dict:
     """Получение данных из локального репозитория (local) или из базы данных (data_base)
 
     :param get_from: (local) or (data_base)
@@ -386,7 +390,7 @@ async def get_violation_data_to_update(data_from_form: dict) -> dict:
     verified_data: dict = await check_data_before_update(request_data=data_from_form)
     if not verified_data: return {}
 
-    received_data: dict = await get_data_fore_update(data=verified_data, get_from='data_base')
+    received_data: dict = await get_data_for_update(data=verified_data, get_from='data_base')
     if not received_data: return {}
 
     normalize_data: dict = await normalize_violation_data(data_from_form=data_from_form, received_data=received_data)

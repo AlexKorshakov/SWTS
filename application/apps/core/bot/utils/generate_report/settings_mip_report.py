@@ -7,7 +7,6 @@ RANGE_COLUMNS = [
     ["F", "6"],
     ["G", "41"],
     ["H", "15"],
-    ["I", "3"]
 ]
 
 MERGED_CELLS = [
