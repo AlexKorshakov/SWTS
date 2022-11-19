@@ -13,6 +13,7 @@ from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.set_user_violation_data_on
 from apps.core.bot.utils.json_worker.read_json_file import read_json_file
 from apps.core.bot.utils.json_worker.writer_json_file import write_json
 from apps.core.bot.utils.secondary_functions.get_filepath import get_json_full_filename
+from config.config import WRITE_DATA_ON_GOOGLE_DRIVE
 from loader import logger
 
 DIRECTORY = Path(__file__).resolve().parent
@@ -37,6 +38,11 @@ async def delete_violation_files_from_gdrive(violation: dict):
 
     :param violation dict данные записи для удаления
     """
+
+    if not WRITE_DATA_ON_GOOGLE_DRIVE:
+        logger.info(f'{WRITE_DATA_ON_GOOGLE_DRIVE = } abort upload / download from Google Drive')
+        return False
+
     name: str = violation.get("file_id")
     violation_data_file = LOCAL_MEDIA_STORAGE + str(violation['json'])
     violation_json_parent_id = violation['json_folder_id']
@@ -127,6 +133,10 @@ async def update_violation_files_from_gdrive(data_for_update: dict = None):
 
     :param data_for_update dict данные записи для обновления
     """
+
+    if not WRITE_DATA_ON_GOOGLE_DRIVE:
+        logger.info(f'{WRITE_DATA_ON_GOOGLE_DRIVE = } abort upload / download from Google Drive')
+        return False
 
     user_id: str = str(data_for_update.get('user_id'))
     file_id: str = str(data_for_update.get('file_id'))

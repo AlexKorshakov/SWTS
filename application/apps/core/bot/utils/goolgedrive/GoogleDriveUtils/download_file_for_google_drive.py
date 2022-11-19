@@ -4,7 +4,7 @@ import subprocess
 
 from loader import logger
 
-from config.config import SEPARATOR
+from config.config import SEPARATOR, WRITE_DATA_ON_GOOGLE_DRIVE
 from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.GoogleDriveWorker import drive_account_auth_with_oauth2client
 from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.get_folder_id import get_root_folder_id, get_user_folder_id, \
     get_json_folder_id, get_photo_folder_id
@@ -45,13 +45,16 @@ except Exception as err:
 
 
 async def upload_files_from_google_drive(chat_id, file_path, photo_path):
-    """
+    """Загрузка файлов в облако Google Drive
 
     :param chat_id:
     :param file_path:
     :param photo_path:
     :return:
     """
+    if not WRITE_DATA_ON_GOOGLE_DRIVE:
+        logger.info(f'{WRITE_DATA_ON_GOOGLE_DRIVE = } abort upload / download from Google Drive')
+        return False
 
     drive_service = await drive_account_auth_with_oauth2client()
 

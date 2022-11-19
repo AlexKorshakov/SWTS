@@ -1,3 +1,4 @@
+from config.config import WRITE_DATA_ON_GOOGLE_DRIVE
 from loader import logger
 
 from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.GoogleDriveWorker import drive_account_auth_with_oauth2client, \
@@ -16,6 +17,10 @@ async def write_user_registration_data_on_google_drive(*, chat_id, user_data):
     :param user_data: данные для записи
     :return:
     """
+
+    if not WRITE_DATA_ON_GOOGLE_DRIVE:
+        logger.info(f'{WRITE_DATA_ON_GOOGLE_DRIVE = } abort upload / download from Google Drive')
+        return False
 
     drive_service = await drive_account_auth_with_oauth2client()
 

@@ -22,6 +22,7 @@ except EnvError as env_err:
         logger.error('You have forgot to set BOT_TOKEN')
         quit()
 
+WRITE_DATA_ON_GOOGLE_DRIVE = env.bool("WRITE_DATA_ON_GOOGLE_DRIVE", False)
 ADMIN_ID: str = env("ADMINS_ID")
 ADMIN_EMAIL: str = env("ADMIN_EMAIL")
 DEVELOPER_ID: int = env("DEVELOPER_ID")

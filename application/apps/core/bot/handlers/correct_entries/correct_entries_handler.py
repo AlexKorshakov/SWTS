@@ -14,7 +14,7 @@ from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb,
 
 from apps.core.bot.data import board_config
 from apps.core.bot.data.category import CORRECT_COMMANDS_LIST
-from config.config import SEPARATOR
+from config.config import SEPARATOR, WRITE_DATA_ON_GOOGLE_DRIVE
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard
 
 from apps.core.bot.messages.messages import Messages
@@ -79,7 +79,7 @@ async def correct_entries(message: types.Message):
              }
         )
 
-    menu_level = board_config.menu_level = 1
+    menu_level = board_config.menu_level = 2
     board_config.violation_file = violation_files
     menu_list = board_config.violation_menu_list = violation_description
 
@@ -194,6 +194,10 @@ async def delete_violation_files_from_gdrive(message, file, violation_file):
     :param message:
     :return:
     """
+
+    if not WRITE_DATA_ON_GOOGLE_DRIVE:
+        logger.info(f'{WRITE_DATA_ON_GOOGLE_DRIVE = } abort upload / download from Google Drive')
+        return False
 
     drive_service = await drive_account_credentials()
 

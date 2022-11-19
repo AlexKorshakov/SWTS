@@ -6,7 +6,7 @@ import subprocess
 from pathlib import Path
 from typing import Coroutine
 
-from config.config import SERVICE_ACCOUNT_FILE
+from config.config import SERVICE_ACCOUNT_FILE, WRITE_DATA_ON_GOOGLE_DRIVE
 from loader import logger
 
 INSTALL_REQUIRES: list = ['google-api-core',
@@ -59,8 +59,12 @@ WORK_PATH = str(Path(__file__).resolve().parent)
 
 async def drive_account_credentials() -> Coroutine:
     """Авторизация на Google
-
     """
+
+    if not WRITE_DATA_ON_GOOGLE_DRIVE:
+        logger.info(f'{WRITE_DATA_ON_GOOGLE_DRIVE = } abort upload / download from Google Drive')
+        return
+
     credentials = None
     # Файл token.pickle хранит токены доступа и обновления пользователя
     # и создается автоматически при первом завершении процесса авторизации.
@@ -94,6 +98,10 @@ async def drive_account_credentials() -> Coroutine:
 async def drive_account_auth_with_oauth2client() -> object:
     """Авторизация на GoogleDisc и получение объекта авторизации
     """
+    if not WRITE_DATA_ON_GOOGLE_DRIVE:
+        logger.info(f'{WRITE_DATA_ON_GOOGLE_DRIVE = } abort upload / download from Google Drive')
+        return
+
     google_drive_service = await drive_account_credentials()
     return google_drive_service
 

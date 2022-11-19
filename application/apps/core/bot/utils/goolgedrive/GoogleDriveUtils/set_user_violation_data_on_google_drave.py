@@ -7,7 +7,7 @@ from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.set_permissions import get
 from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.upload_data_on_gdrive import upload_file_on_gdrave
 from apps.core.bot.utils.goolgedrive.googledrive_worker import ROOT_REPORT_FOLDER_NAME
 from apps.core.bot.utils.json_worker.writer_json_file import write_json_violation_user_file
-from config.config import REPORT_NAME
+from config.config import REPORT_NAME, WRITE_DATA_ON_GOOGLE_DRIVE
 from loader import logger
 
 JSON_FOLDER_NAME = "violation_json"
@@ -25,6 +25,10 @@ async def write_violation_data_on_google_drive(*, chat_id: str,
     :param violation_data: данные для записи
     :return:
     """
+    if not WRITE_DATA_ON_GOOGLE_DRIVE:
+        logger.info(f'{WRITE_DATA_ON_GOOGLE_DRIVE = } abort upload / download from Google Drive')
+        return False
+
     if not drive_service:
         drive_service = await drive_account_auth_with_oauth2client()
 
@@ -69,6 +73,11 @@ async def update_user_violation_data_on_google_drive(*, chat_id: str, violation_
     :param violation_data: данные для записи
     :return:
     """
+
+    if not WRITE_DATA_ON_GOOGLE_DRIVE:
+        logger.info(f'{WRITE_DATA_ON_GOOGLE_DRIVE = } abort upload / download from Google Drive')
+        return False
+
     if not drive_service:
         drive_service = await drive_account_auth_with_oauth2client()
 

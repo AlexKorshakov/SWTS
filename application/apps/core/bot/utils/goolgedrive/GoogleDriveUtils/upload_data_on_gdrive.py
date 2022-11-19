@@ -4,6 +4,7 @@ from mimetypes import guess_type
 
 from app import MyBot
 from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.GoogleDriveWorker import drive_account_auth_with_oauth2client
+from config.config import WRITE_DATA_ON_GOOGLE_DRIVE
 from loader import logger
 
 from apps.core.bot.messages.messages import Messages
@@ -56,6 +57,10 @@ async def upload_file_on_gdrave(*, chat_id: str, drive_service: object, parent: 
     :return: uploaded_file_id
     """
 
+    if not WRITE_DATA_ON_GOOGLE_DRIVE:
+        logger.info(f'{WRITE_DATA_ON_GOOGLE_DRIVE = } abort upload / download from Google Drive')
+        return 'error'
+
     if not drive_service: drive_service = await drive_account_auth_with_oauth2client()
 
     if not file_path:
@@ -63,10 +68,11 @@ async def upload_file_on_gdrave(*, chat_id: str, drive_service: object, parent: 
             await MyBot.dp.bot.send_message(chat_id=chat_id,
                                             text=Messages.Error.upload_on_web,
                                             disable_notification=True)
+        logger.error(f"File {file_path} not found")
         return 'error'
 
     if not os.path.isfile(file_path):
-        logger.info(f"File {file_path} not found")
+        logger.error(f"File {file_path} not found")
         return 'error'
 
     mime_type = guess_type(file_path)[0]

@@ -7,6 +7,7 @@ from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.GoogleDriveWorker import d
 from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.get_folder_id import get_root_folder_id, get_user_folder_id, \
     get_json_folder_id, get_photo_folder_id, get_report_folder_id
 from apps.core.bot.utils.goolgedrive.googledrive_worker import ROOT_REPORT_FOLDER_NAME
+from config.config import WRITE_DATA_ON_GOOGLE_DRIVE
 from loader import logger
 
 import apps.core.bot.data.board_config
@@ -52,6 +53,11 @@ async def preparing_data_for_loading(user: str, drive_service: object = None) ->
 
     :return: {'user_folder_id', 'json_folder_id', 'photo_folder_id', 'report_folder_id',} or {}
     """
+
+    if not WRITE_DATA_ON_GOOGLE_DRIVE:
+        logger.info(f'{WRITE_DATA_ON_GOOGLE_DRIVE = } abort upload / download from Google Drive')
+        return {}
+
     if not drive_service: drive_service = await drive_account_auth_with_oauth2client()
 
     if not drive_service:
