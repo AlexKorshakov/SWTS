@@ -1,7 +1,9 @@
 import os.path
 import sqlite3
+from pandas import DataFrame
 from pathlib import Path
 from pprint import pprint
+from random import randint
 
 from apps.core.bot.database.db_utils import normalize_violation_data, write_json, data_violation_completion
 from apps.core.bot.utils.json_worker.read_json_file import read_json_file
@@ -233,14 +235,24 @@ class DataBase:
             file_id=file_id,
             name='status'
         )
+        finished_id = self.get_id(
+            table='core_finished',
+            entry=violation.get("finished", None),
+            file_id=file_id,
+            name='finished'
+        )
+        agreed_id = self.get_id(
+            table='core_agreed',
+            entry=violation.get("agreed", None),
+            file_id=file_id,
+            name='agreed'
+        )
+
         # TODO: check act_number
         act_number = ''
-        # TODO: check doc_agreed
-        doc_agreed = False
 
-        is_finished = False
         if status_id == 1:
-            is_finished = True
+            finished_id = 1
 
         description = violation.get('description', None)
 
@@ -256,6 +268,10 @@ class DataBase:
         day = violation.get('day', None)
         month = violation.get('month', None)
         year = violation.get('year', None)
+
+        week = violation.get("week", None)
+        quarter = violation.get("quarter", None)
+        day_of_year = violation.get("day_of_year", None)
 
         title = violation.get('comment', None)
         comment = violation.get('comment', None)
@@ -277,12 +293,6 @@ class DataBase:
         photo_folder_id = violation.get('photo_folder_id', None)
         photo_full_name = violation.get('photo_full_name', None)
 
-        # created_at = violation.get('data', None)
-        # if created_at:
-        #     created_at.split(':')
-        #     created_at = '-'.join(created_at[::-1])
-        # else:
-
         created_at = violation.get('file_id', None).split('___')[0].split('.')
         created_at = '-'.join(created_at[::-1])
 
@@ -291,26 +301,29 @@ class DataBase:
         try:
             with self.connection:
                 is_add = self.cursor.execute(
-                    "INSERT INTO `core_violations` (`location_id`,`main_location_id`,`sub_location_id`,`work_shift_id` "
-                    ",`function` ,`name` ,`parent_id`,`violation_id`, `user_id`, `user_fullname`, "
-                    "`report_folder_id`,`act_number`,`doc_agreed`"
-                    " `file_id`, `is_published`,`day`,`month`, `year`, `title`, `photo`,`created_at`,`updated_at`,"
-                    " `is_finished`,`main_category_id`,`general_contractor_id`,`category_id`,`normative_documents_id`,"
-                    "`comment`,`act_required_id`,"
-                    "`description`,`elimination_time_id`,`incident_level_id`,`violation_category_id`, `coordinates`,"
-                    "`latitude`,`longitude`,`json_folder_id`,`json_file_path`,`json_full_name`,"
-                    "`photo_file_path`,`photo_folder_id`,`photo_full_name`,`json`, `status_id`)"
-                    "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    "INSERT INTO `core_violations` ("
+                    " 'function', 'name', 'user_id', 'location_id', 'act_number', 'agreed_id', 'violation_id', "
+                    " 'main_location_id', 'sub_location_id', 'work_shift_id', 'created_at', 'updated_at', "
+                    " 'main_category_id', 'status_id', 'finished_id', 'is_published', 'comment', 'description', "
+                    " 'general_contractor_id',  'category_id',  'normative_documents_id',  'violation_category_id', "
+                    " 'incident_level_id',  'act_required_id',  'elimination_time_id',  'file_id', "
+                    " 'photo', 'title', 'day', 'month', 'year','week', 'quarter', 'day_of_year', "
+                    " 'json_folder_id', 'parent_id', 'photo_folder_id', "
+                    " 'report_folder_id', 'coordinates', 'latitude', 'longitude', 'json_file_path', 'json_full_name', "
+                    " 'photo_file_path', 'photo_full_name', 'user_fullname', 'json' "
+                    ")"
+                    "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,"
+                    "?,?,?)",
                     (
-                        location_id, main_location_id, sub_location_id, work_shift_id, function, name, parent_id,
-                        violation_id, user_id, act_number, doc_agreed, user_fullname, report_folder_id, file_id,
-                        is_published,
-                        day, month, year, title, photo, created_at, updated_at, is_finished,
-                        main_category_id, general_contractor_id, category_id, normative_documents_id, comment,
-                        act_required_id,
-                        description, elimination_time_id, incident_level_id, violation_category_id, coordinates,
-                        latitude, longitude, json_folder_id, json_file_path, json_full_name,
-                        photo_file_path, photo_folder_id, photo_full_name, json, status_id
+                        function, name, user_id, location_id, act_number, agreed_id, violation_id,
+                        main_location_id, sub_location_id, work_shift_id, created_at, updated_at,
+                        main_category_id, status_id, finished_id, is_published, comment, description,
+                        general_contractor_id, category_id, normative_documents_id, violation_category_id,
+                        incident_level_id, act_required_id, elimination_time_id, file_id, photo, title,
+                        day, month, year, week, quarter, day_of_year,
+                        json_folder_id, parent_id, photo_folder_id, report_folder_id,
+                        coordinates, latitude, longitude,
+                        json_file_path, json_full_name, photo_file_path, photo_full_name, user_fullname, json
                     )
                 )
                 if is_add:
@@ -321,6 +334,7 @@ class DataBase:
 
         except sqlite3.IntegrityError as err:
             pprint(f"sqlite3.IntegrityError {err}")
+            return False
 
     def get_id(self, table: str, entry, file_id: str = None, name=None) -> int:
         """Получение id записи по значению title из соответствующий таблицы table"""
@@ -329,13 +343,24 @@ class DataBase:
             print(f" def get_id: no entry {entry = } {file_id = } entry name {name}")
             return 0
 
-        query = f"SELECT `id` FROM `{table}` WHERE `title` = ?"
+        query = f"SELECT `id` " \
+                f"FROM `{table}` " \
+                f"WHERE `title` = ?"
 
         with self.connection:
             result = self.cursor.execute(query, (entry,)).fetchall()
             if not result:
-                print(f"no matches found {entry = } in {table} because .cursor.execute is none file_id: {file_id}")
-                # sys.exit()
+                logger.error(
+                    f"no matches found {entry = } in {table} in title "
+                    f"because .cursor.execute is none file_id: {file_id}")
+                query = f"SELECT `id` " \
+                        f"FROM `{table}` " \
+                        f"WHERE `short_title` = ?"
+                result = self.cursor.execute(query, (entry,)).fetchall()
+                if not result:
+                    logger.error(
+                        f"no matches found {entry = } in {table} in short_title "
+                        f"because .cursor.execute is none file_id: {file_id}")
 
             entry_id = 0
             for row in result:
@@ -344,7 +369,6 @@ class DataBase:
 
             if entry_id == 0:
                 print(f"no matches found {entry = } in {table} because entry_id file_id: {file_id}")
-                # sys.exit()
 
     def get_id_violation(self, file_id: str = None) -> int:
         """Получение id записи по значению file_id из таблицы core_violations"""
@@ -422,6 +446,7 @@ class DataBase:
             return self.cursor.execute('SELECT * FROM `core_violations`').fetchall()
 
     def get_data_list(self, query: str = None) -> list:
+        """Получение данных из таблицы по запросу 'query'"""
         if not query:
             return []
 
@@ -453,6 +478,43 @@ class DataBase:
             self.cursor.execute(query, (value, id,))
         self.connection.commit()
 
+    def set_act_value(self, act_data_dict: DataFrame, act_number, act_date):
+        """Добавление записи в database core_actsprescriptions
+
+        """
+        act_number = str(act_number)
+        act_date = str(act_date)
+        act_row_count = len(act_data_dict.index)
+
+        act_location_id = act_data_dict.location_id.unique()[0]
+        act_week = act_data_dict.week.unique()
+        act_month = act_data_dict.month.unique()
+        act_quarter = act_data_dict.quarter.unique()
+        act_year = act_data_dict.year.unique()
+
+        try:
+            with self.connection:
+                is_add = self.cursor.execute(
+                    "INSERT INTO `core_actsprescriptions` ("
+                    "`act_number`, `act_date`, `act_row_count`, `act_location_id`,`act_week`,`act_month`,"
+                    "`act_quarter`, `act_year` "
+                    ")"
+                    "VALUES(?, ?, ?, ?, ?, ?, ?, ?)",
+                    (
+                        act_number, act_date, act_row_count, act_location_id, act_week, act_month, act_quarter,
+                        act_year
+                    )
+                )
+                if is_add:
+                    return True
+
+                # logger.error(f'error in file {file_id}')
+                return False
+
+        except sqlite3.IntegrityError as err:
+            pprint(f"sqlite3.IntegrityError {err}")
+            return False
+
     def get_full_title(self, table_name: str, short_title: str):
         """Получение полного имени из короткого
 
@@ -466,6 +528,15 @@ class DataBase:
         full_title = [item[1] for item in datas_query if item[2] == short_title][0]
 
         return full_title
+
+    def get_max_max_number(self) -> int:
+        """Получение максимального номера акта из Database `core_actsprescriptions`
+        """
+        query: str = 'SELECT `act_number` FROM `core_actsprescriptions`'
+        datas_query: list = self.get_data_list(query=query)
+        act_max_number = max([data_item[0] for data_item in datas_query])
+
+        return act_max_number
 
 
 # async def get_entry(violation, query, user_data_json_file) -> int:
@@ -520,74 +591,3 @@ async def sync_files(*, params: dict = None):
 async def google_drive_to_local():
     """Синхронизация google_drive -> media"""
     pass
-
-# if __name__ == '__main__':
-# violation = {
-#     "sub_location": "4.0.6. Корпус обогащения",
-#     "main_location": "ТК ГОК",
-#
-# }
-# file_id = '16.09.2022___373084462___23972'
-#
-# main_location_id = DataBase().get_id(
-#     table='core_mainlocation',
-#     entry=violation.get("main_location", None),
-#     file_id=file_id,
-#     name='location'
-# )
-# sub_location_id = DataBase().get_id(
-#     table='core_sublocation',
-#     entry=violation.get("sub_location", None),
-#     file_id=file_id,
-#     name='location'
-# )
-
-# user_chat_id = '373084462'
-# params: dict = {
-#     'all_files': True,
-#     'file_path': f"C:/Users/KDeusEx/PycharmProjects/SWTS/application/media/{user_chat_id}/data_file/",
-#     'user_file': f"C:/Users/KDeusEx/PycharmProjects/SWTS/application/media/{user_chat_id}/{user_chat_id}.json"
-# }
-# # file: str = f'C:/Users/KDeusEx/PycharmProjects/SWTS/application/media/{user_chat_id}/' \
-# #             f'data_file/report_data___14.09.2022___373084462___23815.json'
-# violation: dict = {
-#     "act_required": "Не требуется*",
-#     "category": "Электробезопасность",
-#     "comment": "олыкраппк",
-#     "data": "14:09:2022",
-#     "day": "14",
-#     "description": "оыврмоы",
-#     "elimination_time": "1 день",
-#     "file_id": "14.09.2022___373084462___23815",
-#     "function": "Специалист 1й категории",
-#     "general_contractor": "ООО Удоканская Медь",
-#     "incident_level": "Без последствий",
-#     "json_file_path": "C:\\Users\\KDeusEx\\PycharmProjects\\SWTS\\application\\media\\373084462\\data_file\\14.09.2022\\json\\",
-#     "json_folder_id": "1F0veHLGWg0cVNUUu9XEXG1IGSzbUYzfb",
-#     "json_full_name": "C:\\Users\\KDeusEx\\PycharmProjects\\SWTS\\application\\media\\373084462\\data_file\\14.09.2022\\json\\report_data___14.09.2022___373084462___23815.json",
-#     "location": "Ст. Текстильщики, пл. 7",
-#     "main_category": "Охрана труда",
-#     "month": "09",
-#     "name": "Коршаков Алексей Сергеевич",
-#     "normative_documents": "По окончании работы неиспользуемый баллон(-ы) с газом(-ами)  хранятся с неснятым редуктором и шлангом",
-#     "normative_documents_normative": "Правила по охране труда при выполнении электросварочных и газосварочных работ, (утв. Приказом Минтруда от 11 декабря 2020 г. N 884н) п.117",
-#     "normative_documents_procedure": "Провести внеплановый инструктаж сотрудникам",
-#     "now": "2022-09-14 11:54:28.323981",
-#     "parent_id": "11tgNSKSNSuXZQDauWZkB87pybkTkHtjn",
-#     "photo_file_path": "C:\\Users\\KDeusEx\\PycharmProjects\\SWTS\\application\\media\\373084462\\data_file\\14.09.2022\\photo\\",
-#     "photo_folder_id": "1hJJpuq3bqGJ8kT5QTHtvz6SoDFBnYORk",
-#     "photo_full_name": "C:\\Users\\KDeusEx\\PycharmProjects\\SWTS\\application\\media\\373084462\\data_file\\14.09.2022\\photo\\report_data___14.09.2022___373084462___23815.jpg",
-#     "report_folder_id": "1jqPlTNt2S0sjj4Rjq0-tIqSG36DTsRJR",
-#     "status": "В работе",
-#     "user_fullname": "Alex Kor",
-#     "user_id": 373084462,
-#     "violation_category": "Опасные действия*",
-#     "violation_id": 23815,
-#     "work_shift": "Ночная смена",
-#     "year": "2022"
-# }
-#
-# DataBase().add_violation(violation=violation)
-#
-# asyncio.run(sync_local_to_google_drive())
-# print(f'count_violations {DataBase().count_violations()}')
