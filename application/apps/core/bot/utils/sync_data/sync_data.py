@@ -17,6 +17,8 @@ from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.upload_data_on_gdrive impo
 from apps.core.bot.utils.goolgedrive.googledrive_worker import ROOT_REPORT_FOLDER_NAME
 from apps.core.bot.utils.secondary_functions.get_json_files import get_dirs_files, get_files
 from apps.core.bot.utils.set_user_violation_data import preparing_data_for_loading
+from config.config import WRITE_DATA_ON_GOOGLE_DRIVE
+from loader import logger
 
 BASE_DIR: Path = Path(__file__).resolve()
 DIRECTORY: str = os.path.join(BASE_DIR.parent.parent.parent.parent.parent.parent, 'media')
@@ -291,6 +293,10 @@ async def sync_local_to_google_drive(drive_service: object = None, file_list: li
     :return: bool
     """
 
+    if not WRITE_DATA_ON_GOOGLE_DRIVE:
+        logger.info(f'{WRITE_DATA_ON_GOOGLE_DRIVE = } abort upload / download from Google Drive')
+        return False
+
     if not normalize_file_list:
         _, local_files = await get_local_files_for_sync(endswith=endswith)
 
@@ -357,6 +363,10 @@ async def sync_google_drive_to_local(drive_service: object, files_to_download: l
     :param drive_service: объект авторизации,
     :return: bool
     """
+
+    if not WRITE_DATA_ON_GOOGLE_DRIVE:
+        logger.info(f'{WRITE_DATA_ON_GOOGLE_DRIVE = } abort upload / download from Google Drive')
+        return False
 
     if not drive_service:
         drive_service: object = await drive_account_auth_with_oauth2client()
@@ -467,8 +477,11 @@ async def get_files_to_sync(drive_service: object, endswith: str, type_files: st
 
 
 async def run_sync(type_files='photo'):
-    """Запуск синхронизации
+    """Запуск синхронизации файлов local storage <-> google_drive
     """
+    if not WRITE_DATA_ON_GOOGLE_DRIVE:
+        logger.info(f'{WRITE_DATA_ON_GOOGLE_DRIVE = } abort upload / download from Google Drive')
+        return
 
     files_types = {
         'photo': {
