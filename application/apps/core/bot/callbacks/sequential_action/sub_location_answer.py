@@ -27,16 +27,7 @@ async def sub_location_answer(call: types.CallbackQuery):
                                   condition='short_title'):
 
         if call.data == _PREFIX_POZ + "0":
-            logger.info(f'{call.data = }')
-            violation_data["sub_location"] = call.data
-
-            await call.message.edit_reply_markup()
-            menu_level = board_config.menu_level = 1
-            menu_list = board_config.menu_list = get_data_list("MAIN_CATEGORY")
-
-            reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level)
-            await call.message.answer(text=Messages.Choose.violation_category, reply_markup=reply_markup)
-            return
+            await get_and_send_null_sub_locations_data(call)
 
         try:
             logger.debug(f"Выбрано: {call.data}")

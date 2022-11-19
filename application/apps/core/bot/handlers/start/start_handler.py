@@ -96,7 +96,7 @@ async def enter_phone_number(message: types.Message, state: FSMContext):
 
     user_data["phone_number"] = int(message.text.strip("+"))
 
-    menu_level = board_config.menu_level = 1
+    menu_level = board_config.menu_level = 2
     menu_list = board_config.menu_list = get_data_list("WORK_SHIFT")
 
     reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level)
@@ -133,7 +133,7 @@ async def work_shift_answer(call: types.CallbackQuery):
 
                 METRO = [list(item.keys())[0] for item in get_data_list("METRO_STATION")]
 
-                menu_level = board_config.menu_level = 1
+                menu_level = board_config.menu_level = 2
                 menu_list = board_config.menu_list = METRO
 
                 reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level,

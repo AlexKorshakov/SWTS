@@ -66,7 +66,9 @@ async def photo_handler(message: types.Message):
     violation_data["name"] = user_registration_data.get("name")
     violation_data["parent_id"] = user_registration_data.get("parent_id")
 
-    if WORK_ON_HEROKU:
+    violation_data["main_location"] = user_registration_data.get("name_location")
+    violation_data["category"] = ''
+    if WORK_ON_HEROKU and WRITE_DATA_ON_GOOGLE_DRIVE:
         await write_data_on_google_drive(message)
         return
 

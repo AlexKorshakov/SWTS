@@ -61,6 +61,7 @@ async def cancel_handler(call: types.CallbackQuery, state: FSMContext):
 
     board_config.violation_menu_list = []
     board_config.violation_file = []
+    board_config.previous_level = ''
 
     board_config.current_file = None
 

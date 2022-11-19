@@ -177,13 +177,11 @@ def convert_category_name(category_in_db: str) -> str:
         'SUB_LOCATIONS': 'core_sublocation',
 
     }
-
-    db_table_name = all_category_in_db[category_in_db]
-    return db_table_name
+    return all_category_in_db.get(category_in_db, None)
 
 
 def add_null_value_to_ziped_list(zip_list: list) -> list:
-    """
+    """Добавление значения заглушки
     
     :param zip_list: 
     :return: 
@@ -369,7 +367,8 @@ def get_data_list(category_in_db: str = None, category: str = None, condition: U
 
     if category and condition:
         clean_datas_query = get_category_data_list_whits_condition(
-            db_table_name=db_table_name, category=category,
+            db_table_name=db_table_name,
+            category=category,
             condition=condition
         )
         logger.debug(f'get_category_data_list from db with condition: {clean_datas_query}')

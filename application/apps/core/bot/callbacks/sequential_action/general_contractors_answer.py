@@ -6,7 +6,8 @@ from apps.core.bot.data import board_config
 from apps.core.bot.data.category import get_data_list
 from apps.core.bot.data.report_data import violation_data
 from apps.core.bot.database.DataBase import DataBase, CATEGORY_ID_TRANSFORM
-from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard
+from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard, \
+    add_previous_paragraph_button
 from apps.core.bot.utils.json_worker.writer_json_file import write_json_file
 from apps.core.bot.messages.messages import Messages
 
@@ -35,8 +36,14 @@ async def general_contractors_answer(call: types.CallbackQuery):
                 await call.message.edit_reply_markup()
                 menu_level = board_config.menu_level = 1
                 menu_list = board_config.menu_list = get_data_list("INCIDENT_LEVEL")
+                count_col = board_config.count_col = 1
 
-                reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level)
+                reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=count_col, level=menu_level)
+                reply_markup = await add_previous_paragraph_button(
+                    reply_markup=reply_markup,
+                    previous_level='general_contractors'
+                )
+
                 await call.message.answer(text=Messages.Choose.incident_level, reply_markup=reply_markup)
                 break
 

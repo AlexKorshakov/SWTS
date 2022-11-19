@@ -1,6 +1,7 @@
-
 menu_level: int = 1
 menu_list: list = []
+count_col: int = 1
+previous_level = ''
 
 violation_menu_list: list = []
 violation_file: list = []

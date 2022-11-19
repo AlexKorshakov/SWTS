@@ -90,7 +90,8 @@ class Messages:
         answer: str = f"Выберите действие"
 
     class Choose:
-        main_category: str = f"Выберите категорию"
+        main_location: str = f"Выберите основную локацию"
+        main_category: str = f"Выберите основную категорию"
         entry: str = f"Выберите запись или действие для корректировки"
         elimination_time: str = f"Выберите количество дней на устранение"
         violation_category: str = f"Выберете степень опасности ситуации"
@@ -112,8 +113,6 @@ class Messages:
                                    'Обратитесь к разработчику! \n' \
                                    f'чтобы написать разработчику нажмите /developer'
         file_list_not_found: str = f"Список файлов не найден! \n"
-        file_not_found: str = f"Файл не найден! \n"  # \
-        # f'попытка загрузить данные с сервера'
         workbook_not_create: str = f"Файл с отчетом не создан! Обратитесь к разработчику! \n" \
                                    f'чтобы написать разработчику нажмите /developer'
 

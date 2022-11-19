@@ -148,8 +148,8 @@ CACHES = {
         }
     }
 }
-LOGGING_LEVEL = 'DEBUG'
-# LOGGING_LEVEL = 'INFO'
+# LOGGING_LEVEL = 'DEBUG'
+LOGGING_LEVEL = 'INFO'
 
 LOGGING = {
     'version': 1,

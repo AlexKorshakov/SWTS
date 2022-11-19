@@ -185,8 +185,9 @@ async def call_correct_current_post(call: types.CallbackQuery, callback_data: ty
 
         menu_level = board_config.menu_level = 1
         menu_list = board_config.menu_list = VIOLATIONS_DATA_LIST
+        count_col = board_config.count_col = 2
 
-        reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=menu_level, level=1)
+        reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=count_col, level=menu_level)
 
         await call.message.answer(text=Messages.Choose.entry, reply_markup=reply_markup)
 
