@@ -7,14 +7,14 @@ from apps.core.bot.data import board_config
 from app import MyBot
 from loader import logger
 
-NUM_COL = 1
+NUM_COL = 2
 STEP_MENU = 8
-move_action = CallbackData("description", "action")
+move_action: CallbackData = CallbackData("description", "action", "previous_value")
 posts_cb: CallbackData = CallbackData('post', 'id', 'action')
 
 
 async def build_inlinekeyboard(*, some_list, num_col=1, level=1, step=None,
-                               addition: list = None) -> InlineKeyboardMarkup:
+                               addition: list = None, previous_level: str = None) -> InlineKeyboardMarkup:
     """Создание кнопок в чате для пользователя на основе some_list.
     Количество кнопок = количество элементов в списке some_list
     Расположение в n_cols столбцов
@@ -32,7 +32,11 @@ async def build_inlinekeyboard(*, some_list, num_col=1, level=1, step=None,
         button_list = button_list + [InlineKeyboardButton(text=ss, callback_data=ss) for ss in some_list]
         menu = await _build_menu(buttons=button_list, n_cols=num_col)
 
-        return InlineKeyboardMarkup(resize_keyboard=True, inline_keyboard=menu)
+        reply_markup = InlineKeyboardMarkup(resize_keyboard=True, inline_keyboard=menu)
+        if previous_level:
+            reply_markup = await add_previous_paragraph_button(reply_markup=reply_markup,
+                                                               previous_level=previous_level)
+        return reply_markup
 
     if len(some_list) <= STEP_MENU:
         logger.debug(f'len(some_list) <= STEP_MENU {len(some_list) <= STEP_MENU}')
@@ -40,7 +44,11 @@ async def build_inlinekeyboard(*, some_list, num_col=1, level=1, step=None,
         button_list = button_list + [InlineKeyboardButton(text=ss, callback_data=ss) for ss in some_list]
         menu = await _build_menu(buttons=button_list, n_cols=num_col)
 
-        return InlineKeyboardMarkup(resize_keyboard=True, inline_keyboard=menu)
+        reply_markup = InlineKeyboardMarkup(resize_keyboard=True, inline_keyboard=menu)
+        if previous_level:
+            reply_markup = await add_previous_paragraph_button(reply_markup=reply_markup,
+                                                               previous_level=previous_level)
+        return reply_markup
 
     if STEP_MENU < len(some_list):
         logger.debug(f'STEP_MENU < len(some_list) {STEP_MENU < len(some_list)}')
@@ -51,11 +59,14 @@ async def build_inlinekeyboard(*, some_list, num_col=1, level=1, step=None,
             button_list.append(InlineKeyboardButton(text=batn, callback_data=batn))
 
         menu = await _build_menu(buttons=button_list, n_cols=num_col)
-        reply_markup = InlineKeyboardMarkup(resize_keyboard=True, inline_keyboard=menu)
-        finally_reply_markup = await add_action_button(reply_markup=reply_markup, start_index=start_index,
-                                                       stop_index=stop_index, end_list=end_list)
 
-        return finally_reply_markup
+        reply_markup = InlineKeyboardMarkup(resize_keyboard=True, inline_keyboard=menu)
+        reply_markup = await add_action_button(reply_markup=reply_markup, start_index=start_index,
+                                               stop_index=stop_index, end_list=end_list)
+        if previous_level:
+            reply_markup = await add_previous_paragraph_button(reply_markup=reply_markup,
+                                                               previous_level=previous_level)
+        return reply_markup
 
 
 def check_list_bytes_len(some_list: list) -> list:
@@ -120,8 +131,8 @@ async def add_action_button(reply_markup, start_index: int, stop_index: int, end
     :param reply_markup:
     :return:
     """
-    bt_down = InlineKeyboardButton(text="<--", callback_data=move_action.new(action="move_down"))
-    bt_up = InlineKeyboardButton(text="-->", callback_data=move_action.new(action="move_up"))
+    bt_down = InlineKeyboardButton(text="<--", callback_data=move_action.new(action="move_down", previous_value=''))
+    bt_up = InlineKeyboardButton(text="-->", callback_data=move_action.new(action="move_up", previous_value=''))
 
     if start_index == 0:
         reply_markup.row(bt_up)
@@ -135,6 +146,23 @@ async def add_action_button(reply_markup, start_index: int, stop_index: int, end
 
     reply_markup.row(bt_down, bt_up)
     # reply_markup.add(bt_down).add(bt_up)
+
+    return reply_markup
+
+
+async def add_previous_paragraph_button(reply_markup, previous_level: str):
+    """Добавление кнопки - предыдущее действий"""
+
+    logger.info(f"{reply_markup = }")
+    logger.info(f"{previous_level = }")
+
+    btn_previous = InlineKeyboardButton(text="previous",
+                                        callback_data=move_action.new(
+                                            action="previous_paragraph",
+                                            previous_value=previous_level
+                                        )
+                                        )
+    reply_markup.row(btn_previous)
 
     return reply_markup
 
@@ -162,6 +190,7 @@ async def build_inlinekeyboard_answer(call: types.CallbackQuery, callback_data: 
     """
     menu_level = board_config.menu_level
     some_list = board_config.menu_list
+    count_col = board_config.count_col
 
     chat_id = call.message.chat.id
     message_id = call.message.message_id
@@ -172,7 +201,11 @@ async def build_inlinekeyboard_answer(call: types.CallbackQuery, callback_data: 
     if callback_data['action'] == "move_up":
         board_config.menu_level = menu_level = menu_level + 1
 
-    reply_markup = await build_inlinekeyboard(some_list=some_list, num_col=NUM_COL, level=menu_level)
+    reply_markup = await build_inlinekeyboard(some_list=some_list, num_col=count_col, level=menu_level)
+
+    if board_config.previous_level:
+        reply_markup = await add_previous_paragraph_button(reply_markup=reply_markup,
+                                                           previous_level=board_config.previous_level)
 
     await MyBot.bot.edit_message_reply_markup(chat_id=chat_id, message_id=message_id, reply_markup=reply_markup)
 
