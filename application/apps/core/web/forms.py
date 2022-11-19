@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 
 from .models import Violations, Location, WorkShift, MainCategory, Status, GeneralContractor, Category, IncidentLevel, \
-    ActRequired, EliminationTime, ViolationCategory, NormativeDocuments
+    ActRequired, EliminationTime, ViolationCategory, NormativeDocuments, SubLocation, Finished
 from django.contrib.auth.models import User
 
 EMPTY_LABEL: str = "***********"
@@ -52,7 +52,7 @@ class ViolationsForm(forms.ModelForm):
     )
     sub_location = forms.ModelChoiceField(
         label='Под площадка / участок',
-        queryset=Location.objects.all(), empty_label=EMPTY_LABEL,
+        queryset=SubLocation.objects.all(), empty_label=EMPTY_LABEL,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
     function = forms.CharField(
@@ -90,9 +90,10 @@ class ViolationsForm(forms.ModelForm):
         widget=forms.CheckboxInput(),
         help_text="Отметьте если требует публикации в реестре",
     )
-    is_finished = forms.BooleanField(
+    finished = forms.ModelChoiceField(
         label='Устранено?',
-        widget=forms.CheckboxInput(),
+        queryset=Finished.objects.all(), empty_label=EMPTY_LABEL,
+        widget=forms.Select(attrs={'class': 'form-control'}),
         help_text="Отметьте если все мероприятия выполнены",
     )
     description = forms.CharField(
@@ -150,7 +151,7 @@ class ViolationsForm(forms.ModelForm):
         model = Violations
         fields = [
             'name', 'function', 'work_shift', 'user_id', 'location', 'main_location', 'sub_location', 'main_category',
-            'status', 'is_published', 'incident_level', 'is_finished', 'act_required', 'description', 'comment',
+            'status', 'is_published', 'incident_level', 'finished', 'act_required', 'description', 'comment',
             'general_contractor', 'category', 'normative_documents', 'violation_category', 'elimination_time', 'title',
         ]
         # fields_order = [
@@ -216,9 +217,9 @@ class ViolationsAddForm(forms.ModelForm):
         widget=forms.CheckboxInput(),
         help_text="Отметьте если требует публикации в реестре",
     )
-    is_finished = forms.BooleanField(
+    finished = forms.ModelChoiceField(
         label='Устранено?',
-        widget=forms.CheckboxInput(),
+        queryset=Finished.objects.all(), empty_label=EMPTY_LABEL,
         help_text="Отметьте если все мероприятия выполнены",
     )
     description = forms.CharField(
@@ -319,7 +320,7 @@ class ViolationsAddForm(forms.ModelForm):
         fields = [
             'name', 'function', 'work_shift', 'user_id',
             'location', 'main_location', 'sub_location', 'main_category',
-            'status', 'is_published', 'incident_level', 'is_finished', 'act_required',
+            'status', 'is_published', 'incident_level', 'finished', 'act_required',
             'description', 'comment', 'general_contractor', 'category', 'normative_documents', 'violation_category',
             'elimination_time', 'title',
         ]

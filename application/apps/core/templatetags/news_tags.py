@@ -1,7 +1,7 @@
 from django import template
 from django.db.models import Count, F
 from django.core.cache import cache
-from apps.core.web.models import MainCategory, MainLocation, GeneralContractor, IncidentLevel, Status
+from apps.core.web.models import MainCategory, MainLocation, GeneralContractor, IncidentLevel, Status, Week
 
 register = template.Library()
 
@@ -70,3 +70,16 @@ def show_statuses():
         cache.set("statuses", statuses, 15)
 
     return {'statuses': statuses}
+
+
+@register.inclusion_tag('list_weeks.html')
+def show_weeks():
+
+    # weeks = Week.objects.all()
+    # return weeks
+
+    weeks = Week.objects.annotate(
+        cnt=Count('violations', filter=F('violations__is_published'))
+    ).filter(cnt__gt=0)
+
+    return {'weeks': weeks}

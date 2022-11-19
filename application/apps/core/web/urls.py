@@ -4,7 +4,7 @@ from django.urls import path
 from .views import HomeViolations, ViewViolations, ViolationsByMainCategory, ViolationsByMainLocation, \
     ViolationsByGeneralContractor, ViolationsByIncidentLevel, ViolationsByStatus, user_login, user_logout, register, \
     post_edit, PostEdit, test, simple_view, upload_too_db_from_local_storage, delete_violations, update_violations, \
-    add_violations, statistic
+    add_violations, statistic, ViolationsByWeek, HomeRegisterActsPrescriptions
 
 # Register your urls here
 
@@ -12,6 +12,8 @@ urlpatterns = [
     # path("", simple_view),
     path('', HomeViolations.as_view(),
          name='home'),
+    path('register_acts_prescriptions', HomeRegisterActsPrescriptions.as_view(),
+         name='register_acts_prescriptions'),
     path('violations/<int:pk>/', ViewViolations.as_view(),
          name='view_violations'),
     path('main_category/<int:main_category_id>/', ViolationsByMainCategory.as_view(),
@@ -24,6 +26,10 @@ urlpatterns = [
          name='incident_level'),
     path('status/<int:status_id>/', ViolationsByStatus.as_view(),
          name='status'),
+    path('finished/<int:finished_id>/', ViolationsByWeek.as_view(),
+         name='finished'),
+    path('week/<int:week>/', ViolationsByWeek.as_view(),
+         name='week'),
 
     # запуск скрипта по нажатию кнопки из base.html
     path('upload/', upload_too_db_from_local_storage, name='upload'),
@@ -41,6 +47,7 @@ urlpatterns = [
     path('logout/', user_logout, name='logout'),
 
     path('test/', test, name='test'),
+    # path('test/', HomeRegisterActsPrescriptions.as_view(), name='test'),
 ]
 
 # To register this URLS

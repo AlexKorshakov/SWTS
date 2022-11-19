@@ -1,0 +1,38 @@
+{% extends 'main_page.html' %}
+
+
+{% block content %}
+<div class="table-responsive">
+    <table
+      id="table">
+
+        <tr style="background : blue; color : white;">
+            <th>п/п</th>
+            <th>Дата</th>
+            <th>Номер акта</th>
+            <th>Кол-во пунктов</th>
+            <th>ПО</th>
+            <th>Неделя</th>
+            <th>Месяц</th>
+            <th>Квартал</th>
+            <th>Год</th>
+        </tr>
+
+        {% for act in acts %}
+        <tr style=" color : white">
+            {% comment %} <td><a href="{{ act.get_absolute_url }}"> {{act.act_number}}</a></td> {% endcomment %}
+            <td>{{forloop.counter}}</td>
+            <td>{{act.act_date}}</td>
+            <td>{{act.act_number}}</td>
+            <td>{{act.act_row_count}}</td>
+            <td>{{act.act_location}}</td>
+            <td>{{act.act_week}}</td>
+            <td>{{act.act_month}}</td>
+            <td>{{act.act_quarter}}</td>
+            <td>{{act.act_year}}</td>
+        </tr>
+        {% endfor %}
+
+    </table>
+</div>
+{% endblock %}

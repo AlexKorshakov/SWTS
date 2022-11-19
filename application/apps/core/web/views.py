@@ -18,7 +18,8 @@ from apps.core.web.utils import MyMixin, delete_violations_from_all_repo, get_id
 from loader import logger
 #
 from .forms import UsrRegisterForm, UserLoginForm, ViolationsForm, ViolationsAddForm
-from .models import Violations, MainCategory, Location, GeneralContractor, IncidentLevel, Status, MainLocation
+from .models import Violations, MainCategory, Location, GeneralContractor, IncidentLevel, Status, MainLocation, Week, \
+    ActsPrescriptions
 #
 # # Create your views here.
 from ..bot.database.DataBase import upload_from_local
@@ -387,3 +388,88 @@ class ViolationsByStatus(MyMixin, ListView):
             status_id=self.kwargs['status_id'],
             is_published=True
         ).prefetch_related('status')
+
+
+class ViolationsByWeek(MyMixin, ListView):
+    """Просмотр по номеру недели"""
+    model = Violations
+    template_name = 'home_violations_list.html'
+    context_object_name = 'violations'
+    paginate_by = 20
+    allow_empty = False
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        """Дополнение данных перед отправкой на рендер"""
+        context = super().get_context_data(**kwargs)
+        # context['title'] = self.get_upper(Week.objects.get(pk=self.kwargs['week']))
+        logger.debug(f"{context=}")
+        return context
+
+    def get_queryset(self):
+        return Violations.objects.filter(
+            week=self.kwargs['week_id'],
+            is_published=True
+        )
+
+
+# class ViolationsByIsPublished(MyMixin, ListView):
+#     """Просмотр по номеру недели"""
+#     model = Violations
+#     template_name = 'home_violations_list.html'
+#     context_object_name = 'violations'
+#     paginate_by = 20
+#     allow_empty = False
+#
+#     def get_context_data(self, *, object_list=None, **kwargs):
+#         """Дополнение данных перед отправкой на рендер"""
+#         context = super().get_context_data(**kwargs)
+#
+#         logger.debug(f"{context=}")
+#         return context
+#
+#     def get_queryset(self):
+#         return Violations.objects.filter(
+#             week=self.kwargs['is_published'],
+#             is_published=True
+#         )
+
+
+class ViolationsByFinished(MyMixin, ListView):
+    """Просмотр по номеру недели"""
+    model = Violations
+    template_name = 'home_violations_list.html'
+    context_object_name = 'violations'
+    paginate_by = 20
+    allow_empty = False
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        """Дополнение данных перед отправкой на рендер"""
+        context = super().get_context_data(**kwargs)
+
+        logger.debug(f"{context=}")
+        return context
+
+    def get_queryset(self):
+        return Violations.objects.filter(
+            finished_id=self.kwargs['finished_id'],
+            is_published=True
+        ).prefetch_related('finished')
+
+
+class HomeRegisterActsPrescriptions(MyMixin, ListView):
+    """Просмотр реестра актов предписаний"""
+    model = ActsPrescriptions
+    template_name = 'register_acts_prescriptions.html'
+    context_object_name = 'acts'
+    paginate_by = 50
+    allow_empty = False
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        """Дополнение данных перед отправкой на рендер"""
+        context = super(HomeRegisterActsPrescriptions, self).get_context_data(**kwargs)
+        context['title'] = self.get_upper('Реестр Актов')
+        context['mixin_prop'] = self.get_prop()
+        return context
+
+    # def get_queryset(self):
+    #     return ActsPrescriptions.objects.select_related('acts')
