@@ -3,6 +3,7 @@ import datetime
 from aiogram import types
 
 from app import MyBot
+from config.config import WRITE_DATA_ON_GOOGLE_DRIVE
 from loader import logger
 
 from apps.core.bot.data import board_config
@@ -12,7 +13,8 @@ from apps.core.bot.data.report_data import violation_data
 from apps.core.bot.utils.goolgedrive.googledrive_worker import write_data_on_google_drive
 from apps.core.bot.utils.json_worker.read_json_file import read_json_file
 from apps.core.bot.utils.misc import rate_limit
-from apps.core.bot.utils.secondary_functions.get_part_date import get_day_message, get_month_message, get_year_message
+from apps.core.bot.utils.secondary_functions.get_part_date import get_day_message, get_month_message, get_year_message, \
+    get_week_message, get_quarter_message, get_day_of_year_message
 from apps.core.bot.utils.secondary_functions.get_filename import get_filename_msg_with_photo
 from apps.core.bot.utils.secondary_functions.get_filepath import preparation_violations_paths_on_pc, \
     get_user_registration_data_json_file
@@ -53,6 +55,9 @@ async def photo_handler(message: types.Message):
     violation_data["status"] = 'В работе'
 
     violation_data["day"] = await get_day_message()
+    violation_data["week"] = await get_week_message()
+    violation_data["quarter"] = await get_quarter_message()
+    violation_data["day_of_year"] = await get_day_of_year_message()
     violation_data["month"] = await get_month_message()
     violation_data["year"] = await get_year_message()
     violation_data["data"] = violation_data["day"] + ":" + violation_data["month"] + ":" + violation_data["year"]
