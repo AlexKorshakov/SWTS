@@ -2,18 +2,23 @@ import datetime
 import os
 from math import ceil
 from openpyxl.drawing.image import Image
+from pprint import pprint
+from xlsxwriter.worksheet import Worksheet
 
 from pandas import DataFrame
 
 from app import MyBot
 from apps.core.bot.data.category import ELIMINATION_TIME, get_data_list
 from apps.core.bot.data.report_data import headlines_data
+from apps.core.bot.database.DataBase import DataBase
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.utils.generate_report.get_file_list import get_registration_json_file_list
 from apps.core.bot.utils.generate_report.settings_mip_report import CATEGORY_LIST_VALUES
-from apps.core.bot.utils.generate_report.sheet_formatting.set_alignment import set_mip_alignment
+from apps.core.bot.utils.generate_report.sheet_formatting.set_alignment import set_mip_alignment, set_act_alignment
 from apps.core.bot.utils.generate_report.sheet_formatting.set_font import sets_report_font, set_report_font
-from apps.core.bot.utils.generate_report.sheet_formatting.set_frame_border import set_range_border
+from apps.core.bot.utils.generate_report.sheet_formatting.set_frame_border import set_range_border, set_act_range_border
+from apps.core.bot.utils.generate_report.sheet_formatting.set_merge_cells import set_merge_cells
+from apps.core.bot.utils.generate_report.sheet_formatting.set_row_dimensions import set_row_dimensions
 from apps.core.bot.utils.img_processor.insert_img import image_preparation, insert_images
 from apps.core.bot.utils.json_worker.read_json_file import read_json_file
 from loader import logger
@@ -94,7 +99,7 @@ async def set_headlines_data_values(chat_id):
         headlines_data['custom_date'] = f"{date_then} - {date_now}"
 
 
-async def set_report_body_values(worksheet):
+async def set_report_body_values(worksheet: Worksheet):
     """Заполнение первоначальных данных отчета
 
     :param worksheet: страница для заполнения
@@ -259,7 +264,7 @@ async def set_report_body_values(worksheet):
             return None
 
 
-async def set_report_header_values(worksheet, dataframe):
+async def set_report_header_values(worksheet: Worksheet, dataframe):
     """Заполнение заголовка отчета
 
     :param worksheet: страница для заполнения
@@ -312,7 +317,7 @@ async def set_report_header_values(worksheet, dataframe):
             return None
 
 
-async def set_report_violation_values(worksheet, dataframe: DataFrame):
+async def set_report_violation_values(worksheet: Worksheet, dataframe: DataFrame):
     """Заполнение акта значениями из dataframe
 
     :param worksheet: страница для заполнения
@@ -351,42 +356,54 @@ async def set_report_violation_values(worksheet, dataframe: DataFrame):
             break
 
 
-async def set_act_violation_values(worksheet, dataframe: DataFrame):
-    """Заполнение акта значениями из dataframe
+async def set_act_violation_values(worksheet: Worksheet, dataframe: DataFrame, workbook, full_act_path):
+    """Заполнение акта значениями из dataframe. Сортировка по main_location_id и sub_locations_id
 
+    :param full_act_path:
+    :param workbook:
     :param worksheet: страница для заполнения
     :param dataframe: dataframe с данными нарушений
     :return: None
     """
 
-    serial_number = 0
-    violation_value = []
-    for category in get_data_list("CATEGORY"):
-        for item in range(1, dataframe.category.size):
-            if dataframe.loc[item]["category"] != category:
-                continue
+    # берём уникальные значения main_location_id
+    unique_main_locations_ids: list = dataframe.main_location_id.unique().tolist()
+    row_number: int = 0
+    item_row_value: int = 0
 
-            try:
-                elimination_time = await get_elimination_time(dataframe, item)
-                violation_value.append(
-                    {"description": dataframe.loc[item]["description"] + ' \\',
-                     "elimination_time": elimination_time + ' \\'}
-                )
-            except Exception as err:
-                logger.error(f"{repr(err)}")
-                continue
+    for main_location_id in unique_main_locations_ids:
+        new_header_row = True
 
-        if not violation_value:
+        # разделяем dataframe по каждому уникальному значению
+        main_location_values: dataframe = dataframe.loc[dataframe['main_location_id'] == main_location_id]
+        if main_location_values.empty:
             continue
 
-        serial_number += 1
-        if category in [item['value'] for item in CATEGORY_LIST_VALUES]:
-            await set_worksheet_cell_value(worksheet, category, serial_number, violation_value)
-            violation_value = []
+        # разделяем по sub_location
+        unique_sub_locations_ids: list = main_location_values.sub_location_id.unique().tolist()
+
+        for sub_locations_id in unique_sub_locations_ids:
+
+            new_header_row = True
+            sub_locations_values: dataframe = main_location_values.loc[dataframe['sub_location_id'] == sub_locations_id]
+            if sub_locations_values.empty:
+                continue
+
+            # итерируемся по dataframe как по tuple
+            for row in sub_locations_values.itertuples(index=False):
+                item_row_value += 1
+                row_number = await set_act_worksheet_cell_value(
+                    worksheet, row, row_number, new_header_row, workbook, full_act_path, item_row_value
+                )
+                new_header_row = False
+                row_number += 1
+
+    return row_number
 
 
 async def get_elimination_time(dataframe, item) -> str:
     """Получить время устранения
+
     :return: str
     """
     if dataframe.loc[item]["elimination_time"] != ELIMINATION_TIME[0] and \
@@ -399,9 +416,236 @@ async def get_elimination_time(dataframe, item) -> str:
     return dataframe.loc[item]["elimination_time"]
 
 
-async def set_worksheet_cell_value(worksheet, item, serial_number, val):
+async def set_act_worksheet_cell_value(worksheet: Worksheet, violation_values: DataFrame, row_number: int, new_header_row: bool,
+                                       workbook, full_act_path: str, item_row_value: int):
+    """Заполнение тела акта каждым пунктом
+
+        :param item_row_value:
+        :param full_act_path:
+        :param workbook:
+        :param new_header_row: bool  Требуется ли новый заголовок?
+        :param row_number:
+        :param violation_values: DataFrame
+        :param worksheet: страница для заполнения
+        :return
+        """
+    if row_number == 0:
+        logger.debug(violation_values)
+
+        await set_single_violation(worksheet, violation_values)
+        workbook.save(full_act_path)
+        return row_number
+
+    if new_header_row:
+        logger.debug(f'{new_header_row= }')
+
+        await set_value_title(worksheet, violation_values, row_number)
+        workbook.save(full_act_path)
+        row_number += 1
+
+        await set_act_violation(worksheet, violation_values, row_number=row_number, item_row_value=item_row_value)
+        workbook.save(full_act_path)
+        return row_number
+
+    if not new_header_row:
+        logger.debug(f'{new_header_row= }')
+
+        await set_act_violation(worksheet, violation_values, row_number=row_number, item_row_value=item_row_value)
+        workbook.save(full_act_path)
+        return row_number
+
+
+async def set_value_title(worksheet: Worksheet, violation_values, row_number: int):
     """
 
+    :param row_number:
+    :param violation_values:
+    :param worksheet:
+    :return:
+    """
+
+    row_value = 28 + row_number
+    main_location: dict = DataBase().get_dict_data_from_table_from_id(
+        table_name='core_mainlocation',
+        id=violation_values.main_location_id
+    )
+    sub_location: dict = DataBase().get_dict_data_from_table_from_id(
+        table_name='core_sublocation',
+        id=violation_values.sub_location_id
+    )
+
+    title: str = f"{main_location['short_title']} ({sub_location['title']})"
+    worksheet.cell(row=row_value, column=2, value=title)
+
+    merged_cell = [
+        f'B{row_value}:L{row_value}',
+    ]
+    for item in merged_cell:
+        await set_merge_cells(worksheet, merged_cell=item)
+
+    act_range_border = [
+        (f'B{row_value}:L{row_value}', False)
+    ]
+    for item in act_range_border:
+        await set_act_range_border(worksheet, cell_range=item[0], border=item[1])
+
+    row_dimensions = [
+        [f'{row_value}', '18'],
+    ]
+    for item in row_dimensions:
+        await set_row_dimensions(worksheet, row_number=item[0], height=item[1])
+
+    report_font = [
+        (f'B{row_value}:L{row_value}', 'Times New Roman', 14, 'center', 'center'),
+    ]
+    for item_range in report_font:
+        await set_report_font(worksheet, cell_range=item_range[0], font_size=item_range[2], font_name=item_range[1])
+
+    for item_range in report_font:
+        await set_act_alignment(worksheet, item_range[0], horizontal=item_range[3], vertical=item_range[4])
+
+    report_font = [
+        [f'B{row_value}:L{row_value}',
+         {'color': '000000', 'font_size': '14', 'bold': 'True', 'name': 'Times New Roman'}],
+    ]
+    for cell_range in report_font:
+        await sets_report_font(worksheet, cell_range[0], params=cell_range[1])
+
+
+async def set_act_violation(worksheet: Worksheet, violation_values, row_number: int, item_row_value: int):
+    """
+
+    :param item_row_value:
+    :param row_number:
+    :param worksheet:
+    :param violation_values:
+    :return:
+    """
+
+    row_value = 28 + row_number
+
+    worksheet.cell(row=row_value, column=2, value=item_row_value)
+    normative_document: dict = DataBase().get_dict_data_from_table_from_id(
+        table_name='core_normativedocuments',
+        id=violation_values.normative_documents_id
+    )
+
+    if violation_values.description:
+        worksheet.cell(row=row_value, column=3, value=violation_values.description)
+        worksheet.cell(row=row_value, column=15, value=violation_values.description)
+    else:
+        worksheet.cell(row=row_value, column=3, value=normative_document['title'])
+        worksheet.cell(row=row_value, column=15, value=normative_document['title'])
+
+    worksheet.cell(row=row_value, column=6, value=normative_document['normative'])
+    worksheet.cell(row=row_value, column=16, value=normative_document['normative'])
+
+    if violation_values.comment and violation_values.comment not in [None, '', ' ', '.', '*', '/']:
+        worksheet.cell(row=row_value, column=9, value=violation_values.comment)
+        worksheet.cell(row=row_value, column=17, value=violation_values.comment)
+    else:
+        worksheet.cell(row=row_value, column=9, value=normative_document['procedure'])
+        worksheet.cell(row=row_value, column=17, value=normative_document['procedure'])
+
+    elimination_time: dict = DataBase().get_dict_data_from_table_from_id(
+        table_name='core_eliminationtime',
+        id=violation_values.elimination_time_id
+    )
+    elimination_data = (datetime.datetime.strptime(violation_values.created_at, '%Y-%m-%d')
+                        + datetime.timedelta(days=elimination_time['days'])).strftime('%d.%m.%Y')
+
+    worksheet.cell(row=row_value, column=12, value=elimination_data)
+
+    merged_cell = [
+        f'C{row_value}:E{row_value}',
+        f'F{row_value}:H{row_value}',
+        f'I{row_value}:K{row_value}',
+    ]
+
+    for item in merged_cell:
+        await set_merge_cells(worksheet, merged_cell=item)
+
+    act_range_border = [
+        (f'B{row_value}:L{row_value}', False)
+    ]
+    for item in act_range_border:
+        await set_act_range_border(worksheet, cell_range=item[0], border=item[1])
+
+    row_dimensions = [
+        [f'{row_value}', '105'],
+    ]
+
+    for item in row_dimensions:
+        await set_row_dimensions(worksheet, row_number=item[0], height=item[1])
+
+    report_font = [
+        (f'B{row_value}:L{row_value}', 'Times New Roman', 11, 'center', 'center'),
+    ]
+    for item_range in report_font:
+        await set_report_font(worksheet, cell_range=item_range[0], font_size=item_range[2], font_name=item_range[1])
+
+    for item_range in report_font:
+        await set_act_alignment(worksheet, item_range[0], horizontal=item_range[3], vertical=item_range[4])
+
+    return row_value
+
+
+async def set_single_violation(worksheet: Worksheet, violation_values):
+    """Заполнение акта из единственного пункта
+
+    :param
+    """
+
+    main_location: dict = DataBase().get_dict_data_from_table_from_id(
+        table_name='core_mainlocation',
+        id=violation_values.main_location_id
+    )
+    sub_location: dict = DataBase().get_dict_data_from_table_from_id(
+        table_name='core_sublocation',
+        id=violation_values.sub_location_id
+    )
+
+    title: str = f"{main_location['short_title']} ({sub_location['title']})"
+
+    worksheet.cell(row=27, column=2, value=title)
+    worksheet.cell(row=28, column=2, value=1)
+
+    normative_document: dict = DataBase().get_dict_data_from_table_from_id(
+        table_name='core_normativedocuments',
+        id=violation_values.normative_documents_id
+    )
+
+    if violation_values.description:
+        worksheet.cell(row=28, column=3, value=violation_values.description)
+        worksheet.cell(row=28, column=15, value=violation_values.description)
+    else:
+        worksheet.cell(row=28, column=3, value=normative_document['title'])
+        worksheet.cell(row=28, column=15, value=normative_document['title'])
+
+    worksheet.cell(row=28, column=6, value=normative_document['normative'])
+    worksheet.cell(row=28, column=16, value=normative_document['normative'])
+
+    if violation_values.comment and violation_values.comment not in ['', ' ', '.', '*', '/']:
+        worksheet.cell(row=28, column=9, value=violation_values.comment)
+        worksheet.cell(row=28, column=17, value=violation_values.comment)
+    else:
+        worksheet.cell(row=28, column=9, value=normative_document['procedure'])
+        worksheet.cell(row=28, column=17, value=normative_document['procedure'])
+
+    elimination_time: dict = DataBase().get_dict_data_from_table_from_id(
+        table_name='core_eliminationtime',
+        id=violation_values.elimination_time_id
+    )
+    elimination_data = (datetime.datetime.strptime(violation_values.created_at, '%Y-%m-%d')
+                        + datetime.timedelta(days=elimination_time['days'])).strftime('%d.%m.%Y')
+
+    worksheet.cell(row=28, column=12, value=elimination_data)
+
+
+async def set_worksheet_cell_value(worksheet: Worksheet, item, serial_number, val):
+    """
+
+    :param val:
     :param worksheet: страница для заполнения
     :param item:
     :param serial_number:
@@ -436,7 +680,8 @@ factor_of_font_size_to_width = {
 
 
 async def get_height_for_row(sheet, row_number: int, font_size: int = 12, value=None):
-    """
+    """Изменение высоты строк в зависимости от содержания
+
     :param value:
     :param sheet:
     :param row_number:
@@ -460,10 +705,10 @@ async def get_height_for_row(sheet, row_number: int, font_size: int = 12, value=
             return height
 
 
-async def set_photographic_materials_values(worksheet):
+async def set_photographic_materials_values(worksheet: Worksheet):
     """
-    :param worksheet:
 
+    :param worksheet:
     """
 
     values = [
@@ -475,7 +720,6 @@ async def set_photographic_materials_values(worksheet):
 
     for val in values:
         try:
-
             worksheet.cell(row=int(val['row']), column=int(val['column']), value=str(val['value']))
 
         except Exception as err:
@@ -483,7 +727,32 @@ async def set_photographic_materials_values(worksheet):
             return None
 
 
-async def set_photographic_materials(worksheet, violation_data: str, num_data: int):
+async def set_act_photographic_materials_values(worksheet: Worksheet, row_value):
+    """
+
+    :param row_value:
+    :param worksheet:
+    """
+
+    values = [
+        {'coordinate': 'K59', 'value': 'Приложение 1',
+         'row': f'{59 + row_value}', 'column': '12'},
+        {'coordinate': 'K60', 'value': 'к 1 части Акта-Предписания',
+         'row': f'{60 + row_value}', 'column': '12'},
+        {'coordinate': 'B62', 'value': 'Фото 1',
+         'row': f'{62 + row_value}', 'column': '2'},
+    ]
+
+    for val in values:
+        try:
+            worksheet.cell(row=int(val['row']), column=int(val['column']), value=str(val['value']))
+
+        except Exception as err:
+            logger.error(f"set_act_photographic_materials_values {repr(err)}")
+            return None
+
+
+async def set_photographic_materials(worksheet: Worksheet, violation_data: str, num_data: int):
     """Вставка фото и описания наоушения га сстраницу отчета
     :param num_data:
     :param worksheet:
@@ -545,5 +814,35 @@ async def set_photographic_materials(worksheet, violation_data: str, num_data: i
         await set_range_border(worksheet, cell_range=cell_border_range)
 
     worksheet.print_area = f'$A$1:$I${start_photo_row + num_data + 1}'
+
+    return True
+
+
+async def set_act_photographic_materials(worksheet: Worksheet, img_params: dict):
+    """Вставка фото нарушения на страницу акта
+
+    :param img_params:
+    :param worksheet:
+    :return:
+    """
+
+    if not img_params:
+        logger.error(f'set_act_photographic_materials not found dict img_params')
+        return False
+
+    photo_full_name = img_params.get("photo_full_name", None)
+    if not photo_full_name:
+        logger.error(f'set_act_photographic_materials not found param img_params["photo_full_name"]')
+        return False
+
+    if not os.path.isfile(photo_full_name):
+        logger.error(f'set_act_photographic_materials photo not found {photo_full_name}')
+        return False
+
+    img: Image = Image(photo_full_name)
+
+    img = await image_preparation(img, img_params)
+
+    await insert_images(worksheet, img=img)
 
     return True

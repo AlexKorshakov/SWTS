@@ -9,7 +9,7 @@ from apps.core.bot.utils.json_worker.read_json_file import read_json_file
 from apps.core.bot.utils.secondary_functions.get_filepath import create_file_path, get_report_full_filepath
 
 
-async def get_full_report_name(chat_id) -> str:
+async def get_full_report_name(chat_id: int) -> str:
     """Получение полного пути к отчету
     :rtype: str
     :param chat_id:
@@ -28,7 +28,7 @@ async def get_full_report_name(chat_id) -> str:
         return ''
 
 
-async def get_full_mip_report_name(chat_id) -> str:
+async def get_full_mip_report_name(chat_id: int) -> str:
     """Получение полного пути к отчету
     :param chat_id:
     :return: полный путь к файлу с отчетом
@@ -60,8 +60,8 @@ async def get_full_mip_report_name(chat_id) -> str:
         return ''
 
 
-async def get_full_act_prescription_name(chat_id: int, param: dict) -> str:
-    """
+async def get_and_create_full_act_prescription_name(chat_id: int, param: dict) -> str:
+    """Формирование и получение полного имение пути к акту
 
     :param param:
     :param chat_id:
@@ -88,9 +88,10 @@ async def get_full_act_prescription_name(chat_id: int, param: dict) -> str:
 
     try:
         report_full_name = f'Акт-предписание № {act_number} от {act_date} {short_title} {main_location}.xlsx'
-        report_path = await get_report_full_filepath(str(chat_id))
+        report_path = await get_report_full_filepath(str(chat_id), actual_date=act_date)
         await create_file_path(report_path)
         full_report_path: str = report_path + report_full_name
+
         return full_report_path
 
     except Exception as err:

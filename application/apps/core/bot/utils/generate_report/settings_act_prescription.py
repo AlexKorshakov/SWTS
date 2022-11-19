@@ -4,14 +4,18 @@ ACT_RANGE_COLUMNS = [
     ['C', '9'],
     ['D', '9'],
     ['E', '9'],
-    ['F', '9'],
+    ['F', '12'],
     ['G', '4'],
     ['H', '9'],
     ['I', '9'],
-    ['J', '4'],
+    ['J', '5'],
     ['K', '9'],
     ['L', '12'],
     ['M', '4'],
+
+    ["O", "27"],
+    ["P", "25"],
+    ["Q", "23"],
 ]
 
 ACT_MERGED_CELLS = [
@@ -39,34 +43,6 @@ ACT_MERGED_CELLS = [
 
     'B27:L27',
     'C28:E28', 'F28:H28', 'I28:K28', 'L28:L28',
-
-    'B30:L30',
-    'B31:F31', 'G31:L31',
-    'B32:F32', 'G32:L32',
-    'B33:L33',
-
-    'B35:L35',
-    'B36:L36',
-
-    'B38:L38',
-    'B39:L39',
-    'B40:L40',
-
-    'B42:F42',
-    'B43:F43', 'H43:I43', 'K43:L43',
-    'B44:F44', 'H44:I44', 'K44:L44',
-
-    'K46:L46',
-    'K47:L47',
-
-    'B49:L49',
-    'B50:L50',
-    'B51:L51',
-    'K52:L52',
-    'K53:L53',
-    'K54:L54',
-    'K55:L55',
-
 ]
 
 ACT_CELL_RANGES = [
@@ -82,24 +58,6 @@ ACT_CELL_RANGES = [
 
     ('B27:L27', False),
     ('B28:E28', False), ('F28:H28', False), ('I28:K28', False), ('L28:L28', False),
-
-    ('B35:L35', False),
-    ('B36:L36', False),
-
-    ('B38:L38', False),
-    ('B39:L39', False),
-    ('B40:L40', False),
-
-    ('B43:F43', True), ('H43:I43', True), ('K43:L43', True),
-
-    ('K46:L46', True),
-
-    ('B50:L50', True),
-
-    ('K52:L52', True),
-
-    ('K54:L54', True),
-
 ]
 
 ACT_ROW_DIMENSIONS = [
@@ -130,33 +88,6 @@ ACT_ROW_DIMENSIONS = [
     ['26', '53'],
     ['27', '18'],
     ['28', '105'],
-    ['29', '5.5'],
-    ['30', '45'],
-    ['31', '18'],
-    ['32', '18'],
-    ['33', '30'],
-    ['34', '5.5'],
-    ['35', '18'],
-    ['36', '32'],
-    ['37', '5.5'],
-    ['38', '20'],
-    ['39', '18'],
-    ['40', '30'],
-    ['41', '18'],
-    ['42', '18'],
-    ['43', '30'],
-    ['44', '18'],
-    ['45', '18'],
-    ['46', '18'],
-    ['47', '18'],
-    ['48', '18'],
-    ['49', '18'],
-    ['50', '30'],
-    ['51', '40'],
-    ['52', '18'],
-    ['53', '18'],
-    ['54', '18'],
-    ['55', '18'],
 
 ]
 
@@ -184,37 +115,6 @@ ACT_CELL_RANGES_BASIC_ALIGNMENT = [
     ('B26:L26', 'Times New Roman', 11, 'center', 'center'),
     ('B27:L27', 'Times New Roman', 14, 'center', 'center'),
     ('B28:L28', 'Times New Roman', 11, 'center', 'center'),
-
-    ('B30:L30', 'Times New Roman', 11, 'center', 'center'),
-    ('B31:L31', 'Times New Roman', 11, 'center', 'center'),
-    ('B32:L32', 'Times New Roman', 11, 'center', 'center'),
-    ('B33:L33', 'Times New Roman', 12, 'center', 'center'),
-
-    ('B35:L35', 'Times New Roman', 14, 'left', 'center'),
-    ('B36:L36', 'Times New Roman', 10, 'center', 'center'),
-
-    ('B38:L38', 'Times New Roman', 12, 'center', 'center'),
-
-    ('B40:L40', 'Times New Roman', 10, 'center', 'center'),
-
-    ('B42:L42', 'Times New Roman', 14, 'center', 'center'),
-    ('B43:L43', 'Times New Roman', 12, 'center', 'center'),
-    ('B44:L44', 'Times New Roman', 10, 'center', 'center'),
-
-    ('B46:L46', 'Times New Roman', 10, 'center', 'center'),
-    ('B47:L47', 'Times New Roman', 10, 'center', 'center'),
-
-    ('B49:L49', 'Times New Roman', 12, 'left','center'),
-
-    ('B51:L51', 'Times New Roman', 10, 'center', 'center'),
-
-    ('B53:L53', 'Times New Roman', 10, 'center', 'center'),
-
-    ('B55:L55', 'Times New Roman', 10, 'center', 'center'),
-
-    ('B59:L59', 'Times New Roman', 10, 'right', 'center'),
-    ('B60:L60', 'Times New Roman', 10, 'right', 'center'),
-
 ]
 
 ACT_CELL_RANGES_SET_REPORT_FONT = [

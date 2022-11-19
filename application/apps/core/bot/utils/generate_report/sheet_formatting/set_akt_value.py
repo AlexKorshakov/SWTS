@@ -9,8 +9,8 @@ from apps.core.bot.utils.json_worker.read_json_file import read_json_file
 from loader import logger
 
 
-async def get_act_headlines_data_values(chat_id, dataframe=None, act_date=None) -> dict:
-    """ Формирование шапки акта - предписания
+async def get_act_headlines_data_values(chat_id, dataframe=None, act_date=None, act_number=None) -> dict:
+    """ Формирование данных дя формирования шапки акта - предписания
 
     :return: dict headlines_data
     """
@@ -29,7 +29,7 @@ async def get_act_headlines_data_values(chat_id, dataframe=None, act_date=None) 
         headlines_data['HSE_function'] = list(set(list(dataframe.function)))[0]
 
         # TODO  get registry of acts
-        headlines_data['act_number'] = 9999
+        headlines_data['act_number'] = act_number if act_number else 00000
 
         max_date = max(dataframe['created_at'])
         elimination_time_id = max(dataframe['elimination_time_id'])
@@ -38,9 +38,9 @@ async def get_act_headlines_data_values(chat_id, dataframe=None, act_date=None) 
             id=elimination_time_id)
 
         days_max = elimination_time['days']
-        headlines_data['act_date'] = max_date
-        headlines_data['act_max_date'] = datetime.datetime.strptime(act_date, '%d.%m.%Y') + datetime.timedelta(
-            days=days_max)
+        headlines_data['act_date'] = datetime.datetime.strptime(max_date, '%Y-%m-%d').strftime('%d.%m.%Y')
+        headlines_data['act_max_date'] = (datetime.datetime.strptime(act_date, '%d.%m.%Y') + datetime.timedelta(
+            days=days_max)).strftime('%d.%m.%Y')
 
         # Подрядчик
         general_contractor_id = list(set(list(dataframe.general_contractor_id)))[0]
@@ -106,62 +106,86 @@ async def get_act_headlines_data_values(chat_id, dataframe=None, act_date=None) 
     return headlines_data
 
 
-async def set_act_header_values(worksheet, headlines_data_values=None, general_contractor=None):
+async def set_act_header_values(worksheet, headlines_data=None):
     """Заполнение заголовка отчета
     
-    :param general_contractor: 
-    :param headlines_data_values: 
+    :param headlines_data:
     :param worksheet:
     :return:
     """
 
-    if not general_contractor:
-        general_contractor = headlines_data_values.get('general_contractor', None)
-    #     contractors = dataframe.general_contractor_id.tolist()
-    #     contractors = list(set(list(contractors)))
-    #     contractors_str = ''
-    #     for item in contractors:
-    #         if isinstance(item, float):
-    #             continue
-    #         if item and item != 'Подрядная организация':
-    #             contractors_str = contractors_str + item + ', '
-    #             headlines_data['contractors'] = contractors_str
+    values: list = [
+        {"coordinate": "B6",
+         "value": f"Акт предписание № {headlines_data.get('act_number', 'act_number')} от "
+                  f"{headlines_data.get('act_date', 'act_date')} г.",
+         "row": "6",
+         "column": "2"},
 
-    values = [
-        {"coordinate": "B6", "value": f"Акт предписание №{headlines_data['act_number']} от "
-                                      f"{str(headlines_data['act_date']).strftime('%d.%m.%Y')} г.",
-         "row": "6", "column": "2"},
+        {"coordinate": "B9",
+         "value": f"{headlines_data.get('general_contractor_full_name', 'general_contractor_full_name')}",
+         "row": "9",
+         "column": "2"},
 
-        {"coordinate": "B9", "value": f"{headlines_data['general_contractor_full_name']}",
-         "row": "9", "column": "2"},
+        {"coordinate": "B12",
+         "value": f"{headlines_data.get('HSE_function', 'HSE_function')} "
+                  f"{headlines_data.get('HSE_FUNC_RP', 'HSE_FUNC_RP')}",
+         "row": "12",
+         "column": "2"},
 
-        {"coordinate": "B12", "value": f"{headlines_data['HSE_FUNC_RP']}",
-         "row": "12", "column": "2"},
+        {"coordinate": "B16",
+         "value": f"{headlines_data.get('general_contractor_full_name', 'general_contractor_full_name')}",
+         "row": "16",
+         "column": "2"},
 
-        {"coordinate": "B16", "value": f"{headlines_data['general_contractor_full_name']}",
-         "row": "16", "column": "2"},
+        {"coordinate": "B20",
+         "value": f"{headlines_data.get('contractor_representative', 'contractor_representative')}",
+         "row": "20",
+         "column": "2"},
+    ]
 
-        {"coordinate": "B20", "value": f"{headlines_data['contractor_representative']}",
-         "row": "20", "column": "2"},
+    for val in values:
+        try:
+            worksheet.cell(row=int(val['row']), column=int(val['column']), value=str(val['value']))
+        except Exception as err:
+            logger.error(f"set_user_values {repr(err)}")
+            continue
 
-        # {"coordinate": "B27", "value": f"тут наименование ПО",
-        #  "row": "27", "column": "2"},
 
-        {"coordinate": "G31", "value": f"{headlines_data['HSE_email']}",
-         "row": "31", "column": "7"},
+async def set_act_footer_footer_values(worksheet, row_number):
+    """Установка значений футера акта
 
-        {"coordinate": "G32", "value": f"{str(headlines_data['act_max_date']).strftime('%d.%m.%Y')}",
-         "row": "32", "column": "7"},
+    :param worksheet:
+    :param row_number:
+    :return:
+    """
 
-        {"coordinate": "B43", "value": f"{headlines_data['HSE_function']}",
-         "row": "43", "column": "2"},
+    row_value = 28 + row_number
 
-        {"coordinate": "B43", "value": f"{headlines_data['HSE_name_short']}",
-         "row": "43", "column": "11"},
+    values: list = [
+        {"coordinate": "G31",
+         "value": f"{headlines_data['HSE_email']}",
+         "row": f"{31 - 28 + row_value}",
+         "column": "7"},
 
-        {"coordinate": "B46", "value": f"{str(headlines_data['act_date']).strftime('%d.%m.%Y')}",
-         "row": "46", "column": "11"},
+        {"coordinate": "G32",
+         "value": f"{(headlines_data['act_max_date'])}",
+         "row": f"{32 - 28 + row_value}",
+         "column": "7"},
 
+        {"coordinate": "B43",
+         "value": f"{headlines_data['HSE_function']}",
+         "row": f"{43 - 28 + row_value}",
+         "column": "2"},
+
+        {"coordinate": "B43",
+         "value": f"{headlines_data['HSE_name_short']}",
+         "row": f"{43 - 28 + row_value}",
+         "column": "11"},
+
+        {"coordinate": "B46",
+         "value": f"{headlines_data['act_date']}",
+         "row": f"{46 - 28 + row_value}",
+         "column": "11"},
     ]
 
     for val in values:

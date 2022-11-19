@@ -23,11 +23,17 @@ async def date_now() -> str:
     return str((datetime.datetime.now()).strftime("%d.%m.%Y"))
 
 
-async def get_report_full_filepath(user_id: str = None):
+async def get_report_full_filepath(user_id: str = None, actual_date: str = None):
     """Обработчик сообщений с reports
     Получение полного пути файла
+
+    :param actual_date:
+    :param user_id:
     """
-    return f"{BOT_MEDIA_PATH}{user_id}\\data_file\\{await date_now()}\\reports\\"
+    if not actual_date:
+        actual_date = await date_now()
+
+    return f"{BOT_MEDIA_PATH}{user_id}\\data_file\\{actual_date}\\reports\\"
 
 
 async def get_registration_full_filepath(user_id: str = None):
@@ -37,11 +43,14 @@ async def get_registration_full_filepath(user_id: str = None):
     return f"{BOT_MEDIA_PATH}{user_id}\\"
 
 
-async def get_photo_full_filepath(user_id: str = None):
+async def get_photo_full_filepath(user_id: str = None, actual_date: str = None):
     """Обработчик сообщений с photo
     Получение полного пути файла
     """
-    return f"{BOT_MEDIA_PATH}{user_id}\\data_file\\{await date_now()}\\photo\\"
+
+    if not actual_date:
+        actual_date = await date_now()
+    return f"{BOT_MEDIA_PATH}{user_id}\\data_file\\{actual_date}\\photo\\"
 
 
 async def get_photo_full_filename(user_id: str = None, name=None, date=None):
@@ -50,15 +59,17 @@ async def get_photo_full_filename(user_id: str = None, name=None, date=None):
     """
     if not date:
         date = await date_now()
-
     return f"{BOT_MEDIA_PATH}{user_id}\\data_file\\{date}\\photo\\{REPORT_NAME}{name}.jpg"
 
 
-async def get_json_full_filepath(user_id: str = None):
+async def get_json_full_filepath(user_id: str = None, actual_date: str = None):
     """Обработчик сообщений с json
     Получение полного пути файла
     """
-    return f"{BOT_MEDIA_PATH}{user_id}\\data_file\\{await date_now()}\\json\\"
+    if not actual_date:
+        actual_date = await date_now()
+
+    return f"{BOT_MEDIA_PATH}{user_id}\\data_file\\{actual_date}\\json\\"
 
 
 async def get_json_full_filename(user_id: str = None, file_name: str = None, date=None):

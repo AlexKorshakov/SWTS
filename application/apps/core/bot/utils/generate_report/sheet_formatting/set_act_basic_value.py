@@ -47,60 +47,92 @@ async def set_act_body_values(worksheet):
         {'coordinate': 'B26', 'value': 'п/п', 'row': '26', 'column': '2'},
         {'coordinate': 'B27', 'value': 'тут наименование ПО', 'row': '27', 'column': '2'},
         {'coordinate': 'B28', 'value': '1', 'row': '28', 'column': '2'},
+    ]
 
+    for val in values:
+        try:
+            worksheet.cell(row=int(val['row']), column=int(val['column'])).value = str(val['value'])
+
+        except Exception as err:
+            logger.error(f"set_values {repr(err)}")
+            return None
+
+
+async def set_act_footer_values(worksheet, row_number):
+    """
+
+     :param row_number:
+     :param worksheet:
+     :return:
+     """
+    row_value = 28 + row_number
+
+    values = [
         {'coordinate': 'B30',
          'value': 'Информацию о выполнении пунктов настоящего предписания необходимо направить '
                   'в письменной форме в адрес общества с ограниченной ответственностью «Удоканская медь» '
                   'по адресу: пгт. Новая Чара, ул. Магистральная, 21 или ',
-         'row': '30', 'column': '2'},
-        {'coordinate': 'B31', 'value': 'на эл. адреса:', 'row': '31', 'column': '2'},
-        {'coordinate': 'G31', 'value': 'тут эл.адрес выдавшего', 'row': '31', 'column': '7'},
-        {'coordinate': 'B32', 'value': 'не позднее:', 'row': '32', 'column': '2'},
-        {'coordinate': 'G32', 'value': 'тут крайняя дата ответа', 'row': '32', 'column': '7'},
+         'row': f'{30 - 28 + row_value}', 'column': '2'},
+        {'coordinate': 'B31', 'value': 'на эл. адреса:',
+         'row': f'{31 - 28 + row_value}', 'column': '2'},
+        {'coordinate': 'G31', 'value': 'тут эл.адрес выдавшего',
+         'row': f'{31 - 28 + row_value}', 'column': '7'},
+        {'coordinate': 'B32', 'value': 'не позднее:',
+         'row': f'{32 - 28 + row_value}', 'column': '2'},
+        {'coordinate': 'G32', 'value': 'тут крайняя дата ответа',
+         'row': f'{32 - 28 + row_value}', 'column': '7'},
         {'coordinate': 'B33',
          'value': 'Невыполнение предписания в установленный срок является основанием '
                   'для применения дисциплинарных взысканий',
-         'row': '33', 'column': '2'},
+         'row': f'{33 - 28 + row_value}', 'column': '2'},
 
-        {'coordinate': 'B35', 'value': 'С предписанием ознакомлен: ', 'row': '35', 'column': '2'},
+        {'coordinate': 'B35', 'value': 'С предписанием ознакомлен: ',
+         'row': f'{35 - 28 + row_value}', 'column': '2'},
         {'coordinate': 'B36',
          'value': '(Ф.И.О, подпись должность руководителя, иного должностного лица или уполномоченного представителя '
                   'юридического лица, индивидуального предпринимателя, его уполномоченного представителя)',
-         'row': '36', 'column': '2'},
+         'row': f'{36 - 28 + row_value}', 'column': '2'},
 
         {'coordinate': 'B38', 'value': 'Сведения об отказе в ознакомлении с предписанием и отказе от подписи',
-         'row': '38', 'column': '2'},
+         'row': f'{38 - 28 + row_value}', 'column': '2'},
 
         {'coordinate': 'B40',
          'value': '(фамилия, имя, отчество (последнее – при наличии), проводившего(их) проверку или '
                   'уполномоченного выдавать предписания)',
-         'row': '40', 'column': '2'},
+         'row': f'{40 - 28 + row_value}', 'column': '2'},
 
-        {'coordinate': 'B42', 'value': 'Предписание выдал: ', 'row': '42', 'column': '2'},
-        {'coordinate': 'B43', 'value': 'тут должность выдавшего', 'row': '43', 'column': '2'},
-        {'coordinate': 'B43', 'value': 'тут ФИО выдавшего', 'row': '43', 'column': '11'},
-        {'coordinate': 'B44', 'value': '(должность)', 'row': '44', 'column': '2'},
-        {'coordinate': 'B44', 'value': '(подпись)', 'row': '44', 'column': '8'},
-        {'coordinate': 'B44', 'value': '(расшифровка подписи)', 'row': '44', 'column': '11'},
+        {'coordinate': 'B42', 'value': 'Предписание выдал: ',
+         'row': f'{42 - 28 + row_value}', 'column': '2'},
+        {'coordinate': 'B43', 'value': 'тут должность выдавшего',
+         'row': f'{43 - 28 + row_value}', 'column': '2'},
+        {'coordinate': 'B43', 'value': 'тут ФИО выдавшего',
+         'row': f'{43 - 28 + row_value}', 'column': '11'},
+        {'coordinate': 'B44', 'value': '(должность)',
+         'row': f'{44 - 28 + row_value}', 'column': '2'},
+        {'coordinate': 'B44', 'value': '(подпись)',
+         'row': f'{44 - 28 + row_value}', 'column': '8'},
+        {'coordinate': 'B44', 'value': '(расшифровка подписи)',
+         'row': f'{44 - 28 + row_value}', 'column': '11'},
 
-        {'coordinate': 'B46', 'value': 'тут дата', 'row': '46', 'column': '11'},
-        {'coordinate': 'B47', 'value': '(дата выдачи)', 'row': '47', 'column': '11'},
+        {'coordinate': 'B46', 'value': 'тут дата',
+         'row': f'{46 - 28 + row_value}', 'column': '11'},
+        {'coordinate': 'B47', 'value': '(дата выдачи)',
+         'row': f'{47 - 28 + row_value}', 'column': '11'},
 
-        {'coordinate': 'B49', 'value': 'Экземпляр предписания для исполнения получил:', 'row': '49', 'column': '2'},
+        {'coordinate': 'B49', 'value': 'Экземпляр предписания для исполнения получил:',
+         'row': f'{49 - 28 + row_value}', 'column': '2'},
 
         {'coordinate': 'B51',
          'value': '(фамилия, имя, отчество (последнее – при наличии), должность руководителя, '
                   'иного должностного лица или уполномоченного представителя юридического лица, '
                   'индивидуального предпринимателя, его уполномоченного представителя)',
-         'row': '51', 'column': '2'},
+         'row': f'{51 - 28 + row_value}', 'column': '2'},
 
-        {'coordinate': 'B53', 'value': '(дата)', 'row': '53', 'column': '11'},
+        {'coordinate': 'B53', 'value': '(дата)',
+         'row': f'{53 - 28 + row_value}', 'column': '11'},
 
-        {'coordinate': 'B55', 'value': '(подпись)', 'row': '55', 'column': '11'},
-
-        {'coordinate': 'B59', 'value': 'Приложение ', 'row': '59', 'column': '12'},
-        {'coordinate': 'B60', 'value': 'к 1 части Акта-Предписания', 'row': '60', 'column': '12'},
-
+        {'coordinate': 'B55', 'value': '(подпись)',
+         'row': f'{55 - 28 + row_value}', 'column': '11'},
     ]
 
     for val in values:

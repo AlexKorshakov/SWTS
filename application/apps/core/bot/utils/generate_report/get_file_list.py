@@ -2,8 +2,8 @@ from datetime import datetime
 
 from config.config import SEPARATOR
 from apps.core.bot.utils.secondary_functions.get_part_date import get_day_message, get_month_message
-from apps.core.bot.utils.secondary_functions.get_filepath import get_json_full_filepath, get_registration_full_filepath, \
-    get_report_full_filepath
+from apps.core.bot.utils.secondary_functions.get_filepath import get_json_full_filepath, \
+    get_registration_full_filepath, get_report_full_filepath
 from apps.core.bot.utils.secondary_functions.get_json_files import get_files
 
 
@@ -38,10 +38,10 @@ async def get_json_file_list(chat_id, params=None) -> list:
     return global_data
 
 
-async def get_registration_json_file_list(chat_id: str) -> list:
+async def get_registration_json_file_list(chat_id: int) -> list:
     """Получение списка файлов из директории
     """
-    json_data_path = await get_registration_full_filepath(chat_id)
+    json_data_path = await get_registration_full_filepath(str(chat_id))
     files = await get_files(json_data_path)
 
     for file in files:

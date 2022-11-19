@@ -17,7 +17,7 @@ IMG_ANCHOR = True
 IMG_SCALE = True
 
 
-async def insert_images_to_sheet(json_data, worksheet: Worksheet, height=160):
+async def insert_images_to_sheet(json_data: list, worksheet: Worksheet, height: int = 160):
     """Вставка изображения в лист worksheet
     """
     for ind, j_data in enumerate(json_data, start=2):
@@ -74,6 +74,30 @@ async def insert_signalline_to_report_body(worksheet: Worksheet) -> None:
     img = await image_preparation(img, img_params)
 
     await insert_images(worksheet, img=img)
+
+
+async def insert_service_image(worksheet: Worksheet, img_params: dict) -> bool:
+    """Вставка изображений в файл
+
+    :param img_params: dict параметры вставки
+    :param worksheet:
+    :return:
+    """
+
+    if not img_params:
+        return False
+
+    if not os.path.isfile(img_params['photo_full_name']):
+        logger.error("service image not found")
+        return False
+
+    img: Image = openpyxl.drawing.image.Image(img_params['photo_full_name'])
+
+    img = await image_preparation(img, img_params)
+
+    await insert_images(worksheet, img=img)
+
+    return True
 
 
 async def image_preparation(img: Image, img_params: dict):

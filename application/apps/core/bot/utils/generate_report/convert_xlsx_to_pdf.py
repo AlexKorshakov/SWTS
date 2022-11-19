@@ -9,6 +9,7 @@ from win32com import client
 
 async def close_excel_by_force(excel):
     """Принудительное закрытие Excel  после окончания работы
+
     :param excel:
     :return:
     """
@@ -36,6 +37,7 @@ async def close_excel_by_force(excel):
 
 async def convert_xlsx_to_pdf(*, path: str) -> bool:
     """Конвертация эксель файла в pdf
+
     """
     if not path:
         return False
@@ -62,6 +64,7 @@ async def convert_xlsx_to_pdf(*, path: str) -> bool:
 
 async def convert_report_to_pdf(chat_id, path: str):
     """Конвертация отчета в pdf
+
     :param chat_id:
     :param path:
     :return:
