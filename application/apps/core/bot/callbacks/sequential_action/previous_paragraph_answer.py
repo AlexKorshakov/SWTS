@@ -17,7 +17,7 @@ from apps.core.bot.callbacks.sequential_action.data_answer import \
 from apps.core.bot.data.category import get_data_list, _PREFIX_ND
 from apps.core.bot.data.report_data import violation_data
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import move_action
-from apps.core.bot.utils.json_worker.writer_json_file import write_json_file
+from apps.core.utils.json_worker.writer_json_file import write_json_file
 from loader import logger
 
 logger.debug("previous_paragraph")
@@ -84,8 +84,6 @@ async def previous_paragraph_answer(call: types.CallbackQuery, callback_data: di
         violation_data["normative_documents"] = nd_data[0].get('title', None)
         violation_data["normative_documents_normative"] = nd_data[0].get('normative', None)
         violation_data["normative_documents_procedure"] = nd_data[0].get('procedure', None)
-
-        # pprint(f"{violation_data = }")
 
         await write_json_file(data=violation_data, name=violation_data["json_full_name"])
 

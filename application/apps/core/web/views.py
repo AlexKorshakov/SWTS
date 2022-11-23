@@ -19,7 +19,7 @@ from loader import logger
 #
 from .forms import UsrRegisterForm, UserLoginForm, ViolationsForm, ViolationsAddForm
 from .models import Violations, MainCategory, Location, GeneralContractor, IncidentLevel, Status, MainLocation, Week, \
-    ActsPrescriptions
+    ActsPrescriptions, NormativeDocuments
 #
 # # Create your views here.
 from ..bot.database.DataBase import upload_from_local
@@ -64,21 +64,9 @@ def add_violations(request: HttpRequest):
 
 def statistic(request: HttpRequest):
     """Добавление данных в базу данных, в локальный репозиторий, в Google Drive"""
-    # form = None
-    # print(f'{request = }')
-    #
-    # violation = Violations()
-    #
-    # if request.method == 'GET':
-    #     form = ViolationsAddForm(instance=violation)
-    #
-    # context = {
-    #     'form': form,
-    # }
 
     return render(
         request, 'statistic.html',
-        # context=context
     )
 
 
@@ -148,9 +136,6 @@ class PostEdit(CreateView):
         print(f"{context = }")
         if 'slug' in self.kwargs:
             print(f"slug {self.kwargs.get('slug', None)}")
-
-            # context['object'] = get_object_or_404(MyObject, slug=self.kwargs['slug'])
-            # context['objects'] = get_objects_by_user(self.request.user)
 
         return context
 
@@ -401,7 +386,6 @@ class ViolationsByWeek(MyMixin, ListView):
     def get_context_data(self, *, object_list=None, **kwargs):
         """Дополнение данных перед отправкой на рендер"""
         context = super().get_context_data(**kwargs)
-        # context['title'] = self.get_upper(Week.objects.get(pk=self.kwargs['week']))
         logger.debug(f"{context=}")
         return context
 
@@ -469,6 +453,25 @@ class HomeRegisterActsPrescriptions(MyMixin, ListView):
         context = super(HomeRegisterActsPrescriptions, self).get_context_data(**kwargs)
         context['title'] = self.get_upper('Реестр Актов')
         context['mixin_prop'] = self.get_prop()
+        return context
+
+    # def get_queryset(self):
+    #     return ActsPrescriptions.objects.select_related('acts')
+
+
+class HomeRegisterNormativeDocuments(MyMixin, ListView):
+    """Просмотр реестра актов предписаний"""
+    model = NormativeDocuments
+    template_name = 'register_normative_documents.html'
+    context_object_name = 'normative_docs'
+    # paginate_by = 50
+    allow_empty = False
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        """Дополнение данных перед отправкой на рендер"""
+        context = super(HomeRegisterNormativeDocuments, self).get_context_data(**kwargs)
+        context['title'] = self.get_upper('Реестр Нормативной документации')
+        # context['mixin_prop'] = self.get_prop()
         return context
 
     # def get_queryset(self):

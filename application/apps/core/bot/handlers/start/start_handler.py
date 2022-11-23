@@ -4,6 +4,7 @@ from aiogram.dispatcher.filters import Command, Text
 from aiogram.types import ReplyKeyboardMarkup, ReplyKeyboardRemove
 
 from app import MyBot
+from apps.core.utils.secondary_functions.get_filepath import get_user_registration_file, create_file_path
 from loader import logger
 
 from apps.core.bot.messages.messages import Messages
@@ -12,9 +13,9 @@ from apps.core.bot.data.report_data import user_data
 from apps.core.bot.data.category import get_data_list
 from apps.core.bot.states import RegisterState
 from apps.core.bot.filters.custom_filters import is_private
-from apps.core.bot.utils.misc import rate_limit
-from apps.core.bot.utils.secondary_functions.get_filepath import create_file_path, get_user_registration_file
-from apps.core.bot.utils.set_user_registration_data import registration_data
+from apps.core.utils.misc import rate_limit
+
+from apps.core.utils.data_recording_processor.set_user_registration_data import registration_data
 
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard
 

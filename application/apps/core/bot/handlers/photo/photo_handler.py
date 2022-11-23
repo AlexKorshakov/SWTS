@@ -3,23 +3,22 @@ import datetime
 from aiogram import types
 
 from app import MyBot
+from apps.core.utils.goolgedrive_processor.googledrive_worker import write_data_on_google_drive
+from apps.core.utils.misc import rate_limit
+from apps.core.utils.secondary_functions.get_filepath import get_user_registration_data_json_file, \
+    preparation_violations_paths_on_pc
+from apps.core.utils.secondary_functions.get_part_date import get_day_message, get_week_message, get_quarter_message, \
+    get_day_of_year_message, get_month_message, get_year_message
+from apps.core.utils.json_worker.read_json_file import read_json_file
+from apps.core.utils.secondary_functions.get_filename import get_filename_msg_with_photo
+from apps.core.utils.bot_utils_processor.select_start_category import select_start_category
+from apps.core.utils.secondary_functions.check_user_registration import check_user_access
 from config.config import WRITE_DATA_ON_GOOGLE_DRIVE
 from loader import logger
 
 from apps.core.bot.data import board_config
-
 from apps.core.bot.data.report_data import violation_data
 
-from apps.core.bot.utils.goolgedrive.googledrive_worker import write_data_on_google_drive
-from apps.core.bot.utils.json_worker.read_json_file import read_json_file
-from apps.core.bot.utils.misc import rate_limit
-from apps.core.bot.utils.secondary_functions.get_part_date import get_day_message, get_month_message, get_year_message, \
-    get_week_message, get_quarter_message, get_day_of_year_message
-from apps.core.bot.utils.secondary_functions.get_filename import get_filename_msg_with_photo
-from apps.core.bot.utils.secondary_functions.get_filepath import preparation_violations_paths_on_pc, \
-    get_user_registration_data_json_file
-from apps.core.bot.utils.select_start_category import select_start_category
-from apps.core.bot.utils.secondary_functions.check_user_registration import check_user_access
 
 WORK_ON_HEROKU = False
 WORK_ON_PC = True
@@ -73,6 +72,7 @@ async def photo_handler(message: types.Message):
 
     violation_data["main_location"] = user_registration_data.get("name_location")
     violation_data["category"] = ''
+
     if WORK_ON_HEROKU and WRITE_DATA_ON_GOOGLE_DRIVE:
         await write_data_on_google_drive(message)
         return

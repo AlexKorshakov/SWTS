@@ -5,7 +5,7 @@ from apps.core.bot.callbacks.sequential_action.data_answer import get_and_send_n
     get_and_send_normative_documents_data
 from apps.core.bot.data.category import get_data_list, _PREFIX_ND
 from apps.core.bot.data.report_data import violation_data
-from apps.core.bot.utils.json_worker.writer_json_file import write_json_file
+from apps.core.utils.json_worker.writer_json_file import write_json_file
 from loader import logger
 
 logger.debug("normative_documents_answer")

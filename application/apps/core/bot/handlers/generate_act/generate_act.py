@@ -3,9 +3,9 @@ from aiogram.dispatcher.filters import Command
 
 from app import MyBot
 from apps.core.bot.messages.messages import Messages
-from apps.core.bot.utils.misc import rate_limit
-from apps.core.bot.utils.report_worker import create_and_send_act_prescription
-from apps.core.bot.utils.secondary_functions.check_user_registration import check_user_access
+from apps.core.utils.misc import rate_limit
+from apps.core.utils.reports_processor.report_worker import create_and_send_act_prescription
+from apps.core.utils.secondary_functions.check_user_registration import check_user_access
 from loader import logger
 
 

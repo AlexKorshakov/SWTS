@@ -1,38 +1,51 @@
-{% extends 'main_page.html' %}
+{% extends 'registers.html' %}
 
 
 {% block content %}
-<div class="table-responsive">
-    <table
-      id="table">
 
+<div id="datatable" class="table-responsive-xl">
+    <table id="example" class="table table-hover responsive nowrap" style="width: 1500px">
+        <thead class="table-dark">
         <tr style="background : blue; color : white;">
-            <th>п/п</th>
-            <th>Дата</th>
-            <th>Номер акта</th>
-            <th>Кол-во пунктов</th>
-            <th>ПО</th>
-            <th>Неделя</th>
-            <th>Месяц</th>
-            <th>Квартал</th>
-            <th>Год</th>
+            <th style="text-align: center; vertical-align: top; ">п/п</th>
+            <th style="text-align: center; vertical-align: top; ">Дата</th>
+            <th style="text-align: center; vertical-align: top; ">Номер</th>
+            <th style="text-align: center; vertical-align: top; ">Записей</th>
+            <th style="text-align: center; vertical-align: top; ">ПО</th>
+            <th style="text-align: center; vertical-align: top; ">Неделя</th>
+            <th style="text-align: center; vertical-align: top; ">Месяц</th>
+            <th style="text-align: center; vertical-align: top; ">Квартал</th>
+            <th style="text-align: center; vertical-align: top; ">Год</th>
+            <th style="text-align: center; vertical-align: top; ">Статус</th>
+            <th style="text-align: center; vertical-align: top; ">Подрядчик</th>
+
         </tr>
+        </thead>
+        <tbody class="table-dark">
 
         {% for act in acts %}
         <tr style=" color : white">
-            {% comment %} <td><a href="{{ act.get_absolute_url }}"> {{act.act_number}}</a></td> {% endcomment %}
-            <td>{{forloop.counter}}</td>
-            <td>{{act.act_date}}</td>
-            <td>{{act.act_number}}</td>
-            <td>{{act.act_row_count}}</td>
-            <td>{{act.act_location}}</td>
-            <td>{{act.act_week}}</td>
-            <td>{{act.act_month}}</td>
-            <td>{{act.act_quarter}}</td>
-            <td>{{act.act_year}}</td>
+
+            <td style="text-align: left; vertical-align: top; ">{{ forloop.counter }}</td>
+            <td style="text-align: left; vertical-align: top; ">{{ act.act_date }}</td>
+            <td style="text-align: left; vertical-align: top; ">{{ act.act_number }}</td>
+            <td style="text-align: left; vertical-align: top; ">{{ act.act_row_count }}</td>
+            <td style="text-align: left; vertical-align: top; ">{{ act.act_location }}</td>
+            <td style="text-align: left; vertical-align: top; ">{{ act.act_week }}</td>
+            <td style="text-align: left; vertical-align: top; ">{{ act.act_month }}</td>
+            <td style="text-align: left; vertical-align: top; ">{{ act.act_quarter }}</td>
+            <td style="text-align: left; vertical-align: top; ">{{ act.act_year }}</td>
+            <td style="text-align: left; vertical-align: top; ">{{ act.act_status.title }}</td>
+            <td style="text-align: left; vertical-align: top; ">{{ act.act_general_contractor.title }}</td>
+
         </tr>
         {% endfor %}
 
+        </tbody>
     </table>
 </div>
+
+<div class="clearfix"></div>
+
+
 {% endblock %}

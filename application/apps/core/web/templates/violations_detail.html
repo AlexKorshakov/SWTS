@@ -70,7 +70,14 @@
                 <p class="card-text"> Подкатегория нарушения: {{ violations_item.violation_category }} </p>
                 <h5 class="card-text"> Уровень происшествия: {{ violations_item.incident_level }} </h5>
 
+
+                {% if violations_item.comment != '.' %}
                 <h5 class="card-text"> Комментарий: {{ violations_item.comment }} </h5>
+                {% else %}
+                <h5 class="card-text"> Комментарий: {{ violations_item.normative_documents.procedure }} </h5>
+                {% endif %}
+
+<!--                <h5 class="card-text"> Комментарий: {{ violations_item.comment }} </h5>-->
 
                 <h5 class="card-text"> Требуется оформление Акта-предписания?: {{ violations_item.act_required }} </h5>
 

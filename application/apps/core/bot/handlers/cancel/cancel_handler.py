@@ -11,8 +11,8 @@ from apps.core.bot.messages.messages import Messages
 from apps.core.bot.data import board_config
 from apps.core.bot.data.report_data import violation_data, headlines_data, user_data, global_reg_form
 
-from apps.core.bot.utils.misc import rate_limit
-from apps.core.bot.utils.secondary_functions.check_user_registration import check_user_access
+from apps.core.utils.misc import rate_limit
+from apps.core.utils.secondary_functions.check_user_registration import check_user_access
 
 
 class NamedDict(dict):

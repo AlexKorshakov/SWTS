@@ -8,12 +8,12 @@ from aiogram import Bot, Dispatcher, executor
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from django.core.asgi import get_asgi_application
 
-from apps.core.bot.utils.set_bot_commands import set_default_commands
+from apps.core.utils.bot_utils_processor.set_bot_commands import set_default_commands
 from loader import logger
 from config.config import BOT_TOKEN, SKIP_UPDATES
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.middlewares import setup_middlewares
-from apps.core.bot.utils import on_startup_notify
+from apps.core.utils import on_startup_notify
 from apps.core.web.middlewares import InjectMiddleware
 from config.apps import register_apps
 

@@ -1,8 +1,8 @@
 import os
 from os import makedirs
 
-from apps.core.bot.utils.json_worker.read_json_file import read_json_file
-from apps.core.bot.utils.json_worker.writer_json_file import write_json_file
+from apps.core.utils.json_worker.read_json_file import read_json_file
+from apps.core.utils.json_worker.writer_json_file import write_json_file
 from loader import logger
 
 

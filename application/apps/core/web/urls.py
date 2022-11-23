@@ -4,7 +4,7 @@ from django.urls import path
 from .views import HomeViolations, ViewViolations, ViolationsByMainCategory, ViolationsByMainLocation, \
     ViolationsByGeneralContractor, ViolationsByIncidentLevel, ViolationsByStatus, user_login, user_logout, register, \
     post_edit, PostEdit, test, simple_view, upload_too_db_from_local_storage, delete_violations, update_violations, \
-    add_violations, statistic, ViolationsByWeek, HomeRegisterActsPrescriptions
+    add_violations, statistic, ViolationsByWeek, HomeRegisterActsPrescriptions, HomeRegisterNormativeDocuments
 
 # Register your urls here
 
@@ -14,6 +14,9 @@ urlpatterns = [
          name='home'),
     path('register_acts_prescriptions', HomeRegisterActsPrescriptions.as_view(),
          name='register_acts_prescriptions'),
+    path('register_normative_documents', HomeRegisterNormativeDocuments.as_view(),
+         name='register_normative_documents'),
+
     path('violations/<int:pk>/', ViewViolations.as_view(),
          name='view_violations'),
     path('main_category/<int:main_category_id>/', ViolationsByMainCategory.as_view(),

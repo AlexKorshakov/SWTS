@@ -1,18 +1,17 @@
 import asyncio
 import os
 from pathlib import Path
-from pprint import pprint
 
-from apps.core.bot.data.report_data import violation_data
 from apps.core.bot.database.DataBase import DataBase, upload_from_local, CATEGORY_ID_TRANSFORM
 from apps.core.bot.handlers.correct_entries.correct_entries_handler import del_file, del_file_from_gdrive
 from apps.core.bot.messages.messages import Messages
-from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.GoogleDriveWorker import drive_account_credentials
-from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.set_user_violation_data_on_google_drave import \
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import drive_account_credentials
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.set_user_violation_data_on_google_drave import \
     update_user_violation_data_on_google_drive
-from apps.core.bot.utils.json_worker.read_json_file import read_json_file
-from apps.core.bot.utils.json_worker.writer_json_file import write_json
-from apps.core.bot.utils.secondary_functions.get_filepath import get_json_full_filename
+from apps.core.utils.json_worker.read_json_file import read_json_file
+from apps.core.utils.json_worker.writer_json_file import write_json
+from apps.core.utils.secondary_functions.get_filepath import get_json_full_filename
+
 from config.config import WRITE_DATA_ON_GOOGLE_DRIVE
 from loader import logger
 

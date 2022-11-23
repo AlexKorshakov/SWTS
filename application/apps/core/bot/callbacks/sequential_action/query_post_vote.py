@@ -9,6 +9,8 @@ from apps.core.bot.callbacks.sequential_action.correct_registration_data_answer 
 from apps.core.bot.callbacks.sequential_action.correct_violations_data_answer import get_violations_text
 from apps.core.bot.data import board_config
 from apps.core.bot.data.category import REGISTRATION_DATA_LIST, HEADLINES_DATA_LIST, VIOLATIONS_DATA_LIST
+from apps.core.utils.generate_report.get_file_list import get_registration_json_file_list, get_json_file_list
+from apps.core.utils.generate_report.sheet_formatting.set_value import set_headlines_data_values
 from config.config import SEPARATOR
 from apps.core.bot.data.report_data import headlines_data
 from apps.core.bot.handlers.correct_entries.correct_entries_handler import delete_violation_files_from_pc, \
@@ -16,9 +18,9 @@ from apps.core.bot.handlers.correct_entries.correct_entries_handler import delet
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb, build_inlinekeyboard
 
 from apps.core.bot.messages.messages import Messages
-from apps.core.bot.utils.generate_report.get_file_list import get_registration_json_file_list, get_json_file_list
-from apps.core.bot.utils.generate_report.sheet_formatting.set_value import set_headlines_data_values
-from apps.core.bot.utils.json_worker.read_json_file import read_json_file
+# from apps.core.utils.reports_processor.get_file_list import get_registration_json_file_list, get_json_file_list
+# from apps.core.utils.reports_processor.sheet_formatting.set_value import set_headlines_data_values
+from apps.core.utils.json_worker.read_json_file import read_json_file
 
 from loader import logger
 

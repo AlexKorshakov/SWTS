@@ -13,18 +13,19 @@ from aiogram import types
 from aiogram.dispatcher.filters import Command
 
 from app import MyBot
+from apps.core.utils.generate_report.get_file_list import get_report_file_list, get_registration_json_file_list
 from loader import logger
 
 from apps.core.bot.data.category import get_data_list
 from config.config import SENDER_ACCOUNT_GMAIL, SENDER_ACCOUNT_PASSWORD, SENDER
 
 from apps.core.bot.messages.messages import Messages
-from apps.core.bot.utils.generate_report.get_file_list import get_registration_json_file_list, get_report_file_list
-from apps.core.bot.utils.json_worker.read_json_file import read_json_file
-from apps.core.bot.utils.misc import rate_limit
+# from apps.core.utils.reports_processor.get_file_list import get_registration_json_file_list, get_report_file_list
+from apps.core.utils.json_worker.read_json_file import read_json_file
+from apps.core.utils.misc import rate_limit
 
 
-from apps.core.bot.utils.secondary_functions.check_user_registration import check_user_access
+from apps.core.utils.secondary_functions.check_user_registration import check_user_access
 
 
 @rate_limit(limit=360)

@@ -3,11 +3,9 @@ import sqlite3
 from pandas import DataFrame
 from pathlib import Path
 from pprint import pprint
-from random import randint
 
-from apps.core.bot.database.db_utils import normalize_violation_data, write_json, data_violation_completion
-from apps.core.bot.utils.json_worker.read_json_file import read_json_file
-from apps.core.bot.utils.secondary_functions.get_json_files import get_files
+from apps.core.bot.database.db_utils import normalize_violation_data, data_violation_completion
+from apps.core.utils.secondary_functions.get_json_files import get_files
 from config.web.settings import DB_NAME
 from loader import logger
 
@@ -486,23 +484,26 @@ class DataBase:
         act_date = str(act_date)
         act_row_count = len(act_data_dict.index)
 
-        act_location_id = act_data_dict.location_id.unique()[0]
-        act_week = act_data_dict.week.unique()
-        act_month = act_data_dict.month.unique()
-        act_quarter = act_data_dict.quarter.unique()
-        act_year = act_data_dict.year.unique()
+        act_location_id = int(act_data_dict.location_id.unique()[0])
+        act_week = int(act_data_dict.week.unique()[0])
+        act_month = int(act_data_dict.month.unique()[0])
+        act_quarter = int(act_data_dict.quarter.unique()[0])
+        act_year = int(act_data_dict.year.unique()[0])
+
+        act_status_id = int(act_data_dict.status_id.unique()[0])
+        act_general_contractor_id = int(act_data_dict.general_contractor_id.unique()[0])
 
         try:
             with self.connection:
                 is_add = self.cursor.execute(
                     "INSERT INTO `core_actsprescriptions` ("
                     "`act_number`, `act_date`, `act_row_count`, `act_location_id`,`act_week`,`act_month`,"
-                    "`act_quarter`, `act_year` "
+                    "`act_quarter`, `act_year`, `act_status_id`, `act_general_contractor_id` "
                     ")"
-                    "VALUES(?, ?, ?, ?, ?, ?, ?, ?)",
+                    "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?,?)",
                     (
                         act_number, act_date, act_row_count, act_location_id, act_week, act_month, act_quarter,
-                        act_year
+                        act_year, act_status_id, act_general_contractor_id
                     )
                 )
                 if is_add:
@@ -539,18 +540,6 @@ class DataBase:
         return act_max_number
 
 
-# async def get_entry(violation, query, user_data_json_file) -> int:
-#     table = ALL_CATEGORY_IN_TABLES_DB[query]
-#
-#     if not violation.get(query):
-#         violation[query] = user_data_json_file.get("name_location")
-#         # await write_json(violation=violation)
-#
-#     entry = violation.get(query, None)
-#     query_id = DataBase().get_id(table=table, entry=entry)
-#     return query_id
-
-
 async def upload_from_local(*, params: dict = None):
     """Проверка валидация и загрузка файлов в database из local storage
 
@@ -579,15 +568,3 @@ async def upload_from_local(*, params: dict = None):
             len_err += error_counter
     print(f"errors {len_err} in {len(json_file_list)} items")
 
-
-async def sync_files(*, params: dict = None):
-    """Синхронизация файлов между локальным хранилищем media и облаком google_drive """
-
-    # await sync_local_to_google_drive()
-
-    await google_drive_to_local()
-
-
-async def google_drive_to_local():
-    """Синхронизация google_drive -> media"""
-    pass

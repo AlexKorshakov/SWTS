@@ -10,8 +10,12 @@
     <link rel="shortcut icon" type="image/png" sizes="192x192" href="{% static favicon.ico %}">
 
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" type="text/css" href="{% static 'css/hiddenRow.css' %}">
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.13/css/jquery.dataTables.min.css">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
+
+    <link rel="stylesheet" type="text/css" href="{% static 'css/hiddenRow.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/a-button.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/buttons.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/b-button.css' %}">
@@ -28,6 +32,10 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/box.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/scrollmenu.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/btn-group.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/data-table.css' %}">
+
+    <link rel="stylesheet" type="text/css" href="{% static 'css/111.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css">
 
 
     <title>{% block title %} Реестр нарушений {% endblock %}</title>
@@ -62,10 +70,27 @@
         crossorigin="anonymous"></script>
 <script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+
 
 <script type="text/javascript" src="{% static 'scripts/custom_scroll_bottom.js' %}"></script>
 <script type="text/javascript" src="{% static 'scripts/list_view_or_grid_view.js' %}"></script>
 <script type="text/javascript" src="{% static 'scripts/background_by_value.js' %}"></script>
+<script type="text/javascript" src="{% static 'scripts/bootstrap-table_111.js' %}"></script>
+<script type="text/javascript" src="{% static 'scripts/bootstrap-table_222.js' %}"></script>
+
+
+<script type="text/javascript" src="{% static 'scripts/bootstrap.bundle.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'scripts/sprintf.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'scripts/highlight.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'scripts/marked.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'scripts/flexibility.js' %}"></script>
+
+<script type="text/javascript" src="{% static 'scripts/example.js' %}"></script>
+
 
 {% include 'inc/_pagination.html'%}
 </body>

@@ -8,7 +8,7 @@ from app import MyBot
 
 logger.debug("start registation_finish")
 
-from apps.core.bot.utils.set_user_violation_data import pre_set_violation_data
+from apps.core.utils.data_recording_processor.set_user_violation_data import pre_set_violation_data
 
 logger.debug("stop registation_finish")
 

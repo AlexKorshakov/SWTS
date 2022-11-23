@@ -5,7 +5,7 @@ from app import MyBot
 from apps.core.bot.data.report_data import violation_data
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.states import AnswerUserState
-from apps.core.bot.utils.json_worker.writer_json_file import write_json_file
+from apps.core.utils.json_worker.writer_json_file import write_json_file
 
 
 # Сюда приходит ответ с description, state=состояние

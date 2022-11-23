@@ -25,9 +25,9 @@ class Violations(models.Model):
 
     is_published = models.BooleanField(default=True, verbose_name='Опубликовано?')
     finished = models.ForeignKey(to='Finished', on_delete=models.PROTECT, verbose_name='Устранено?',
-                                    default=0)
+                                 default=0)
     agreed = models.ForeignKey(to='IsAgreed', on_delete=models.PROTECT, verbose_name='Согласовано?',
-                                  default=0)
+                               default=0)
 
     description = models.TextField(blank=True, verbose_name='Описание', default='')
     comment = models.CharField(max_length=255, verbose_name='Устранение', default='')
@@ -200,14 +200,15 @@ class Category(models.Model):
 
 
 class NormativeDocuments(models.Model):
-    title = models.CharField(max_length=255, db_index=True, verbose_name='Наименование подкатегории')
+    category = models.ForeignKey(to='Category', on_delete=models.PROTECT, verbose_name='Категория', default='')
+    title = models.CharField(max_length=255, db_index=True, verbose_name='Описание')
     normative = models.CharField(max_length=255, db_index=True, verbose_name='Наименование подкатегории')
-    procedure = models.CharField(max_length=255, db_index=True, verbose_name='Наименование подкатегории')
+    procedure = models.CharField(max_length=255, db_index=True, verbose_name='Устранение')
 
     class Meta:
         verbose_name = "Нормативная документация"  # единственное число
         verbose_name_plural = "Нормативная документация"  # множественное число
-        ordering = ['title']  # порядок сортировки
+        ordering = ['category_id']  # порядок сортировки
 
     def __str__(self):
         return self.title
@@ -400,26 +401,28 @@ class ActsPrescriptions(models.Model):
     act_quarter = models.PositiveSmallIntegerField(blank=True, verbose_name='Квартал', default=1)
 
     # act_day_of_year = models.PositiveSmallIntegerField(blank=True, verbose_name='Номер дня в году', default=1)
-    #
-    # main_location = models.ForeignKey(to='MainLocation', on_delete=models.PROTECT,
-    # verbose_name='Площадка', default='')
+
+    act_main_location = models.ForeignKey(to='MainLocation', on_delete=models.PROTECT,
+                                          verbose_name='Площадка', default='')
     # sub_location = models.ForeignKey(to='SubLocation', on_delete=models.PROTECT,
     # verbose_name='Под площадка / участок',
     #                                  default='')
     # created_at = models.DateField(auto_now_add=True, verbose_name='Дата регистрации')
     # updated_at = models.DateField(auto_now=True, verbose_name='Обновлено')
-    #
-    # main_category = models.ForeignKey(to='MainCategory', on_delete=models.PROTECT, verbose_name='Основная категория',
-    #                                   default='')
-    #
-    # status = models.ForeignKey(to='Status', on_delete=models.PROTECT, verbose_name='Статус', default=1)
-    #
+
+    # act_main_category = models.ForeignKey(to='MainCategory', on_delete=models.PROTECT,
+    #                                       verbose_name='Основная категория',
+    #                                       default='')
+
+    act_status = models.ForeignKey(to='Status', on_delete=models.PROTECT, verbose_name='Статус', default=1)
+
     # is_published = models.BooleanField(default=True, verbose_name='Опубликовано?')
     # is_finished = models.BooleanField(default=False, verbose_name='Устранено?')
-    #
-    # general_contractor = models.ForeignKey(to='GeneralContractor', on_delete=models.PROTECT, verbose_name='Подрядчик',
-    #                                        default='')
-    #
+
+    act_general_contractor = models.ForeignKey(to='GeneralContractor', on_delete=models.PROTECT,
+                                               verbose_name='Подрядчик',
+                                               default='')
+
     # category = models.ForeignKey(to='Category', on_delete=models.PROTECT, verbose_name='Категория', default='')
     # normative_documents = models.ForeignKey(to='NormativeDocuments', on_delete=models.PROTECT,
     #                                         verbose_name='Нормативная документация', default='')
@@ -438,6 +441,7 @@ class ActsPrescriptions(models.Model):
     #
     # title = models.CharField(max_length=100, verbose_name='Заголовок')
     # user_id = models.CharField(max_length=255, verbose_name='ID пользователя', default='', blank=True)
+
     # file_id = models.CharField(max_length=255, verbose_name='file_id', default='', blank=True)
     #
     # acts_prescriptions_id = models.CharField(max_length=255,

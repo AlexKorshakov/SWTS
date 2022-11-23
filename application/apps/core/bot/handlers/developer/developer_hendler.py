@@ -5,7 +5,7 @@ from app import MyBot
 from loader import logger
 
 from config.config import DEVELOPER_ID
-from apps.core.bot.utils.misc import rate_limit
+from apps.core.utils.misc import rate_limit
 
 
 @rate_limit(limit=10)

@@ -7,26 +7,26 @@ from aiogram.dispatcher.filters import Command
 
 from app import MyBot
 from loader import logger
+from config.config import SEPARATOR, WRITE_DATA_ON_GOOGLE_DRIVE
 
+from apps.core.utils.generate_report.get_file_list import get_json_file_list
 from apps.core.bot.callbacks.sequential_action.correct_registration_data_answer import get_correct_data
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb, \
     add_subtract_inline_keyboard_with_action
-
 from apps.core.bot.data import board_config
 from apps.core.bot.data.category import CORRECT_COMMANDS_LIST
-from config.config import SEPARATOR, WRITE_DATA_ON_GOOGLE_DRIVE
+from apps.core.bot.messages.messages import Messages
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard
 
-from apps.core.bot.messages.messages import Messages
-from apps.core.bot.utils.generate_report.get_file_list import get_json_file_list
-from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.GoogleDriveWorker import drive_account_credentials
-from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.find_folder import q_request_constructor, params_constructor, \
+# from apps.core.utils.reports_processor.get_file_list import get_json_file_list
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import drive_account_credentials
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.find_folder import q_request_constructor, params_constructor, \
     find_files_by_params
-from apps.core.bot.utils.goolgedrive.GoogleDriveUtils.folders_deleter import delete_folder
-from apps.core.bot.utils.json_worker.read_json_file import read_json_file
-from apps.core.bot.utils.misc import rate_limit
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.folders_deleter import delete_folder
+from apps.core.utils.json_worker.read_json_file import read_json_file
+from apps.core.utils.misc import rate_limit
 
-from apps.core.bot.utils.secondary_functions.check_user_registration import check_user_access
+from apps.core.utils.secondary_functions.check_user_registration import check_user_access
 
 len_description = 25
 
