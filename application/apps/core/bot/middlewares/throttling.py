@@ -12,8 +12,8 @@ from apps.core.bot.data.phrases import throttled_answers
 
 
 class ThrottlingMiddleware(BaseMiddleware):
-    """
-    Стандартный middleware для предотвращения спама через throttling
+    """ Стандартный middleware для предотвращения спама через throttling
+
     """
 
     def __init__(self, limit: int = DEFAULT_RATE_LIMIT, key_prefix: str = 'antiflood_'):

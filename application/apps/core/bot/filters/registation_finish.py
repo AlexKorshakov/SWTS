@@ -16,6 +16,7 @@ logger.debug("stop registation_finish")
 @MyBot.dp.message_handler(Text(equals='завершить регистрацию', ignore_case=True), state='*')
 async def registration_finish_handler(message: types.Message, state: FSMContext):
     """Обработчик сообщений содержащих 'завершить регистрацию'
+
     """
     await MyBot.bot.send_message(message.chat.id,
                                  "Запущена процедура регистрации данных. "
@@ -23,4 +24,5 @@ async def registration_finish_handler(message: types.Message, state: FSMContext)
     await state.finish()
 
     await pre_set_violation_data(message)
+
     await MyBot.bot.send_message(message.chat.id, "Данные зарегистрированы")

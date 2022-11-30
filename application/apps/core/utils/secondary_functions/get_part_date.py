@@ -1,11 +1,11 @@
 import asyncio
 import pandas
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, date
 from loader import logger
 
 
-async def str_to_datetime(date_str) -> Optional[datetime]:
+async def str_to_datetime(date_str) -> Optional[date]:
     """Преобразование str даты в datetime
 
     :param
@@ -14,7 +14,7 @@ async def str_to_datetime(date_str) -> Optional[datetime]:
     current_date = None
     try:
         if isinstance(date_str, str):
-            current_date: datetime = datetime.strptime(date_str, "%d.%m.%Y").date()
+            current_date: date = datetime.strptime(date_str, "%d.%m.%Y").date()
     except ValueError as err:
         logger.error(f"{repr(err)}")
 
@@ -26,7 +26,7 @@ async def get_day_message(current_date: datetime = None) -> str:
     Получение номер str дня из сообщения в формате dd
     """
 
-    current_date: datetime = await str_to_datetime(current_date)
+    current_date: date = await str_to_datetime(current_date)
 
     if not current_date:
         current_date: datetime = datetime.now()
@@ -37,7 +37,7 @@ async def get_week_message(current_date: str = None) -> str:
     """Обработчик сообщений с фото
     Получение номер str недели из сообщения в формате dd
     """
-    current_date: datetime = await str_to_datetime(current_date)
+    current_date: date = await str_to_datetime(current_date)
 
     if not current_date:
         current_date: datetime = datetime.now()
@@ -49,10 +49,10 @@ async def get_quarter_message(current_date: datetime = None) -> str:
     """Обработчик сообщений с фото
     Получение номер str квартала из сообщения в формате dd
     """
-    current_date: datetime = await str_to_datetime(current_date)
+    current_date: date = await str_to_datetime(current_date)
 
     if not current_date:
-        current_date: datetime = datetime.now()
+        current_date: date = datetime.now()
     quarter = pandas.Timestamp(current_date).quarter
     return str("0" + str(quarter) if quarter < 10 else str(quarter))
 
@@ -60,7 +60,7 @@ async def get_quarter_message(current_date: datetime = None) -> str:
 async def get_month_message(current_date: datetime = None) -> str:
     """Получение номер str месяца из сообщения в формате mm
     """
-    current_date: datetime = await str_to_datetime(current_date)
+    current_date: date = await str_to_datetime(current_date)
 
     if not current_date:
         current_date: datetime = datetime.now()
@@ -71,7 +71,7 @@ async def get_year_message(current_date: datetime = None) -> str:
     """Обработчик сообщений с фото
     Получение полного пути файла
     """
-    current_date: datetime = await str_to_datetime(current_date)
+    current_date: date = await str_to_datetime(current_date)
 
     if not current_date:
         current_date: datetime = datetime.now()
@@ -84,7 +84,7 @@ async def get_day_of_year_message(current_date: datetime = None) -> str:
 
     """
 
-    current_date: datetime = await str_to_datetime(current_date)
+    current_date: date = await str_to_datetime(current_date)
 
     if not current_date:
         current_date: datetime = datetime.now()

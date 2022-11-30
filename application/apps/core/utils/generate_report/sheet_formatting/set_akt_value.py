@@ -1,6 +1,6 @@
 import datetime
 
-from apps.core.bot.data.report_data import headlines_data
+from apps.core.bot.reports.report_data import headlines_data
 from apps.core.bot.database.DataBase import DataBase
 from loader import logger
 

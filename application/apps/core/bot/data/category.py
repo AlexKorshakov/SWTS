@@ -225,6 +225,8 @@ def get_category_data_list_whits_single_condition(db_table_name: str, item_id: i
     :param db_table_name:
     :return:
     """
+    clean_datas_query: list = []
+    query: str = ""
 
     if db_table_name == 'core_sublocation':
         query: str = f'SELECT * FROM {db_table_name} WHERE `main_location_id` == {item_id}'
@@ -374,19 +376,24 @@ def get_data_list(category_in_db: str = None, category: str = None, condition: U
         logger.debug(f'get_category_data_list from db with condition: {clean_datas_query}')
         return clean_datas_query
 
-    data_list = get_data_from_db(db_table_name=db_table_name)
+    data_list: list = get_data_from_db(db_table_name=db_table_name)
 
     if data_list:
         logger.debug(f'get data from db: {data_list}')
         return data_list
 
     if not data_list:
-        data_list = get_data_from_json(name=category_in_db)
+        data_list: list = get_data_from_json(name=category_in_db)
         logger.debug(f'retrieved data from json:')
         return data_list
 
 
-def get_data_from_json(name):
+def get_data_from_json(name: str) -> list:
+    """Получение данных из json
+
+    :param name имя файла без расширения
+
+    """
     if not name:
         return []
 
