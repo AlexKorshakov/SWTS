@@ -4,14 +4,10 @@ import datetime
 from os import makedirs
 from pprint import pprint
 
-from aiogram import types
-
 from config.web.settings import BASE_DIR
 from loader import logger
 
 from config.config import REPORT_NAME
-from apps.core.bot.data.report_data import violation_data
-from apps.core.utils.json_worker.writer_json_file import write_json_violation_user_file
 
 BOT_MEDIA_PATH = os.path.join(BASE_DIR.parent.parent, 'media\\')
 
@@ -94,25 +90,6 @@ async def create_file_path(path: str):
             makedirs(path)
         except Exception as err:
             logger.error(f"makedirs err {repr(err)}")
-
-
-async def preparation_violations_paths_on_pc(message: types.Message):
-    """Создание путей сохранения файлов и запись в json
-    :param message:
-    :return:
-    """
-    violation_data["photo_file_path"] = await get_photo_full_filepath(user_id=violation_data["user_id"])
-    violation_data["photo_full_name"] = await get_photo_full_filename(user_id=violation_data["user_id"],
-                                                                      name=violation_data["file_id"])
-    await create_file_path(violation_data["photo_file_path"])
-    await message.photo[-1].download(destination=violation_data["photo_full_name"], make_dirs=False)
-
-    violation_data["json_file_path"] = await get_json_full_filepath(user_id=violation_data["user_id"])
-    violation_data["json_full_name"] = await get_json_full_filename(user_id=violation_data["user_id"],
-                                                                    file_name=violation_data["file_id"])
-    await create_file_path(violation_data["json_file_path"])
-
-    await write_json_violation_user_file(data=violation_data)
 
 
 async def preparation_registration_paths_on_pc(user_id: str, user_data: dict):

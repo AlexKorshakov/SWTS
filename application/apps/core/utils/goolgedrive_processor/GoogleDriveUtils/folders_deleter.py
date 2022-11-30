@@ -1,7 +1,7 @@
+from config.config import ROOT_REPORT_FOLDER_ID
 from loader import logger
 
 from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.find_folder import find_file_by_name
-from apps.core.utils.goolgedrive_processor.googledrive_worker import ROOT_REPORT_FOLDER_ID
 
 
 async def delete_folders(drive_service: object, folder_names: list):

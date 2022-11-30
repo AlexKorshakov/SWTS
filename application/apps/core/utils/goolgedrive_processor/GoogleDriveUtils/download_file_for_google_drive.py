@@ -6,11 +6,10 @@ from loader import logger
 
 from config.config import SEPARATOR, WRITE_DATA_ON_GOOGLE_DRIVE
 from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import drive_account_auth_with_oauth2client
-from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.get_folder_id import get_root_folder_id, get_user_folder_id, \
-    get_json_folder_id, get_photo_folder_id
 from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.set_user_violation_data_on_google_drave import JSON_FOLDER_NAME, \
     PHOTO_FOLDER_NAME
-from apps.core.utils.goolgedrive_processor.googledrive_worker import ROOT_REPORT_FOLDER_NAME
+from apps.core.utils.goolgedrive_processor.googledrive_worker import ROOT_REPORT_FOLDER_NAME, get_photo_folder_id, \
+    get_json_folder_id, get_root_folder_id, get_user_folder_id
 from apps.core.utils.secondary_functions.get_part_date import get_day_message, get_month_message
 
 INSTALL_REQUIRES = ['google-api-core',

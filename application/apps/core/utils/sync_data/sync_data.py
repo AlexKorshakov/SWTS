@@ -6,17 +6,18 @@ from pprint import pprint
 from tqdm.asyncio import tqdm
 
 from apps.core.bot.database.db_utils import create_file_path
-from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import drive_account_auth_with_oauth2client, \
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import \
+    drive_account_auth_with_oauth2client, \
     move_file
 from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.download_file_for_google_drive import upload_file
 from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.find_folder import find_file_by_name, \
     find_files_or_folders_list_by_parent_id
-from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.get_folder_id import get_root_folder_id
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.get_folder_id import get_folders_ids_from_google_drive
 from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.set_permissions import get_user_permissions
 from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.upload_data_on_gdrive import upload_file_on_gdrave
-from apps.core.utils.goolgedrive_processor.googledrive_worker import ROOT_REPORT_FOLDER_NAME
+from apps.core.utils.goolgedrive_processor.googledrive_worker import ROOT_REPORT_FOLDER_NAME, get_root_folder_id
 from apps.core.utils.secondary_functions.get_json_files import get_dirs_files, get_files
-from apps.core.utils.data_recording_processor.set_user_violation_data import preparing_data_for_loading
+from apps.core.bot.reports.report_data_preparation import preparing_violation_data_for_loading_to_google_drive
 from config.config import WRITE_DATA_ON_GOOGLE_DRIVE
 from loader import logger
 
@@ -320,7 +321,14 @@ async def sync_local_to_google_drive(drive_service: object = None, file_list: li
         if not id_item: continue
 
         if last_id_item != id_item:
-            preparing_data: dict = await preparing_data_for_loading(drive_service=drive_service, user=id_item)
+            preparing_data: dict = await get_folders_ids_from_google_drive(
+                user=id_item,
+                drive_service=drive_service
+            )
+
+            await preparing_violation_data_for_loading_to_google_drive(
+                data=preparing_data
+            )
             last_id_item = id_item
 
         if endswith == '.json':
