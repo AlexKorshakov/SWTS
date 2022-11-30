@@ -4,9 +4,9 @@ from aiogram import types
 
 from apps.core.bot.data import board_config
 from apps.core.bot.data.category import get_data_list
-from apps.core.bot.data.report_data import violation_data
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard
 from apps.core.bot.messages.messages import Messages
+from apps.core.bot.reports.report_data import violation_data
 from apps.core.bot.states import AnswerUserState
 from loader import logger
 
@@ -348,9 +348,3 @@ async def notify_user_for_choice(call, callback_data, level):
     if callback_data:
         logger.debug(f"Выбрано: {callback_data.get('action', None)}")
         logger.debug(f"User {call.message.chat.id} choices {callback_data.get('action', None)} {level}")
-
-# if __name__ == "__main__":
-# violation_data["main_location"] = 'ТК'
-#     asyncio.run(
-#         get_and_send_sub_locations_data(call=None, callback_data=None)
-#     )

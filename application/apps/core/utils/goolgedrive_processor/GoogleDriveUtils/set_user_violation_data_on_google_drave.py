@@ -1,11 +1,11 @@
-from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import drive_account_auth_with_oauth2client, \
-    move_file
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import \
+    drive_account_auth_with_oauth2client, move_file
 from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.folders_deleter import del_by_name_old_data_google_drive
-from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.get_folder_id import get_root_folder_id, get_user_folder_id, \
-    get_json_folder_id
+
 from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.set_permissions import get_user_permissions
 from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.upload_data_on_gdrive import upload_file_on_gdrave
-from apps.core.utils.goolgedrive_processor.googledrive_worker import ROOT_REPORT_FOLDER_NAME
+from apps.core.utils.goolgedrive_processor.googledrive_worker import ROOT_REPORT_FOLDER_NAME, get_json_folder_id, \
+    get_root_folder_id, get_user_folder_id
 from apps.core.utils.json_worker.writer_json_file import write_json_violation_user_file
 from config.config import REPORT_NAME, WRITE_DATA_ON_GOOGLE_DRIVE
 from loader import logger

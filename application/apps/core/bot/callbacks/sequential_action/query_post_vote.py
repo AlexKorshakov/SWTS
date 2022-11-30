@@ -12,7 +12,7 @@ from apps.core.bot.data.category import REGISTRATION_DATA_LIST, HEADLINES_DATA_L
 from apps.core.utils.generate_report.get_file_list import get_registration_json_file_list, get_json_file_list
 from apps.core.utils.generate_report.sheet_formatting.set_value import set_headlines_data_values
 from config.config import SEPARATOR
-from apps.core.bot.data.report_data import headlines_data
+from apps.core.bot.reports.report_data import headlines_data
 from apps.core.bot.handlers.correct_entries.correct_entries_handler import delete_violation_files_from_pc, \
     delete_violation_files_from_gdrive
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb, build_inlinekeyboard

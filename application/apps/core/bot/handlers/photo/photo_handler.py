@@ -1,24 +1,15 @@
-import datetime
-
 from aiogram import types
 
 from app import MyBot
+from apps.core.bot.reports.report_data_preparation import preparing_violation_data, preparing_violations_paths_on_pc
 from apps.core.utils.goolgedrive_processor.googledrive_worker import write_data_on_google_drive
 from apps.core.utils.misc import rate_limit
-from apps.core.utils.secondary_functions.get_filepath import get_user_registration_data_json_file, \
-    preparation_violations_paths_on_pc
-from apps.core.utils.secondary_functions.get_part_date import get_day_message, get_week_message, get_quarter_message, \
-    get_day_of_year_message, get_month_message, get_year_message
-from apps.core.utils.json_worker.read_json_file import read_json_file
-from apps.core.utils.secondary_functions.get_filename import get_filename_msg_with_photo
 from apps.core.utils.bot_utils_processor.select_start_category import select_start_category
 from apps.core.utils.secondary_functions.check_user_registration import check_user_access
 from config.config import WRITE_DATA_ON_GOOGLE_DRIVE
 from loader import logger
 
 from apps.core.bot.data import board_config
-from apps.core.bot.data.report_data import violation_data
-
 
 WORK_ON_HEROKU = False
 WORK_ON_PC = True
@@ -40,44 +31,20 @@ async def photo_handler(message: types.Message):
         return
 
     logger.info("photo_handler get photo")
+
     start_violation = board_config.start_violation_mes_id = message.message_id
+
     logger.info(f"start_violation message.from_user.id {start_violation}")
 
-    violation_data["file_id"] = await get_filename_msg_with_photo(message)
-
-    violation_data["user_id"] = chat_id
-    violation_data["violation_id"] = message.message_id
-    violation_data["user_fullname"] = message.from_user.full_name
-
-    violation_data["now"] = str(datetime.datetime.now())
-
-    violation_data["status"] = 'В работе'
-
-    violation_data["day"] = await get_day_message()
-    violation_data["week"] = await get_week_message()
-    violation_data["quarter"] = await get_quarter_message()
-    violation_data["day_of_year"] = await get_day_of_year_message()
-    violation_data["month"] = await get_month_message()
-    violation_data["year"] = await get_year_message()
-    violation_data["data"] = violation_data["day"] + ":" + violation_data["month"] + ":" + violation_data["year"]
-
-    user_registration_data = await read_json_file(
-        file=await get_user_registration_data_json_file(chat_id=chat_id))
-
-    violation_data["location"] = user_registration_data.get("name_location")
-    violation_data["work_shift"] = user_registration_data.get("work_shift")
-    violation_data["function"] = user_registration_data.get("function")
-    violation_data["name"] = user_registration_data.get("name")
-    violation_data["parent_id"] = user_registration_data.get("parent_id")
-
-    violation_data["main_location"] = user_registration_data.get("name_location")
-    violation_data["category"] = ''
+    await preparing_violation_data(message=message, chat_id=chat_id)
 
     if WORK_ON_HEROKU and WRITE_DATA_ON_GOOGLE_DRIVE:
         await write_data_on_google_drive(message)
         return
 
     if WORK_ON_PC:
-        await preparation_violations_paths_on_pc(message)
+        await preparing_violations_paths_on_pc(message)
 
     await select_start_category(message)
+
+

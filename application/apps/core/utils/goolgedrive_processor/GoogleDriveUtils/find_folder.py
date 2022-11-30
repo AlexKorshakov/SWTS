@@ -1,8 +1,5 @@
-import asyncio
 from pathlib import Path
-from typing import List, Dict
 from apiclient import errors
-
 from loader import logger
 
 FIEDS: str = 'nextPageToken, files(id, name)'
@@ -60,43 +57,6 @@ async def find_folder_with_drive_id(drive_service, drive_id, recursively=True):
         else:
             returnval.append(file)
     return returnval
-
-
-# async def find_all(service: object) -> list:
-#     """Получение id папки по имени
-#     """
-#     while True:
-#         get_folder = service.files().list().execute()
-#
-#         found_folders = get_folder.get('items', [])
-#
-#         for file in found_folders:
-#             logger.debug(f"Found file: {file.get('name')} File id: {file.get('id')}")
-#
-#         page_token = get_folder.get('nextPageToken', None)
-#         if page_token is None:
-#             break
-#
-#     return found_folders
-
-
-# async def find_all_folders(drive_service) -> List[Dict[str, str]]:
-#     """Получение файлов / директорий по имени
-#     """
-#     page_token = None
-#     while True:
-#         get_folder = drive_service.files().list(q="mimeType='application/vnd.google-apps.folder'",
-#                                                 spaces='drive',
-#                                                 pageSize=400,
-#                                                 fields='nextPageToken, files(id, name, parents)',
-#                                                 pageToken=page_token).execute()
-#
-#         found_folders = get_folder.get('files', [])
-#
-#         page_token = get_folder.get('nextPageToken', None)
-#         if page_token is None:
-#             break
-#     return found_folders
 
 
 async def find_folder_by_name(service, name, spaces='drive'):

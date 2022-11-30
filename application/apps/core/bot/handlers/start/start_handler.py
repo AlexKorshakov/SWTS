@@ -9,7 +9,7 @@ from loader import logger
 
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.data import board_config
-from apps.core.bot.data.report_data import user_data
+from apps.core.bot.reports.report_data import user_data
 from apps.core.bot.data.category import get_data_list
 from apps.core.bot.states import RegisterState
 from apps.core.bot.filters.custom_filters import is_private

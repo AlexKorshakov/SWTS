@@ -2,21 +2,19 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 
 from app import MyBot
-from apps.core.bot.data.report_data import violation_data
 from apps.core.bot.keyboards.replykeyboards.registration_finist_keybord import registration_finish_keyboard
-
-from apps.core.bot.states import AnswerUserState
-from apps.core.utils.json_worker.writer_json_file import write_json_file
 from apps.core.bot.messages.messages import Messages
+from apps.core.bot.reports.report_data import violation_data
+from apps.core.bot.reports.report_data_preparation import set_violation_atr_data
+from apps.core.bot.states import AnswerUserState
 
 
 @MyBot.dp.message_handler(state=AnswerUserState.comment)
 async def process_comment(message: types.Message, state: FSMContext):
     """Обработчик состояния comment
     """
-    violation_data["comment"] = message.text
 
-    await write_json_file(data=violation_data, name=violation_data["json_full_name"])
+    await set_violation_atr_data("comment", message.text)
 
     await AnswerUserState.next()
     await message.answer("При необходимости отправьте своё местположение")

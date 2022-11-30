@@ -4,7 +4,7 @@ from app import MyBot
 
 from apps.core.bot.data import board_config
 from apps.core.bot.data.category import get_data_list
-from apps.core.bot.data.report_data import violation_data
+from apps.core.bot.reports.report_data import violation_data
 from apps.core.bot.database.DataBase import DataBase, CATEGORY_ID_TRANSFORM
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard, \
     add_previous_paragraph_button

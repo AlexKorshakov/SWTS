@@ -8,7 +8,7 @@ from pandas import DataFrame
 
 from app import MyBot
 from apps.core.bot.data.category import ELIMINATION_TIME, get_data_list
-from apps.core.bot.data.report_data import headlines_data
+from apps.core.bot.reports.report_data import headlines_data
 from apps.core.bot.database.DataBase import DataBase
 from apps.core.bot.messages.messages import Messages
 from apps.core.utils.generate_report.get_file_list import get_registration_json_file_list
