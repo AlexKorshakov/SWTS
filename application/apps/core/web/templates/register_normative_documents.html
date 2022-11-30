@@ -1,0 +1,43 @@
+{% extends 'registers.html' %}
+{% load static %}
+
+
+
+{% block content %}
+
+<div id="datatable" class="table-responsive-xl">
+    <table id="example" class="table table-hover responsive nowrap" style="width: 1500px">
+        <thead class="table-dark">
+        <tr style="background : blue; color : white;">
+            <th style="text-align: center; vertical-align: top; "> p/p</th>
+            <th style="text-align: center; vertical-align: top; "> ID</th>
+            <th style="text-align: center; vertical-align: top; "> category</th>
+            <th style="text-align: center; vertical-align: top; "> title</th>
+            <th style="text-align: center; vertical-align: top; "> normative</th>
+            <th style="text-align: center; vertical-align: top; "> procedure</th>
+        </tr>
+        </thead>
+        <tbody class="table-dark">
+
+        {% for n_doc in normative_docs %}
+        <tr style=" color : white">
+
+            <td style="text-align: left; vertical-align: top; ">{{ forloop.counter }}</td>
+            <td style="text-align: left; vertical-align: top; ">{{ n_doc.id }}</td>
+            <td style="text-align: left; vertical-align: top; ">{{ n_doc.category.title }}</td>
+            <td style="text-align: left; vertical-align: top; ">{{ n_doc.title }}</td>
+            <td style="text-align: left; vertical-align: top; ">{{ n_doc.normative }}</td>
+            <td style="text-align: left; vertical-align: top; ">{{ n_doc.procedure }}</td>
+
+        </tr>
+        {% endfor %}
+
+        </tbody>
+    </table>
+</div>
+
+<div class="clearfix"></div>
+
+
+{% endblock %}
+
