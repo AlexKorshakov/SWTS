@@ -209,7 +209,7 @@ async def generation_query(key: str, id_item: int) -> str:
     """Формирование запроса в базу данных в определённую таблицу
 
     :param id_item: id записи,
-    :param key: имя категории для поиска соответствующей таблицы в DataBase,
+    :param key: имя категории для поиска соответствующей таблицы в database,
     :return: str сформированный запрос в базу данных,
     """
 
@@ -300,7 +300,7 @@ async def get_data_for_update(data: dict, get_from: str = 'local') -> dict:
                 return violation_dict
 
         except Exception as err:
-            logger.error(f"Error add_violation in DataBase() : {repr(err)}")
+            logger.error(f"Error add_violation in database() : {repr(err)}")
             return {}
 
 
@@ -377,7 +377,7 @@ async def update_violations_from_db(data: dict = None):
             id=str(vi_id)
         )
 
-    logger.info(f'данные обновлены в DataBase!')
+    logger.info(f'данные обновлены в database!')
 
 
 async def get_violation_data_to_update(data_from_form: dict) -> dict:

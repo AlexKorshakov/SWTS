@@ -114,6 +114,24 @@ class MainCategory(models.Model):
         return reverse('main_category', kwargs={'main_category_id': self.pk})
 
 
+class HSEUser(models.Model):
+    title = models.CharField(max_length=255, db_index=True, verbose_name='Специалисты')
+    hse_short_name = models.CharField(max_length=255, db_index=True, verbose_name='short_name')
+
+    class Meta:
+        verbose_name = "Специалист"  # единственное число
+        verbose_name_plural = "Специалисты"  # множественное число
+        ordering = ['hse_short_name']  # порядок сортировки
+
+    def __str__(self):
+        return self.hse_short_name
+
+    def get_absolute_url(self):
+        """Метод, согласно конвекции, для создания ссылок на части экземпляра модели (класса)
+        также, при наличии, позволяет переходить из админки на соответствующий раздел"""
+        return reverse('hse_user', kwargs={'hse_user_id': self.pk})
+
+
 class Location(models.Model):
     title = models.CharField(max_length=255, db_index=True, verbose_name='Закрепленный участок')
 
@@ -350,17 +368,6 @@ class Finished(models.Model):
         return reverse('finished', kwargs={'finished': self.pk})
 
 
-# class IsPublished(models.Model):
-#     title = models.CharField(max_length=255, db_index=True, verbose_name='Опубликовано?')
-#
-#     def __str__(self):
-#         return self.title
-#
-#     def get_absolute_url(self):
-#         """Метод, согласно конвекции, для создания ссылок на части экземпляра модели (класса)
-#         также, при наличии, позволяет переходить из админки на соответствующий раздел"""
-#         return reverse('is_published', kwargs={'is_published': self.pk})
-
 class IsAgreed(models.Model):
     title = models.CharField(max_length=255, db_index=True, verbose_name='Согласовано?')
 
@@ -394,35 +401,34 @@ class ActsPrescriptions(models.Model):
     act_location = models.ForeignKey(to='Location', on_delete=models.PROTECT, verbose_name='ПО',
                                      default='')
 
+    act_hse = models.ForeignKey(to='HSEUser', on_delete=models.CASCADE, verbose_name='Специалист', default='')
+
     # act_day = models.PositiveSmallIntegerField(blank=True, verbose_name='День', default=1)
     act_month = models.PositiveSmallIntegerField(blank=True, verbose_name='Месяц', default=1)
     act_year = models.PositiveSmallIntegerField(blank=True, verbose_name='Год', default=2000)
     act_week = models.PositiveSmallIntegerField(blank=True, verbose_name='Неделя', default=1)
     act_quarter = models.PositiveSmallIntegerField(blank=True, verbose_name='Квартал', default=1)
 
-    # act_day_of_year = models.PositiveSmallIntegerField(blank=True, verbose_name='Номер дня в году', default=1)
-
     act_main_location = models.ForeignKey(to='MainLocation', on_delete=models.PROTECT,
                                           verbose_name='Площадка', default='')
+    act_status = models.ForeignKey(to='Status', on_delete=models.PROTECT, verbose_name='Статус', default=1)
+    act_general_contractor = models.ForeignKey(to='GeneralContractor', on_delete=models.PROTECT,
+                                               verbose_name='Подрядчик', default='')
+
+    # act_day_of_year = models.PositiveSmallIntegerField(blank=True, verbose_name='Номер дня в году', default=1)
     # sub_location = models.ForeignKey(to='SubLocation', on_delete=models.PROTECT,
     # verbose_name='Под площадка / участок',
     #                                  default='')
     # created_at = models.DateField(auto_now_add=True, verbose_name='Дата регистрации')
     # updated_at = models.DateField(auto_now=True, verbose_name='Обновлено')
-
+    #
     # act_main_category = models.ForeignKey(to='MainCategory', on_delete=models.PROTECT,
     #                                       verbose_name='Основная категория',
     #                                       default='')
-
-    act_status = models.ForeignKey(to='Status', on_delete=models.PROTECT, verbose_name='Статус', default=1)
-
+    #
     # is_published = models.BooleanField(default=True, verbose_name='Опубликовано?')
     # is_finished = models.BooleanField(default=False, verbose_name='Устранено?')
-
-    act_general_contractor = models.ForeignKey(to='GeneralContractor', on_delete=models.PROTECT,
-                                               verbose_name='Подрядчик',
-                                               default='')
-
+    #
     # category = models.ForeignKey(to='Category', on_delete=models.PROTECT, verbose_name='Категория', default='')
     # normative_documents = models.ForeignKey(to='NormativeDocuments', on_delete=models.PROTECT,
     #                                         verbose_name='Нормативная документация', default='')
@@ -441,7 +447,7 @@ class ActsPrescriptions(models.Model):
     #
     # title = models.CharField(max_length=100, verbose_name='Заголовок')
     # user_id = models.CharField(max_length=255, verbose_name='ID пользователя', default='', blank=True)
-
+    #
     # file_id = models.CharField(max_length=255, verbose_name='file_id', default='', blank=True)
     #
     # acts_prescriptions_id = models.CharField(max_length=255,
@@ -453,7 +459,6 @@ class ActsPrescriptions(models.Model):
         ordering = ['-act_number']  # порядок сортировки
 
     def __str__(self):
-        # return f'pk: {self.pk} file_id: {self.file_id} {self.title}'
         return f'pk: {self.pk}'
 
     def get_absolute_url(self):

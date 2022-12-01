@@ -109,11 +109,10 @@ async def create_and_send_act_prescription(chat_id: int, query_act_date_period=N
         query_act_date_period = await format_data_db(act_date)
 
     table_name: str = 'core_violations'
-
     clean_headers: list = await get_clean_headers(table_name=table_name)
 
     query: str = await get_query(type_query='query_act', table_name=table_name,
-                                 query_act_date=query_act_date_period)
+                                 query_act_date=query_act_date_period, user_id=chat_id)
 
     clear_list_value: list = await get_clear_list_value(chat_id=chat_id,
                                                         query=query,
@@ -129,7 +128,9 @@ async def create_and_send_act_prescription(chat_id: int, query_act_date_period=N
     for g_constractor_id in general_constractor_ids_list:
 
         query: str = await get_query(type_query='general_contractor_id', table_name=table_name,
-                                     query_act_date=query_act_date_period, value_id=g_constractor_id, )
+                                     query_act_date=query_act_date_period, value_id=g_constractor_id,
+                                     user_id=chat_id)
+
         act_dataframe: DataFrame = await create_lite_dataframe_from_query(chat_id=chat_id,
                                                                           query=query,
                                                                           clean_headers=clean_headers)
@@ -180,13 +181,13 @@ async def test():
 
 
 if __name__ == '__main__':
-    chat_id = 373084462
+    chat_id = 862629360
 
     if '2022-10-30' == datetime.now().strftime("%Y-%m-%d"):
         print(f'data is true')
 
     asyncio.run(create_and_send_act_prescription(
         chat_id=chat_id,
-        query_act_date_period='2022-11-12'
+        query_act_date_period='2022-12-01'
     ))
     # asyncio.run(test())

@@ -91,6 +91,12 @@ CATEGORY_ID_TRANSFORM: dict = {
         'table': 'core_workshift',
         'description': 'Смена'
     },
+    'hse_user': {
+        'item': 'core_hseuser',
+        'column': 'hse_user_id',
+        'table': 'core_hseuser',
+        'description': 'HSE'
+    },
 }
 
 
@@ -155,6 +161,10 @@ class DataBase:
 
         file_id = violation.get('file_id', None)
 
+        if not file_id:
+            logger.error(f'not found file_id!!!')
+            return False
+
         location_id = self.get_id(
             table='core_location',
             entry=violation.get("location", None),
@@ -165,13 +175,13 @@ class DataBase:
             table='core_mainlocation',
             entry=violation.get("main_location", None),
             file_id=file_id,
-            name='location'
+            name='main_location'
         )
         sub_location_id = self.get_id(
             table='core_sublocation',
             entry=violation.get("sub_location", None),
             file_id=file_id,
-            name='location'
+            name='sub_location'
         )
         work_shift_id = self.get_id(
             table='core_workshift',
@@ -245,6 +255,14 @@ class DataBase:
             file_id=file_id,
             name='agreed'
         )
+        # hse_id = self.get_id(
+        #     table='core_hseuser',
+        #     entry=violation.get("hse_id", None),
+        #     file_id=file_id,
+        #     name='hse_id'
+        # )
+
+        hse_id = violation.get("hse_id", None)
 
         # TODO: check act_number
         act_number = ''
@@ -300,7 +318,8 @@ class DataBase:
             with self.connection:
                 is_add = self.cursor.execute(
                     "INSERT INTO `core_violations` ("
-                    " 'function', 'name', 'user_id', 'location_id', 'act_number', 'agreed_id', 'violation_id', "
+                    " 'hse_id', 'function', 'name', 'user_id', 'location_id', 'act_number', 'agreed_id', "
+                    " 'violation_id', "
                     " 'main_location_id', 'sub_location_id', 'work_shift_id', 'created_at', 'updated_at', "
                     " 'main_category_id', 'status_id', 'finished_id', 'is_published', 'comment', 'description', "
                     " 'general_contractor_id',  'category_id',  'normative_documents_id',  'violation_category_id', "
@@ -310,10 +329,10 @@ class DataBase:
                     " 'report_folder_id', 'coordinates', 'latitude', 'longitude', 'json_file_path', 'json_full_name', "
                     " 'photo_file_path', 'photo_full_name', 'user_fullname', 'json' "
                     ")"
-                    "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,"
+                    "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,"
                     "?,?,?)",
                     (
-                        function, name, user_id, location_id, act_number, agreed_id, violation_id,
+                        hse_id, function, name, user_id, location_id, act_number, agreed_id, violation_id,
                         main_location_id, sub_location_id, work_shift_id, created_at, updated_at,
                         main_category_id, status_id, finished_id, is_published, comment, description,
                         general_contractor_id, category_id, normative_documents_id, violation_category_id,
@@ -347,6 +366,7 @@ class DataBase:
 
         with self.connection:
             result = self.cursor.execute(query, (entry,)).fetchall()
+
             if not result:
                 logger.error(
                     f"no matches found {entry = } in {table} in title "
@@ -489,6 +509,7 @@ class DataBase:
         act_month = int(act_data_dict.month.unique()[0])
         act_quarter = int(act_data_dict.quarter.unique()[0])
         act_year = int(act_data_dict.year.unique()[0])
+        act_hse_id = int(act_data_dict.hse_id.unique()[0])
 
         act_status_id = int(act_data_dict.status_id.unique()[0])
         act_general_contractor_id = int(act_data_dict.general_contractor_id.unique()[0])
@@ -497,23 +518,25 @@ class DataBase:
             with self.connection:
                 is_add = self.cursor.execute(
                     "INSERT INTO `core_actsprescriptions` ("
-                    "`act_number`, `act_date`, `act_row_count`, `act_location_id`,`act_week`,`act_month`,"
+                    "`act_number`, `act_date`, `act_hse_id`, `act_row_count`, `act_location_id`,`act_week`,`act_month`,"
                     "`act_quarter`, `act_year`, `act_status_id`, `act_general_contractor_id` "
                     ")"
-                    "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?,?)",
+                    "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )",
                     (
-                        act_number, act_date, act_row_count, act_location_id, act_week, act_month, act_quarter,
-                        act_year, act_status_id, act_general_contractor_id
+                        act_number, act_date, act_hse_id, act_row_count, act_location_id, act_week, act_month,
+                        act_quarter, act_year, act_status_id, act_general_contractor_id
                     )
                 )
                 if is_add:
+                    logger.info(f"act {act_number} date {act_date} complete successfully for act_hse_id {act_hse_id}")
                     return True
 
-                # logger.error(f'error in file {file_id}')
+                logger.error(f"ERROR!!! act {act_number} date {act_date} error for act_hse_id {act_hse_id}")
                 return False
 
         except sqlite3.IntegrityError as err:
-            pprint(f"sqlite3.IntegrityError {err}")
+            logger.error(f"ERROR!!! act {act_number} date {act_date} error for act_hse_id {act_hse_id}")
+            logger.error(f"sqlite3.IntegrityError {err}")
             return False
 
     def get_full_title(self, table_name: str, short_title: str):
@@ -567,4 +590,3 @@ async def upload_from_local(*, params: dict = None):
 
             len_err += error_counter
     print(f"errors {len_err} in {len(json_file_list)} items")
-

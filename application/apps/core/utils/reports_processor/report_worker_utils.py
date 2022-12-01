@@ -86,6 +86,9 @@ async def get_clean_headers(table_name: str) -> list:
 
     headers = DataBase().get_table_headers(table_name=table_name)
     clean_headers: list = [item[1] for item in headers]
+
+    logger.debug(clean_headers)
+
     return clean_headers
 
 
@@ -97,7 +100,8 @@ async def create_lite_dataframe_from_query(chat_id: int, query: str, clean_heade
 
     item_datas_query: list = DataBase().get_data_list(query=query)
 
-    report_dataframe: DataFrame = await create_lite_dataframe(data_list=item_datas_query, header_list=clean_headers)
+    report_dataframe: DataFrame = await create_lite_dataframe(chat_id=chat_id, data_list=item_datas_query,
+                                                              header_list=clean_headers)
 
     if report_dataframe.empty:
         logger.error(Messages.Error.dataframe_not_found)
@@ -106,7 +110,7 @@ async def create_lite_dataframe_from_query(chat_id: int, query: str, clean_heade
     return report_dataframe
 
 
-async def get_query(type_query: str, table_name: str, query_act_date: str = None, value_id: int = None,
+async def get_query(type_query: str, table_name: str, query_act_date: str = None, value_id: int = None,user_id=None,
                     **kvargs) -> str:
     """
 
@@ -117,7 +121,10 @@ async def get_query(type_query: str, table_name: str, query_act_date: str = None
                      f'FROM {table_name} ' \
                      f"WHERE (`created_at` = date('{query_act_date}') " \
                      f"AND (`act_number` = '' or `act_number` is NULL ) " \
-                     f"AND `general_contractor_id` = {value_id})"
+                     f"AND `general_contractor_id` = {value_id} " \
+                     f"AND `user_id` = {user_id}" \
+                     f") " \
+
 
     if type_query == 'sub_location_id':
         query: str = f'SELECT * ' \
@@ -132,13 +139,15 @@ async def get_query(type_query: str, table_name: str, query_act_date: str = None
                          f'FROM {table_name} ' \
                          f"WHERE (`act_number` = '' or `act_number` is NULL ) " \
                          f"AND `created_at` BETWEEN date('{await format_data_db(query_act_date[0])}') " \
-                         f"AND date('{await format_data_db(query_act_date[1])}')"
+                         f"AND date('{await format_data_db(query_act_date[1])}') " \
+                         f"AND `user_id` = {user_id}"
 
         if isinstance(query_act_date, str):
             query: str = f'SELECT * ' \
                          f'FROM {table_name} ' \
                          f"WHERE (`created_at` = date('{query_act_date}') " \
-                         f"AND (`act_number` = '' or `act_number` is NULL ))"
+                         f"AND (`act_number` = '' or `act_number` is NULL ) " \
+                         f"AND `user_id` = {user_id} )"
 
     return query
 

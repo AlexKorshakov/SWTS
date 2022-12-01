@@ -11,6 +11,3 @@ current_file = None
 start_violation_mes_id: int = 1
 stop_violation_mes_id: int = 1
 
-
-class TempStorage:
-    user_access: bool = False

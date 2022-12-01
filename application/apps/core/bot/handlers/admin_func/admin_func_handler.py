@@ -24,13 +24,14 @@ from apps.core.utils.secondary_functions.check_user_registration import check_us
 @MyBot.dp.message_handler(Command('admin_func'))
 async def admin_func_handler(message: types.Message) -> None:
     """Административные функции
+
     :param message:
     :return:
     """
 
     chat_id = message.chat.id
 
-    if not await check_user_access(chat_id=chat_id):
+    if not await check_user_access(chat_id=chat_id, message=message):
         return
 
     if chat_id != int(ADMIN_ID) or chat_id != int(DEVELOPER_ID):
@@ -38,13 +39,11 @@ async def admin_func_handler(message: types.Message) -> None:
             user_id=chat_id,
             notify_text=f'User @{message.from_user.username}:{chat_id} попытка доступа в админку!'
         )
-
         await message.answer(
             text=f'У Вас нет прав доступа к административным функциям!\n'
                  f'По всем вопросам обращайтесь к администратору\n'
                  f'https://t.me/AlexKor_MSK',
             disable_web_page_preview=True)
-
         return
 
     if chat_id == int(ADMIN_ID) or message.from_user.id == int(DEVELOPER_ID):
