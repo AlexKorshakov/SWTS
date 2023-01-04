@@ -1,8 +1,8 @@
 
 
-async def create_headers():
+async def create_headers() -> list[dict]:
     """Подготовка заголовков таблицы отчета
-    :return:
+
     """
     data = [
         {

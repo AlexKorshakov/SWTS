@@ -4,7 +4,7 @@ import os.path
 from json import JSONDecodeError
 from typing import Union
 
-from apps.core.bot.database.DataBase import DataBase
+from apps.core.database.DataBase import DataBase
 from loader import logger
 
 filename = inspect.getframeinfo(inspect.currentframe()).filename
@@ -364,6 +364,7 @@ def get_data_list(category_in_db: str = None, category: str = None, condition: U
     """
 
     db_table_name = convert_category_name(category_in_db)
+    print(f'{db_table_name = }')
     if not db_table_name:
         return []
 

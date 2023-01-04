@@ -1,157 +1,22 @@
-import os.path
+
 import sqlite3
 from pandas import DataFrame
-from pathlib import Path
 from pprint import pprint
 
-from apps.core.bot.database.db_utils import normalize_violation_data, data_violation_completion
+from apps.core.database.db_utils import normalize_violation_data, data_violation_completion
 from apps.core.utils.secondary_functions.get_json_files import get_files
-from config.web.settings import DB_NAME
+from config.config import DATA_BASE_DIR
+
 from loader import logger
-
-BASE_DIR = Path(__file__).resolve()
-
-CATEGORY_ID_TRANSFORM: dict = {
-    'main_category': {
-        'item': 'main_category',
-        'column': 'main_category_id',
-        'table': 'core_maincategory',
-        'description': 'Основная категория'
-    },
-    'location': {
-        'item': 'location',
-        'column': 'location_id',
-        'table': 'core_location',
-        'description': 'Закреплённый участок'
-    },
-    'main_location': {
-        'item': 'main_location',
-        'column': 'main_location_id',
-        'table': 'core_mainlocation',
-        'description': 'Площадка'
-    },
-    'sub_location': {
-        'item': 'sub_location',
-        'column': 'sub_location_id',
-        'table': 'core_sublocation',
-        'description': 'Под площадка / участок'
-    },
-    'category': {
-        'item': 'category',
-        'column': 'category_id',
-        'table': 'core_category',
-        'description': 'Категория'
-    },
-    'normative_documents': {
-        'item': 'normative_documents',
-        'column': 'normative_documents_id',
-        'table': 'core_normativedocuments',
-        'description': 'Под Категория'
-    },
-    'violation_category': {
-        'item': 'violation_category',
-        'column': 'violation_category_id',
-        'table': 'core_violationcategory',
-        'description': 'Категория нарушения'
-    },
-    'general_contractor': {
-        'item': 'general_contractor',
-        'column': 'general_contractor_id',
-        'table': 'core_generalcontractor',
-        'description': 'Подрядчик',
-        'json_file_name': 'GENERAL_CONTRACTORS'
-    },
-    'act_required': {
-        'item': 'act_required',
-        'column': 'act_required_id',
-        'table': 'core_actrequired',
-        'description': 'Требуется оформление Акта-предписания?'
-    },
-    'incident_level': {
-        'item': 'incident_level',
-        'column': 'incident_level_id',
-        'table': 'core_incidentlevel',
-        'description': 'Уровень происшествия'
-    },
-    'elimination_time': {
-        'item': 'elimination_time',
-        'column': 'elimination_time_id',
-        'table': 'core_eliminationtime',
-        'description': 'Время на устранение'
-    },
-    'status': {
-        'item': 'status',
-        'column': 'status_id',
-        'table': 'core_status',
-        'description': 'Статус'
-    },
-    'work_shift': {
-        'item': 'work_shift',
-        'column': 'work_shift_id',
-        'table': 'core_workshift',
-        'description': 'Смена'
-    },
-    'hse_user': {
-        'item': 'core_hseuser',
-        'column': 'hse_user_id',
-        'table': 'core_hseuser',
-        'description': 'HSE'
-    },
-}
 
 
 class DataBase:
 
     def __init__(self):
 
-        self.db_file: str = os.path.join(BASE_DIR.parent.parent.parent.parent.parent, DB_NAME)
+        self.db_file: str = DATA_BASE_DIR
         self.connection = sqlite3.connect(self.db_file)
         self.cursor = self.connection.cursor()
-
-    def create_table(self):
-        """Создание таблицы violation"""
-        self.cursor.execute(
-            """CREATE TABLE IF NOT EXISTS violations (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            
-            location VARCHAR NOT NULL,
-            work_shift VARCHAR,
-            function VARCHAR,
-            name VARCHAR NOT NULL,
-            parent_id VARCHAR NOT NULL,
-            
-            violation_id INTEGER,
-            user_id INTEGER NOT NULL,
-            user_fullname VARCHAR (100),
-            report_folder_id VARCHAR (100),
-            file_id VARCHAR NOT NULL,
-            data VARCHAR NOT NULL,
-            day VARCHAR (10) NOT NULL,
-            month VARCHAR (10) NOT NULL,
-            year VARCHAR (10) NOT NULL,
-            now VARCHAR (100) NOT NULL,
-            main_category VARCHAR NOT NULL,
-            general_contractor VARCHAR NOT NULL,
-            category VARCHAR NOT NULL,
-            normative_documents VARCHAR,
-            comment VARCHAR NOT NULL,
-            act_required VARCHAR NOT NULL,
-            description VARCHAR NOT NULL,
-            elimination_time VARCHAR NOT NULL,
-            incident_level VARCHAR NOT NULL,
-            violation_category VARCHAR NOT NULL,
-            coordinates VARCHAR,
-            latitude FLOAT DEFAULT (0),
-            longitude FLOAT DEFAULT (0),
-            json_folder_id VARCHAR (100) NOT NULL,
-            json_file_path VARCHAR,
-            json_full_name VARCHAR,
-            photo_file_path VARCHAR,
-            photo_folder_id VARCHAR (100) NOT NULL,
-            photo_full_name VARCHAR
-            )
-            """
-        )
 
     def add_violation(self, *, violation: dict) -> bool:
         """Добавление записей в database
@@ -285,7 +150,7 @@ class DataBase:
         month = violation.get('month', None)
         year = violation.get('year', None)
 
-        week = violation.get("week", None)
+        week_id = violation.get("week", None)
         quarter = violation.get("quarter", None)
         day_of_year = violation.get("day_of_year", None)
 
@@ -324,7 +189,7 @@ class DataBase:
                     " 'main_category_id', 'status_id', 'finished_id', 'is_published', 'comment', 'description', "
                     " 'general_contractor_id',  'category_id',  'normative_documents_id',  'violation_category_id', "
                     " 'incident_level_id',  'act_required_id',  'elimination_time_id',  'file_id', "
-                    " 'photo', 'title', 'day', 'month', 'year','week', 'quarter', 'day_of_year', "
+                    " 'photo', 'title', 'day', 'month', 'year','week_id', 'quarter', 'day_of_year', "
                     " 'json_folder_id', 'parent_id', 'photo_folder_id', "
                     " 'report_folder_id', 'coordinates', 'latitude', 'longitude', 'json_file_path', 'json_full_name', "
                     " 'photo_file_path', 'photo_full_name', 'user_fullname', 'json' "
@@ -337,7 +202,7 @@ class DataBase:
                         main_category_id, status_id, finished_id, is_published, comment, description,
                         general_contractor_id, category_id, normative_documents_id, violation_category_id,
                         incident_level_id, act_required_id, elimination_time_id, file_id, photo, title,
-                        day, month, year, week, quarter, day_of_year,
+                        day, month, year, week_id, quarter, day_of_year,
                         json_folder_id, parent_id, photo_folder_id, report_folder_id,
                         coordinates, latitude, longitude,
                         json_file_path, json_full_name, photo_file_path, photo_full_name, user_fullname, json
@@ -505,7 +370,7 @@ class DataBase:
         act_row_count = len(act_data_dict.index)
 
         act_location_id = int(act_data_dict.location_id.unique()[0])
-        act_week = int(act_data_dict.week.unique()[0])
+        act_week = int(act_data_dict.week_id.unique()[0])
         act_month = int(act_data_dict.month.unique()[0])
         act_quarter = int(act_data_dict.quarter.unique()[0])
         act_year = int(act_data_dict.year.unique()[0])

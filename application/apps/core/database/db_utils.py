@@ -7,7 +7,7 @@ from loader import logger
 
 
 async def normalize_violation_data(violation: dict) -> dict:
-    """Обработка данных в записях не соответствующих записям в DataBase
+    """Обработка данных в записях не соответствующих записям в database
 
     :param violation: dict  с данными для нормализации
     :return: normalize_violation_dict
