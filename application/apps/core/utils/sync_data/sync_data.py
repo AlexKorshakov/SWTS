@@ -5,7 +5,7 @@ from pprint import pprint
 
 from tqdm.asyncio import tqdm
 
-from apps.core.bot.database.db_utils import create_file_path
+from apps.core.database.db_utils import create_file_path
 from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import \
     drive_account_auth_with_oauth2client, \
     move_file
@@ -311,9 +311,7 @@ async def sync_local_to_google_drive(drive_service: object = None, file_list: li
     if not drive_service:
         drive_service = await drive_account_auth_with_oauth2client()
 
-    synced: int = 0
-    upload: int = 0
-    number: int = 0
+    synced, upload, number = 0, 0, 0
     parent: str = ''
     for nom, item in tqdm(enumerate(normalize_file_list, start=1), total=len(normalize_file_list)):
 

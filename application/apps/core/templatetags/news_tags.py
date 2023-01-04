@@ -74,7 +74,6 @@ def show_statuses():
 
 @register.inclusion_tag('list_weeks.html')
 def show_weeks():
-
     # weeks = Week.objects.all()
     # return weeks
 

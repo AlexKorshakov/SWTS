@@ -1,15 +1,10 @@
 import asyncio
-import os
-from pprint import pprint
 
-from django.db.models import Model
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse
 from django.core.paginator import Paginator
-from django.views import View
 from django.views.generic import ListView, DetailView, CreateView
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, redirect
 
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.contrib.auth import login, logout
 
@@ -18,11 +13,10 @@ from apps.core.web.utils import MyMixin, delete_violations_from_all_repo, get_id
 from loader import logger
 #
 from .forms import UsrRegisterForm, UserLoginForm, ViolationsForm, ViolationsAddForm
-from .models import Violations, MainCategory, Location, GeneralContractor, IncidentLevel, Status, MainLocation, Week, \
-    ActsPrescriptions, NormativeDocuments
+from .models import Violations, MainCategory, GeneralContractor, IncidentLevel, Status, MainLocation, ActsPrescriptions, NormativeDocuments
 #
 # # Create your views here.
-from ..bot.database.DataBase import upload_from_local
+from apps.core.database.DataBase import upload_from_local
 
 
 def upload_too_db_from_local_storage(request: HttpRequest):
@@ -391,10 +385,10 @@ class ViolationsByWeek(MyMixin, ListView):
 
     def get_queryset(self):
         return Violations.objects.filter(
-            week=self.kwargs['week_id'],
+            week_id=self.kwargs['week_id'],
             is_published=True
         )
-
+# .prefetch_related('week')
 
 # class ViolationsByIsPublished(MyMixin, ListView):
 #     """Просмотр по номеру недели"""

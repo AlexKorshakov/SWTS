@@ -2,7 +2,8 @@ import asyncio
 import os
 from pathlib import Path
 
-from apps.core.bot.database.DataBase import DataBase, upload_from_local, CATEGORY_ID_TRANSFORM
+from apps.core.database.DataBase import DataBase, upload_from_local
+from apps.core.database.category_id_transform import CATEGORY_ID_TRANSFORM
 from apps.core.bot.handlers.correct_entries.correct_entries_handler import del_file, del_file_from_gdrive
 from apps.core.bot.messages.messages import Messages
 from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import drive_account_credentials

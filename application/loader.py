@@ -1,8 +1,6 @@
 import logging
 import os
-
 import sys
-
 from django.core.management.color import color_style
 
 logger = logging.getLogger("django")

@@ -8,8 +8,8 @@ class Messages:
                         f'\n' \
                         f"Видео инструкция {url_registration_violation}" \
                         f'\n' \
-                        f'Для регистрации в системе (повторной регистрации) нажмите /start \n' \
                         f'{write_to_developer}'
+                        # f'Для регистрации в системе (повторной регистрации) нажмите /start \n' \
     wait: str = f"Это может занять некоторое время"
     cancel: str = f"Отмена!"
     correct_cancel: str = f"продолжить без изменений"
@@ -24,7 +24,6 @@ class Messages:
 
     class Registration:
         user_registration: str = f"Начинаю процедуру регистрации"
-        # start_registration: str = f"Начинаю процедуру регистрации отчета"
         confirm: str = f"При завершении регистрации дальнейшее изменение невозможно!"
         canceled: str = f"OK! если хотите зарегистрироваться, отправьте /start заново"
         cancel: str = f"Отменить регистрацию"
@@ -46,7 +45,7 @@ class Messages:
         function: str = f"Введите вашу должность полностью"
         phone_number: str = f"Введите свой номер телефона с кодом (в формате +7xxxxxxxxxx)"
         work_shift: str = f"Выберите в  какую смену вы работаете? (пример дневная смена / ночная смена)"
-        location: str = f"Выберите ваше местоположение (пример Аминьевское шоссе)"
+        location: str = f"Выберите ваше местоположение"
         construction_manager: str = f"Введите ФИО руководителя строительства полностью"
         building_control_engineer: str = f"Введите полностью ФИО инженера строительного контроля"
         contractor: str = f'Выберите подрядчика из списка'
@@ -59,7 +58,8 @@ class Messages:
                                             f" Например Иванов Иван Иванович. Технический директор"
 
     class Report:
-        done: str = f"Отчет сформирован на сервере"
+        create_successfully: str = f"Отчет сформирован на сервере"
+        done: str = 'Процедура завершена'
         start: str = f"Начинаю генерацию отчетов"
         start_act: str = 'Начало генерации актов-предписания'
         sent_successfully: str = f"Отчет успешно отправлен"
@@ -69,6 +69,9 @@ class Messages:
         convert_successfully: str = f"Отчет успешно конвертирован в pdf"
         error: str = 'не удалось конвертировать отчет в pdf'
         acts_generated_successfully: str = 'Акт(-ы) успешно созданы'
+
+    class HSEUserAnswer:
+        user_access_success: str = f"Вам предоставлен доступ к функциям"
 
     class Successfully:
         bot_start: str = f"Бот успешно запущен..."
@@ -83,7 +86,7 @@ class Messages:
         letter_formed: str = "Письмо сформировано"
 
     class Enter:
-        comment: str = "Введите комментарий"
+        comment: str = "Введите комментарий к устранению"
         description_violation: str = "Введите описание нарушения"
 
     class Admin:

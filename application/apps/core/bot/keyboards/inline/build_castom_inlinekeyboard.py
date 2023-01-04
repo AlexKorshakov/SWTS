@@ -1,10 +1,10 @@
 from aiogram import types
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup
 from aiogram.utils.callback_data import CallbackData
 
 from apps.core.bot.data import board_config
 
-from app import MyBot
+from apps.MyBot import MyBot
 from loader import logger
 
 NUM_COL = 2
@@ -122,7 +122,7 @@ async def define_indices(level, end_list):
     return start_index, stop_index
 
 
-async def add_action_button(reply_markup, start_index: int, stop_index: int, end_list: int):
+async def add_action_button(reply_markup, start_index: int, stop_index: int, end_list: int) -> InlineKeyboardMarkup:
     """Добавление кнопок навигации в зависимости от начального (start_index),
     конечного индекса (stop_index) и конца списка list (end_list)
     :param start_index:
@@ -150,7 +150,7 @@ async def add_action_button(reply_markup, start_index: int, stop_index: int, end
     return reply_markup
 
 
-async def add_previous_paragraph_button(reply_markup, previous_level: str):
+async def add_previous_paragraph_button(reply_markup, previous_level: str) -> InlineKeyboardMarkup:
     """Добавление кнопки - предыдущее действий"""
 
     logger.info(f"{reply_markup = }")

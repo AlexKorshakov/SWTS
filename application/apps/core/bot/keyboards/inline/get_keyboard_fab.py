@@ -1,10 +1,11 @@
 from aiogram import types
+from aiogram.types import InlineKeyboardMarkup
 
 from apps.core.bot.callbacks.callback_action import cb_start
 
 
-async def get_keyboard_fab():
-    """Действия при начале регистрации нарушений.
+async def get_keyboard_fab() -> InlineKeyboardMarkup:
+    """Действия при начале регистрации нарушений (в конце ввода данных).
     Возвращает кнопки 'Зарегистрировать' и 'Отмена'
     """
     buttons = [
@@ -13,4 +14,5 @@ async def get_keyboard_fab():
     ]
     keyboard = types.InlineKeyboardMarkup(row_width=1)
     keyboard.add(*buttons)
+
     return keyboard

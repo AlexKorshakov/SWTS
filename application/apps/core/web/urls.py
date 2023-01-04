@@ -4,7 +4,8 @@ from django.urls import path
 from .views import HomeViolations, ViewViolations, ViolationsByMainCategory, ViolationsByMainLocation, \
     ViolationsByGeneralContractor, ViolationsByIncidentLevel, ViolationsByStatus, user_login, user_logout, register, \
     post_edit, PostEdit, test, simple_view, upload_too_db_from_local_storage, delete_violations, update_violations, \
-    add_violations, statistic, ViolationsByWeek, HomeRegisterActsPrescriptions, HomeRegisterNormativeDocuments
+    add_violations, statistic, ViolationsByWeek, HomeRegisterActsPrescriptions, HomeRegisterNormativeDocuments, \
+    ViolationsByFinished
 
 # Register your urls here
 
@@ -29,9 +30,9 @@ urlpatterns = [
          name='incident_level'),
     path('status/<int:status_id>/', ViolationsByStatus.as_view(),
          name='status'),
-    path('finished/<int:finished_id>/', ViolationsByWeek.as_view(),
+    path('finished/<int:finished_id>/', ViolationsByFinished.as_view(),
          name='finished'),
-    path('week/<int:week>/', ViolationsByWeek.as_view(),
+    path('view_violations_by_week/<int:week_id>/', ViolationsByWeek.as_view(),
          name='week'),
 
     # запуск скрипта по нажатию кнопки из base.html

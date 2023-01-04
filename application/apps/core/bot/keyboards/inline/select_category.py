@@ -1,7 +1,6 @@
 from aiogram import types
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from apps.core.bot.data.category import get_data_list
 from apps.core.bot.messages.messages import Messages
 
 
