@@ -1,4 +1,4 @@
-from app import MyBot
+from apps.MyBot import MyBot
 from loader import logger
 
 

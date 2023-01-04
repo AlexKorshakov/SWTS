@@ -3,7 +3,7 @@ from aiogram.dispatcher.filters import Command
 from aiogram.utils.markdown import text
 
 from apps.core.bot.keyboards.inline.help_inlinekeyboard import help_inline_button
-from app import MyBot
+from apps.MyBot import MyBot
 from apps.core.utils.misc import rate_limit
 from loader import logger
 

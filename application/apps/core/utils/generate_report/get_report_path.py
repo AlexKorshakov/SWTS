@@ -1,6 +1,6 @@
 import datetime
 
-from app import MyBot
+from apps.MyBot import MyBot
 from apps.core.utils.generate_report.get_file_list import get_registration_json_file_list
 from loader import logger
 

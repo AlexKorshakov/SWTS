@@ -1,12 +1,10 @@
-from app import MyBot
+from apps.MyBot import MyBot
 from apps.core.utils.generate_report.create_dataframe import create_dataframe_from_data
 from apps.core.utils.generate_report.create_heders import create_headers
 from loader import logger
 from pandas import DataFrame
 
 from apps.core.bot.messages.messages import Messages
-# from apps.core.utils.reports_processor.create_dataframe import create_dataframe, create_dataframe_from_data
-# from apps.core.utils.reports_processor.create_heders import create_headers
 from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.download_file_for_google_drive import \
     upload_files_from_google_drive
 from apps.core.utils.json_worker.merge_json import merge_json

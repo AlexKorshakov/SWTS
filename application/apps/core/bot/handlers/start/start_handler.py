@@ -3,7 +3,8 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command, Text
 from aiogram.types import ReplyKeyboardMarkup, ReplyKeyboardRemove
 
-from app import MyBot
+from apps.MyBot import MyBot
+from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.utils.secondary_functions.get_filepath import get_user_registration_file, create_file_path
 from loader import logger
 
@@ -24,9 +25,18 @@ from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inl
 @MyBot.dp.message_handler(Command('start'), is_private)
 async def start(message: types.Message):
     """Начало регистрации пользователя
+
     :param message:
     :return:
     """
+    chat_id = message.chat.id
+    if not await check_user_access(chat_id=chat_id, message=message):
+        return
+
+    await MyBot.bot.send_message(
+        chat_id=chat_id, text=f'{Messages.HSEUserAnswer.user_access_success} \n'
+    )
+
     user_id = str(message.from_user.id)
     user_data["user_id"] = user_id
     user_data['reg_user_file'] = await get_user_registration_file(user_id=user_id)
@@ -38,10 +48,10 @@ async def start(message: types.Message):
     await message.answer(f'{Messages.user_greeting} \n'
                          f'{Messages.help_message}')
 
-    await RegisterState.name.set()
-    reply_markup = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-    reply_markup.add(Messages.Registration.cancel)
-    await MyBot.bot.send_message(message.from_user.id, Messages.Ask.name, reply_markup=reply_markup)
+    # await RegisterState.name.set()
+    # reply_markup = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+    # reply_markup.add(Messages.Registration.cancel)
+    # await MyBot.bot.send_message(message.from_user.id, Messages.Ask.name, reply_markup=reply_markup)
 
 
 @MyBot.dp.message_handler(is_private, Text(equals=Messages.cancel), state=RegisterState.all_states)

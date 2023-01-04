@@ -1,11 +1,12 @@
 from aiogram import types
 
-from app import MyBot
+from apps.MyBot import MyBot
 
 from apps.core.bot.data import board_config
 from apps.core.bot.data.category import get_data_list
 from apps.core.bot.reports.report_data import violation_data
-from apps.core.bot.database.DataBase import DataBase, CATEGORY_ID_TRANSFORM
+from apps.core.database.DataBase import DataBase
+from apps.core.database.category_id_transform import CATEGORY_ID_TRANSFORM
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard, \
     add_previous_paragraph_button
 from apps.core.utils.json_worker.writer_json_file import write_json_file

@@ -1,6 +1,6 @@
 from aiogram import types
 
-from app import MyBot
+from apps.MyBot import MyBot
 from apps.core.bot.callbacks.sequential_action.data_answer import get_and_send_act_required_data
 from apps.core.bot.data.category import get_data_list
 from apps.core.bot.reports.report_data_preparation import set_violation_atr_data

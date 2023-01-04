@@ -1,10 +1,10 @@
 from aiogram import types
 
-from app import MyBot
+from apps.MyBot import MyBot
 from loader import logger
 
 from apps.core.bot.messages.messages import Messages
-from apps.core.utils.secondary_functions.check_user_registration import check_user_access
+from apps.core.bot.bot_utils.check_user_registration import check_user_access
 
 
 @MyBot.dp.message_handler(content_types=['text'])

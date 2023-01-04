@@ -3,8 +3,8 @@ from openpyxl.utils import dataframe
 
 from pandas import DataFrame
 
-from app import MyBot
-from apps.core.bot.database.DataBase import DataBase
+from apps.MyBot import MyBot
+from apps.core.database.DataBase import DataBase
 from apps.core.bot.messages.messages import Messages
 from apps.core.utils.generate_report.create_dataframe import create_lite_dataframe
 
@@ -12,7 +12,7 @@ from loader import logger
 
 
 async def get_clear_list_value(chat_id: int, query: str, clean_headers: list) -> list[dict]:
-    """Получение очищенных данных
+    """Получение данных с заголовками
 
     :return: clear_list : list
     """

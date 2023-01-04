@@ -5,8 +5,6 @@ from dotenv import load_dotenv
 from environs import Env, EnvError
 from pathlib import Path
 
-from loader import logger
-
 env = Env()
 env.read_env()
 
@@ -19,15 +17,19 @@ try:
 except EnvError as env_err:
     BOT_TOKEN: str = os.getenv('BOT_TOKEN')
     if not BOT_TOKEN:
-        logger.error('You have forgot to set BOT_TOKEN')
+        print('You have forgot to set BOT_TOKEN')
         quit()
 
+from loader import logger
+
 WRITE_DATA_ON_GOOGLE_DRIVE = env.bool("WRITE_DATA_ON_GOOGLE_DRIVE", False)
-ADMINS_ID: str = env("ADMINS_ID")
+ADMINS_ID: list = [373084462]
 ADMIN_ID: str = env("ADMIN_ID")
 ADMIN_EMAIL: str = env("ADMIN_EMAIL")
 DEVELOPER_ID: int = env("DEVELOPER_ID")
 DEVELOPER_EMAIL: str = env("DEVELOPER_EMAIL")
+
+DATA_BASE_DIR: str = env("DATA_BASE_DIR")
 
 PRIVATE_KEY: str = env("PRIVATE_KEY")
 

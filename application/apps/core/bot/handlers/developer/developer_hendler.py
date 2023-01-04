@@ -1,7 +1,8 @@
 from aiogram import types
 from aiogram.dispatcher.filters import Command
 
-from app import MyBot
+from apps.MyBot import MyBot
+from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from loader import logger
 
 from config.config import DEVELOPER_ID
@@ -21,11 +22,21 @@ async def send_msg_from_developer(message: types.Message):
 
 @MyBot.dp.message_handler(content_types=['text'])
 async def text_message_handler(message: types.Message):
-    if "@dev" in message.text.strip().lower():
+    """
 
+    :param message:
+    :return:
+    """
+
+    if "@dev" in message.text.strip().lower():
         logger.info(f'message from developer user {message.from_user.id} name {message.from_user.full_name}')
 
         text = f"Message from user {message.from_user.id} name {message.chat.full_name} \n" \
                f"https://t.me/{message.from_user.mention.replace('@', '')} \n" \
-               f"message: {message.text.replace('@dev','')}"
+               f"message: {message.text.replace('@dev', '')}"
         await MyBot.bot.send_message(chat_id=DEVELOPER_ID, text=text)
+
+    chat_id = message.chat.id
+
+    if not await check_user_access(chat_id=chat_id, message=message):
+        return

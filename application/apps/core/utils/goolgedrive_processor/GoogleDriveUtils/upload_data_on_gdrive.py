@@ -2,7 +2,7 @@ import os
 import subprocess
 from mimetypes import guess_type
 
-from app import MyBot
+from apps.MyBot import MyBot
 from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import drive_account_auth_with_oauth2client
 from config.config import WRITE_DATA_ON_GOOGLE_DRIVE
 from loader import logger

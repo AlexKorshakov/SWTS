@@ -1,7 +1,7 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 
-from app import MyBot
+from apps.MyBot import MyBot
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.reports.report_data_preparation import set_violation_atr_data
 from apps.core.bot.states import AnswerUserState

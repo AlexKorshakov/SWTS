@@ -4,7 +4,7 @@ from aiogram import types
 from aiogram.dispatcher.filters import Command
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-from app import MyBot
+from apps.MyBot import MyBot
 from apps.core.utils.secondary_functions.get_json_files import get_registered_users
 from loader import logger
 
@@ -16,8 +16,8 @@ from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inl
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.filters.custom_filters import is_private
 from apps.core.utils.misc import rate_limit
-from apps.core.utils.bot_utils_processor.notify_admins import admin_notify
-from apps.core.utils.secondary_functions.check_user_registration import check_user_access
+from apps.core.bot.bot_utils.bot_admin_notify import admin_notify
+from apps.core.bot.bot_utils.check_user_registration import check_user_access
 
 
 @rate_limit(limit=10)

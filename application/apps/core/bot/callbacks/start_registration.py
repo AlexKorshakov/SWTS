@@ -1,7 +1,7 @@
 from aiogram import types
 from loader import logger
 
-from app import MyBot
+from apps.MyBot import MyBot
 from apps.core.bot.callbacks.sequential_action.data_answer import get_and_send_main_locations_data, \
     get_and_send_start_main_locations_data
 from apps.core.bot.callbacks.callback_action import cb_start

@@ -44,16 +44,20 @@ def main():
             sys.argv.append(str(MANAGE_DIR / "apps" / sys.argv[-1]))
 
     elif "runserver" in sys.argv:
-        from app import MyServer
+        from apps.MyServer import MyServer
         return MyServer.run()
 
     elif "runbot" in sys.argv:
-        from app import MyBot
+        from apps.MyBot import MyBot
         return MyBot.run()
 
     elif "runapp" in sys.argv:
         from app import run_app
         return run_app()
+
+    elif "runcheck" in sys.argv:
+        from apps.PeriodicCheck import PeriodicCheck
+        return PeriodicCheck.run()
 
     load_dotenv(MANAGE_DIR / "config" / ".env")
 

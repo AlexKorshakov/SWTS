@@ -1,6 +1,6 @@
 from aiogram import types
 
-from app import MyBot
+from apps.MyBot import MyBot
 from apps.core.bot.callbacks.sequential_action.data_answer import \
     get_and_send_main_locations_data, \
     get_and_send_sub_locations_data, \

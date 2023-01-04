@@ -1,11 +1,11 @@
 from aiogram import types
 
-from app import MyBot
-from apps.core.bot.reports.report_data_preparation import preparing_violation_data, preparing_violations_paths_on_pc
+from apps.MyBot import MyBot
+from apps.core.bot.reports.report_data_preparation import preparing_violation_data
 from apps.core.utils.goolgedrive_processor.googledrive_worker import write_data_on_google_drive
 from apps.core.utils.misc import rate_limit
 from apps.core.utils.bot_utils_processor.select_start_category import select_start_category
-from apps.core.utils.secondary_functions.check_user_registration import check_user_access
+from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from config.config import WRITE_DATA_ON_GOOGLE_DRIVE
 from loader import logger
 
@@ -26,7 +26,6 @@ async def photo_handler(message: types.Message):
     #     return
 
     chat_id = message.chat.id
-    logger.info(f"{chat_id = }")
     if not await check_user_access(chat_id=chat_id):
         return
 
@@ -42,8 +41,8 @@ async def photo_handler(message: types.Message):
         await write_data_on_google_drive(message)
         return
 
-    if WORK_ON_PC:
-        await preparing_violations_paths_on_pc(message)
+    # if WORK_ON_PC:
+    #     await preparing_violations_paths_on_pc(message)
 
     await select_start_category(message)
 

@@ -5,7 +5,7 @@ from pprint import pprint
 from aiogram import types
 from aiogram.dispatcher.filters import Command
 
-from app import MyBot
+from apps.MyBot import MyBot
 from loader import logger
 from config.config import SEPARATOR, WRITE_DATA_ON_GOOGLE_DRIVE
 
@@ -26,7 +26,7 @@ from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.folders_deleter impo
 from apps.core.utils.json_worker.read_json_file import read_json_file
 from apps.core.utils.misc import rate_limit
 
-from apps.core.utils.secondary_functions.check_user_registration import check_user_access
+from apps.core.bot.bot_utils.check_user_registration import check_user_access
 
 len_description = 25
 

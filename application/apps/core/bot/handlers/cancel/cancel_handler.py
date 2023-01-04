@@ -3,7 +3,7 @@ from aiogram.dispatcher.filters import Command
 from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher import FSMContext
 
-from app import MyBot
+from apps.MyBot import MyBot
 from loader import logger
 from config.config import ADMIN_ID
 
@@ -12,7 +12,7 @@ from apps.core.bot.data import board_config
 from apps.core.bot.reports.report_data import violation_data, headlines_data, user_data, global_reg_form
 
 from apps.core.utils.misc import rate_limit
-from apps.core.utils.secondary_functions.check_user_registration import check_user_access
+from apps.core.bot.bot_utils.check_user_registration import check_user_access
 
 
 class NamedDict(dict):
@@ -40,7 +40,7 @@ async def cancel_handler(call: types.CallbackQuery, state: FSMContext):
     :return:
     """
 
-    chat_id = call.chat.id
+    chat_id = call.from_user.id
     if not await check_user_access(chat_id=chat_id):
         return
 

@@ -3,10 +3,8 @@ from datetime import datetime
 
 from pprint import pprint
 
-from pandas import DataFrame
-
-from app import MyBot
-from apps.core.bot.database.DataBase import DataBase
+from apps.MyBot import MyBot
+from apps.core.database.DataBase import DataBase
 from apps.core.bot.messages.messages import Messages
 from apps.core.utils.generate_report.convert_xlsx_to_pdf import convert_report_to_pdf
 from apps.core.utils.generate_report.generator_report import create_report_from_other_method, create_mip_report, \

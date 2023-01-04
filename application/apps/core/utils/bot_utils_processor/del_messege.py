@@ -6,7 +6,7 @@ from aiogram.utils.exceptions import (MessageToEditNotFound, MessageCantBeEdited
 from apps.core.bot.data import board_config
 from config.config import BOT_DELETE_MESSAGE
 
-from app import MyBot
+from apps.MyBot import MyBot
 
 
 async def bot_delete_message(chat_id: str, message_id: str, sleep_time: int = 1):

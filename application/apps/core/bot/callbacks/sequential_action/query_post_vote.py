@@ -2,7 +2,7 @@ import typing
 
 from aiogram import types  # type: ignore
 
-from app import MyBot
+from apps.MyBot import MyBot
 
 from apps.core.bot.callbacks.sequential_action.correct_headlines_data_answer import get_headlines_text
 from apps.core.bot.callbacks.sequential_action.correct_registration_data_answer import get_registration_text
@@ -10,7 +10,8 @@ from apps.core.bot.callbacks.sequential_action.correct_violations_data_answer im
 from apps.core.bot.data import board_config
 from apps.core.bot.data.category import REGISTRATION_DATA_LIST, HEADLINES_DATA_LIST, VIOLATIONS_DATA_LIST
 from apps.core.utils.generate_report.get_file_list import get_registration_json_file_list, get_json_file_list
-from apps.core.utils.generate_report.sheet_formatting.set_value import set_headlines_data_values
+from apps.core.utils.generate_report.generate_daily_report.set_daily_report_values import \
+    set_report_headlines_data_values
 from config.config import SEPARATOR
 from apps.core.bot.reports.report_data import headlines_data
 from apps.core.bot.handlers.correct_entries.correct_entries_handler import delete_violation_files_from_pc, \
@@ -18,8 +19,6 @@ from apps.core.bot.handlers.correct_entries.correct_entries_handler import delet
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb, build_inlinekeyboard
 
 from apps.core.bot.messages.messages import Messages
-# from apps.core.utils.reports_processor.get_file_list import get_registration_json_file_list, get_json_file_list
-# from apps.core.utils.reports_processor.sheet_formatting.set_value import set_headlines_data_values
 from apps.core.utils.json_worker.read_json_file import read_json_file
 
 from loader import logger
@@ -30,6 +29,7 @@ logger.debug("call_del_current_violation")
 @MyBot.dp.callback_query_handler(posts_cb.filter(action=['del_current_post']))
 async def call_del_current_violation(call: types.CallbackQuery, callback_data: typing.Dict[str, str]):
     """
+
     :param call:
     :param callback_data:
     :return:
@@ -78,11 +78,12 @@ async def call_del_current_violation(call: types.CallbackQuery, callback_data: t
 @MyBot.dp.callback_query_handler(posts_cb.filter(action=['correct_registration_data']))
 async def call_correct_registration_data(call: types.CallbackQuery, callback_data: typing.Dict[str, str]):
     """
+
     :param call:
     :param callback_data:
     :return:
     """
-    chat_id = call.chat.id
+    chat_id = call.message.chat.id
     action: str = callback_data['action']
     registration_text: str = ''
 
@@ -121,18 +122,19 @@ async def call_correct_registration_data(call: types.CallbackQuery, callback_dat
 @MyBot.dp.callback_query_handler(posts_cb.filter(action=['correct_commission_composition']))
 async def call_correct_commission_composition(call: types.CallbackQuery, callback_data: typing.Dict[str, str]):
     """
+
     :param call:
     :param callback_data:
     :return:
     """
 
-    chat_id = call.chat.id
+    chat_id = call.message.chat.id
     action: str = callback_data['action']
     headlines_text = ''
 
     if action == 'correct_commission_composition':
 
-        await set_headlines_data_values(chat_id=chat_id)
+        await set_report_headlines_data_values(chat_id=chat_id)
 
         if headlines_data:
             headlines_text = await get_headlines_text(headlines_data)
@@ -150,11 +152,12 @@ async def call_correct_commission_composition(call: types.CallbackQuery, callbac
 @MyBot.dp.callback_query_handler(posts_cb.filter(action=['correct_current_post']))
 async def call_correct_current_post(call: types.CallbackQuery, callback_data: typing.Dict[str, str]):
     """
+
     :param call:
     :param callback_data:
     :return:
     """
-    chat_id = call.chat.id
+    chat_id = call.message.chat.id
     action: str = callback_data['action']
     violations_file_path = ''
 
@@ -197,6 +200,7 @@ async def call_correct_current_post(call: types.CallbackQuery, callback_data: ty
 @MyBot.dp.callback_query_handler(posts_cb.filter(action=['correct_abort_current_post']))
 async def call_correct_abort_current_post(call: types.CallbackQuery, callback_data: typing.Dict[str, str]):
     """
+
     :param call:
     :param callback_data:
     :return:

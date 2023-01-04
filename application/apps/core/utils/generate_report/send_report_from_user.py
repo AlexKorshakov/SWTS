@@ -3,7 +3,7 @@ import datetime
 
 from aiogram.types import ChatActions
 
-from app import MyBot
+from apps.MyBot import MyBot
 from loader import logger
 
 from apps.core.utils.secondary_functions.get_filepath import create_file_path, get_report_full_filepath

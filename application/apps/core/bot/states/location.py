@@ -1,7 +1,7 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 
-from app import MyBot
+from apps.MyBot import MyBot
 from apps.core.bot.keyboards.replykeyboards.registration_finist_keybord import registration_finish_keyboard
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.reports.report_data import violation_data

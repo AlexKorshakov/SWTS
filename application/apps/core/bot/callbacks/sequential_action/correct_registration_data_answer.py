@@ -3,7 +3,8 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from aiogram.types import ReplyKeyboardMarkup, ReplyKeyboardRemove, CallbackQuery
 
-from app import MyBot
+import apps.xxx
+from apps.MyBot import MyBot
 
 from apps.core.bot.data import board_config
 from apps.core.bot.data.category import REGISTRATION_DATA_LIST, get_data_list
@@ -27,7 +28,7 @@ async def correct_registration_data_answer(call: types.CallbackQuery):
     """Обработка ответов содержащихся в REGISTRATION_DATA_LIST
 
     """
-    chat_id = call.chat.id
+    chat_id = call.from_user.id
     await call.message.edit_reply_markup()
 
     reply_markup = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
@@ -92,7 +93,7 @@ async def correct_registration_data_name_location_answer(call: types.CallbackQue
     """Обработка ответов содержащихся в METRO_STATION
     """
 
-    chat_id = call.chat.id
+    chat_id = call.from_user.id
     correct_data = await get_correct_data(chat_id=chat_id, call=call, json_file_name="METRO_STATION")
     if not correct_data:
         await state.finish()
@@ -109,7 +110,7 @@ async def correct_registration_data_name_location_answer(call: types.CallbackQue
 async def correct_registration_data_work_shift_answer(call: types.CallbackQuery, state: FSMContext):
     """Обработка ответов содержащихся в WORK_SHIFT
     """
-    chat_id = call.chat.id
+    chat_id = call.from_user.id
     correct_data = await get_correct_data(chat_id=chat_id, call=call, json_file_name="WORK_SHIFT")
     if not correct_data:
         await state.finish()
@@ -136,7 +137,7 @@ async def correct_registration_data_all_states_answer(message: types.Message, st
 async def get_state_storage_name(state, chat_id):
     """Получение имени состояния state[state]
     """
-    state_storage = dict(state.storage.data)
+    state_storage = dict(apps.xxx.storage.data)
     state_name: str = state_storage.get(f'{chat_id}').get(f'{chat_id}').get('state').split(':')[-1]
 
     return state_name
@@ -154,6 +155,7 @@ async def all_states(*, chat_id, correct_data, state_name):
     if not registration_file_list:
         logger.warning(Messages.Error.registration_file_list_not_found)
         await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.file_list_not_found)
+        return
 
     registration_data = await read_json_file(registration_file_list)
     if not registration_data:

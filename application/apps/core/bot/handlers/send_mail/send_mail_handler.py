@@ -12,7 +12,7 @@ from email.mime.text import MIMEText
 from aiogram import types
 from aiogram.dispatcher.filters import Command
 
-from app import MyBot
+from apps.MyBot import MyBot
 from apps.core.utils.generate_report.get_file_list import get_report_file_list, get_registration_json_file_list
 from loader import logger
 
@@ -25,7 +25,7 @@ from apps.core.utils.json_worker.read_json_file import read_json_file
 from apps.core.utils.misc import rate_limit
 
 
-from apps.core.utils.secondary_functions.check_user_registration import check_user_access
+from apps.core.bot.bot_utils.check_user_registration import check_user_access
 
 
 @rate_limit(limit=360)

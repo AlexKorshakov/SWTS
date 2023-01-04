@@ -1,6 +1,6 @@
 from aiogram import types
 
-from app import MyBot
+from apps.MyBot import MyBot
 
 from apps.core.bot.callbacks.callback_action import cb_start
 

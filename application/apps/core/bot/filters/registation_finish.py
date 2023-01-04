@@ -4,7 +4,7 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 
-from app import MyBot
+from apps.MyBot import MyBot
 
 logger.debug("start registation_finish")
 

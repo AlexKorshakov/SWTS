@@ -3,7 +3,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from aiogram.types import ReplyKeyboardRemove, InlineKeyboardMarkup, InlineKeyboardButton
 
-from app import MyBot
+from apps.MyBot import MyBot
 
 from apps.core.bot.data import board_config
 from apps.core.bot.messages.messages import Messages
