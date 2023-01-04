@@ -76,15 +76,17 @@ async def create_dataframe(file_list) -> Optional[DataFrame]:
         return None
 
 
-async def create_lite_dataframe(data_list: list, header_list: list) -> Optional[DataFrame]:
+async def create_lite_dataframe(chat_id, data_list: list, header_list: list) -> Optional[DataFrame]:
     """Создание dataframe
 
+    :param chat_id:
     :param header_list: список с заголовками
     :param data_list: список с данными
     """
     try:
-        dataframe = DataFrame(data_list, columns=header_list)
+        dataframe: DataFrame = DataFrame(data_list, columns=header_list)
         return dataframe
+
     except Exception as err:
         logger.error(F"create_dataframe {repr(err)}")
         return None

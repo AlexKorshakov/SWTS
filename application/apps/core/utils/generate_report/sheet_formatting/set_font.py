@@ -4,6 +4,7 @@ from openpyxl.styles import Font
 
 async def set_font(ws):
     """Форматирование ячейки: размер шрифта
+
     """
     for row in ws.iter_rows():
         for cell in row:
@@ -14,7 +15,8 @@ async def set_font(ws):
 
 
 async def set_report_font(worksheet, cell_range, font_size=14, font_name='Arial'):
-    """Форматирование ячейки: размер шрифта
+    """Форматирование ячейки: шрифт и размер шрифта
+
     """
     cells = [cell for row in worksheet[cell_range] for cell in row]
 

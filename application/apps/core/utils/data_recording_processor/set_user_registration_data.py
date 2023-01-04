@@ -1,12 +1,12 @@
 from aiogram import types
 from aiogram.types import ReplyKeyboardRemove
 
-from app import MyBot
+from apps.MyBot import MyBot
 from apps.core.utils.secondary_functions.get_filepath import preparation_registration_paths_on_pc
 from loader import logger
 
-from apps.core.bot.database.entry_in_db import write_data_in_database
-
+from apps.core.database.entry_in_db import write_data_in_database
+ 
 from apps.core.bot.messages.messages import Messages
 from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.set_user_registration_data_on_google_drave import \
     write_user_registration_data_on_google_drive

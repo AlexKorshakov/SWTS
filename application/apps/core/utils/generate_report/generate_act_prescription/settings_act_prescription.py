@@ -115,6 +115,8 @@ ACT_CELL_RANGES_BASIC_ALIGNMENT = [
     ('B26:L26', 'Times New Roman', 11, 'center', 'center'),
     ('B27:L27', 'Times New Roman', 14, 'center', 'center'),
     ('B28:L28', 'Times New Roman', 11, 'center', 'center'),
+    ('O28:Q28', 'Times New Roman', 11, 'center', 'center'),
+
 ]
 
 ACT_CELL_RANGES_SET_REPORT_FONT = [

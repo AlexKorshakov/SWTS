@@ -1,8 +1,7 @@
 import asyncio
 import datetime
-from pprint import pprint
 
-from apps.core.bot.database.DataBase import DataBase
+from apps.core.database.DataBase import DataBase
 from apps.core.bot.reports.report_data import headlines_data
 from apps.core.utils.reports_processor.report_worker_utils import get_clean_headers
 from loader import logger
@@ -16,32 +15,23 @@ async def get_act_headlines_data_values(chat_id, dataframe=None, act_date=None, 
 
     if not headlines_data:
         # TODO  get HSE database
-        pprint(f'{chat_id = }')
 
         table_name: str = 'core_violations'
         clean_headers: list = await get_clean_headers(table_name=table_name)
-
         query: str = f'SELECT * FROM `core_hseuser` WHERE `hse_telegram_id` == {chat_id}'
         datas_query_list: list = DataBase().get_data_list(query=query)
 
         item_dict: dict = dict((header, item_value) for header, item_value in zip(clean_headers, datas_query_list[0]))
 
         hse_id = item_dict.get('id', None)
-        pprint(f'{hse_id = }')
 
         if not hse_id:
             logger.error(f'hse_id is {hse_id}')
-            return
-
-        # hse_id = list(set(list(dataframe.hse_id)))[0]
-        # pprint(f'{dataframe.hse_id = }')
-        pprint(f'{hse_id = }')
+            return {}
 
         hse_user: dict = DataBase().get_dict_data_from_table_from_id(
             table_name='core_hseuser',
             id=hse_id)
-
-        pprint(f'{hse_user = }')
 
         # ФИО выдавшего
         # headlines_data['HSE'] = list(set(list(dataframe.name)))[0]
@@ -71,6 +61,7 @@ async def get_act_headlines_data_values(chat_id, dataframe=None, act_date=None, 
 
         headlines_data['act_number'] = act_number if act_number else 00000
 
+        # Максимальная дата ответа
         elimination_time_id = max(dataframe['elimination_time_id'])
         elimination_time: dict = DataBase().get_dict_data_from_table_from_id(
             table_name='core_eliminationtime',
@@ -103,36 +94,8 @@ async def get_act_headlines_data_values(chat_id, dataframe=None, act_date=None, 
 
         headlines_data['main_location'] = item_dict
 
-        # # Вид обхода
-        # headlines_data['linear_bypass'] = 'Первичный'
-        # # Дата
-        # headlines_data['date_linear_bypass'] = ''
-        # # Представитель подрядчика
-        # headlines_data['contractor_representative'] = be_away
-        # # Представитель субподрядчика
-        # headlines_data['subcontractor_representative'] = be_away
-
     headlines_data["day"] = (datetime.datetime.now()).strftime("%d")
     headlines_data["year"] = (datetime.datetime.now()).strftime("%Y")
-
-    # # if not user_data:
-    # registration_file_list = await get_registration_json_file_list(chat_id=chat_id)
-    # if not registration_file_list:
-    #     logger.warning(Messages.Error.registration_file_list_not_found)
-    #     await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.file_list_not_found)
-    #     return
-    #
-    # registration_data = await read_json_file(registration_file_list)
-    #
-    # headlines_data['function'] = registration_data.get("function")
-    # headlines_data['name'] = registration_data.get("name")
-    # headlines_data['name_location'] = registration_data.get("name_location")
-    # headlines_data['phone_number'] = registration_data.get("phone_number")
-    # headlines_data['work_shift'] = registration_data.get("work_shift")
-    #
-    # date_now = datetime.datetime.now().strftime("%d.%m.%Y")
-    # date_before_now = datetime.datetime.now() - datetime.timedelta(days=1)
-    # date_before_now = date_before_now.strftime("%d.%m.%Y")
 
     return headlines_data
 

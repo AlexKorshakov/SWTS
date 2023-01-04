@@ -55,6 +55,7 @@ async def get_registration_json_file_list(chat_id: int) -> list:
 
 async def get_report_file_list(chat_id, endswith=".xlsx", params=None) -> list:
     """Получение списка файлов из директории
+
     """
     if params is None:
         params = {}
