@@ -2,8 +2,9 @@ import asyncio
 import os
 from pathlib import Path
 
-from apps.core.database.DataBase import DataBase, upload_from_local
-from apps.core.database.category_id_transform import CATEGORY_ID_TRANSFORM
+from apps.core.database.db_utils import db_del_violations, db_get_data_list, db_check_record_existence, \
+    db_get_single_violation, db_get_table_headers, db_get_id_violation, db_get_id, db_update_column_value
+from apps.core.database.transformation_category import CATEGORY_ID_TRANSFORM
 from apps.core.bot.handlers.correct_entries.correct_entries_handler import del_file, del_file_from_gdrive
 from apps.core.bot.messages.messages import Messages
 from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import drive_account_credentials
@@ -87,17 +88,6 @@ async def delete_violation_files_from_pc(violation: dict):
     if not await del_file(path=photo_full_path):
         logger.error(Messages.Error.file_not_found)
     logger.info(Messages.Removed.violation_photo_pc)
-
-
-async def del_violations_from_db(violation: dict) -> list:
-    """Удаление данных violation из Database
-
-    :param violation dict данные записи для удаления
-    """
-
-    file_id = violation['file_id']
-    result = DataBase().delete_single_violation(file_id=file_id)
-    return result
 
 
 async def get_id_registered_users() -> list[str]:
@@ -260,11 +250,11 @@ async def conversion_value(key: str, value: str) -> str:
             logger.error(f'Not found table_name {key} in ALL_CATEGORY_IN_DB')
             return value
 
-    query: str = await generation_query(key=key, id_item=value)
+    query: str = await generation_query(key=key, id_item=int(value))
     if not query:
         return value
 
-    datas_query: list = DataBase().get_data_list(query=query)
+    datas_query: list = await db_get_data_list(query)
     value = datas_query[0][0]
     logger.debug(f'retrieved data from database: {datas_query}')
 
@@ -293,15 +283,15 @@ async def get_data_for_update(data: dict, get_from: str = 'local') -> dict:
 
     if get_from == 'data_base':
         try:
-            if DataBase().violation_exists(data.get('file_id')):
-                violation_list: list = DataBase().get_single_violation(file_id=data.get('file_id'))
+            if await db_check_record_existence(file_id=data.get('file_id')):
+                violation_list: list = await db_get_single_violation(file_id=data.get('file_id'))
 
-                headers: list[str] = [row[1] for row in DataBase().get_table_headers()]
+                headers: list[str] = [row[1] for row in await db_get_table_headers()]
                 violation_dict: dict = dict(zip(headers, violation_list[0]))
                 return violation_dict
 
         except Exception as err:
-            logger.error(f"Error add_violation in database() : {repr(err)}")
+            logger.error(f"Error add_violation in database : {repr(err)}")
             return {}
 
 
@@ -353,18 +343,18 @@ async def update_violations_from_db(data: dict = None):
     """
 
     file_id = data.get('file_id')
-    if not DataBase().violation_exists(file_id=file_id):
+    if not await db_check_record_existence(file_id=file_id):
         logger.error(f"Запись {file_id} не найдена")
         return
 
-    vi_id = DataBase().get_id_violation(file_id=file_id)
+    vi_id = await db_get_id_violation(file_id=file_id)
 
     for key, value in data.items():
         if key in ['id', 'photo', 'file', 'json', 'csrfmiddlewaretoken']:
             continue
 
         if key in [k for k, v in CATEGORY_ID_TRANSFORM.items()]:
-            value = DataBase().get_id(
+            value = await db_get_id(
                 table=CATEGORY_ID_TRANSFORM[key]['table'],
                 entry=value,
                 file_id=file_id,
@@ -372,13 +362,14 @@ async def update_violations_from_db(data: dict = None):
             )
             key = key + '_id'
 
-        DataBase().update_column_value(
+        result_execute: bool = await db_update_column_value(
             column_name=key,
             value=value,
-            id=str(vi_id)
+            violation_id=str(vi_id)
         )
 
-    logger.info(f'данные обновлены в database!')
+        if result_execute:
+            logger.info(f'данные обновлены в database!')
 
 
 async def get_violation_data_to_update(data_from_form: dict) -> dict:
@@ -436,31 +427,31 @@ async def delete_violations_from_all_repo(violation_file_id: str) -> bool:
     if not violation_file_id:
         logger.error(f'violation: {violation_file_id} - запись не найдена')
 
-    violation_list: list = DataBase().get_single_violation(file_id=violation_file_id)
+    violation_list: list = await db_get_single_violation(file_id=violation_file_id)
     if not violation_list:
         logger.error(f'violation: {violation_file_id} - запись не найдена')
         return False
 
-    headers = [row[1] for row in DataBase().get_table_headers()]
+    headers = [row[1] for row in await db_get_table_headers()]
     violation_dict = dict(zip(headers, violation_list[0]))
 
     await delete_violation_files_from_gdrive(violation=violation_dict)
 
     await delete_violation_files_from_pc(violation=violation_dict)
 
-    await del_violations_from_db(violation=violation_dict)
+    await db_del_violations(violation=violation_dict)
 
     return True
 
 
-async def test():
-    content = await get_id_registered_users()
-    params = await get_params(content)
-    logger.info(content)
-
-    for param in params:
-        await upload_from_local(params=param)
-        logger.info(f'Данные загружены в БД')
+# async def test():
+#     content = await get_id_registered_users()
+#     params = await get_params(content)
+#     logger.info(content)
+#
+#     for param in params:
+#         await upload_from_local(params=param)
+#         logger.info(f'Данные загружены в БД')
 
 
 if __name__ == "__main__":

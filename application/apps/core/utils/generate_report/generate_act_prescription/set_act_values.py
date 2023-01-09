@@ -5,7 +5,7 @@ from xlsxwriter.worksheet import Worksheet
 
 from pandas import DataFrame
 
-from apps.core.database.DataBase import DataBase
+from apps.core.database.db_utils import db_get_data_dict_from_table_with_id
 from apps.core.utils.generate_report.generate_act_prescription.set_act_alignment import set_act_alignment
 from apps.core.utils.generate_report.sheet_formatting.set_font import set_report_font, sets_report_font
 from apps.core.utils.generate_report.generate_act_prescription.set_act_frame_border import set_act_range_border
@@ -115,9 +115,9 @@ async def set_act_violation(worksheet: Worksheet, violation_values, row_number: 
     row_value = 28 + row_number
 
     worksheet.cell(row=row_value, column=2, value=item_row_value)
-    normative_document: dict = DataBase().get_dict_data_from_table_from_id(
+    normative_document: dict = await db_get_data_dict_from_table_with_id(
         table_name='core_normativedocuments',
-        id=violation_values.normative_documents_id
+        post_id=violation_values.normative_documents_id
     )
 
     if violation_values.description:
@@ -137,9 +137,9 @@ async def set_act_violation(worksheet: Worksheet, violation_values, row_number: 
         worksheet.cell(row=row_value, column=9, value=normative_document['procedure'])
         # worksheet.cell(row=row_value, column=17, value=normative_document['procedure'])
 
-    elimination_time: dict = DataBase().get_dict_data_from_table_from_id(
+    elimination_time: dict = await db_get_data_dict_from_table_with_id(
         table_name='core_eliminationtime',
-        id=violation_values.elimination_time_id
+        post_id=violation_values.elimination_time_id
     )
     elimination_data = (datetime.datetime.strptime(violation_values.created_at, '%Y-%m-%d')
                         + datetime.timedelta(days=elimination_time['days'])).strftime('%d.%m.%Y')
@@ -172,9 +172,9 @@ async def set_act_violation(worksheet: Worksheet, violation_values, row_number: 
         (f'O{row_value}:Q{row_value}', 'Times New Roman', 11, 'center', 'center')
     ]
 
-    elimination_time: dict = DataBase().get_dict_data_from_table_from_id(
+    elimination_time: dict = await db_get_data_dict_from_table_with_id(
         table_name='core_eliminationtime',
-        id=violation_values.elimination_time_id
+        post_id=violation_values.elimination_time_id
     )
     elimination_data = (datetime.datetime.strptime(violation_values.created_at, '%Y-%m-%d')
                         + datetime.timedelta(days=elimination_time['days'])).strftime('%d.%m.%Y')
@@ -251,13 +251,13 @@ async def set_single_violation(worksheet: Worksheet, violation_values):
     :param
     """
 
-    main_location: dict = DataBase().get_dict_data_from_table_from_id(
+    main_location: dict = await db_get_data_dict_from_table_with_id(
         table_name='core_mainlocation',
-        id=violation_values.main_location_id
+        post_id=violation_values.main_location_id
     )
-    sub_location: dict = DataBase().get_dict_data_from_table_from_id(
+    sub_location: dict = await db_get_data_dict_from_table_with_id(
         table_name='core_sublocation',
-        id=violation_values.sub_location_id
+        post_id=violation_values.sub_location_id
     )
 
     title: str = f"{main_location['short_title']} ({sub_location['title']})"
@@ -265,9 +265,9 @@ async def set_single_violation(worksheet: Worksheet, violation_values):
     worksheet.cell(row=27, column=2, value=title)
     worksheet.cell(row=28, column=2, value=1)
 
-    normative_document: dict = DataBase().get_dict_data_from_table_from_id(
+    normative_document: dict = await db_get_data_dict_from_table_with_id(
         table_name='core_normativedocuments',
-        id=violation_values.normative_documents_id
+        post_id=violation_values.normative_documents_id
     )
 
     if violation_values.description:
@@ -287,9 +287,9 @@ async def set_single_violation(worksheet: Worksheet, violation_values):
         worksheet.cell(row=28, column=9, value=normative_document['procedure'])
         # worksheet.cell(row=28, column=17, value=normative_document['procedure'])
 
-    elimination_time: dict = DataBase().get_dict_data_from_table_from_id(
+    elimination_time: dict = await db_get_data_dict_from_table_with_id(
         table_name='core_eliminationtime',
-        id=violation_values.elimination_time_id
+        post_id=violation_values.elimination_time_id
     )
     elimination_data = (datetime.datetime.strptime(violation_values.created_at, '%Y-%m-%d')
                         + datetime.timedelta(days=elimination_time['days'])).strftime('%d.%m.%Y')
@@ -309,13 +309,13 @@ async def set_value_title(worksheet: Worksheet, violation_values, row_number: in
     """
 
     row_value = 28 + row_number
-    main_location: dict = DataBase().get_dict_data_from_table_from_id(
+    main_location: dict = await db_get_data_dict_from_table_with_id(
         table_name='core_mainlocation',
-        id=violation_values.main_location_id
+        post_id=violation_values.main_location_id
     )
-    sub_location: dict = DataBase().get_dict_data_from_table_from_id(
+    sub_location: dict = await db_get_data_dict_from_table_with_id(
         table_name='core_sublocation',
-        id=violation_values.sub_location_id
+        post_id=violation_values.sub_location_id
     )
 
     title: str = f"{main_location['short_title']} ({sub_location['title']})"

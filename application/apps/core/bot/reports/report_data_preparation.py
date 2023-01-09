@@ -3,9 +3,9 @@ from pprint import pprint
 
 from aiogram import types
 
-from apps.core.database.DataBase import DataBase
 from apps.core.bot.reports.report_data import violation_data
 from apps.core.bot.bot_utils.check_user_registration import get_hse_user_data
+from apps.core.database.db_utils import db_get_data_dict_from_table_with_id
 from apps.core.utils.json_worker.writer_json_file import write_json_violation_user_file, write_json_file
 from apps.core.utils.secondary_functions.get_filename import get_filename_msg_with_photo
 from apps.core.utils.secondary_functions.get_filepath import get_photo_full_filepath, get_photo_full_filename, \
@@ -33,15 +33,15 @@ async def preparing_violation_data(message: types.Message, chat_id: str):
 
     user_registration_data: dict = await get_hse_user_data(message=message)
 
-    location = DataBase().get_dict_data_from_table_from_id(
+    location = await db_get_data_dict_from_table_with_id(
         table_name='core_location',
-        id=user_registration_data.get("hse_location", None)
+        post_id=user_registration_data.get("hse_location", None)
     )
     violation_data["location"] = location['title']
 
-    work_shift = DataBase().get_dict_data_from_table_from_id(
+    work_shift = await db_get_data_dict_from_table_with_id(
         table_name='core_workshift',
-        id=user_registration_data.get("hse_work_shift", None)
+        post_id=user_registration_data.get("hse_work_shift", None)
     )
     violation_data["work_shift"] = work_shift['title']
 

@@ -3,7 +3,7 @@ import asyncio
 from pandas import DataFrame
 
 from apps.MyBot import MyBot
-from apps.core.database.DataBase import DataBase
+from apps.core.database.db_utils import db_get_max_max_number, db_set_act_value, db_update_column_value
 from apps.core.utils.generate_report.convert_xlsx_to_pdf import convert_report_to_pdf
 from apps.core.utils.generate_report.create_dataframe import create_dataframe
 from apps.core.utils.generate_report.get_file_list import get_json_file_list
@@ -138,7 +138,7 @@ async def anchor_photo(dataframe, row_number, workbook, worksheet, full_act_path
     img_params["row"] = row_act_photo
 
     for num_data, violation_data in enumerate(dataframe.itertuples(index=False), start=1):
-    # for num_data, violation_data in enumerate(df.to_dict('index'), start=1):
+        # for num_data, violation_data in enumerate(df.to_dict('index'), start=1):
 
         # TODO проверить путь фото
 
@@ -199,7 +199,7 @@ async def get_act_number_on_data_base() -> int:
 
     :return: int act_num: номер акта - предписания
     """
-    act_num: int = DataBase().get_max_max_number() + 1
+    act_num: int = await db_get_max_max_number() + 1
     return act_num
 
 
@@ -208,14 +208,14 @@ async def set_act_data_on_data_base(act_data: DataFrame, act_num: int, act_date:
 
     :return:
     """
-    act_is_created: bool = DataBase().set_act_value(act_data,
-                                                    act_number=act_num,
-                                                    act_date=act_date)
+    act_is_created: bool = await db_set_act_value(act_data,
+                                                  act_number=act_num,
+                                                  act_date=act_date)
     if not act_is_created:
         return
 
     for act_id in act_data.id:
-        DataBase().update_column_value(column_name='act_number', value=str(act_num), id=act_id)
+        await db_update_column_value(column_name='act_number', value=str(act_num), violation_id=act_id)
 
 
 # if __name__ == '__main__':

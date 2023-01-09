@@ -4,8 +4,8 @@ from openpyxl.utils import dataframe
 from pandas import DataFrame
 
 from apps.MyBot import MyBot
-from apps.core.database.DataBase import DataBase
 from apps.core.bot.messages.messages import Messages
+from apps.core.database.db_utils import db_get_data_dict_from_table_with_id, db_get_table_headers, db_get_data_list
 from apps.core.utils.generate_report.create_dataframe import create_lite_dataframe
 
 from loader import logger
@@ -17,7 +17,7 @@ async def get_clear_list_value(chat_id: int, query: str, clean_headers: list) ->
     :return: clear_list : list
     """
 
-    datas_query: list = DataBase().get_data_list(query=query)
+    datas_query: list = await db_get_data_list(query=query)
 
     if not datas_query:
         logger.info(Messages.Error.data_not_found)
@@ -60,14 +60,14 @@ async def get_general_constractor_data(constractor_id: int, type_constractor: st
     contractor: dict = {}
 
     if type_constractor == 'general':
-        contractor = DataBase().get_dict_data_from_table_from_id(
+        contractor = await db_get_data_dict_from_table_with_id(
             table_name='core_generalcontractor',
-            id=constractor_id)
+            post_id=constractor_id)
 
     if type_constractor == 'sub':
-        contractor = DataBase().get_dict_data_from_table_from_id(
+        contractor = await db_get_data_dict_from_table_with_id(
             table_name='core_subcontractor',
-            id=constractor_id)
+            post_id=constractor_id)
 
     if not contractor:
         return {}
@@ -84,7 +84,7 @@ async def get_clean_headers(table_name: str) -> list:
     if not table_name:
         return []
 
-    headers = DataBase().get_table_headers(table_name=table_name)
+    headers:list = await db_get_table_headers(table_name=table_name)
     clean_headers: list = [item[1] for item in headers]
 
     logger.debug(clean_headers)
@@ -98,7 +98,7 @@ async def create_lite_dataframe_from_query(chat_id: int, query: str, clean_heade
     :return:
     """
 
-    item_datas_query: list = DataBase().get_data_list(query=query)
+    item_datas_query: list = await db_get_data_list(query=query)
 
     report_dataframe: DataFrame = await create_lite_dataframe(chat_id=chat_id, data_list=item_datas_query,
                                                               header_list=clean_headers)

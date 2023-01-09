@@ -6,7 +6,7 @@ from aiogram import types
 
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.bot_utils.bot_admin_notify import admin_notify
-from apps.core.database.DataBase import DataBase
+from apps.core.database.db_utils import db_get_table_headers, db_get_data_list
 from apps.core.utils.json_worker.read_json_file import read_json_file
 from loader import logger
 
@@ -17,7 +17,7 @@ async def get_list_table_headers() -> list:
     :return:
     """
     db_table_name: str = 'core_hseuser'
-    table_headers: list = [item[1] for item in DataBase().get_table_headers(table_name=db_table_name)]
+    table_headers: list = [item[1] for item in await db_get_table_headers(table_name=db_table_name)]
     return table_headers
 
 
@@ -30,7 +30,7 @@ async def get_list_table_values(chat_id: str) -> list:
 
     db_table_name: str = 'core_hseuser'
     query: str = f'SELECT * FROM {db_table_name} WHERE `hse_telegram_id` = {chat_id}'
-    datas_query: list = DataBase().get_data_list(query=query)
+    datas_query: list = await db_get_data_list(query=query)
 
     if not datas_query:
         return []

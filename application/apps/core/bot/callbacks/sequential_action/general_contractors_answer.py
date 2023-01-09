@@ -5,8 +5,8 @@ from apps.MyBot import MyBot
 from apps.core.bot.data import board_config
 from apps.core.bot.data.category import get_data_list
 from apps.core.bot.reports.report_data import violation_data
-from apps.core.database.DataBase import DataBase
-from apps.core.database.category_id_transform import CATEGORY_ID_TRANSFORM
+from apps.core.database.db_utils import db_get_full_title
+from apps.core.database.transformation_category import CATEGORY_ID_TRANSFORM
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard, \
     add_previous_paragraph_button
 from apps.core.utils.json_worker.writer_json_file import write_json_file
@@ -27,8 +27,8 @@ async def general_contractors_answer(call: types.CallbackQuery):
             if call.data == i_name:
                 logger.info(f"Выбрано: {i_name}")
 
-                value = DataBase().get_full_title(table_name=CATEGORY_ID_TRANSFORM['general_contractor']['table'],
-                                                  short_title=i_name)
+                value = await db_get_full_title(table_name=CATEGORY_ID_TRANSFORM['general_contractor']['table'],
+                                                short_title=i_name)
 
                 violation_data["general_contractor"] = value
                 await call.message.answer(text=f"Выбрано: {i_name}")

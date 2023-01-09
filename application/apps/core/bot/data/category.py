@@ -4,7 +4,7 @@ import os.path
 from json import JSONDecodeError
 from typing import Union
 
-from apps.core.database.DataBase import DataBase
+from apps.core.database.db_utils import db_get_data_list_no_async, db_get_table_headers_no_async, db_get_id_no_async
 from loader import logger
 
 filename = inspect.getframeinfo(inspect.currentframe()).filename
@@ -234,7 +234,7 @@ def get_category_data_list_whits_single_condition(db_table_name: str, item_id: i
     if db_table_name == 'core_normativedocuments':
         query: str = f'SELECT * FROM {db_table_name} WHERE `category_id` == {item_id}'
 
-    datas_query: list = DataBase().get_data_list(query=query)
+    datas_query: list = db_get_data_list_no_async(query=query)
 
     if not datas_query:
         return []
@@ -275,14 +275,14 @@ def get_category_data_list_whits_dict_condition(db_table_name, dict_condition) -
         item_id = dict_condition.get("data", None).replace(_PREFIX_ND, '')
 
     query: str = f'SELECT * FROM {db_table_name} WHERE `id` == {item_id}'
-    datas_query: list = DataBase().get_data_list(query=query)
+    datas_query: list = db_get_data_list_no_async(query=query)
 
     if not datas_query:
         return []
     if not isinstance(datas_query, list):
         return []
 
-    table_headers = DataBase().get_table_headers(table_name=db_table_name)
+    table_headers: list = db_get_table_headers_no_async(db_table_name=db_table_name)
     headers = [item[1] for item in table_headers]
     item_datas = list(datas_query[0])
 
@@ -311,7 +311,7 @@ def get_category_data_list_whits_condition(db_table_name: str, category, conditi
     if db_table_name == 'core_sublocation':
         main_table_name = 'core_mainlocation'
 
-    category_id = DataBase().get_id(table=main_table_name, entry=category)
+    category_id = db_get_id_no_async(table=main_table_name, entry=category)
     if not category_id:
         return []
 
@@ -335,8 +335,8 @@ def get_data_from_db(db_table_name: str) -> list:
     """
 
     query: str = f'SELECT * FROM {db_table_name}'
-    datas_query: list = DataBase().get_data_list(query=query)
-    headers: list = [item[1] for item in DataBase().get_table_headers(table_name=db_table_name)]
+    datas_query: list = db_get_data_list_no_async(query=query)
+    headers: list = [item[1] for item in db_get_table_headers_no_async(db_table_name=db_table_name)]
 
     if not isinstance(datas_query, list):
         return []

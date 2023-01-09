@@ -207,6 +207,7 @@ async def periodic_check_work():
     while True:
         now = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
         logger.info(f"i'm work ::: {now}")
+        print(f"i'm work ::: {now}")
         await asyncio.sleep(PERIOD)
 
 

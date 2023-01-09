@@ -5,7 +5,7 @@ from pprint import pprint
 
 from tqdm.asyncio import tqdm
 
-from apps.core.database.db_utils import create_file_path
+from apps.core.database.DataBase import create_file_path
 from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import \
     drive_account_auth_with_oauth2client, \
     move_file

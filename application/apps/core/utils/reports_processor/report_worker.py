@@ -3,8 +3,8 @@ from datetime import datetime
 from pprint import pprint
 
 from apps.MyBot import MyBot
-from apps.core.database.DataBase import DataBase
 from apps.core.bot.messages.messages import Messages
+from apps.core.database.db_utils import db_get_data_dict_from_table_with_id
 from apps.core.utils.generate_report.generate_act_prescription.create_and_send_act_prescription import \
     create_and_send_act_prescription
 from apps.core.utils.generate_report.generator_report import create_report_from_other_method
@@ -50,9 +50,9 @@ async def create_and_send_report(chat_id:int):
 
 
 async def test():
-    general_constractor = DataBase().get_dict_data_from_table_from_id(
+    general_constractor = await db_get_data_dict_from_table_with_id(
         table_name='core_generalcontractor',
-        id=2)
+        post_id=2)
 
     pprint(general_constractor)
     return general_constractor

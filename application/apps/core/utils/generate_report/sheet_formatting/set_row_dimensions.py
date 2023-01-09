@@ -1,4 +1,4 @@
-from apps.core.database.DataBase import DataBase
+from apps.core.database.db_utils import db_get_data_dict_from_table_with_id
 from loader import logger
 
 
@@ -27,9 +27,9 @@ async def set_automatic_row_dimensions(worksheet, row_number, row_value):
     :return:
     """
 
-    normative_documents: dict = DataBase().get_dict_data_from_table_from_id(
+    normative_documents: dict = await db_get_data_dict_from_table_with_id(
         table_name='core_normativedocuments',
-        id=row_value.normative_documents_id)
+        post_id=row_value.normative_documents_id)
 
     title = normative_documents.get('title', None)
     normative = normative_documents.get('normative', None)

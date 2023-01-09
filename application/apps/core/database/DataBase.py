@@ -1,9 +1,12 @@
-
+import os
 import sqlite3
+from os import makedirs
+
 from pandas import DataFrame
 from pprint import pprint
 
-from apps.core.database.db_utils import normalize_violation_data, data_violation_completion
+from apps.core.utils.json_worker.read_json_file import read_json_file
+from apps.core.utils.json_worker.writer_json_file import write_json_file
 from apps.core.utils.secondary_functions.get_json_files import get_files
 from config.config import DATA_BASE_DIR
 
@@ -336,16 +339,18 @@ class DataBase:
         with self.connection:
             return self.cursor.execute(query).fetchall()
 
-    def get_dict_data_from_table_from_id(self, table_name: str, id: int) -> dict:
+    def get_dict_data_from_table_from_id(self, table_name: str, id: int, query: str = None) -> dict:
 
-        query: str = f'SELECT * ' \
-                     f'FROM {table_name} ' \
-                     f'WHERE `id` = {id} '
+        if not query:
+            query: str = f'SELECT * ' \
+                         f'FROM {table_name} ' \
+                         f'WHERE `id` = {id} '
 
         headers: list = [item[1] for item in self.get_table_headers(table_name)]
-        values: list = self.get_data_list(query=query)[0]
+        values: list = self.get_data_list(query=query)
+        clean_values: list = values[0]
 
-        return dict((header, item_value) for header, item_value in zip(headers, values))
+        return dict((header, item_value) for header, item_value in zip(headers, clean_values))
 
     def update_column_value(self, column_name: str, value: str, id: str):
         """Обновление записи id в database
@@ -361,7 +366,7 @@ class DataBase:
             self.cursor.execute(query, (value, id,))
         self.connection.commit()
 
-    def set_act_value(self, act_data_dict: DataFrame, act_number, act_date):
+    def set_act_value(self, act_data_dict: DataFrame, act_number: int, act_date: str):
         """Добавление записи в database core_actsprescriptions
 
         """
@@ -446,7 +451,8 @@ async def upload_from_local(*, params: dict = None):
 
         error_counter, violation = await data_violation_completion(violation_file=violation_file, params=params)
 
-        normalize_violation = await normalize_violation_data(violation=violation)
+        # normalize_violation = await normalize_violation_data(violation=violation)
+        normalize_violation = violation
 
         if not DataBase().violation_exists(violation.get('file_id')):
             is_add = DataBase().add_violation(violation=normalize_violation)
@@ -455,3 +461,132 @@ async def upload_from_local(*, params: dict = None):
 
             len_err += error_counter
     print(f"errors {len_err} in {len(json_file_list)} items")
+
+
+async def data_violation_completion(violation_file: str, params: dict) -> tuple[int, dict]:
+    """
+    :param
+
+    """
+    error_counter: int = 0
+    # comment_counter: int = 0
+    # act_required_counter: int = 0
+    # elimination_time_counter: int = 0
+    # general_contractor_counter: int = 0
+    # incident_level_counter: int = 0
+
+    violation = await read_json_file(file=violation_file)
+    user_data_json_file = await read_json_file(file=params['user_file'])
+    file_id = violation.get('file_id')
+
+    if not violation.get("work_shift"):
+        violation["work_shift"] = user_data_json_file.get("work_shift")
+
+    if not violation.get("function"):
+        violation["function"] = user_data_json_file.get("function")
+
+    if not violation.get("name"):
+        violation["name"] = user_data_json_file.get("name")
+
+    if not violation.get("parent_id"):
+        violation["parent_id"] = user_data_json_file.get("parent_id")
+
+    if not violation.get("location"):
+        violation["location"] = user_data_json_file.get("name_location")
+
+    if not violation.get("status"):
+        print(f"ERROR file: {file_id} don't get 'status' parameter")
+        error_counter += 1
+        violation["status"] = 'Завершено'
+
+    if not violation.get("violation_id"):
+        print(f"ERROR file: {file_id} don't get 'violation_id' parameter")
+        error_counter += 1
+        violation["violation_id"] = violation['file_id'].split('___')[-1]
+
+    if not violation.get("json_folder_id"):
+        print(f"ERROR file: {file_id} don't get 'json_folder_id' parameter")
+        error_counter += 1
+        violation["json_folder_id"] = '0'
+
+    if not violation.get('general_contractor'):
+        print(f"ERROR file: {file_id} don't get 'general_contractor' parameter")
+        error_counter += 1
+
+        # general_contractor_counter += 1
+        # os.remove(violation_file)
+        # print(f"file: {violation_file} is remove")
+
+    if not violation.get('elimination_time'):
+        print(f"ERROR file: {file_id} don't get 'elimination_time' parameter")
+        error_counter += 1
+        # elimination_time_counter += 1
+        violation['elimination_time'] = '1 день'
+
+    if not violation.get('incident_level'):
+        print(f"ERROR file: {file_id} don't get 'incident_level' parameter")
+        error_counter += 1
+        # incident_level_counter += 1
+        violation['incident_level'] = 'Без последствий'
+        await write_json(violation=violation)
+
+    if not violation.get('act_required'):
+        print(f"ERROR file: {file_id} don't get 'act_required' parameter")
+        error_counter += 1
+        # act_required_counter += 1
+        violation['act_required'] = 'Не требуется*'
+
+    if not violation.get('comment'):
+        print(f"ERROR file: {file_id} don't get 'comment' parameter")
+        error_counter += 1
+        # comment_counter += 1
+
+    # print(f"general_contractor_counter {general_contractor_counter} in {error_counter} items")
+    # print(f"elimination_time_counter {elimination_time_counter} in {error_counter} items")
+    # print(f"act_required_counter {act_required_counter} in {error_counter} items")
+    # print(f"incident_level_counter {incident_level_counter} in {error_counter} items")
+    # print(f"comment_counter {comment_counter} in {error_counter} items")
+
+    await write_json(violation=violation)
+
+    return error_counter, violation
+
+
+async def write_json(violation):
+    """Запись в файл"""
+    if not os.path.isfile(violation['json_full_name']):
+        print(f"FileNotFoundError {violation['json_full_name']} ")
+
+    date_violation = violation['file_id'].split('___')[0]
+
+    violation['json_full_name'] = \
+        f"C:\\Users\\KDeusEx\\PycharmProjects\\SWTS\\application\\media\\{violation['user_id']}\\data_file" \
+        f"\\{date_violation}\\json\\report_data___{violation['file_id']}.json"
+
+    await create_file_path(
+        f"C:\\Users\\KDeusEx\\PycharmProjects\\SWTS\\application\\media\\{violation['user_id']}\\data_file"
+        f"\\{date_violation}\\json\\"
+    )
+    violation['photo_full_name'] = \
+        f"C:\\Users\\KDeusEx\\PycharmProjects\\SWTS\\application\\media\\{violation['user_id']}\\data_file" \
+        f"\\{date_violation}\\photo\\report_data___{violation['file_id']}.jpg"
+
+    await create_file_path(
+        f"C:\\Users\\KDeusEx\\PycharmProjects\\SWTS\\application\\media\\{violation['user_id']}\\data_file"
+        f"\\{date_violation}\\photo\\"
+    )
+
+    await write_json_file(data=violation, name=violation['json_full_name'])
+
+
+async def create_file_path(path: str):
+    """Проверка и создание путей папок и файлов
+    :param path:
+    :return:
+    """
+    if not os.path.isdir(path):
+        # logger.info(f"user_path{path} is directory")
+        try:
+            makedirs(path)
+        except Exception as err:
+            logger.info(f"makedirs err {repr(err)}")

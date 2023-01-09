@@ -1,7 +1,5 @@
-# import asyncio
+from apps.core.database.db_utils import db_check_record_existence, db_add_violation
 from loader import logger
-
-from apps.core.database.DataBase import DataBase
 
 
 async def write_data_in_database(*, violation_data: dict) -> bool:
@@ -16,16 +14,15 @@ async def write_data_in_database(*, violation_data: dict) -> bool:
         return False
 
     try:
-        if not DataBase().violation_exists(violation_data.get('file_id')):
-            DataBase().add_violation(violation=violation_data)
-            return True
+        if not await db_check_record_existence(file_id=violation_data.get('file_id')):
+            if await db_add_violation(violation_data=violation_data):
+                return True
 
     except Exception as err:
         logger.error(f"Error add_violation in DataBase() : {repr(err)}")
         return False
 
     return False
-
 
 # async def test():
 #     # google_drive_service = await drive_account_credentials()
