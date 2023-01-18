@@ -13,14 +13,14 @@ logger.debug("normative_documents_answer")
 
 @MyBot.dp.callback_query_handler(
     lambda call: call.data in get_data_list("NORMATIVE_DOCUMENTS",
-                                            category=violation_data["category"],
+                                            category=violation_data.get("category", None),
                                             condition='short_title')
 )
 async def normative_documents_answer(call: types.CallbackQuery):
     """Обработка ответов содержащихся в NORMATIVE_DOCUMENTS
     """
     if call.data in get_data_list("NORMATIVE_DOCUMENTS",
-                                  category=violation_data["category"],
+                                  category=violation_data.get("category", None),
                                   condition='short_title'):
 
         if call.data == _PREFIX_ND + "0":
@@ -32,7 +32,7 @@ async def normative_documents_answer(call: types.CallbackQuery):
                 "category_in_db": "NORMATIVE_DOCUMENTS",
             }
             nd_data: list = get_data_list("NORMATIVE_DOCUMENTS",
-                                          category=violation_data["category"],
+                                          category=violation_data.get("category", None),
                                           condition=condition)
             if not nd_data:
                 await set_violation_atr_data("normative_documents", call.data)

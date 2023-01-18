@@ -22,7 +22,7 @@ async def bot_delete_message(chat_id: str, message_id: str, sleep_time: int = 1)
             await MyBot.bot.delete_message(chat_id=chat_id, message_id=message_id)
 
 
-async def cyclical_deletion_message(chat_id: str):
+async def cyclical_delete_message(chat_id: str):
     """Цикличное удаление сообщений
 
     :param chat_id: id чата из которого удаляется сообщение

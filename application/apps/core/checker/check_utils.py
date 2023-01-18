@@ -94,7 +94,7 @@ async def periodic_check_data_base():
 
         now = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
         logger.info(f"check DataBase complete successfully ::: {now}")
-        print(f"check DataBase complete successfully ::: {now}")
+        # print(f"check DataBase complete successfully ::: {now}")
 
         await asyncio.sleep(PERIOD)
 
@@ -111,8 +111,8 @@ async def check_violations_final_date_elimination():
 
     if not violations_data:
         now = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
-        logger.info(f"check_violations_final_date_elimination ::: No violations for check in DataBase ::: {now}")
-        print(f"check_violations_final_date_elimination ::: No violations for check in DataBase ::: {now}")
+        logger.debug(f"check_violations_final_date_elimination ::: No violations for check in DataBase ::: {now}")
+        # print(f"check_violations_final_date_elimination ::: No violations for check in DataBase ::: {now}")
         return
 
     headers = DataBase().get_table_headers(table_name=table_name)
@@ -152,8 +152,8 @@ async def check_violations_final_date_elimination():
 
     if not counter:
         now = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
-        logger.info(f"check_violations_final_date_elimination ::: No violations for check in DataBase ::: {now}")
-        print(f"check_violations_final_date_elimination ::: No violations for check in DataBase ::: {now}")
+        logger.debug(f"check_violations_final_date_elimination ::: No violations for check in DataBase ::: {now}")
+        # print(f"check_violations_final_date_elimination ::: No violations for check in DataBase ::: {now}")
 
 
 async def check_violations_status():
@@ -169,8 +169,8 @@ async def check_violations_status():
 
     if not violations_data:
         now = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
-        logger.info(f"check_violations_status ::: No violations for check in DataBase ::: {now}")
-        print(f"check_violations_status ::: No violations for check in DataBase ::: {now}")
+        logger.debug(f"check_violations_status ::: No violations for check in DataBase ::: {now}")
+        # print(f"check_violations_status ::: No violations for check in DataBase ::: {now}")
         return
 
     headers = DataBase().get_table_headers(table_name=table_name)
@@ -197,8 +197,8 @@ async def check_violations_status():
 
     if not counter:
         now = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
-        logger.info(f"check_violations_status ::: No violations for check in DataBase ::: {now}")
-        print(f"check_violations_status ::: No violations for check in DataBase ::: {now}")
+        logger.debug(f"check_violations_status ::: No violations for check in DataBase ::: {now}")
+        # print(f"check_violations_status ::: No violations for check in DataBase ::: {now}")
 
 
 async def periodic_check_work():

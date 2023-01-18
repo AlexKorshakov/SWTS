@@ -132,7 +132,6 @@ class DataBase:
 
         hse_id = violation.get("hse_id", None)
 
-        # TODO: check act_number
         act_number = ''
 
         if status_id == 1:

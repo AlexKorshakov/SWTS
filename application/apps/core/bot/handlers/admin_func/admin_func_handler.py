@@ -120,20 +120,19 @@ async def admin_function_answer(call: types.CallbackQuery):
                     f'{Messages.help_message}'
 
         for user_id in users_ids:
-
             if user_id == ADMIN_ID: continue
 
             reply_markup = InlineKeyboardMarkup()
-            reply_markup.add(InlineKeyboardButton(text='написать разработчику', url=f"tg://user?id={ADMIN_ID}"))
+            reply_markup.add(
+                InlineKeyboardButton(text='написать разработчику', url=f"tg://user?id={ADMIN_ID}")
+            )
 
             try:
 
                 await MyBot.dp.bot.send_message(chat_id=user_id, text=text, reply_markup=reply_markup)
-
             except Exception as err:
                 logger.error(f'bot.send_message error {repr(err)}')
-                MyBot.dp.bot.send_message(chat_id=ADMIN_ID,
-                                          text=f'bot.send_message error user_id')
+                MyBot.dp.bot.send_message(chat_id=ADMIN_ID, text=f'bot.send_message error user_id')
                 continue
 
             await admin_notify(
