@@ -12,7 +12,6 @@ from apps.core.utils.generate_report.generate_act_prescription.set_act_value imp
 from apps.core.utils.generate_report.generator_report import anchor_photo
 from apps.core.utils.generate_report.create_xlsx.create_xlsx import create_xlsx
 from apps.core.utils.img_processor.insert_img import insert_service_image
-from config.web.settings import MEDIA_ROOT
 from loader import logger
 
 
@@ -38,17 +37,7 @@ async def create_act_prescription(chat_id, act_number, dataframe, full_act_path,
 
     await set_act_body_values(worksheet)
 
-    param_insert_service_image: dict = {
-        'photo_full_name': MEDIA_ROOT + "\\" + "Logo.jpg",
-        "height": 75,
-        "width": 230,
-        "anchor": True,
-        "column": 'B',
-        "column_img": 2,
-        "row": 2,
-    }
-
-    await insert_service_image(worksheet, param_insert_service_image)
+    await insert_service_image(worksheet)
 
     headlines_data_values: dict = await get_act_headlines_data_values(
         chat_id=chat_id, dataframe=dataframe, act_date=act_date, act_number=act_number

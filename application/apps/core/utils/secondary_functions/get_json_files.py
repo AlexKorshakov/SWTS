@@ -34,6 +34,9 @@ async def get_dirs_files(directory: str) -> list:
 async def get_registered_users() -> tuple[list, list]:
     """Получение списка с файлами регистрации users
     """
+
+    # TODO get Users id
+
     files: list = await get_dirs_files(await get_bot_data_path())
 
     users_data: list = []

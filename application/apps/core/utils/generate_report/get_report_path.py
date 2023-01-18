@@ -1,6 +1,7 @@
 import datetime
 
 from apps.MyBot import MyBot
+from apps.core.database.db_utils import db_get_dict_userdata, db_get_data_dict_from_table_with_id
 from apps.core.utils.generate_report.get_file_list import get_registration_json_file_list
 from loader import logger
 
@@ -28,32 +29,26 @@ async def get_full_report_name(chat_id: int) -> str:
         return ''
 
 
-async def get_full_mip_report_name(chat_id: int) -> str:
+async def get_full_daily_report_name(chat_id: int) -> str:
     """Получение полного пути к отчету
     :param chat_id:
     :return: полный путь к файлу с отчетом
     """
+    now: str = (datetime.datetime.now()).strftime("%d.%m.%Y")
+    userdata: dict = await db_get_dict_userdata(chat_id)
+    location_id: int = int(userdata.get('hse_location', ''))
 
-    registration_file_list = await get_registration_json_file_list(chat_id=chat_id)
-    if not registration_file_list:
-        logger.warning(Messages.Error.registration_file_list_not_found)
-        await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.file_list_not_found)
-        return ''
-
-    registration_data = await read_json_file(registration_file_list)
-    location_name = registration_data.get('name_location')
-
-    if location_name is None:
-        logger.warning(Messages.Error.location_name_not_found)
-        await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.location_name_not_found)
-        location_name = ''
+    location = await db_get_data_dict_from_table_with_id(
+        table_name='core_location',
+        post_id=location_id
+    )
+    location = location.get('title', '')
 
     try:
-        report_full_name = f'ЛО-МИП-УОТиПБ НС-{location_name} {(datetime.datetime.now()).strftime("%d.%m.%Y")}.xlsx'
+        report_full_name = f'ЛО-ОТ_ПБ_ПТ-{location} {now}.xlsx'
         report_path = await get_report_full_filepath(str(chat_id))
         await create_file_path(report_path)
-        full_report_path: str = report_path + report_full_name
-        return full_report_path
+        return report_path + report_full_name
 
     except Exception as err:
         logger.error(f"get_report_path {repr(err)}")
@@ -93,6 +88,33 @@ async def get_and_create_full_act_prescription_name(chat_id: int, param: dict) -
         full_report_path: str = report_path + report_full_name
 
         return full_report_path
+
+    except Exception as err:
+        logger.error(f"get_report_path {repr(err)}")
+        return ''
+
+
+async def get_full_stat_name(chat_id:int ):
+    """Получение полного пути к отчету со статистикой
+
+    :param chat_id:
+    :return: полный путь к файлу с отчетом
+    """
+    now: str = (datetime.datetime.now()).strftime("%d.%m.%Y")
+    userdata: dict = await db_get_dict_userdata(chat_id)
+    location_id: int = int(userdata.get('hse_location', ''))
+
+    location = await db_get_data_dict_from_table_with_id(
+        table_name='core_location',
+        post_id=location_id
+    )
+    location = location.get('title', '')
+
+    try:
+        report_full_name = f'СТАТ-ОТ_ПБ_ПТ-{location} {now}.xlsx'
+        report_path = await get_report_full_filepath(str(chat_id))
+        await create_file_path(report_path)
+        return report_path + report_full_name
 
     except Exception as err:
         logger.error(f"get_report_path {repr(err)}")

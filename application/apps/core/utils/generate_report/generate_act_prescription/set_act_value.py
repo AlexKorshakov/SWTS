@@ -14,8 +14,6 @@ async def get_act_headlines_data_values(chat_id, dataframe=None, act_date=None, 
     """
 
     if not headlines_data:
-        # TODO  get HSE database
-
         table_name: str = 'core_violations'
         clean_headers: list = await get_clean_headers(table_name=table_name)
         query: str = f'SELECT * FROM `core_hseuser` WHERE `hse_telegram_id` == {chat_id}'
@@ -70,7 +68,8 @@ async def get_act_headlines_data_values(chat_id, dataframe=None, act_date=None, 
         elimination_time_id = max(dataframe['elimination_time_id'])
         elimination_time: dict = await db_get_data_dict_from_table_with_id(
             table_name='core_eliminationtime',
-            post_id=elimination_time_id)
+            post_id=elimination_time_id
+        )
 
         max_date = max(dataframe['created_at'])
         days_max = elimination_time['days']
@@ -157,7 +156,6 @@ async def set_act_footer_footer_values(worksheet, row_number):
     :param row_number:
     :return:
     """
-    # TODO  get HSE database
     row_value = 28 + row_number
 
     values: list = [

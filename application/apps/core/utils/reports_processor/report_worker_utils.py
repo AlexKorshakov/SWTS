@@ -84,7 +84,7 @@ async def get_clean_headers(table_name: str) -> list:
     if not table_name:
         return []
 
-    headers:list = await db_get_table_headers(table_name=table_name)
+    headers: list = await db_get_table_headers(table_name=table_name)
     clean_headers: list = [item[1] for item in headers]
 
     logger.debug(clean_headers)
@@ -110,44 +110,80 @@ async def create_lite_dataframe_from_query(chat_id: int, query: str, clean_heade
     return report_dataframe
 
 
-async def get_query(type_query: str, table_name: str, query_act_date: str = None, value_id: int = None,user_id=None,
+async def get_query(type_query: str, table_name: str, query_date: str = None, value_id: int = None, user_id=None,
                     **kvargs) -> str:
     """
 
     """
     query = ''
     if type_query == 'general_contractor_id':
-        query: str = f'SELECT * ' \
-                     f'FROM {table_name} ' \
-                     f"WHERE (`created_at` = date('{query_act_date}') " \
-                     f"AND (`act_number` = '' or `act_number` is NULL ) " \
-                     f"AND `general_contractor_id` = {value_id} " \
-                     f"AND `user_id` = {user_id}" \
-                     f") " \
-
+        if isinstance(query_date, list):
+            query: str = f'SELECT * ' \
+                         f'FROM {table_name} ' \
+                         f"WHERE (`act_number` = '' or `act_number` is NULL ) " \
+                         f"AND `general_contractor_id` = {value_id} " \
+                         f"AND `created_at` BETWEEN date('{await format_data_db(query_date[0])}') " \
+                         f"AND date('{await format_data_db(query_date[1])}') " \
+                         f"AND `user_id` = {user_id}"
+        else:
+            query: str = f'SELECT * ' \
+                         f'FROM {table_name} ' \
+                         f"WHERE (`created_at` = date('{query_date}') " \
+                         f"AND (`act_number` = '' or `act_number` is NULL ) " \
+                         f"AND `general_contractor_id` = {value_id} " \
+                         f"AND `user_id` = {user_id}" \
+                         f") " \
 
     if type_query == 'sub_location_id':
         query: str = f'SELECT * ' \
                      f'FROM {table_name} ' \
-                     f"WHERE (`created_at` = date('{query_act_date}') " \
+                     f"WHERE (`created_at` = date('{query_date}') " \
                      f"AND (`act_number` = '' or `act_number` is NULL ) " \
                      f"AND `sub_location_id` = {value_id})"
 
     if type_query == 'query_act':
-        if isinstance(query_act_date, list):
+        if isinstance(query_date, list):
             query: str = f'SELECT * ' \
                          f'FROM {table_name} ' \
                          f"WHERE (`act_number` = '' or `act_number` is NULL ) " \
-                         f"AND `created_at` BETWEEN date('{await format_data_db(query_act_date[0])}') " \
-                         f"AND date('{await format_data_db(query_act_date[1])}') " \
+                         f"AND `created_at` BETWEEN date('{await format_data_db(query_date[0])}') " \
+                         f"AND date('{await format_data_db(query_date[1])}') " \
                          f"AND `user_id` = {user_id}"
 
-        if isinstance(query_act_date, str):
+        if isinstance(query_date, str):
             query: str = f'SELECT * ' \
                          f'FROM {table_name} ' \
-                         f"WHERE (`created_at` = date('{query_act_date}') " \
+                         f"WHERE (`created_at` = date('{query_date}') " \
                          f"AND (`act_number` = '' or `act_number` is NULL ) " \
                          f"AND `user_id` = {user_id} )"
+
+    if type_query == 'query_daily_report':
+        if isinstance(query_date, list):
+            query: str = f'SELECT * ' \
+                         f'FROM {table_name} ' \
+                         f"WHERE `user_id` = {user_id} " \
+                         f"AND `created_at` BETWEEN date('{await format_data_db(query_date[0])}') " \
+                         f"AND date('{await format_data_db(query_date[1])}') " \
+
+        if isinstance(query_date, str):
+            query: str = f'SELECT * ' \
+                         f'FROM {table_name} ' \
+                         f"WHERE `user_id` = {user_id} " \
+                         f"AND (`created_at` = date('{query_date}') )"
+
+    if type_query == 'query_stat':
+        if isinstance(query_date, list):
+            query: str = f'SELECT * ' \
+                         f'FROM {table_name} ' \
+                         f"WHERE `user_id` = {user_id} " \
+                         f"AND `created_at` BETWEEN date('{await format_data_db(query_date[0])}') " \
+                         f"AND date('{await format_data_db(query_date[1])}') " \
+
+        if isinstance(query_date, str):
+            query: str = f'SELECT * ' \
+                         f'FROM {table_name} ' \
+                         f"WHERE `user_id` = {user_id} " \
+                         f"AND (`created_at` = date('{query_date}') )"
 
     return query
 

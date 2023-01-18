@@ -3,7 +3,7 @@ from openpyxl.styles import Alignment
 from loader import logger
 
 
-async def set_report_alignment(worksheet, cell_range, horizontal=None, vertical=None):
+async def set_stat_alignment(worksheet, cell_range, horizontal=None, vertical=None):
     """Форматирование ячейки: положение текста в ячейке (лево верх)
     """
     wrap_alignment = Alignment(wrap_text=True, horizontal=horizontal, vertical=vertical)

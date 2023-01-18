@@ -2,7 +2,7 @@
 .card {
   break-inside: avoid;
   page-break-inside: avoid;
-  background-color: var(--not_finished, #cfe8dc);
+  background-color: var(--not_finished, #c7b191);
   border: 2px solid rgb(79, 185, 227);
   padding: 10px;
   margin: 0 0 7px 0;

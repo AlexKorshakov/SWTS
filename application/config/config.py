@@ -30,6 +30,8 @@ DEVELOPER_ID: int = env("DEVELOPER_ID")
 DEVELOPER_EMAIL: str = env("DEVELOPER_EMAIL")
 
 DATA_BASE_DIR: str = env("DATA_BASE_DIR")
+MEDIA_DIR: str = env("MEDIA_DIR")
+MAIN_DIR: str = env('MAIN_DIR')
 
 PRIVATE_KEY: str = env("PRIVATE_KEY")
 

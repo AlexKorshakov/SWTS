@@ -33,7 +33,7 @@ async def get_day_message(current_date: datetime = None) -> str:
     return str("0" + str(current_date.day) if current_date.day < 10 else str(current_date.day))
 
 
-async def get_week_message(current_date: str = None) -> str:
+async def get_week_message(current_date: datetime = None) -> str:
     """Обработчик сообщений с фото
     Получение номер str недели из сообщения в формате dd
     """

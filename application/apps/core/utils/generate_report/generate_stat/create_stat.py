@@ -1,0 +1,65 @@
+from pandas import DataFrame
+
+from apps.MyBot import MyBot
+from apps.core.bot.messages.messages import Messages
+from apps.core.utils.generate_report.create_xlsx.create_xlsx import create_xlsx
+from apps.core.utils.generate_report.generate_stat.set_stat_format import \
+    format_stat_sheet_header, format_stat_sheet_basic, format_stat_sheet_body, format_stat_sheet_footer
+from apps.core.utils.generate_report.generate_stat.set_stat_values import set_stat_values_header, set_stat_values_body, \
+    set_stat_values_footer, set_stat_headlines_data_values, set_stat_violation_values, set_stat_header_values
+from apps.core.utils.generate_report.sheet_formatting.set_page_setup import set_row_breaks
+from apps.core.utils.img_processor.insert_img import insert_signalline_to_report_body
+from loader import logger
+
+
+async def create_stat(chat_id: int, dataframe: DataFrame = None, full_stat_path: str = None):
+    """Создание отчета xls из данных dataframe
+
+    """
+
+    if not full_stat_path:
+        logger.error(Messages.Error.fill_report_path_not_found)
+        return
+
+    workbook, worksheet = await create_xlsx(chat_id, full_stat_path)
+    if not worksheet:
+        return False
+
+    await format_stat_sheet_basic(worksheet)
+    workbook.save(full_stat_path)
+
+    await set_stat_values_header(worksheet)
+    await format_stat_sheet_header(worksheet)
+    workbook.save(full_stat_path)
+
+    _, num, body_val_list = await set_stat_values_body(worksheet)
+    await format_stat_sheet_body(worksheet, workbook, full_stat_path, num)
+    workbook.save(full_stat_path)
+
+    _, num = await set_stat_values_footer(worksheet, workbook, full_stat_path, num)
+    _, num = await format_stat_sheet_footer(worksheet, workbook, full_stat_path, num)
+    workbook.save(full_stat_path)
+
+    # await insert_service_image(worksheet)
+    await set_row_breaks(worksheet, row=num)
+    workbook.save(full_stat_path)
+
+    await set_stat_headlines_data_values(chat_id=chat_id, dataframe=dataframe)
+    workbook.save(full_stat_path)
+
+    await set_stat_header_values(worksheet, dataframe)
+    workbook.save(full_stat_path)
+
+    try:
+        await set_stat_violation_values(
+            worksheet, dataframe, body_val_list, workbook, full_stat_path
+        )
+    except Exception as err:
+        await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.file_not_found + str(f' {err} '))
+        logger.error(f'create_act_prescription: set_stat_violation_values error: {repr(err)}')
+        return False
+
+    await insert_signalline_to_report_body(worksheet)
+    workbook.save(full_stat_path)
+
+    return True

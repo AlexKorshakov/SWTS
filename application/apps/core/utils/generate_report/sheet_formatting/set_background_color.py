@@ -2,7 +2,7 @@ from loader import logger
 from openpyxl.styles import PatternFill
 
 
-async def set_background_color(worksheet, cell_range, rgb='FF7030A0'):
+async def set_report_background_color(worksheet, cell_range, rgb='FF7030A0'):
     """Установка цвета заливки ячейки
     :return:
     """

@@ -8,7 +8,7 @@ from pandas import DataFrame
 from apps.core.database.db_utils import db_get_data_dict_from_table_with_id
 from apps.core.utils.generate_report.generate_act_prescription.set_act_alignment import set_act_alignment
 from apps.core.utils.generate_report.sheet_formatting.set_font import set_report_font, sets_report_font
-from apps.core.utils.generate_report.generate_act_prescription.set_act_frame_border import set_act_range_border
+from apps.core.utils.generate_report.generate_act_prescription.set_act_frame_border import set_range_border
 from apps.core.utils.generate_report.sheet_formatting.set_merge_cells import set_merge_cells
 from apps.core.utils.generate_report.sheet_formatting.set_row_dimensions import set_row_dimensions, \
     set_automatic_row_dimensions
@@ -159,7 +159,7 @@ async def set_act_violation(worksheet: Worksheet, violation_values, row_number: 
         (f'B{row_value}:L{row_value}', False)
     ]
     for item in act_range_border:
-        await set_act_range_border(worksheet, cell_range=item[0], border=item[1])
+        await set_range_border(worksheet, cell_range=item[0], border=item[1])
 
     row_dimensions = [
         [f'{row_value}', '105'],
@@ -331,7 +331,7 @@ async def set_value_title(worksheet: Worksheet, violation_values, row_number: in
         (f'B{row_value}:L{row_value}', False)
     ]
     for item in act_range_border:
-        await set_act_range_border(worksheet, cell_range=item[0], border=item[1])
+        await set_range_border(worksheet, cell_range=item[0], border=item[1])
 
     row_dimensions = [
         [f'{row_value}', '18'],

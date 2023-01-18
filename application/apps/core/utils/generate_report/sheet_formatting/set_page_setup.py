@@ -1,6 +1,14 @@
 from openpyxl.worksheet.pagebreak import Break
 
 
+async def set_row_breaks(worksheet, row: int):
+    """Установка горизонтального разрыва страницы
+
+    :return:
+    """
+    worksheet.row_breaks.append(Break(id=row))
+
+
 async def set_page_setup(worksheet):
     """Установка параметров страницы
 
@@ -9,8 +17,8 @@ async def set_page_setup(worksheet):
     """
 
     #  https://xlsxwriter.readthedocs.io/page_setup.html
-    worksheet.print_title_rows = '$2:$3'
-    worksheet.print_title = '$2:$3'
+    # worksheet.print_title_rows = '$2:$3'
+    # worksheet.print_title = '$2:$3'
 
     # Printer Settings
     worksheet.page_setup.orientation = worksheet.ORIENTATION_PORTRAIT
@@ -27,7 +35,5 @@ async def set_page_setup(worksheet):
     #  масштабный коэффициент для распечатываемой страницы
     # worksheet.set_print_scale(75)
 
-    worksheet.row_breaks.append(Break(id=45))
+    # worksheet.row_breaks.append(Break(id=45))
     worksheet.col_breaks.append(Break(id=9))
-
-

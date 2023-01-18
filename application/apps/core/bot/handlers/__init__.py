@@ -10,6 +10,7 @@ from . import help
 from . import send_mail
 from . import generate_act
 from . import generate_report
+from . import generate_statistic
 from . import correct_entries
 from . import developer
 from . import text

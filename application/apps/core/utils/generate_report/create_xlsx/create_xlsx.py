@@ -5,31 +5,7 @@ from apps.core.bot.messages.messages import Messages
 from apps.core.utils.generate_report.create_xlsx.get_workbook import get_workbook
 from apps.core.utils.generate_report.create_xlsx.get_worksheet import get_worksheet
 
-from apps.core.utils.generate_report.create_xlsx.xlsx_config import STARTROW, STARTCOL
 from loader import logger
-
-
-# async def create_xlsx(dataframe, report_file):
-#     """Создание xlsx из dataframe
-#     """
-#     try:
-#         dataframe.to_excel(report_file, header=False, startrow=STARTROW, startcol=STARTCOL)
-#         return True
-#     except Exception as err:
-#         logger.error(F"set_border {repr(err)}")
-#         return None
-
-
-async def create_new_xlsx(report_file):
-    """Создание xlsx
-    """
-    try:
-        wb = openpyxl.Workbook()
-        wb.save(report_file)
-        return True
-    except Exception as err:
-        logger.error(F"set_border {repr(err)}")
-        return None
 
 
 async def create_xlsx(chat_id: int, full_act_path: str):
@@ -55,3 +31,15 @@ async def create_xlsx(chat_id: int, full_act_path: str):
         return
 
     return workbook, worksheet
+
+
+async def create_new_xlsx(report_file):
+    """Создание xlsx
+    """
+    try:
+        wb = openpyxl.Workbook()
+        wb.save(report_file)
+        return True
+    except Exception as err:
+        logger.error(F"set_border {repr(err)}")
+        return None

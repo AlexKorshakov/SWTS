@@ -13,7 +13,7 @@ logger.debug("sub_location_answer")
 
 @MyBot.dp.callback_query_handler(
     lambda call: call.data in get_data_list("SUB_LOCATIONS",
-                                            category=violation_data["main_location"],
+                                            category=violation_data.get("main_location", None),
                                             condition='short_title'
                                             )
 )
@@ -21,7 +21,7 @@ async def sub_location_answer(call: types.CallbackQuery):
     """Обработка ответов содержащихся в NORMATIVE_DOCUMENTS
     """
     if call.data in get_data_list("SUB_LOCATIONS",
-                                  category=violation_data["main_location"],
+                                  category=violation_data.get("main_location", None),
                                   condition='short_title'):
 
         if call.data == _PREFIX_POZ + "0":
@@ -33,7 +33,7 @@ async def sub_location_answer(call: types.CallbackQuery):
                 "category_in_db": "SUB_LOCATIONS",
             }
             sub_loc = get_data_list("SUB_LOCATIONS",
-                                    category=violation_data["main_location"],
+                                    category=violation_data.get("main_location", None),
                                     condition=condition)
             if not sub_loc:
                 await set_violation_atr_data("sub_location", call.data)

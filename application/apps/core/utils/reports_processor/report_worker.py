@@ -36,7 +36,6 @@ async def create_and_send_report(chat_id:int):
 
     full_report_path = await get_full_report_name(chat_id=chat_id)
     await create_report_from_other_method(chat_id=chat_id,
-                                          dataframe=report_dataframe,
                                           full_report_path=full_report_path,
                                           file_list=file_list)
 

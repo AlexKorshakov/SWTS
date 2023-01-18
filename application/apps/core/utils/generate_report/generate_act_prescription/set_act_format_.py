@@ -1,16 +1,16 @@
 from xlsxwriter.worksheet import Worksheet
 
+from apps.core.utils.generate_report.sheet_formatting.set_column_dimensions import set_column_dimensions
+from apps.core.utils.generate_report.sheet_formatting.set_font import set_report_font, sets_report_font
+from apps.core.utils.generate_report.sheet_formatting.set_merge_cells import set_merge_cells
+from apps.core.utils.generate_report.sheet_formatting.set_row_dimensions import set_row_dimensions
 from apps.core.utils.generate_report.generate_act_prescription.set_act_alignment import set_act_alignment
 from apps.core.utils.generate_report.generate_act_prescription.settings_act_prescription import ACT_RANGE_COLUMNS, \
     ACT_MERGED_CELLS, ACT_CELL_RANGES, ACT_ROW_DIMENSIONS, ACT_CELL_RANGES_BASIC_ALIGNMENT, \
     ACT_CELL_RANGES_SET_REPORT_FONT
-from apps.core.utils.generate_report.sheet_formatting.set_column_dimensions import set_column_dimensions
-from apps.core.utils.generate_report.sheet_formatting.set_font import set_report_font, sets_report_font
-from apps.core.utils.generate_report.generate_act_prescription.set_act_frame_border import set_act_range_border
-from apps.core.utils.generate_report.sheet_formatting.set_merge_cells import set_merge_cells
+from apps.core.utils.generate_report.generate_act_prescription.set_act_frame_border import set_range_border
 from apps.core.utils.generate_report.generate_act_prescription.set_act_page_setup import set_act_page_setup, \
     set_act_page_after_footer_setup
-from apps.core.utils.generate_report.sheet_formatting.set_row_dimensions import set_row_dimensions
 
 
 async def format_act_prescription_sheet(worksheet: Worksheet):
@@ -25,7 +25,7 @@ async def format_act_prescription_sheet(worksheet: Worksheet):
         await set_merge_cells(worksheet, merged_cell=merged_cell)
 
     for item in ACT_CELL_RANGES:
-        await set_act_range_border(worksheet, cell_range=item[0], border=item[1])
+        await set_range_border(worksheet, cell_range=item[0], border=item[1])
 
     for item in ACT_ROW_DIMENSIONS:
         await set_row_dimensions(worksheet, row_number=item[0], height=item[1])
@@ -79,7 +79,7 @@ async def format_act_footer_prescription_sheet(worksheet: Worksheet, row_number)
         (f'K{54 + row_number}:L{54 + row_number}', True),
     ]
     for item in ACT_FOOTER_CELL_RANGES:
-        await set_act_range_border(worksheet, cell_range=item[0], border=item[1])
+        await set_range_border(worksheet, cell_range=item[0], border=item[1])
 
     ACT_FOOTER_ROW_DIMENSIONS = [
         [f'{29 + row_number}', '5.5'], [f'{30 + row_number}', '45'], [f'{31 + row_number}', '18'],
@@ -146,7 +146,7 @@ async def format_act_photo_header(worksheet, row_number):
         await set_act_alignment(worksheet, cell_range, horizontal='center', vertical='center')
 
     # for item, cell_range in enumerate(photographic_materials_alignment, start=1):
-    #     await set_act_range_border(worksheet, cell_range=cell_range)
+    #     await set_range_border(worksheet, cell_range=cell_range)
 
     photographic_row_dimensions = [
         [f'{row_number}', "18"],
@@ -184,7 +184,7 @@ async def format_act_photo_description(worksheet, row_number):
         await set_act_alignment(worksheet, cell_range, horizontal='center', vertical='center')
 
     # for item, cell_range in enumerate(photographic_materials_alignment, start=1):
-    #     await set_act_range_border(worksheet, cell_range=cell_range)
+    #     await set_range_border(worksheet, cell_range=cell_range)
 
     photographic_row_dimensions = [
         [f'{row_number}', "166"],
@@ -205,4 +205,4 @@ async def format_act_photo_description(worksheet, row_number):
     #     ["C50:H50", "FFFFC000"]
     # ]
     # for item in background_color:
-    #     await set_background_color(worksheet, item[0], rgb=item[1])
+    #     await set_report_background_color(worksheet, item[0], rgb=item[1])

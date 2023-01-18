@@ -1,6 +1,10 @@
+import asyncio
+from datetime import datetime
+
 from pandas import DataFrame
 
 from apps.core.database.DataBase import DataBase
+from apps.core.utils.secondary_functions.get_part_date import get_year_message
 
 
 async def db_check_record_existence(file_id: int) -> bool:
@@ -42,6 +46,14 @@ async def db_get_data_dict_from_table_with_id(table_name: str, post_id: int, que
     )
 
     return data_exists
+
+
+async def db_get_categories() -> list:
+    query: str = "SELECT `title` FROM `core_category`"
+    categories: list = await db_get_data_list(query=query)
+    clean_categories: list = [item[0] for item in categories]
+
+    return clean_categories
 
 
 async def db_del_violations(violation: dict) -> list:
@@ -150,6 +162,68 @@ async def db_set_act_value(act_data_dict: DataFrame, act_number: int, act_date: 
                                                     act_number=act_number,
                                                     act_date=act_date)
     return act_is_created
+
+
+async def db_get_username(user_id: int) -> str:
+    """Получение username из core_hseuser по user_id
+
+    :return:
+    """
+    if not user_id:
+        print(f'ERROR: No user_id foe db_get_username ')
+
+    query: str = f'SELECT * FROM `core_hseuser` WHERE `hse_telegram_id` = {user_id}'
+    datas_query: list = DataBase().get_data_list(query=query)
+    username = datas_query[0][4]
+
+    return username
+
+
+async def db_get_dict_userdata(user_id: int) -> dict:
+    """Получение userdata из core_hseuser по user_id
+
+    :return: dict
+    """
+    if not user_id:
+        print(f'ERROR: No user_id foe db_get_username ')
+        return {}
+    table_name: str = 'core_hseuser'
+
+    headers: list = await db_get_table_headers(table_name=table_name)
+    clean_headers: list = [item[1] for item in headers]
+
+    query: str = f'SELECT * FROM {table_name} WHERE `hse_telegram_id` = {user_id}'
+    datas_query: list = DataBase().get_data_list(query=query)
+    clean_values: list = datas_query[0]
+
+    return dict((header, item_value) for header, item_value in zip(clean_headers, clean_values))
+
+
+async def db_get_period_for_current_week(current_week: str, current_year: str = None) -> list:
+    """Получение данных из core_week по week_number
+
+    :return:
+    """
+    if not current_week:
+        print(f'ERROR: No user_id foe db_get_username ')
+
+    if not current_year:
+        current_year = await get_year_message(current_date=datetime.now())
+
+    query: str = f'SELECT * FROM `core_week` WHERE `week_number` = {current_week}'
+    datas_query: list = DataBase().get_data_list(query=query)
+    period_data = datas_query[0]
+
+    table_headers: list = DataBase().get_table_headers('core_week')
+    headers = [row[1] for row in table_headers]
+    period_dict = dict(zip(headers, period_data))
+
+    period = [
+        period_dict.get(f'start_{current_year}', None),
+        period_dict.get(f'end_{current_year}', None)
+    ]
+
+    return period
 
 
 def db_get_data_list_no_async(query: str) -> list:

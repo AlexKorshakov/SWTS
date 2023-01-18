@@ -60,7 +60,7 @@ class Messages:
     class Report:
         create_successfully: str = f"Отчет сформирован на сервере"
         done: str = 'Процедура завершена'
-        start: str = f"Начинаю генерацию отчетов"
+        start_report: str = f"Начинаю генерацию отчетов"
         start_act: str = 'Начало генерации актов-предписания'
         sent_successfully: str = f"Отчет успешно отправлен"
         generated_successfully: str = f"Отчет успешно создан"
@@ -104,6 +104,8 @@ class Messages:
         general_constractor: str = f"Выберите подрядную организацию"
         category: str = f"Выберите категорию нарушения"
         incident_level: str = f"Выберите уровень происшествия"
+
+        period: str = f"Выберите период формирования акта"
 
     class Error:
         workbook_not_found: str = f"Файл с отчетом не найден! Обратитесь к разработчику! \n" \

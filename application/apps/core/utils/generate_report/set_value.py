@@ -2,7 +2,7 @@ import os
 from openpyxl.drawing.image import Image
 from xlsxwriter.worksheet import Worksheet
 
-from apps.core.utils.generate_report.generate_daily_report.set_daily_report_alignment import set_mip_alignment
+from apps.core.utils.generate_report.generate_daily_report.set_daily_report_alignment import set_report_alignment
 from apps.core.utils.generate_report.sheet_formatting.set_font import set_report_font
 from apps.core.utils.generate_report.sheet_formatting.set_frame_border import set_range_border
 from apps.core.utils.img_processor.insert_img import image_preparation, insert_images
@@ -15,13 +15,14 @@ not_tested: str = 'не проверялось'
 check_mark_true: str = 'V'
 check_mark_false: str = '□'
 
-start_photo_row: int = 52
+# start_photo_row: int = 52
 photo_column: str = 'C'
 description_column: int = 7
 photo_height: int = 400
 
 
-async def set_photographic_materials(worksheet: Worksheet, violation_data: str, num_data: int):
+async def set_photographic_materials(
+        worksheet: Worksheet, violation_data: dict, num_data: int, num: int = None) -> bool:
     """Вставка фото и описания нарушения на страницу отчета
 
     :param num_data:
@@ -30,9 +31,13 @@ async def set_photographic_materials(worksheet: Worksheet, violation_data: str, 
     :return: 
     """
 
-    img_data = await read_json_file(violation_data)
+    # img_data = await read_json_file(violation_data)
+    start_photo_row = num + 2
 
-    if not os.path.isfile(img_data['photo_full_name']):
+    if not violation_data:
+        return False
+
+    if not os.path.isfile(violation_data.get('photo_full_name')):
         logger.error("photo not found")
         return False
 
@@ -49,7 +54,7 @@ async def set_photographic_materials(worksheet: Worksheet, violation_data: str, 
     ]
 
     for item, cell_range in enumerate(photographic_materials_alignment, start=1):
-        await set_mip_alignment(worksheet, cell_range, horizontal='left', vertical='center')
+        await set_report_alignment(worksheet, cell_range, horizontal='left', vertical='center')
 
     photographic_row_dimensions = [
         [f"{start_photo_row + num_data}", 300.0],
@@ -61,7 +66,7 @@ async def set_photographic_materials(worksheet: Worksheet, violation_data: str, 
     for item, cell_range in enumerate(photographic_materials_alignment, start=1):
         await set_report_font(worksheet, cell_range=cell_range, font_size=14)
 
-    img: Image = Image(img_data['photo_full_name'])
+    img: Image = Image(violation_data.get('photo_full_name'))
 
     img_params: dict = {
         "column": photo_column,
@@ -75,10 +80,12 @@ async def set_photographic_materials(worksheet: Worksheet, violation_data: str, 
 
     await insert_images(worksheet, img=img)
 
-    if not img_data.get('description'):
+    if not violation_data.get('description'):
         return False
 
-    worksheet.cell(row=start_photo_row + num_data, column=description_column, value=str(img_data['description']))
+    worksheet.cell(row=start_photo_row + num_data,
+                   column=description_column,
+                   value=str(violation_data.get('description')))
 
     for item, cell_border_range in enumerate(photographic_materials_alignment, start=1):
         await set_range_border(worksheet, cell_range=cell_border_range)
@@ -86,5 +93,3 @@ async def set_photographic_materials(worksheet: Worksheet, violation_data: str, 
     worksheet.print_area = f'$A$1:$I${start_photo_row + num_data + 1}'
 
     return True
-
-

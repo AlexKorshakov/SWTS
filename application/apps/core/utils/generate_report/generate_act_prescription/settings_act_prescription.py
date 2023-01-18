@@ -47,15 +47,10 @@ ACT_MERGED_CELLS = [
 
 ACT_CELL_RANGES = [
     ('B9:L9', True),
-
     ('B12:L12', True),
-
     ('B16:L16', True),
-
     ('B20:L20', True),
-
     ('B25:E26', False), ('F25:H26', False), ('I25:K26', False), ('L25:L26', False),
-
     ('B27:L27', False),
     ('B28:E28', False), ('F28:H28', False), ('I28:K28', False), ('L28:L28', False),
 ]

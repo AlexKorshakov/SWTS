@@ -4,57 +4,37 @@ from xlsxwriter.worksheet import Worksheet
 
 from pandas import DataFrame
 
-from apps.MyBot import MyBot
-from apps.core.bot.data.category import get_data_list, ELIMINATION_TIME
-from apps.core.bot.messages.messages import Messages
+from apps.core.bot.data.category import ELIMINATION_TIME
 from apps.core.bot.reports.report_data import headlines_data
 from apps.core.database.db_utils import db_get_data_dict_from_table_with_id, db_get_data_list, db_get_dict_userdata, \
     db_get_categories
-from apps.core.utils.generate_report.generate_daily_report.set_daily_report_alignment import set_report_alignment
-from apps.core.utils.generate_report.generate_daily_report.settings_mip_report import D_REPORT_CATEGORY_LIST_VALUES
-from apps.core.utils.generate_report.get_file_list import get_registration_json_file_list
-from apps.core.utils.generate_report.sheet_formatting.set_font import sets_report_font
+from apps.core.utils.generate_report.generate_stat.set_stat_alignment import set_stat_alignment
 from apps.core.utils.generate_report.set_value import check_mark_true, \
-    check_mark_false, not_tested, not_found
-from apps.core.utils.json_worker.read_json_file import read_json_file
+    not_found
+from apps.core.utils.generate_report.sheet_formatting.set_font import sets_report_font
 from loader import logger
 
 
-async def set_report_violation_values(worksheet: Worksheet, dataframe: DataFrame,
-                                      num: int = None, body_val_list: list = None,
-                                      workbook=None, full_daily_report_report_path=None) -> bool:
+async def set_stat_violation_values(
+        worksheet: Worksheet, dataframe: DataFrame, body_val_list: list = None, workbook=None,
+        full_stat_path=None) -> bool:
     """Заполнение акта значениями из dataframe
 
+    :param full_stat_path:
+    :param workbook:
+    :param body_val_list:
     :param worksheet: страница для заполнения
     :param dataframe: dataframe с данными нарушений
     :return: bool
     """
     serial_number = 0
-    violation_value = []
-
     clean_categories = await db_get_categories()
 
     for category in clean_categories:
 
+        # TODO  переделать под подсчет для статистики
         violation_value = await get_violation_value(dataframe, category)
-        # for enum, item in enumerate(range(1, dataframe.category_id.size)):
-        #     category_data_dict: dict = await db_get_data_dict_from_table_with_id(
-        #         table_name='core_category',
-        #         post_id=dataframe.loc[item]["category_id"])
-        #     category_title = category_data_dict.get('title')
-        #
-        #     if category_title != category:
-        #         continue
-        #
-        #     try:
-        #         elimination_time = await get_elimination_time(dataframe, item)
-        #         violation_value.append(
-        #             {"description": dataframe.loc[enum]["description"] + ' \\',
-        #              "elimination_time": elimination_time + ' \\'}
-        #         )
-        #     except Exception as err:
-        #         logger.error(f"{repr(err)}")
-        #         continue
+
         if not violation_value:
             continue
 
@@ -65,8 +45,7 @@ async def set_report_violation_values(worksheet: Worksheet, dataframe: DataFrame
                 continue
 
             await set_worksheet_cell_value(worksheet, body_val_item, serial_number, violation_value)
-            workbook.save(full_daily_report_report_path)
-            violation_value = []
+            workbook.save(full_stat_path)
             break
 
     return True
@@ -97,7 +76,7 @@ async def get_violation_value(dataframe, category) -> list:
     return violation_value
 
 
-async def set_report_header_values(worksheet: Worksheet, dataframe: DataFrame) -> bool:
+async def set_stat_header_values(worksheet: Worksheet, dataframe: DataFrame) -> bool:
     """Заполнение заголовка отчета
 
     :param dataframe:
@@ -105,7 +84,6 @@ async def set_report_header_values(worksheet: Worksheet, dataframe: DataFrame) -
     :return:
     """
 
-    # TODO: check dataframe general_contractor_id
     contractors = dataframe.general_contractor_id.tolist()
     contractors = list(set(list(contractors)))
     contractors_str = ''
@@ -130,7 +108,7 @@ async def set_report_header_values(worksheet: Worksheet, dataframe: DataFrame) -
          "row": "2", "column": "3"},
         {"coordinate": "D2", "value": f"Отчет {headlines_data.get('work_shift')} {headlines_data.get('custom_date')}",
          "row": "2", "column": "4"},
-        {"coordinate": "C3", "value": f"ЛО-ОТПБиООС-{headlines_data.get('year')}-{headlines_data.get('day')}",
+        {"coordinate": "C3", "value": f"СТАТ-ОТПБиООС-{headlines_data.get('year')}-{headlines_data.get('day')}",
          "row": "3", "column": "3"},
         {"coordinate": "D5", "value": f"{headlines_data.get('linear_bypass')}", "row": "5", "column": "4"},
         {"coordinate": "D6", "value": f"{headlines_data.get('custom_date')}", "row": "6", "column": "4"},
@@ -162,7 +140,7 @@ async def set_report_header_values(worksheet: Worksheet, dataframe: DataFrame) -
     return True
 
 
-async def set_report_values_header(worksheet: Worksheet) -> bool:
+async def set_stat_values_header(worksheet: Worksheet) -> bool:
     """Заполнение первоначальных данных отчета
 
     :param worksheet: страница для заполнения
@@ -171,7 +149,7 @@ async def set_report_values_header(worksheet: Worksheet) -> bool:
     values = [
         {"coordinate": "C2", "value": "НАЗВАНИЕ ОРГАНИЗАЦИИ", "row": "2", "column": "3"},
         # {"coordinate": "D2", "value": "Отчет о ночной смены", "row": "2", "column": "4"},
-        {"coordinate": "C3", "value": "ЛО-ОТПБиПТ--", "row": "3", "column": "3"},
+        {"coordinate": "C3", "value": "СТАТ-ОТПБиПТ--", "row": "3", "column": "3"},
         {"coordinate": "D3", "value": "Значение", "row": "3", "column": "4"},
         {"coordinate": "F3", "value": "Примечание", "row": "3", "column": "6"},
         {"coordinate": "C4", "value": "Общая информация", "row": "4", "column": "3"},
@@ -225,7 +203,7 @@ async def set_report_values_header(worksheet: Worksheet) -> bool:
     return True
 
 
-async def set_report_values_body(worksheet: Worksheet) -> tuple[bool, int, list]:
+async def set_stat_values_body(worksheet: Worksheet) -> tuple[bool, int, list]:
     """Заполнение первоначальных данных отчета
 
     :param worksheet: страница для заполнения
@@ -258,7 +236,7 @@ async def set_report_values_body(worksheet: Worksheet) -> tuple[bool, int, list]
     return True, num, values
 
 
-async def set_report_values_footer(worksheet: Worksheet, workbook,
+async def set_stat_values_footer(worksheet: Worksheet, workbook,
                                    full_daily_report_report_path, num) -> tuple[bool, int]:
     """Заполнение первоначальных данных отчета
 
@@ -295,7 +273,7 @@ async def set_report_values_footer(worksheet: Worksheet, workbook,
     return True, num
 
 
-async def set_report_headlines_data_values(chat_id: int, dataframe=None) -> bool:
+async def set_stat_headlines_data_values(chat_id: int, dataframe=None) -> bool:
     """Формирование заголовков отчета
 
     :param dataframe:
@@ -329,16 +307,6 @@ async def set_report_headlines_data_values(chat_id: int, dataframe=None) -> bool
 
     headlines_data["day"] = (datetime.datetime.now()).strftime("%d")
     headlines_data["year"] = (datetime.datetime.now()).strftime("%Y")
-
-    # if not user_data:
-
-    # registration_file_list: list = await get_registration_json_file_list(chat_id=chat_id)
-    # if not registration_file_list:
-    #     logger.warning(Messages.Error.registration_file_list_not_found)
-    #     await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.file_list_not_found)
-    #     return False
-    #
-    # registration_data: dict = await read_json_file(registration_file_list)
 
     registration_data: dict = await db_get_dict_userdata(chat_id)
 
@@ -421,7 +389,7 @@ async def set_worksheet_cell_value(worksheet: Worksheet, item: dict, serial_numb
     ]
     for cell_range in cell_ranges:
         await sets_report_font(worksheet, cell_range[0], params=cell_range[1])
-        await set_report_alignment(worksheet, cell_range[0], horizontal='left', vertical='center')
+        await set_stat_alignment(worksheet, cell_range[0], horizontal='left', vertical='center')
 
     worksheet.row_dimensions[int(item['row'])].height = await get_height_for_row(
         worksheet,
@@ -482,25 +450,3 @@ async def get_height_for_row(sheet: Worksheet, row_number: int, font_size: int =
             return height
 
 
-async def set_mip_photographic_materials_values(worksheet: Worksheet, num: int = None) -> tuple[bool, int]:
-    """Добавление заголовка раздела Фотоматериалы
-
-    :param num:
-    :param worksheet:
-    """
-
-    values = [
-        {"coordinate": f"C{num + 4}", "value": "Фотофиксация", "row": f"{num + 4}", "column": "3"},
-        {"coordinate": f"C{num + 5}", "value": "ФОТО", "row": f"{num + 5}", "column": "3"},
-        {"coordinate": f"F{num + 5}", "value": "№", "row": f"{num + 5}", "column": "6"},
-        {"coordinate": f"C{num + 5}", "value": "Примечание", f"row": f"{num + 5}", "column": "7"},
-    ]
-
-    for val in values:
-        try:
-            worksheet.cell(row=int(val['row']), column=int(val['column']), value=str(val['value']))
-        except Exception as err:
-            logger.error(f"set_photographic_materials_values {repr(err)}")
-            continue
-
-    return True, num + 4

@@ -3,33 +3,30 @@ import asyncio
 from pandas import DataFrame
 
 from apps.MyBot import MyBot
+from apps.core.bot.messages.messages import Messages
 from apps.core.database.db_utils import db_get_max_max_number, db_set_act_value, db_update_column_value
 from apps.core.utils.generate_report.convert_xlsx_to_pdf import convert_report_to_pdf
 from apps.core.utils.generate_report.create_dataframe import create_dataframe
-from apps.core.utils.generate_report.get_file_list import get_json_file_list
-from apps.core.utils.generate_report.get_report_path import get_full_report_name
 from apps.core.utils.generate_report.create_xlsx.create_xlsx import create_xlsx
-from apps.core.utils.generate_report.create_xlsx.get_workbook import get_workbook
-from apps.core.utils.generate_report.create_xlsx.get_worksheet import get_worksheet
-from apps.core.utils.generate_report.generate_act_prescription.set_act_value import get_act_headlines_data_values
-from apps.core.utils.generate_report.generate_act_prescription.set_act_values import set_act_photographic_materials
-from apps.core.utils.generate_report.sheet_formatting.sheet_formatting import format_sheets
 from apps.core.utils.generate_report.generate_act_prescription.set_act_format_ import \
     format_act_photo_header, \
     format_act_photo_description
+from apps.core.utils.generate_report.generate_act_prescription.set_act_value import get_act_headlines_data_values
+from apps.core.utils.generate_report.generate_act_prescription.set_act_values import set_act_photographic_materials
+from apps.core.utils.generate_report.get_file_list import get_json_file_list
+from apps.core.utils.generate_report.get_report_path import get_full_report_name
+from apps.core.utils.generate_report.sheet_formatting.sheet_formatting import format_sheets
+from apps.core.utils.img_processor.insert_img import insert_images_to_sheet
+from apps.core.utils.reports_processor.report_worker_utils import get_clean_headers
 from config.web.settings import MEDIA_ROOT
 from loader import logger
 
-from apps.core.bot.messages.messages import Messages
-from apps.core.utils.img_processor.insert_img import insert_images_to_sheet
 
-
-async def create_report_from_other_method(chat_id, dataframe=None, full_report_path=None,
+async def create_report_from_other_method(chat_id, full_report_path=None,
                                           file_list=None):
     """Создание отчета xls из данных json
     :param file_list:
     :param full_report_path:
-    :param dataframe:
     :type chat_id: int
     :param chat_id:
     :return:
@@ -38,23 +35,9 @@ async def create_report_from_other_method(chat_id, dataframe=None, full_report_p
     if full_report_path is None:
         full_report_path = await get_full_report_name(chat_id=chat_id)
 
-    is_created: bool = await create_xlsx(dataframe, report_file=full_report_path)
-    if is_created is None:
-        logger.warning(Messages.Error.workbook_not_create)
-        await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.workbook_not_create)
-        return
-
-    workbook = await get_workbook(full_report_path)
-    if workbook is None:
-        logger.warning(Messages.Error.workbook_not_found)
-        await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.workbook_not_found)
-        return
-
-    worksheet = await get_worksheet(workbook, index=0)
-    if worksheet is None:
-        logger.warning(Messages.Error.worksheet_not_found)
-        await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.worksheet_not_found)
-        return
+    workbook, worksheet = await create_xlsx(chat_id, full_report_path)
+    if not worksheet:
+        return False
 
     await format_sheets(worksheet)
 
@@ -91,26 +74,9 @@ async def create_report(chat_id):
         await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.dataframe_not_found)
         return
 
-    is_created: bool = await create_xlsx(dataframe, report_file=fill_report_path)
-    if is_created is None:
-        logger.warning(Messages.Error.workbook_not_create)
-        MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.workbook_not_create)
-        await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.workbook_not_create)
-        return
-
-    workbook = await get_workbook(fill_report_path)
-    if workbook is None:
-        logger.warning(Messages.Error.workbook_not_found)
-        MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.workbook_not_found)
-        await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.workbook_not_found)
-        return
-
-    worksheet = await get_worksheet(workbook, index=0)
-    if worksheet is None:
-        logger.warning(Messages.Error.worksheet_not_found)
-        MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.worksheet_not_found)
-        await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.worksheet_not_found)
-        return
+    workbook, worksheet = await create_xlsx(chat_id, fill_report_path)
+    if not worksheet:
+        return False
 
     await format_sheets(worksheet)
 
@@ -137,23 +103,21 @@ async def anchor_photo(dataframe, row_number, workbook, worksheet, full_act_path
     img_params["row_description"] = row_act_photo
     img_params["row"] = row_act_photo
 
+    table_name: str = 'core_violations'
+    clean_headers: list = await get_clean_headers(table_name=table_name)
+
     for num_data, violation_data in enumerate(dataframe.itertuples(index=False), start=1):
         # for num_data, violation_data in enumerate(df.to_dict('index'), start=1):
 
-        # TODO проверить путь фото
+        violation_dict = dict(zip(clean_headers, violation_data))
 
-        # print(f'{violation_data[27] = }')
-        # print(f'{violation_data[28] = }')
-        # print(f'{violation_data[29] = }')
-        # print(f'{violation_data[30] = }')
-
-        img_params["photo_full_name"] = MEDIA_ROOT + violation_data[28]
+        img_params["photo_full_name"] = MEDIA_ROOT + violation_dict.get('photo', None)
 
         if num_data % 2 != 0:
             img_params["column"] = 'B'
             img_params["column_img"] = 2
             img_params["column_description"] = 6
-            img_params["description"] = violation_data[19]
+            img_params["description"] = violation_dict.get('description', None)
 
             if num_data != 1:
                 img_params["row_header"] = img_params["row_header"] + 2
@@ -167,7 +131,7 @@ async def anchor_photo(dataframe, row_number, workbook, worksheet, full_act_path
             img_params["column"] = 'H'
             img_params["column_img"] = 8
             img_params["column_description"] = 12
-            img_params["description"] = violation_data[19]
+            img_params["description"] = violation_dict.get('description', None)
 
         is_anchor: bool = False
         try:
@@ -217,9 +181,6 @@ async def set_act_data_on_data_base(act_data: DataFrame, act_num: int, act_date:
     for act_id in act_data.id:
         await db_update_column_value(column_name='act_number', value=str(act_num), violation_id=act_id)
 
-
-# if __name__ == '__main__':
-#     asyncio.run(get_act_number_on_data_base())
 
 async def test():
     chat_id = 373084462

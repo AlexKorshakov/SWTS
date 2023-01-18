@@ -1,11 +1,13 @@
 import os.path
 
 import openpyxl
+
+from config.web.settings import MEDIA_ROOT
 from loader import logger
 from openpyxl.drawing.image import Image
 from xlsxwriter.worksheet import Worksheet
 
-from config.config import WORK_PATH
+from config.config import WORK_PATH, MEDIA_DIR
 from apps.core.utils.secondary_functions.get_json_files import get_files
 
 from apps.core.utils.json_worker.read_json_file import read_json_file
@@ -54,7 +56,7 @@ async def insert_signalline_to_report_body(worksheet: Worksheet) -> None:
     """
     photo_full_name = ".\\signalline.jpeg"
 
-    files = await get_files(main_path=WORK_PATH + "\\apps\\core\\bot\\utils\\", endswith=".jpg")
+    files = await get_files(main_path=MEDIA_DIR+"\\!service_img", endswith=".jpg")
 
     for file in files:
         photo_full_name = file if file.split('\\')[-1].split('.')[0] == "signalline" else ''
@@ -76,7 +78,7 @@ async def insert_signalline_to_report_body(worksheet: Worksheet) -> None:
     await insert_images(worksheet, img=img)
 
 
-async def insert_service_image(worksheet: Worksheet, img_params: dict) -> bool:
+async def insert_service_image(worksheet: Worksheet, img_params: dict = None) -> bool:
     """Вставка изображений в файл
 
     :param img_params: dict параметры вставки
@@ -85,7 +87,15 @@ async def insert_service_image(worksheet: Worksheet, img_params: dict) -> bool:
     """
 
     if not img_params:
-        return False
+        img_params: dict = {
+            'photo_full_name': MEDIA_ROOT + "\\" + "Logo.jpg",
+            "height": 75,
+            "width": 230,
+            "anchor": True,
+            "column": 'B',
+            "column_img": 2,
+            "row": 2,
+        }
 
     if not os.path.isfile(img_params['photo_full_name']):
         logger.error("service image not found")
