@@ -5,8 +5,8 @@ STATISTIC_RANGE_COLUMNS_BASIC = [
     ["D", "6"],
     ["E", "46.5"],
     ["F", "6"],
-    ["G", "41"],
-    ["H", "15"],
+    ["G", "28"],
+    ["H", "28"],
 ]
 
 STATISTIC_MERGED_CELLS_HEADER = [

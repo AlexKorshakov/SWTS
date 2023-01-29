@@ -55,8 +55,9 @@ async def format_stat_sheet_header(worksheet: Worksheet) -> bool:
 
 
 async def format_stat_sheet_body(worksheet: Worksheet, workbook, full_stat_path,
-                                         num: int) -> bool:
+                                 num: int) -> bool:
     """Пошаговое форматирование страницы
+
     """
 
     STATISTIC_MERGED_CELLS_BODY = [
@@ -110,7 +111,7 @@ async def format_stat_sheet_body(worksheet: Worksheet, workbook, full_stat_path,
 
 
 async def format_stat_sheet_footer(worksheet: Worksheet, workbook,
-                                           full_stat_path, num) -> tuple[bool, int]:
+                                   full_stat_path, num) -> tuple[bool, int]:
     """Пошаговое форматирование страницы
     """
     STATISTIC_MERGED_CELLS_FOOTER = [
@@ -168,6 +169,3 @@ async def format_stat_sheet_footer(worksheet: Worksheet, workbook,
     workbook.save(full_stat_path)
 
     return True, num + 2
-
-
-

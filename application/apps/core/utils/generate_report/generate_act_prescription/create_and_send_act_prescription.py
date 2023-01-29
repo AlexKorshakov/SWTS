@@ -7,6 +7,7 @@ from pandas import DataFrame
 from apps.MyBot import MyBot
 from apps.core.bot.messages.messages import Messages
 from apps.core.database.db_utils import db_get_period_for_current_week
+from apps.core.database.query_constructor import QueryConstructor
 from apps.core.utils.data_recording_processor.set_user_report_data import set_act_data_on_google_drive
 from apps.core.utils.generate_report.convert_xlsx_to_pdf import convert_report_to_pdf
 from apps.core.utils.generate_report.generate_act_prescription.create_act_prescription import create_act_prescription
@@ -127,7 +128,7 @@ async def get_full_act_prescription_path(chat_id, act_number, act_date, constrac
     return full_act_prescription_path
 
 
-async def get_clean_data(chat_id, query_act_date_period, type_query: str = None):
+async def get_clean_data(chat_id, query_act_date_period, type_query: str = None, query=None, **stat_kwargs):
     """Получение данных с заголовками за период query_act_date_period
 
     :return:
@@ -141,6 +142,22 @@ async def get_clean_data(chat_id, query_act_date_period, type_query: str = None)
     query: str = await get_query(
         type_query=type_query, table_name=table_name, query_date=query_act_date_period, user_id=chat_id
     )
+    pprint(f'{query = }')
+
+    kwargs: dict = {
+        "action": 'SELECT',
+        "table_name": table_name,
+        "subject": '*',
+        "conditions": {
+            "period": query_act_date_period,
+            "is_admin": stat_kwargs.get('is_admin', None),
+            "location": stat_kwargs.get('location', None)
+        }
+    }
+
+    query_constructor: str = await QueryConstructor(chat_id, table_name='core_violations', **kwargs).prepare_data()
+    pprint(f'{query_constructor = }')
+
     clear_list_value: list = await get_clear_list_value(
         chat_id=chat_id, query=query, clean_headers=clean_headers
     )

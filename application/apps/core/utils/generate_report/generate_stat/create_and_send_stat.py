@@ -6,40 +6,63 @@ from pandas import DataFrame
 
 from apps.MyBot import MyBot
 from apps.core.bot.messages.messages import Messages
-from apps.core.database.db_utils import db_get_period_for_current_week
+from apps.core.database.db_utils import db_get_period_for_current_week, db_get_period_for_current_month
+from apps.core.database.query_constructor import QueryConstructor
 from apps.core.utils.generate_report.convert_xlsx_to_pdf import convert_report_to_pdf
-from apps.core.utils.generate_report.generate_act_prescription.create_and_send_act_prescription import get_clean_data
 from apps.core.utils.generate_report.generate_stat.create_stat import create_stat
 from apps.core.utils.generate_report.get_report_path import get_full_stat_name
 from apps.core.utils.generate_report.send_report_from_user import send_report_from_user
-from apps.core.utils.reports_processor.report_worker_utils import format_data_db, get_query, \
-    create_lite_dataframe_from_query
-from apps.core.utils.secondary_functions.get_part_date import get_week_message, get_year_message
+from apps.core.utils.reports_processor.report_worker_utils import format_data_db, create_lite_dataframe_from_query
+from apps.core.utils.reports_processor.report_worker_utils import get_clean_headers
+from apps.core.utils.secondary_functions.get_part_date import get_week_message, get_year_message, get_month_message
 from loader import logger
 
 
-async def create_and_send_stat(chat_id, query_stat_date_period: list = None, **kwargs) -> bool:
+async def create_and_send_stat(chat_id, query_period: [list, str] = None, **stat_kwargs) -> bool:
     """Формирование и отправка отчета
 
-    :param query_stat_date_period:
+    :param query_period:
     :param chat_id:
     :return:
     """
 
-    stat_date: str = datetime.now().strftime("%d.%m.%Y")  # '28.10.2022'  #
+    if not query_period:
+        stat_date: str = datetime.now().strftime("%d.%m.%Y")  # '28.10.2022'  #
+        query_period = await format_data_db(stat_date)
 
-    if not query_stat_date_period:
-        query_stat_date_period = await format_data_db(stat_date)
+    table_name: str = 'core_violations'
+    clean_headers: list = await get_clean_headers(table_name=table_name)
 
-    type_query = 'query_stat'
-    clean_headers, clear_list_value = await get_clean_data(chat_id, query_stat_date_period, type_query)
-    if not clear_list_value:
+    if not clean_headers:
+        logger.error(f'create_and_send_stat: No clean headers in {table_name}')
         return False
 
-    full_stat_path: str = await get_full_stat_name(chat_id=chat_id)
+    kwargs: dict = {
+        "type_query": 'query_statistic',
+        "action": 'SELECT',
+        "subject": '*',
+        "conditions": {
+            "period": query_period,
+            "period_description": 'Период для формирования запроса. Может состоять из одной или двух дат',
 
-    stat_dataframe: DataFrame = await get_stat_dataframe(
-        chat_id=chat_id, stat_period=query_stat_date_period, headers=clean_headers
+            "is_admin": stat_kwargs.get('is_admin', None),
+            "is_admin_description": 'Является ли пользователь админом.'
+                                    'Если является - в запросе опускается часть с id пользователя',
+
+            "location": stat_kwargs.get('location', None),
+            "location_description": 'location_id локации по которой выполняется запрос'
+                                    'Если отсутствует или None - в запросе опускается часть с location_id',
+
+            'act_number': None,
+            "act_number_description": 'Если отсутствует или None - в запросе опускается часть с location_id',
+        }
+    }
+
+    query: str = await QueryConstructor(chat_id, table_name='core_violations', **kwargs).prepare_data()
+    print(f'get_stat_dataframe {query = }')
+
+    stat_dataframe: DataFrame = await get_stat_dataframe_with_query(
+        chat_id, query=query, header_list=clean_headers,
     )
 
     if stat_dataframe.empty:
@@ -47,10 +70,13 @@ async def create_and_send_stat(chat_id, query_stat_date_period: list = None, **k
         await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.dataframe_not_found)
         return False
 
+    full_stat_path: str = await get_full_stat_name(chat_id=chat_id)
+
     stat_is_created: bool = await create_stat(
         chat_id=chat_id,
         dataframe=stat_dataframe,
-        full_stat_path=full_stat_path
+        full_stat_path=full_stat_path,
+        query_period=query_period
     )
 
     if not stat_is_created:
@@ -63,23 +89,35 @@ async def create_and_send_stat(chat_id, query_stat_date_period: list = None, **k
     return True
 
 
-async def get_stat_dataframe(chat_id, stat_period, headers):
+async def get_stat_dataframe_with_query(chat_id, query: str, header_list: list = None):
     """Получение dataframe с данными статистики
 
     :return:
     """
-    table_name: str = 'core_violations'
-
-    query: str = await get_query(
-        type_query='query_stat', table_name=table_name, query_date=stat_period, user_id=chat_id
-    )
-
-    print(f'get_stat_dataframe {query = }')
 
     stat_dataframe: DataFrame = await create_lite_dataframe_from_query(
-        chat_id=chat_id, query=query, clean_headers=headers
+        chat_id=chat_id, query=query, clean_headers=header_list
     )
     return stat_dataframe
+
+
+# async def get_stat_dataframe(chat_id, stat_period, headers):
+#     """Получение dataframe с данными статистики
+#
+#     :return:
+#     """
+#     table_name: str = 'core_violations'
+#
+#     query: str = await get_query(
+#         type_query='query_stat', table_name=table_name, query_date=stat_period, user_id=chat_id
+#     )
+#
+#     print(f'get_stat_dataframe {query = }')
+#
+#     stat_dataframe: DataFrame = await create_lite_dataframe_from_query(
+#         chat_id=chat_id, query=query, clean_headers=headers
+#     )
+#     return stat_dataframe
 
 
 async def send_stat(chat_id: str, full_report_path: str):
@@ -102,17 +140,33 @@ async def send_stat(chat_id: str, full_report_path: str):
 
 
 async def test():
-    chat_id = 373084462
+    chat_id = 373084462  #
 
     now = datetime.now()
 
     current_week: str = await get_week_message(current_date=now)
+    current_month: str = await get_month_message(current_date=now)
     current_year: str = await get_year_message(current_date=now)
 
-    act_date_period = await db_get_period_for_current_week(current_week, current_year)
+    act_date_period: list = await db_get_period_for_current_week(current_week, current_year)
+    pprint(f"{act_date_period = }")
+    act_date_period: list = await db_get_period_for_current_month(current_month, current_year)
+    pprint(f"{act_date_period = }")
+    act_date_period: str = datetime.now().strftime("%d.%m.%Y")  # '28.10.2022'  #
     pprint(f"{act_date_period = }")
 
-    await create_and_send_stat(chat_id, act_date_period)
+    act_date_period: list = ['16.01.2022', '22.01.2023']
+    pprint(f"{act_date_period = }")
+
+    now = datetime.now()
+    stat_date_period: list = [now.strftime("%d.%m.%Y"), now.strftime("%d.%m.%Y"), ]
+
+    kwargs = {
+        'is_admin': 0,
+        'location': 2
+    }
+
+    await create_and_send_stat(chat_id, stat_date_period, **kwargs)
 
 
 if __name__ == "__main__":

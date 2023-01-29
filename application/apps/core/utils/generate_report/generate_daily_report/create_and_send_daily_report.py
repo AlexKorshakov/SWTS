@@ -3,43 +3,62 @@ from datetime import datetime
 from pprint import pprint
 
 from pandas import DataFrame
+
 from apps.MyBot import MyBot
 from apps.core.bot.messages.messages import Messages
 from apps.core.database.db_utils import db_get_period_for_current_week
-from apps.core.utils.data_recording_processor.set_user_report_data import set_report_data
+from apps.core.database.query_constructor import QueryConstructor
 from apps.core.utils.generate_report.convert_xlsx_to_pdf import convert_report_to_pdf
-from apps.core.utils.generate_report.generate_act_prescription.create_and_send_act_prescription import get_clean_data
 from apps.core.utils.generate_report.generate_daily_report.create_daily_report import create_daily_report
 from apps.core.utils.generate_report.get_report_path import get_full_daily_report_name
 from apps.core.utils.generate_report.send_report_from_user import send_report_from_user
-from apps.core.utils.reports_processor.report_worker_utils import format_data_db, get_query, \
-    create_lite_dataframe_from_query
+from apps.core.utils.reports_processor.report_worker_utils import format_data_db, create_lite_dataframe_from_query, \
+    get_clean_headers
 from apps.core.utils.secondary_functions.get_part_date import get_week_message, get_year_message
 from loader import logger
 
 
-async def create_and_send_daily_report(chat_id, query_act_date_period: list = None, **kwargs) -> bool:
+async def create_and_send_daily_report(chat_id, query_period: list = None, **daily_report_kwargs) -> bool:
     """Формирование и отправка отчета
 
-    :param query_act_date_period:
+    :param query_period:
     :param chat_id:
     :return:
     """
 
     daily_report_date: str = datetime.now().strftime("%d.%m.%Y")  # '28.10.2022'  #
 
-    if not query_act_date_period:
-        query_act_date_period = await format_data_db(daily_report_date)
+    if not query_period:
+        query_period = await format_data_db(daily_report_date)
 
-    type_query = 'query_daily_report'
-    clean_headers, clear_list_value = await get_clean_data(chat_id, query_act_date_period, type_query)
-    if not clear_list_value:
-        return False
+    table_name: str = 'core_violations'
+    clean_headers: list = await get_clean_headers(table_name=table_name)
 
     full_daily_report_path: str = await get_full_daily_report_name(chat_id=chat_id)
 
-    daily_report_dataframe: DataFrame = await get_daily_report_dataframe(
-        chat_id=chat_id, act_period=query_act_date_period, headers=clean_headers
+    kwargs: dict = {
+        "type_query": 'query_statistic',
+        "action": 'SELECT',
+        "subject": '*',
+        "conditions": {
+            "period": query_period,
+            "period_description": 'Период для формирования запроса. Может состоять из одной или двух дат',
+
+            "is_admin": daily_report_kwargs.get('is_admin', None),
+            "is_admin_description": 'Является ли пользователь админом.'
+                                    'Если является - в запросе опускается часть с id пользователя',
+
+            "location": daily_report_kwargs.get('location', None),
+            "location_description": 'location_id локации по которой выполняется запрос'
+                                    'Если отсутствует или None - в запросе опускается часть с location_id',
+        }
+    }
+
+    query: str = await QueryConstructor(chat_id, table_name='core_violations', **kwargs).prepare_data()
+    print(f'get_stat_dataframe {query = }')
+
+    daily_report_dataframe: DataFrame = await get_daily_report_dataframe_with_query(
+        chat_id=chat_id, query=query, headers=clean_headers,
     )
 
     if daily_report_dataframe.empty:
@@ -63,18 +82,11 @@ async def create_and_send_daily_report(chat_id, query_act_date_period: list = No
     return True
 
 
-async def get_daily_report_dataframe(chat_id, act_period, headers):
+async def get_daily_report_dataframe_with_query(chat_id, query, headers):
     """Получение dataframe с данными акта - предписания
 
     :return:
     """
-    table_name: str = 'core_violations'
-
-    query: str = await get_query(
-        type_query='query_daily_report', table_name=table_name, query_date=act_period, user_id=chat_id
-    )
-
-    print(f'get_daily_report_dataframe {query = }')
 
     act_dataframe: DataFrame = await create_lite_dataframe_from_query(
         chat_id=chat_id, query=query, clean_headers=headers
