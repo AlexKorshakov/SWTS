@@ -1,17 +1,27 @@
+from apps.core.utils.generate_report.generate_stat.set_stat_alignment import \
+    set_stat_alignment
+from apps.core.utils.generate_report.generate_stat.settings_stat import (
+    STATISTIC_CELL_RANGE_BACKGROUND_COLOR_HEADER,
+    STATISTIC_CELL_RANGES_ALIGNMENT_HEADER,
+    STATISTIC_CELL_RANGES_BASIC_ALIGNMENT, STATISTIC_CELL_RANGES_HEADER,
+    STATISTIC_CELL_RANGES_SET_REPORT_FONT_HEADER,
+    STATISTIC_MERGED_CELLS_HEADER, STATISTIC_RANGE_COLUMNS_BASIC,
+    STATISTIC_ROW_DIMENSIONS_HEADER)
+from apps.core.utils.generate_report.sheet_formatting.set_background_color import \
+    set_report_background_color
+from apps.core.utils.generate_report.sheet_formatting.set_column_dimensions import \
+    set_column_dimensions
+from apps.core.utils.generate_report.sheet_formatting.set_font import (
+    set_report_font, sets_report_font)
+from apps.core.utils.generate_report.sheet_formatting.set_frame_border import \
+    set_range_border
+from apps.core.utils.generate_report.sheet_formatting.set_merge_cells import \
+    set_merge_cells
+from apps.core.utils.generate_report.sheet_formatting.set_page_setup import \
+    set_page_setup
+from apps.core.utils.generate_report.sheet_formatting.set_row_dimensions import \
+    set_row_dimensions
 from xlsxwriter.worksheet import Worksheet
-
-from apps.core.utils.generate_report.generate_stat.set_stat_alignment import set_stat_alignment
-from apps.core.utils.generate_report.generate_stat.settings_stat import STATISTIC_RANGE_COLUMNS_BASIC, \
-    STATISTIC_MERGED_CELLS_HEADER, STATISTIC_CELL_RANGES_HEADER, STATISTIC_ROW_DIMENSIONS_HEADER, \
-    STATISTIC_CELL_RANGES_BASIC_ALIGNMENT, STATISTIC_CELL_RANGE_BACKGROUND_COLOR_HEADER, \
-    STATISTIC_CELL_RANGES_ALIGNMENT_HEADER, STATISTIC_CELL_RANGES_SET_REPORT_FONT_HEADER
-from apps.core.utils.generate_report.sheet_formatting.set_background_color import set_report_background_color
-from apps.core.utils.generate_report.sheet_formatting.set_column_dimensions import set_column_dimensions
-from apps.core.utils.generate_report.sheet_formatting.set_font import set_report_font, sets_report_font
-from apps.core.utils.generate_report.sheet_formatting.set_frame_border import set_range_border
-from apps.core.utils.generate_report.sheet_formatting.set_merge_cells import set_merge_cells
-from apps.core.utils.generate_report.sheet_formatting.set_page_setup import set_page_setup
-from apps.core.utils.generate_report.sheet_formatting.set_row_dimensions import set_row_dimensions
 
 
 async def format_stat_sheet_basic(worksheet: Worksheet) -> bool:

@@ -1,3 +1,6 @@
+from loader import logger
+
+logger.debug(f"{__name__} start import")
 import asyncio
 from datetime import datetime
 from pprint import pprint
@@ -15,7 +18,8 @@ from apps.core.utils.generate_report.send_report_from_user import send_report_fr
 from apps.core.utils.reports_processor.report_worker_utils import format_data_db, create_lite_dataframe_from_query, \
     get_clean_headers
 from apps.core.utils.secondary_functions.get_part_date import get_week_message, get_year_message
-from loader import logger
+
+logger.debug(f"{__name__} finish import")
 
 
 async def create_and_send_daily_report(chat_id, query_period: list = None, **daily_report_kwargs) -> bool:
@@ -75,7 +79,10 @@ async def create_and_send_daily_report(chat_id, query_period: list = None, **dai
     if not act_is_created:
         return False
 
-    await MyBot.bot.send_message(chat_id=chat_id, text=f'{Messages.Report.done} \n')
+    # try:
+    #     await MyBot.bot.send_message(chat_id=chat_id, text=f'{Messages.Report.done} \n')
+    # except Exception as err:
+    #     logger.error(f'create_and_send_daily_report Exception {repr(err)}')
 
     await send_daily_report(chat_id=chat_id, full_report_path=full_daily_report_path)
 

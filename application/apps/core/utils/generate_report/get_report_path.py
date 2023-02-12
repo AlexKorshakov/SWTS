@@ -1,13 +1,15 @@
 import datetime
 
-from apps.MyBot import MyBot
-from apps.core.database.db_utils import db_get_dict_userdata, db_get_data_dict_from_table_with_id
-from apps.core.utils.generate_report.get_file_list import get_registration_json_file_list
-from loader import logger
-
 from apps.core.bot.messages.messages import Messages
+from apps.core.database.db_utils import (db_get_data_dict_from_table_with_id,
+                                         db_get_dict_userdata)
+from apps.core.utils.generate_report.get_file_list import \
+    get_registration_json_file_list
 from apps.core.utils.json_worker.read_json_file import read_json_file
-from apps.core.utils.secondary_functions.get_filepath import create_file_path, get_report_full_filepath
+from apps.core.utils.secondary_functions.get_filepath import (
+    create_file_path, get_report_full_filepath)
+from apps.MyBot import MyBot
+from loader import logger
 
 
 async def get_full_report_name(chat_id: int) -> str:

@@ -2,20 +2,24 @@ import asyncio
 from datetime import datetime
 from pprint import pprint
 
-from pandas import DataFrame
-
-from apps.MyBot import MyBot
 from apps.core.bot.messages.messages import Messages
-from apps.core.database.db_utils import db_get_period_for_current_week, db_get_period_for_current_month
+from apps.core.database.db_utils import (db_get_period_for_current_month,
+                                         db_get_period_for_current_week)
 from apps.core.database.query_constructor import QueryConstructor
-from apps.core.utils.generate_report.convert_xlsx_to_pdf import convert_report_to_pdf
-from apps.core.utils.generate_report.generate_stat.create_stat import create_stat
+from apps.core.utils.generate_report.convert_xlsx_to_pdf import \
+    convert_report_to_pdf
+from apps.core.utils.generate_report.generate_stat.create_stat import \
+    create_stat
 from apps.core.utils.generate_report.get_report_path import get_full_stat_name
-from apps.core.utils.generate_report.send_report_from_user import send_report_from_user
-from apps.core.utils.reports_processor.report_worker_utils import format_data_db, create_lite_dataframe_from_query
-from apps.core.utils.reports_processor.report_worker_utils import get_clean_headers
-from apps.core.utils.secondary_functions.get_part_date import get_week_message, get_year_message, get_month_message
+from apps.core.utils.generate_report.send_report_from_user import \
+    send_report_from_user
+from apps.core.utils.reports_processor.report_worker_utils import (
+    create_lite_dataframe_from_query, format_data_db, get_clean_headers)
+from apps.core.utils.secondary_functions.get_part_date import (
+    get_month_message, get_week_message, get_year_message)
+from apps.MyBot import MyBot
 from loader import logger
+from pandas import DataFrame
 
 
 async def create_and_send_stat(chat_id, query_period: [list, str] = None, **stat_kwargs) -> bool:
@@ -53,7 +57,7 @@ async def create_and_send_stat(chat_id, query_period: [list, str] = None, **stat
             "location_description": 'location_id локации по которой выполняется запрос'
                                     'Если отсутствует или None - в запросе опускается часть с location_id',
 
-            'act_number': None,
+            'act_number': 'not',
             "act_number_description": 'Если отсутствует или None - в запросе опускается часть с location_id',
         }
     }
@@ -148,18 +152,18 @@ async def test():
     current_month: str = await get_month_message(current_date=now)
     current_year: str = await get_year_message(current_date=now)
 
-    act_date_period: list = await db_get_period_for_current_week(current_week, current_year)
-    pprint(f"{act_date_period = }")
-    act_date_period: list = await db_get_period_for_current_month(current_month, current_year)
-    pprint(f"{act_date_period = }")
-    act_date_period: str = datetime.now().strftime("%d.%m.%Y")  # '28.10.2022'  #
-    pprint(f"{act_date_period = }")
+    # stat_date_period: list = await db_get_period_for_current_week(current_week, current_year)
+    # pprint(f"{stat_date_period = }")
+    # stat_date_period: list = await db_get_period_for_current_month(current_month, current_year)
+    # pprint(f"{stat_date_period = }")
+    # stat_date_period: str = datetime.now().strftime("%d.%m.%Y")  # '28.10.2022'  #
+    # pprint(f"{stat_date_period = }")
 
-    act_date_period: list = ['16.01.2022', '22.01.2023']
-    pprint(f"{act_date_period = }")
+    stat_date_period: list = ['01.01.2022', datetime.now().strftime("%d.%m.%Y")]
+    pprint(f"{stat_date_period = }")
 
-    now = datetime.now()
-    stat_date_period: list = [now.strftime("%d.%m.%Y"), now.strftime("%d.%m.%Y"), ]
+    # now = datetime.now()
+    # stat_date_period: list = [now.strftime("%d.%m.%Y"), now.strftime("%d.%m.%Y"), ]
 
     kwargs = {
         'is_admin': 0,

@@ -32,32 +32,15 @@ async def set_report_violation_values(
     :param dataframe: dataframe с данными нарушений
     :return: bool
     """
-    serial_number = 0
-    violation_value = []
+    serial_number: int = 0
+    violation_value: list = []
 
     clean_categories = await db_get_categories()
 
     for category in clean_categories:
 
         violation_value = await get_violation_value(dataframe, category)
-        # for enum, item in enumerate(range(1, dataframe.category_id.size)):
-        #     category_data_dict: dict = await db_get_data_dict_from_table_with_id(
-        #         table_name='core_category',
-        #         post_id=dataframe.loc[item]["category_id"])
-        #     category_title = category_data_dict.get('title')
-        #
-        #     if category_title != category:
-        #         continue
-        #
-        #     try:
-        #         elimination_time = await get_elimination_time(dataframe, item)
-        #         violation_value.append(
-        #             {"description": dataframe.loc[enum]["description"] + ' \\',
-        #              "elimination_time": elimination_time + ' \\'}
-        #         )
-        #     except Exception as err:
-        #         logger.error(f"{repr(err)}")
-        #         continue
+
         if not violation_value:
             continue
 
@@ -333,16 +316,6 @@ async def set_report_headlines_data_values(chat_id: int, dataframe=None) -> bool
     headlines_data["day"] = (datetime.datetime.now()).strftime("%d")
     headlines_data["year"] = (datetime.datetime.now()).strftime("%Y")
 
-    # if not user_data:
-
-    # registration_file_list: list = await get_registration_json_file_list(chat_id=chat_id)
-    # if not registration_file_list:
-    #     logger.warning(Messages.Error.registration_file_list_not_found)
-    #     await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.file_list_not_found)
-    #     return False
-    #
-    # registration_data: dict = await read_json_file(registration_file_list)
-
     registration_data: dict = await db_get_dict_userdata(chat_id)
 
     organization_full_name: dict = await db_get_data_dict_from_table_with_id(
@@ -381,6 +354,8 @@ async def set_report_headlines_data_values(chat_id: int, dataframe=None) -> bool
         headlines_data['name_location'] = location
 
     headlines_data['phone_number'] = registration_data.get("hse_contact_main_phone_number", '')
+
+    headlines_data['HSE_email'] = registration_data.get("hse_contact_main_email", '')
 
     work_shift_dict: dict = await db_get_data_dict_from_table_with_id(
         table_name='core_workshift',
@@ -445,8 +420,10 @@ async def get_elimination_time(dataframe: DataFrame, item: int) -> str:
     elimination_time_title = elimination_time_dict.get('title', None)
     elimination_time_days = int(elimination_time_dict.get('days', None))
 
-    if elimination_time_title != ELIMINATION_TIME[0] and \
-            elimination_time_title != ELIMINATION_TIME[1]:
+    elimination_time_title_list = await db_get_elimination_time()
+
+    if elimination_time_title != elimination_time_title_list[0] and \
+            elimination_time_title != elimination_time_title_list[1]:
         elimination_time = datetime.datetime.now() + datetime.timedelta(days=elimination_time_days)
 
         return str(elimination_time.strftime("%d.%m.%Y"))

@@ -20,7 +20,8 @@ from xlsxwriter.worksheet import Worksheet
 
 
 async def set_stat_violation_values(
-        worksheet: Worksheet, dataframe: DataFrame, body_val_list: list = None, workbook=None, full_stat_path=None
+        worksheet: Worksheet, dataframe: DataFrame, body_val_list: list = None, workbook: Workbook = None,
+        full_stat_path: str = None
 ) -> bool:
     """Заполнение акта значениями из dataframe
 
@@ -50,9 +51,10 @@ async def set_stat_violation_values(
 
             negative = len([i for i in violation_value if i.get('status', None) == 0])
             in_work = len([i for i in violation_value if i.get('status', None) == 2])
+            in_act = len([i for i in violation_value if i.get('in_act', None)])
 
             violation_dict = {
-                'v_len': len(violation_value),
+                'v_len': f'{len(violation_value)} \\ {in_act}',
                 'v_negative': f'{negative} \\ {in_work}',
             }
             await set_worksheet_cell_value(worksheet, body_val_item, serial_number, violation_dict)
@@ -64,12 +66,13 @@ async def set_stat_violation_values(
         if body_val_item.get('value') == "В С Е Г О":
             negative = len(dataframe[dataframe['status_id'] == 0])
             in_work = len(dataframe[dataframe['status_id'] == 2])
+            in_act = len(dataframe[dataframe['act_number'] != ""])
 
             violation_dict_all = {
-                'v_len': len(dataframe.index),
+                'v_len': f'{len(dataframe.index)} \\ {in_act}',
                 'v_negative': f'{negative} \\ {in_work}',
             }
-            await set_worksheet_cell_value(worksheet, body_val_item, serial_number+1, violation_dict_all)
+            await set_worksheet_cell_value(worksheet, body_val_item, serial_number + 1, violation_dict_all)
             workbook.save(full_stat_path)
             break
 
@@ -91,18 +94,16 @@ async def get_violation_value(dataframe: DataFrame, category: dict) -> list:
     for item_df in category_dataframe.itertuples(index=False):
         try:
             description = item_df.description
-
             elimination_time_id = item_df.elimination_time_id
-            # elimination_time = await get_elimination_time(elimination_time_id)
-
             status_id = item_df.status_id
-            # status = await get_status(status_id)
+            in_act = item_df.act_number
 
             violation_value.append(
                 {
                     "description": description,
                     "elimination_time": elimination_time_id,
                     "status": status_id,
+                    'in_act': in_act,
                 }
             )
 
@@ -222,7 +223,7 @@ async def set_stat_values_header(worksheet: Worksheet) -> bool:
         {"coordinate": "C18", "value": "Наблюдения", "row": "18", "column": "3"},
         {"coordinate": "D18", "value": "Категория несоответствия", "row": "18", "column": "4"},
         {"coordinate": "F18", "value": "№", "row": "18", "column": "6"},
-        {"coordinate": "G18", "value": "Количество", "row": "18", "column": "7"},
+        {"coordinate": "G18", "value": "Количество (всего / в актах )", "row": "18", "column": "7"},
         {"coordinate": "H18", "value": "Не устраненных / просрочено", "row": "18", "column": "8"},
     ]
 
@@ -439,8 +440,8 @@ async def set_stat_headlines_data_values(chat_id: int, dataframe=None, query_per
     return True
 
 
-async def set_worksheet_cell_value(worksheet: Worksheet, item: dict, serial_number: int, violation_dict: dict):
-    """
+async def set_worksheet_cell_value(worksheet: Worksheet, item: dict, serial_number: int, violation_dict: dict) -> bool:
+    """Формирование тела отчета (раздел итогов)
 
     :param violation_dict: dict
     :param worksheet: страница для заполнения
@@ -448,7 +449,7 @@ async def set_worksheet_cell_value(worksheet: Worksheet, item: dict, serial_numb
     :param serial_number:
     :return:
     """
-    worksheet.cell(row=int(item['row']), column=6, value=serial_number)
+    # worksheet.cell(row=int(item['row']), column=6, value=serial_number)
     worksheet.cell(row=int(item['row']), column=7, value=violation_dict.get('v_len', ''))
     worksheet.cell(row=int(item['row']), column=8, value=violation_dict.get('v_negative', ''))
 
@@ -464,6 +465,8 @@ async def set_worksheet_cell_value(worksheet: Worksheet, item: dict, serial_numb
     # worksheet.row_dimensions[int(item['row'])].height = await get_height_for_row(
     #     sheet=worksheet, row_number=int(item['row']),
     #     value="".join([str(i["description"]) + ' \n' for i in val]))
+
+    return True
 
 
 async def get_elimination_time(elimination_time_id: int) -> str:

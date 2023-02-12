@@ -1,4 +1,5 @@
 import asyncio
+import traceback
 from datetime import datetime
 from pprint import pprint
 
@@ -30,10 +31,12 @@ async def create_and_send_act_prescription(chat_id: int, query_act_date_period=N
     act_date: str = datetime.now().strftime("%d.%m.%Y")  # '28.10.2022'  #
 
     if not query_act_date_period:
-        query_act_date_period = await format_data_db(act_date)
+        date_now = await format_data_db(act_date)
+        query_act_date_period = [date_now, date_now]
 
-    type_query = 'query_act'
-    clean_headers, clear_list_value = await get_clean_data(chat_id, query_act_date_period, type_query)
+    clean_headers: list = await get_clean_headers(table_name='core_violations')
+
+    clear_list_value = await get_clean_data(chat_id, query_act_date_period, headers=clean_headers)
     if not clear_list_value:
         return False
 
@@ -92,12 +95,12 @@ async def get_act_dataframe(chat_id, act_period, constractor_id, headers):
     """
     table_name: str = 'core_violations'
 
+    # TODO заменить на вызов конструктора QueryConstructor
     query: str = await get_query(
         type_query='general_contractor_id', table_name=table_name, query_date=act_period,
         value_id=constractor_id, user_id=chat_id
     )
-
-    print(f'get_act_dataframe {query = }')
+    print(f'{__name__} {say_fanc_name()} {query}')
 
     act_dataframe: DataFrame = await create_lite_dataframe_from_query(
         chat_id=chat_id, query=query, clean_headers=headers
@@ -128,41 +131,27 @@ async def get_full_act_prescription_path(chat_id, act_number, act_date, constrac
     return full_act_prescription_path
 
 
-async def get_clean_data(chat_id, query_act_date_period, type_query: str = None, query=None, **stat_kwargs):
+async def get_clean_data(chat_id, query_act_date_period, headers, **stat_kwargs):
     """Получение данных с заголовками за период query_act_date_period
 
     :return:
     """
-    table_name: str = 'core_violations'
-    clean_headers: list = await get_clean_headers(table_name=table_name)
-
-    if not type_query:
-        type_query = 'query_act'
-
-    query: str = await get_query(
-        type_query=type_query, table_name=table_name, query_date=query_act_date_period, user_id=chat_id
-    )
-    pprint(f'{query = }')
-
     kwargs: dict = {
         "action": 'SELECT',
-        "table_name": table_name,
         "subject": '*',
         "conditions": {
             "period": query_act_date_period,
-            "is_admin": stat_kwargs.get('is_admin', None),
+            "act_number": "",
             "location": stat_kwargs.get('location', None)
         }
     }
-
-    query_constructor: str = await QueryConstructor(chat_id, table_name='core_violations', **kwargs).prepare_data()
-    pprint(f'{query_constructor = }')
+    query: str = await QueryConstructor(chat_id, table_name='core_violations', **kwargs).prepare_data()
 
     clear_list_value: list = await get_clear_list_value(
-        chat_id=chat_id, query=query, clean_headers=clean_headers
+        chat_id=chat_id, query=query, clean_headers=headers
     )
 
-    return clean_headers, clear_list_value
+    return clear_list_value
 
 
 async def send_act_prescription(chat_id, full_act_prescription_path):
@@ -195,7 +184,14 @@ async def test():
     act_date_period = await db_get_period_for_current_week(current_week, current_year)
     pprint(f"{act_date_period = }")
 
+    act_date_period = now
+
     await create_and_send_act_prescription(chat_id, act_date_period)
+
+
+def say_fanc_name():
+    stack = traceback.extract_stack()
+    return str(stack[-2][2])
 
 
 if __name__ == "__main__":

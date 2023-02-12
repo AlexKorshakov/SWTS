@@ -27,6 +27,9 @@ async def set_automatic_row_dimensions(worksheet, row_number: int, row_value) ->
     :return:
     """
 
+    if not row_value:
+        return False
+
     normative_documents: dict = await db_get_data_dict_from_table_with_id(
         table_name='core_normativedocuments',
         post_id=row_value.normative_documents_id)
@@ -34,13 +37,22 @@ async def set_automatic_row_dimensions(worksheet, row_number: int, row_value) ->
     title = normative_documents.get('title', None)
     normative = normative_documents.get('normative', None)
     procedure = normative_documents.get('procedure', None)
+    comment = row_value.comment
 
-    comment = row_value.comment if len(row_value.comment) < len(procedure) else procedure
+    if not normative:
+        logger.error(f"No normative found if {row_value =  }")
+    if not procedure:
+        logger.error(f"No procedure found if {row_value =  }")
+
+    if procedure:
+        comment = row_value.comment if len(row_value.comment) < len(procedure) else procedure
 
     item_list: list = []
     try:
         list_val = [row_value.description, title, normative, comment]
         for item in list_val:
+            if not isinstance(item, str): continue
+
             lines = min(len(item.split("\n\n")) - 1, 1)
             height = max(len(item) / 26 + lines, 1.5) * 16
             item_list.append(height)

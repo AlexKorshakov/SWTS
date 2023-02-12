@@ -1,20 +1,25 @@
-from pandas import DataFrame
-
-from apps.MyBot import MyBot
 from apps.core.bot.messages.messages import Messages
 from apps.core.utils.generate_report.create_xlsx.create_xlsx import create_xlsx
-from apps.core.utils.generate_report.generate_daily_report.set_daily_report_format import \
-    format_daily_report_sheet_header, \
-    format_daily_report_photographic, format_daily_report_sheet_basic, format_daily_report_sheet_body, \
-    format_daily_report_sheet_footer
-from apps.core.utils.generate_report.generate_daily_report.set_daily_report_values import set_report_values_header, \
-    set_report_headlines_data_values, set_report_header_values, set_report_violation_values, \
-    set_mip_photographic_materials_values, set_report_values_body, set_report_values_footer
-from apps.core.utils.generate_report.set_value import set_photographic_materials
-from apps.core.utils.generate_report.sheet_formatting.set_page_setup import set_row_breaks
-from apps.core.utils.img_processor.insert_img import insert_signalline_to_report_body, insert_service_image
-from apps.core.utils.reports_processor.report_worker_utils import get_clean_headers
+from apps.core.utils.generate_report.generate_daily_report.set_daily_report_format import (
+    format_daily_report_photographic, format_daily_report_sheet_basic,
+    format_daily_report_sheet_body, format_daily_report_sheet_footer,
+    format_daily_report_sheet_header)
+from apps.core.utils.generate_report.generate_daily_report.set_daily_report_values import (
+    set_mip_photographic_materials_values, set_report_header_values,
+    set_report_headlines_data_values, set_report_values_body,
+    set_report_values_footer, set_report_values_header,
+    set_report_violation_values)
+from apps.core.utils.generate_report.set_value import \
+    set_photographic_materials
+from apps.core.utils.generate_report.sheet_formatting.set_page_setup import \
+    set_row_breaks
+from apps.core.utils.img_processor.insert_img import (
+    insert_service_image, insert_signalline_to_report_body)
+from apps.core.utils.reports_processor.report_worker_utils import \
+    get_clean_headers
+from apps.MyBot import MyBot
 from loader import logger
+from pandas import DataFrame
 
 
 async def create_daily_report(chat_id: int, dataframe: DataFrame = None, full_daily_report_report_path: str = None,

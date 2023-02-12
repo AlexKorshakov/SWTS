@@ -1,9 +1,12 @@
 import asyncio
 import datetime
+import traceback
 
 from apps.core.bot.reports.report_data import headlines_data
-from apps.core.database.db_utils import db_get_data_dict_from_table_with_id, db_get_data_list
-from apps.core.utils.reports_processor.report_worker_utils import get_clean_headers
+from apps.core.database.db_utils import (db_get_data_dict_from_table_with_id,
+                                         db_get_data_list)
+from apps.core.utils.reports_processor.report_worker_utils import \
+    get_clean_headers
 from loader import logger
 
 
@@ -20,15 +23,17 @@ async def get_act_headlines_data_values(chat_id, dataframe=None, act_date=None, 
         datas_query_list: list = await db_get_data_list(query=query)
         clean_datas_query_list = datas_query_list[0]
 
-        item_dict: dict = dict((header, item_value) for header, item_value in zip(clean_headers, clean_datas_query_list))
+        item_dict: dict = dict(
+            (header, item_value) for header, item_value in zip(clean_headers, clean_datas_query_list))
 
         hse_id = item_dict.get('id', None)
 
         if not hse_id:
             logger.error(f'hse_id is {hse_id}')
             return {}
-
+        # TODO заменить на вызов конструктора QueryConstructor
         query: str = f'SELECT * FROM `core_hseuser` WHERE `hse_telegram_id` == {chat_id}'
+        print(f'{__name__} {say_fanc_name()} {query}')
 
         hse_user: dict = await db_get_data_dict_from_table_with_id(
             table_name='core_hseuser',
@@ -191,6 +196,11 @@ async def set_act_footer_footer_values(worksheet, row_number):
         except Exception as err:
             logger.error(f"set_user_values {repr(err)}")
             continue
+
+
+def say_fanc_name():
+    stack = traceback.extract_stack()
+    return str(stack[-2][2])
 
 
 async def test():

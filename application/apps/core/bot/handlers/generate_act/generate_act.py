@@ -27,6 +27,7 @@ logger.debug(f"{__name__} finish import")
 @MyBot.dp.message_handler(Command('generate_act'))
 async def act_generate_handler(message: types.Message) -> None:
     """Запуск генерации акта - предписания
+
     :param message:
     :return:
     """
@@ -42,6 +43,8 @@ async def act_generate_handler(message: types.Message) -> None:
 @MyBot.dp.callback_query_handler(posts_cb.filter(action=['gen_act_today']))
 async def call_correct_abort_current_post(call: types.CallbackQuery, callback_data: typing.Dict[str, str]):
     """Обработка ответов содержащихся в ADMIN_MENU_LIST
+
+    :return:
     """
     chat_id: int = call.message.chat.id
     username: str = await db_get_username(user_id=chat_id)
@@ -66,6 +69,8 @@ async def call_correct_abort_current_post(call: types.CallbackQuery, callback_da
 @MyBot.dp.callback_query_handler(posts_cb.filter(action=['gen_act_today_and_previous']))
 async def call_correct_abort_current_post(call: types.CallbackQuery, callback_data: typing.Dict[str, str]):
     """Обработка ответов содержащихся в ADMIN_MENU_LIST
+
+    :return:
     """
     chat_id: int = call.message.chat.id
     username: str = await db_get_username(user_id=chat_id)
@@ -91,6 +96,8 @@ async def call_correct_abort_current_post(call: types.CallbackQuery, callback_da
 @MyBot.dp.callback_query_handler(posts_cb.filter(action=['gen_act_current_week']))
 async def call_correct_abort_current_post(call: types.CallbackQuery, callback_data: typing.Dict[str, str]):
     """Обработка ответов содержащихся в ADMIN_MENU_LIST
+
+    :return:
     """
     chat_id: int = call.message.chat.id
     username: str = await db_get_username(user_id=chat_id)
@@ -135,8 +142,11 @@ async def add_period_inline_keyboard_with_action():
 async def test():
     user_id = 373084462
     now = datetime.now()
-    previous = now - timedelta(days=1)
-    act_date_period: list = [previous.strftime("%d.%m.%Y"), now.strftime("%d.%m.%Y"), ]
+    # previous = now - timedelta(days=1)
+    # act_date_period: list = [previous.strftime("%d.%m.%Y"), now.strftime("%d.%m.%Y"), ]
+    # pprint(f'{act_date_period = }')
+
+    act_date_period: list = [now.strftime("%d.%m.%Y"), now.strftime("%d.%m.%Y"), ]
     pprint(f'{act_date_period = }')
 
     if await create_and_send_act_prescription(chat_id=user_id, query_act_date_period=act_date_period):
