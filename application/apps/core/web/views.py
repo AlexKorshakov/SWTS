@@ -1,22 +1,25 @@
 import asyncio
 
-from django.http import HttpRequest, HttpResponse
-from django.core.paginator import Paginator
-from django.views.generic import ListView, DetailView, CreateView
-from django.shortcuts import render, redirect
-
-from django.contrib import messages
-from django.contrib.auth import login, logout
-
-from apps.core.web.utils import MyMixin, delete_violations_from_all_repo, get_id_registered_users, get_params, \
-    update_violations_from_all_repo
-from loader import logger
-#
-from .forms import UsrRegisterForm, UserLoginForm, ViolationsForm, ViolationsAddForm
-from .models import Violations, MainCategory, GeneralContractor, IncidentLevel, Status, MainLocation, ActsPrescriptions, NormativeDocuments
 #
 # # Create your views here.
 from apps.core.database.DataBase import upload_from_local
+from apps.core.web.utils import (MyMixin, delete_violations_from_all_repo,
+                                 get_id_registered_users, get_params,
+                                 update_violations_from_all_repo)
+from django.contrib import messages
+from django.contrib.auth import login, logout
+from django.core.paginator import Paginator
+from django.http import HttpRequest, HttpResponse
+from django.shortcuts import redirect, render
+from django.views.generic import CreateView, DetailView, ListView
+from loader import logger
+
+#
+from .forms import (UserLoginForm, UsrRegisterForm, ViolationsAddForm,
+                    ViolationsForm)
+from .models import (ActsPrescriptions, GeneralContractor, IncidentLevel,
+                     MainCategory, MainLocation, NormativeDocuments, Status,
+                     Violations)
 
 
 def upload_too_db_from_local_storage(request: HttpRequest):
@@ -470,3 +473,25 @@ class HomeRegisterNormativeDocuments(MyMixin, ListView):
 
     # def get_queryset(self):
     #     return ActsPrescriptions.objects.select_related('acts')
+
+
+class HomeRegisterUnclosedPoints(MyMixin, ListView):
+    """Просмотр не закрытых пунктов актов предписаний"""
+    model = Violations
+    template_name = 'register_of_unclosed_points.html'
+    context_object_name = 'unclosed_points'
+    paginate_by = 20
+    allow_empty = False
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        """Дополнение данных перед отправкой на рендер"""
+        context = super().get_context_data(**kwargs)
+
+        logger.debug(f"{context=}")
+        return context
+
+    def get_queryset(self):
+        return Violations.objects.filter(
+            status=2,
+            is_published=True,
+        ).prefetch_related('finished')

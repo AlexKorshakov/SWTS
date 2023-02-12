@@ -1,7 +1,8 @@
+from apps.core.web.models import (GeneralContractor, IncidentLevel,
+                                  MainCategory, MainLocation, Status, Week)
 from django import template
-from django.db.models import Count, F
 from django.core.cache import cache
-from apps.core.web.models import MainCategory, MainLocation, GeneralContractor, IncidentLevel, Status, Week
+from django.db.models import Count, F, Q
 
 register = template.Library()
 
@@ -72,13 +73,29 @@ def show_statuses():
     return {'statuses': statuses}
 
 
-@register.inclusion_tag('list_weeks.html')
-def show_weeks():
+@register.inclusion_tag('list_weeks_2022.html')
+def show_weeks_2022():
     # weeks = Week.objects.all()
     # return weeks
 
-    weeks = Week.objects.annotate(
-        cnt=Count('violations', filter=F('violations__is_published'))
+    weeks_2022 = Week.objects.annotate(
+        cnt=Count(
+            'violations', filter=Q(violations__is_published=True, violations__year=2022)
+        )
     ).filter(cnt__gt=0)
 
-    return {'weeks': weeks}
+    return {'weeks_2022': weeks_2022}
+
+
+@register.inclusion_tag('list_weeks_2023.html')
+def show_weeks_2023():
+    # weeks = Week.objects.all()
+    # return weeks
+
+    weeks_2023 = Week.objects.annotate(
+        cnt=Count(
+            'violations', filter=Q(violations__is_published=True, violations__year=2023)
+        )
+    ).filter(cnt__gt=0)
+
+    return {'weeks_2023': weeks_2023}

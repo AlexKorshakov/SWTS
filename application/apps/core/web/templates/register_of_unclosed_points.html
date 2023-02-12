@@ -1,0 +1,54 @@
+{% extends 'registers.html' %}
+{% load static %}
+
+
+
+{% block content %}
+
+<div id="datatable" class="table-responsive-xl">
+    <table id="example" class="table table-hover responsive nowrap" style="width: 1500px">
+        <thead class="table-dark">
+        <tr style="background : blue; color : white;">
+            <th style="text-align: center; vertical-align: top; "> п/п </th>
+            <th style="text-align: center; vertical-align: top; "> id записи </th>
+            <th style="text-align: center; vertical-align: top; "> Категория </th>
+            <th style="text-align: center; vertical-align: top; "> Номер Акта </th>
+            <th style="text-align: center; vertical-align: top; "> Выдал </th>
+            <th style="text-align: center; vertical-align: top; "> Статус </th>
+            <th style="text-align: center; vertical-align: top; "> Описание </th>
+            <th style="text-align: center; vertical-align: top; "> Комментарий </th>
+            <th style="text-align: center; vertical-align: top; "> Организация </th>
+            <th style="text-align: center; vertical-align: top; "> Дата фиксации </th>
+            <th style="text-align: center; vertical-align: top; "> Дней на устранение </th>
+            <th style="text-align: center; vertical-align: top; "> Финальная дата </th>
+        </tr>
+        </thead>
+        <tbody class="table-dark">
+
+        {% for point in unclosed_points %}
+        <tr style=" color : white">
+
+            <td style="text-align: left; vertical-align: top; ">{{ forloop.counter }}</td>
+            <td style="text-align: left; vertical-align: top; ">{{ point.id }}</td>
+            <td style="text-align: left; vertical-align: top; ">{{ point.category.title }}</td>
+            <td style="text-align: left; vertical-align: top; ">{{ point.act_number }}</td>
+            <td style="text-align: left; vertical-align: top; ">{{ point.hse.hse_short_name }}</td>
+            <td style="text-align: left; vertical-align: top; ">{{ point.finished.title }}</td>
+            <td style="text-align: left; vertical-align: top; ">{{ point.description }}</td>
+            <td style="text-align: left; vertical-align: top; ">{{ point.comment }}</td>
+            <td style="text-align: left; vertical-align: top; ">{{ point.general_contractor.title }}</td>
+            <td style="text-align: left; vertical-align: top; ">{{ point.created_at }}</td>
+            <td style="text-align: left; vertical-align: top; ">{{ point.elimination_time.title }}</td>
+
+        </tr>
+        {% endfor %}
+
+        </tbody>
+    </table>
+</div>
+
+<div class="clearfix"></div>
+
+
+{% endblock %}
+

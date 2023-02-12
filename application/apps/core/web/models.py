@@ -1,6 +1,6 @@
-from tortoise import Tortoise, fields
 from django.db import models
 from django.urls import reverse
+from tortoise import Tortoise, fields
 
 
 class Violations(models.Model):
@@ -51,6 +51,9 @@ class Violations(models.Model):
     elimination_time = models.ForeignKey(to='EliminationTime', on_delete=models.PROTECT,
                                          verbose_name='Время на устранение', default='')
 
+    hse = models.ForeignKey(to='HSEUser', on_delete=models.PROTECT,
+                            verbose_name='Специалист', default='')
+
     title = models.CharField(max_length=100, verbose_name='Заголовок')
     user_id = models.CharField(max_length=255, verbose_name='ID пользователя', default='', blank=True)
     file_id = models.CharField(max_length=255, verbose_name='file_id', default='', blank=True)
@@ -63,7 +66,12 @@ class Violations(models.Model):
     day = models.PositiveSmallIntegerField(blank=True, verbose_name='День', default=1)
     month = models.PositiveSmallIntegerField(blank=True, verbose_name='Месяц', default=1)
     year = models.PositiveSmallIntegerField(blank=True, verbose_name='Год', default=2000)
-    week = models.PositiveSmallIntegerField(blank=True, verbose_name='Неделя', default=1)
+
+    # week = models.PositiveSmallIntegerField(blank=True, verbose_name='Неделя', default=1)
+    week = models.ForeignKey(to='Week', on_delete=models.PROTECT,
+                             verbose_name='Неделя', default='')
+
+    act_number = models.PositiveSmallIntegerField(blank=True, verbose_name='Номер акта')
     quarter = models.PositiveSmallIntegerField(blank=True, verbose_name='Квартал', default=1)
     day_of_year = models.PositiveSmallIntegerField(blank=True, verbose_name='Номер дня в году', default=1)
 
@@ -340,20 +348,20 @@ class Status(models.Model):
 
 
 class Week(models.Model):
-    title = models.CharField(max_length=255, db_index=True, verbose_name='Неделя')
+    week_number = models.CharField(max_length=255, db_index=True, verbose_name='Неделя')
 
     class Meta:
         verbose_name = "Неделя"  # единственное число
         verbose_name_plural = "Недели"  # множественное число
-        ordering = ['title']  # порядок сортировки
+        # ordering = ['title']  # порядок сортировки
 
     def __str__(self):
-        return self.title
+        return self.week_number
 
     def get_absolute_url(self):
         """Метод, согласно конвекции, для создания ссылок на части экземпляра модели (класса)
         также, при наличии, позволяет переходить из админки на соответствующий раздел"""
-        return reverse('week', kwargs={'week': self.pk})
+        return reverse('week', kwargs={'week_id': self.week_number})
 
 
 class Finished(models.Model):

@@ -9,7 +9,16 @@
 {% endblock %}
 
 {% block content %}
-<div class="card" {% if violations_item.is_finished != True %} style="background-color: #ffcfcfe3;" {% endif %}>
+<!--<div class="card" {% if violations_item.is_finished != True %} style="background-color: #ffcfcfe3;" {% endif %}>-->
+<div class="card"
+     {% if violations_item.finished_id == 0 %}
+        style="--not_finished:#c7b191"
+     {% elif violations_item.finished_id == 1 %}
+        style="--not_finished:#cfe8dc"
+     {% elif violations_item.finished_id == 2 %}
+        style="--not_finished:#e0b1bc"
+     {% endif %}
+>
 
     <div class="card-header">
         {% comment %}
@@ -36,7 +45,7 @@
         Уровень происшествия: <a href="">{{ violations_item.incident_level }}</a>
     </div>
         <div class="card-header">
-            Неделя: <a href="">{{ violations_item.week }}</a>
+            Неделя: <a href="">{{ violations_item.week.week_number }}</a>
         </div>
 
     <h3 class="card-title">{{ violations_item.description }}</h3>
@@ -110,17 +119,13 @@
                 <p class="card-text"> Смена: {{ violations_item.work_shift }} </p>
                 <p class="card-text"> Id специалиста: {{ violations_item.user_id }} </p>
 
+
+                {% comment %}
                 <p class="card-text">
                     <a href="https://drive.google.com/drive/u/0/folders/{{ violations_item.parent_id }}">
                         --> Раздел с данными специалиста в облаке <--
                     </a>
                 </p>
-
-                {% comment %}
-                json = 'Json'
-                report_folder_id 'report_folder_id'
-                json_folder_id 'json_folder_id'
-                photo_folder_id 'photo_folder_id'
                 {% endcomment %}
 
                 <div class="box">

@@ -10,6 +10,7 @@
             <th style="text-align: center; vertical-align: top; ">п/п</th>
             <th style="text-align: center; vertical-align: top; ">Дата</th>
             <th style="text-align: center; vertical-align: top; ">Номер</th>
+            <th style="text-align: center; vertical-align: top; ">Выдал</th>
             <th style="text-align: center; vertical-align: top; ">Записей</th>
             <th style="text-align: center; vertical-align: top; ">ПО</th>
             <th style="text-align: center; vertical-align: top; ">Неделя</th>
@@ -18,6 +19,7 @@
             <th style="text-align: center; vertical-align: top; ">Год</th>
             <th style="text-align: center; vertical-align: top; ">Статус</th>
             <th style="text-align: center; vertical-align: top; ">Подрядчик</th>
+            <th style="text-align: center; vertical-align: top; ">Actions</th>
 
         </tr>
         </thead>
@@ -29,6 +31,7 @@
             <td style="text-align: left; vertical-align: top; ">{{ forloop.counter }}</td>
             <td style="text-align: left; vertical-align: top; ">{{ act.act_date }}</td>
             <td style="text-align: left; vertical-align: top; ">{{ act.act_number }}</td>
+            <td style="text-align: left; vertical-align: top; ">{{ act.act_hse }}</td>
             <td style="text-align: left; vertical-align: top; ">{{ act.act_row_count }}</td>
             <td style="text-align: left; vertical-align: top; ">{{ act.act_location }}</td>
             <td style="text-align: left; vertical-align: top; ">{{ act.act_week }}</td>
@@ -37,6 +40,7 @@
             <td style="text-align: left; vertical-align: top; ">{{ act.act_year }}</td>
             <td style="text-align: left; vertical-align: top; ">{{ act.act_status.title }}</td>
             <td style="text-align: left; vertical-align: top; ">{{ act.act_general_contractor.title }}</td>
+            <td style="text-align: center; vertical-align: center; ">'  '</td>
 
         </tr>
         {% endfor %}
