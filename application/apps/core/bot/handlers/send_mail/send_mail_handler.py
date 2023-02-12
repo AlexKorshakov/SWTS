@@ -1,4 +1,7 @@
-from __future__ import print_function
+from loader import logger
+
+logger.debug(f"{__name__} start import")
+# from __future__ import print_function
 
 import mimetypes
 import os
@@ -11,22 +14,18 @@ from email.mime.text import MIMEText
 
 from aiogram import types
 from aiogram.dispatcher.filters import Command
-
-from apps.MyBot import MyBot
-from apps.core.utils.generate_report.get_file_list import get_report_file_list, get_registration_json_file_list
-from loader import logger
-
+from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.bot.data.category import get_data_list
-from config.config import SENDER_ACCOUNT_GMAIL, SENDER_ACCOUNT_PASSWORD, SENDER
-
 from apps.core.bot.messages.messages import Messages
+from apps.core.utils.generate_report.get_file_list import (
+    get_registration_json_file_list, get_report_file_list)
 # from apps.core.utils.reports_processor.get_file_list import get_registration_json_file_list, get_report_file_list
 from apps.core.utils.json_worker.read_json_file import read_json_file
 from apps.core.utils.misc import rate_limit
+from apps.MyBot import MyBot
+from config.config import SENDER, SENDER_ACCOUNT_GMAIL, SENDER_ACCOUNT_PASSWORD
 
-
-from apps.core.bot.bot_utils.check_user_registration import check_user_access
-
+logger.debug(f"{__name__} finish import")
 
 @rate_limit(limit=360)
 @MyBot.dp.message_handler(Command('send_mail'))

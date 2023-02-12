@@ -1,15 +1,20 @@
-from aiogram import types
-
-from apps.MyBot import MyBot
-from apps.core.bot.reports.report_data_preparation import preparing_violation_data
-from apps.core.utils.goolgedrive_processor.googledrive_worker import write_data_on_google_drive
-from apps.core.utils.misc import rate_limit
-from apps.core.utils.bot_utils_processor.select_start_category import select_start_category
-from apps.core.bot.bot_utils.check_user_registration import check_user_access
-from config.config import WRITE_DATA_ON_GOOGLE_DRIVE
 from loader import logger
 
+logger.debug(f"{__name__} start import")
+from aiogram import types
+from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.bot.data import board_config
+from apps.core.bot.reports.report_data_preparation import \
+    preparing_violation_data
+from apps.core.bot.bot_utils.select_start_category import \
+    select_start_category
+from apps.core.utils.goolgedrive_processor.googledrive_worker import \
+    write_data_on_google_drive
+from apps.core.utils.misc import rate_limit
+from apps.MyBot import MyBot
+from config.config import WRITE_DATA_ON_GOOGLE_DRIVE
+
+logger.debug(f"{__name__} finish import")
 
 WORK_ON_HEROKU = False
 WORK_ON_PC = True

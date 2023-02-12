@@ -1,17 +1,20 @@
-from apps.MyBot import MyBot
 from apps.core.bot.messages.messages import Messages
-from apps.core.utils.generate_report.generate_act_prescription.set_act_basic_value import set_act_body_values, \
-    set_act_footer_values
-from apps.core.utils.generate_report.generate_act_prescription.set_act_format_ import format_act_prescription_sheet, \
-    format_act_footer_prescription_sheet, format_act_photo_header, format_act_photo_description
-from apps.core.utils.generate_report.generate_act_prescription.set_act_page_setup import set_act_page_after_footer_setup
-from apps.core.utils.generate_report.generate_act_prescription.set_act_values import set_act_violation_values, \
-    set_act_photographic_materials_values
-from apps.core.utils.generate_report.generate_act_prescription.set_act_value import get_act_headlines_data_values, \
-    set_act_header_values, set_act_footer_footer_values
-from apps.core.utils.generate_report.generator_report import anchor_photo
 from apps.core.utils.generate_report.create_xlsx.create_xlsx import create_xlsx
+from apps.core.utils.generate_report.generate_act_prescription.set_act_basic_value import (
+    set_act_body_values, set_act_footer_values)
+from apps.core.utils.generate_report.generate_act_prescription.set_act_format_ import (
+    format_act_footer_prescription_sheet, format_act_photo_description,
+    format_act_photo_header, format_act_prescription_sheet)
+from apps.core.utils.generate_report.generate_act_prescription.set_act_page_setup import \
+    set_act_page_after_footer_setup
+from apps.core.utils.generate_report.generate_act_prescription.set_act_value import (
+    get_act_headlines_data_values, set_act_footer_footer_values,
+    set_act_header_values)
+from apps.core.utils.generate_report.generate_act_prescription.set_act_values import (
+    set_act_photographic_materials_values, set_act_violation_values)
+from apps.core.utils.generate_report.generator_report import anchor_photo
 from apps.core.utils.img_processor.insert_img import insert_service_image
+from apps.MyBot import MyBot
 from loader import logger
 
 

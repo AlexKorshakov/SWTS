@@ -1,30 +1,33 @@
 import datetime
 from math import ceil
+
+from apps.core.bot.reports.report_data import headlines_data
+from apps.core.database.db_utils import (db_get_categories,
+                                         db_get_data_dict_from_table_with_id,
+                                         db_get_data_list,
+                                         db_get_dict_userdata,
+                                         db_get_elimination_time)
+from apps.core.utils.generate_report.generate_daily_report.set_daily_report_alignment import \
+    set_report_alignment
+from apps.core.utils.generate_report.set_value import (check_mark_true,
+                                                       not_found)
+from apps.core.utils.generate_report.sheet_formatting.set_font import \
+    sets_report_font
+from loader import logger
+from pandas import DataFrame
+from xlsxwriter.workbook import Workbook
 from xlsxwriter.worksheet import Worksheet
 
-from pandas import DataFrame
 
-from apps.MyBot import MyBot
-from apps.core.bot.data.category import get_data_list, ELIMINATION_TIME
-from apps.core.bot.messages.messages import Messages
-from apps.core.bot.reports.report_data import headlines_data
-from apps.core.database.db_utils import db_get_data_dict_from_table_with_id, db_get_data_list, db_get_dict_userdata, \
-    db_get_categories
-from apps.core.utils.generate_report.generate_daily_report.set_daily_report_alignment import set_report_alignment
-from apps.core.utils.generate_report.generate_daily_report.settings_mip_report import D_REPORT_CATEGORY_LIST_VALUES
-from apps.core.utils.generate_report.get_file_list import get_registration_json_file_list
-from apps.core.utils.generate_report.sheet_formatting.set_font import sets_report_font
-from apps.core.utils.generate_report.set_value import check_mark_true, \
-    check_mark_false, not_tested, not_found
-from apps.core.utils.json_worker.read_json_file import read_json_file
-from loader import logger
-
-
-async def set_report_violation_values(worksheet: Worksheet, dataframe: DataFrame,
-                                      num: int = None, body_val_list: list = None,
-                                      workbook=None, full_daily_report_report_path=None) -> bool:
+async def set_report_violation_values(
+        worksheet: Worksheet, dataframe: DataFrame, num: int = None, body_val_list: list = None,
+        workbook: Workbook = None, full_daily_report_report_path: str = None) -> bool:
     """Заполнение акта значениями из dataframe
 
+    :param workbook:
+    :param full_daily_report_report_path:
+    :param body_val_list:
+    :param num:
     :param worksheet: страница для заполнения
     :param dataframe: dataframe с данными нарушений
     :return: bool

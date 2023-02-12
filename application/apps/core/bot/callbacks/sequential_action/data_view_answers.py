@@ -1,22 +1,24 @@
+from loader import logger
+
+logger.debug(f"{__name__} start import")
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
-from aiogram.types import ReplyKeyboardRemove, InlineKeyboardMarkup, InlineKeyboardButton
-
-from apps.MyBot import MyBot
-
+from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup,
+                           ReplyKeyboardRemove)
 from apps.core.bot.data import board_config
+from apps.core.bot.filters.custom_filters import is_private
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.states import DataUserState
-from apps.core.bot.filters.custom_filters import is_private
-from apps.core.utils.generate_report.get_file_list import get_registration_json_file_list, get_report_file_list, \
-    get_json_file_list
+from apps.core.utils.generate_report.get_file_list import (
+    get_json_file_list, get_registration_json_file_list, get_report_file_list)
 from apps.core.utils.json_worker.read_json_file import read_json_file
-from apps.core.utils.secondary_functions.get_filepath import get_file_path_user_data
+from apps.core.utils.secondary_functions.get_filepath import \
+    get_file_path_user_data
+from apps.MyBot import MyBot
 
-from loader import logger
 
-logger.debug("data_view_answers")
+logger.debug(f"{__name__} finish import")
 
 
 @MyBot.dp.callback_query_handler(is_private,

@@ -1,11 +1,14 @@
 import re
-from django import forms
-from django.core.exceptions import ValidationError
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 
-from .models import Violations, Location, WorkShift, MainCategory, Status, GeneralContractor, Category, IncidentLevel, \
-    ActRequired, EliminationTime, ViolationCategory, NormativeDocuments, SubLocation, Finished
+from django import forms
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+
+from .models import (ActRequired, Category, EliminationTime, Finished,
+                     GeneralContractor, IncidentLevel, Location, MainCategory,
+                     NormativeDocuments, Status, SubLocation,
+                     ViolationCategory, Violations, WorkShift)
 
 EMPTY_LABEL: str = "***********"
 

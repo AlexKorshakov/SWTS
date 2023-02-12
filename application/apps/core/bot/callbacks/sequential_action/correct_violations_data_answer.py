@@ -1,27 +1,27 @@
+from loader import logger
+
+logger.debug(f"{__name__} start import")
+import apps.xxx
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from aiogram.types import ReplyKeyboardMarkup, ReplyKeyboardRemove
-
-import apps.xxx
-from apps.MyBot import MyBot
-
 from apps.core.bot.data import board_config
-from apps.core.bot.data.category import get_data_list, VIOLATIONS_DATA_LIST
-from apps.core.utils.generate_report.get_file_list import get_json_file_list
-from config.config import ADMIN_ID, SEPARATOR
-from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard
+from apps.core.bot.data.category import VIOLATIONS_DATA_LIST, get_data_list
+from apps.core.bot.filters.custom_filters import is_private
+from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import \
+    build_inlinekeyboard
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.states import CorrectViolationsState
-from apps.core.bot.filters.custom_filters import is_private
+from apps.core.utils.generate_report.get_file_list import get_json_file_list
 from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.set_user_violation_data_on_google_drave import \
     update_user_violation_data_on_google_drive
 from apps.core.utils.json_worker.read_json_file import read_json_file
 from apps.core.utils.json_worker.writer_json_file import write_json_file
+from apps.MyBot import MyBot
+from config.config import ADMIN_ID, SEPARATOR
 
-from loader import logger
-
-logger.debug("correct_violations_data_answer")
+logger.debug(f"{__name__} finish import")
 
 
 @MyBot.dp.callback_query_handler(lambda call: call.data in VIOLATIONS_DATA_LIST)

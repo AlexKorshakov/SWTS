@@ -1,6 +1,5 @@
-from django.views.generic import DetailView
-
 from apps.core.web.models import Violations
+from django.views.generic import DetailView
 
 
 class ViewGreetings(DetailView):

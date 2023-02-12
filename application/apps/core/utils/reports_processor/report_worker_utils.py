@@ -1,14 +1,14 @@
 from datetime import datetime
-from openpyxl.utils import dataframe
 
-from pandas import DataFrame
-
-from apps.MyBot import MyBot
 from apps.core.bot.messages.messages import Messages
-from apps.core.database.db_utils import db_get_data_dict_from_table_with_id, db_get_table_headers, db_get_data_list
-from apps.core.utils.generate_report.create_dataframe import create_lite_dataframe
-
+from apps.core.database.db_utils import (db_get_data_dict_from_table_with_id,
+                                         db_get_data_list,
+                                         db_get_table_headers)
+from apps.core.utils.generate_report.create_dataframe import \
+    create_lite_dataframe
+from apps.MyBot import MyBot
 from loader import logger
+from pandas import DataFrame
 
 
 async def get_clear_list_value(chat_id: int, query: str, clean_headers: list) -> list[dict]:
@@ -92,9 +92,12 @@ async def get_clean_headers(table_name: str) -> list:
     return clean_headers
 
 
-async def create_lite_dataframe_from_query(chat_id: int, query: str, clean_headers: list) -> dataframe:
-    """
+async def create_lite_dataframe_from_query(chat_id: int, query: str, clean_headers: list) -> DataFrame:
+    """Формирование dataframe из запроса query и заголовков clean_headers
 
+    :param chat_id: id  пользователя
+    :param clean_headers: заголовки таблицы для формирования dataframe
+    :param query: запрос в базу данных
     :return:
     """
 
@@ -106,11 +109,7 @@ async def create_lite_dataframe_from_query(chat_id: int, query: str, clean_heade
     )
 
     if report_dataframe.empty:
-        logger.error(Messages.Error.dataframe_is_empty)
-        logger.error(f'{chat_id = }')
-        logger.error(f'{query = }')
-        logger.error(f'{item_datas_query = }')
-
+        logger.error(f'{Messages.Error.dataframe_is_empty}  \n{chat_id = }  \n{query = }  \n{item_datas_query = }')
         await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.dataframe_is_empty)
 
     return report_dataframe
@@ -162,20 +161,20 @@ async def get_query(type_query: str, table_name: str, query_date: str = None, va
                          f"AND (`act_number` = '' or `act_number` is NULL ) " \
                          f"AND `user_id` = {user_id} )"
 
-    if type_query == 'query_daily_report':
-        if isinstance(query_date, list):
-            query: str = f'SELECT * ' \
-                         f'FROM {table_name} ' \
-                         f"WHERE `user_id` = {user_id} " \
-                         f"AND `created_at` BETWEEN date('{await format_data_db(query_date[0])}') " \
-                         f"AND date('{await format_data_db(query_date[1])}') "
-
-        if isinstance(query_date, str):
-            query: str = f'SELECT * ' \
-                         f'FROM {table_name} ' \
-                         f"WHERE `user_id` = {user_id} " \
-                         f"AND (`created_at` = date('{query_date}') )"
-
+    # if type_query == 'query_daily_report':
+    #     if isinstance(query_date, list):
+    #         query: str = f'SELECT * ' \
+    #                      f'FROM {table_name} ' \
+    #                      f"WHERE `user_id` = {user_id} " \
+    #                      f"AND `created_at` BETWEEN date('{await format_data_db(query_date[0])}') " \
+    #                      f"AND date('{await format_data_db(query_date[1])}') "
+    #
+    #     if isinstance(query_date, str):
+    #         query: str = f'SELECT * ' \
+    #                      f'FROM {table_name} ' \
+    #                      f"WHERE `user_id` = {user_id} " \
+    #                      f"AND (`created_at` = date('{query_date}') )"
+    #
     # if type_query == 'query_stat':
     #     if isinstance(query_date, list):
     #         query: str = f'SELECT * ' \

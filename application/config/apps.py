@@ -1,9 +1,10 @@
 from typing import Optional
 
 from aiogram import Dispatcher
+from apps import core
+
 # from tortoise import Tortoise
 
-from apps import core
 
 # Register your apps here
 INSTALLED_APPS = [

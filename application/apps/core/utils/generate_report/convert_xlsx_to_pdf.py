@@ -1,9 +1,8 @@
 import time
 
+from apps.core.bot.messages.messages import Messages
 from apps.MyBot import MyBot
 from loader import logger
-
-from apps.core.bot.messages.messages import Messages
 from win32com import client
 
 
@@ -13,10 +12,10 @@ async def close_excel_by_force(excel):
     :param excel:
     :return:
     """
-    import win32process
-    import win32gui
     import win32api
     import win32con
+    import win32gui
+    import win32process
 
     # Get the window's process id's
     hwnd = excel.Hwnd

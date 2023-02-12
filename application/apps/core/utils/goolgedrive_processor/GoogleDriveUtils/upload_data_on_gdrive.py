@@ -2,12 +2,12 @@ import os
 import subprocess
 from mimetypes import guess_type
 
+from apps.core.bot.messages.messages import Messages
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import \
+    drive_account_auth_with_oauth2client
 from apps.MyBot import MyBot
-from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import drive_account_auth_with_oauth2client
 from config.config import WRITE_DATA_ON_GOOGLE_DRIVE
 from loader import logger
-
-from apps.core.bot.messages.messages import Messages
 
 INSTALL_REQUIRES = ['google-api-core',
                     'google-api-python-client',

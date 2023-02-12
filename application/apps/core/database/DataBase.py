@@ -1,16 +1,18 @@
+from loader import logger
+
+logger.debug(f"{__name__} start import")
 import os
 import sqlite3
 from os import makedirs
-
-from pandas import DataFrame
 from pprint import pprint
 
 from apps.core.utils.json_worker.read_json_file import read_json_file
 from apps.core.utils.json_worker.writer_json_file import write_json_file
 from apps.core.utils.secondary_functions.get_json_files import get_files
 from config.config import DATA_BASE_DIR
+from pandas import DataFrame
 
-from loader import logger
+logger.debug(f"{__name__} finish import")
 
 
 class DataBase:
@@ -24,7 +26,7 @@ class DataBase:
     def add_violation(self, *, violation: dict) -> bool:
         """Добавление записей в database
 
-        :param violation: dict с данными для внесения
+        :param violation: dict с данными для внесения в БД
         """
 
         file_id = violation.get('file_id', None)
@@ -123,12 +125,6 @@ class DataBase:
             file_id=file_id,
             name='agreed'
         )
-        # hse_id = self.get_id(
-        #     table='core_hseuser',
-        #     entry=violation.get("hse_id", None),
-        #     file_id=file_id,
-        #     name='hse_id'
-        # )
 
         hse_id = violation.get("hse_id", None)
 
@@ -235,17 +231,15 @@ class DataBase:
             result = self.cursor.execute(query, (entry,)).fetchall()
 
             if not result:
-                logger.error(
-                    f"no matches found {entry = } in {table} in title "
-                    f"because .cursor.execute is none file_id: {file_id}")
                 query = f"SELECT `id` " \
                         f"FROM `{table}` " \
                         f"WHERE `short_title` = ?"
                 result = self.cursor.execute(query, (entry,)).fetchall()
                 if not result:
-                    logger.error(
-                        f"no matches found {entry = } in {table} in short_title "
-                        f"because .cursor.execute is none file_id: {file_id}")
+                    logger.error(f"no matches found {entry = } in {table} in title "
+                                 f"because .cursor.execute is none file_id: {file_id}")
+                    logger.error(f"no matches found {entry = } in {table} in short_title "
+                                 f"because .cursor.execute is none file_id: {file_id}")
 
             entry_id = 0
             for row in result:
@@ -428,7 +422,6 @@ class DataBase:
         query: str = 'SELECT `act_number` FROM `core_actsprescriptions`'
         datas_query: list = self.get_data_list(query=query)
         act_max_number = max([data_item[0] for data_item in datas_query])
-
         return act_max_number
 
 

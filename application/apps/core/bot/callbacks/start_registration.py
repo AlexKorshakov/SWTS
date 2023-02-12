@@ -1,12 +1,13 @@
-from aiogram import types
 from loader import logger
 
-from apps.MyBot import MyBot
-from apps.core.bot.callbacks.sequential_action.data_answer import get_and_send_main_locations_data, \
-    get_and_send_start_main_locations_data
+logger.debug(f"{__name__} start import")
+from aiogram import types
 from apps.core.bot.callbacks.callback_action import cb_start
+from apps.core.bot.callbacks.sequential_action.data_answer import \
+    get_and_send_start_main_locations_data
+from apps.MyBot import MyBot
 
-logger.debug("start_registration")
+logger.debug(f"{__name__} finish import")
 
 
 @MyBot.dp.callback_query_handler(cb_start.filter(action=["start_registration"]))

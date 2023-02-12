@@ -1,4 +1,4 @@
-from aiogram.dispatcher.filters.state import StatesGroup, State
+from aiogram.dispatcher.filters.state import State, StatesGroup
 
 
 class AnswerUserState(StatesGroup):
@@ -8,7 +8,3 @@ class AnswerUserState(StatesGroup):
     comment = State()
 
     location = State()
-
-
-
-

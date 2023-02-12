@@ -1,11 +1,16 @@
 from django.template.context_processors import request
 from django.urls import path
 
-from .views import HomeViolations, ViewViolations, ViolationsByMainCategory, ViolationsByMainLocation, \
-    ViolationsByGeneralContractor, ViolationsByIncidentLevel, ViolationsByStatus, user_login, user_logout, register, \
-    post_edit, PostEdit, test, simple_view, upload_too_db_from_local_storage, delete_violations, update_violations, \
-    add_violations, statistic, ViolationsByWeek, HomeRegisterActsPrescriptions, HomeRegisterNormativeDocuments, \
-    ViolationsByFinished
+from .views import (HomeRegisterActsPrescriptions,
+                    HomeRegisterNormativeDocuments, HomeRegisterUnclosedPoints,
+                    HomeViolations, PostEdit, ViewViolations,
+                    ViolationsByFinished, ViolationsByGeneralContractor,
+                    ViolationsByIncidentLevel, ViolationsByMainCategory,
+                    ViolationsByMainLocation, ViolationsByStatus,
+                    ViolationsByWeek, add_violations, delete_violations,
+                    post_edit, register, simple_view, statistic, test,
+                    update_violations, upload_too_db_from_local_storage,
+                    user_login, user_logout)
 
 # Register your urls here
 
@@ -17,6 +22,9 @@ urlpatterns = [
          name='register_acts_prescriptions'),
     path('register_normative_documents', HomeRegisterNormativeDocuments.as_view(),
          name='register_normative_documents'),
+    path('register_of_unclosed_points', HomeRegisterUnclosedPoints.as_view(),
+         name='register_of_unclosed_points'),
+
 
     path('violations/<int:pk>/', ViewViolations.as_view(),
          name='view_violations'),

@@ -1,24 +1,24 @@
+from loader import logger
+
+logger.debug(f"{__name__} start import")
+import apps.xxx
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from aiogram.types import ReplyKeyboardMarkup, ReplyKeyboardRemove
-
-import apps.xxx
+from apps.core.bot.data import board_config
+from apps.core.bot.data.category import HEADLINES_DATA_LIST, get_data_list
+from apps.core.bot.filters.custom_filters import is_private
+from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import \
+    build_inlinekeyboard
+from apps.core.bot.messages.messages import Messages
+from apps.core.bot.reports.report_data import headlines_data
+from apps.core.bot.states.CorrectHeadlinesState import CorrectHeadlinesState
 from apps.MyBot import MyBot
 from config.config import ADMIN_ID
 
-from apps.core.bot.data import board_config
-from apps.core.bot.data.category import get_data_list, HEADLINES_DATA_LIST
-from apps.core.bot.reports.report_data import headlines_data
-from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard
-from apps.core.bot.messages.messages import Messages
-from apps.core.bot.states.CorrectHeadlinesState import CorrectHeadlinesState
-from apps.core.bot.filters.custom_filters import is_private
 
-from loader import logger
-
-logger.debug("correct_headlines_data_answer")
-
+logger.debug(f"{__name__} finish import")
 
 @MyBot.dp.callback_query_handler(lambda call: call.data in HEADLINES_DATA_LIST)
 async def correct_headlines_data_answer(call: types.CallbackQuery):
@@ -212,3 +212,5 @@ async def get_headlines_text(headlines_data: dict) -> str:
 
         return headlines_text
     return ''
+
+

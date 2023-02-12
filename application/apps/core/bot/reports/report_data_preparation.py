@@ -1,22 +1,29 @@
+from loader import logger
+
+logger.debug(f"{__name__} start import")
 import datetime
 from pprint import pprint
 
 from aiogram import types
-
-from apps.core.bot.reports.report_data import violation_data
 from apps.core.bot.bot_utils.check_user_registration import get_hse_user_data
+from apps.core.bot.reports.report_data import violation_data
 from apps.core.database.db_utils import db_get_data_dict_from_table_with_id
-from apps.core.utils.json_worker.writer_json_file import write_json_violation_user_file, write_json_file
-from apps.core.utils.secondary_functions.get_filename import get_filename_msg_with_photo
-from apps.core.utils.secondary_functions.get_filepath import get_photo_full_filepath, get_photo_full_filename, \
-    create_file_path, get_json_full_filepath, get_json_full_filename
-from apps.core.utils.secondary_functions.get_part_date import get_day_message, get_week_message, get_quarter_message, \
-    get_day_of_year_message, get_month_message, get_year_message
-from loader import logger
+from apps.core.utils.json_worker.writer_json_file import (
+    write_json_file, write_json_violation_user_file)
+from apps.core.utils.secondary_functions.get_filename import \
+    get_filename_msg_with_photo
+from apps.core.utils.secondary_functions.get_filepath import (
+    create_file_path, get_json_full_filename, get_json_full_filepath,
+    get_photo_full_filename, get_photo_full_filepath)
+from apps.core.utils.secondary_functions.get_part_date import (
+    get_day_message, get_day_of_year_message, get_month_message,
+    get_quarter_message, get_week_message, get_year_message)
+
+logger.debug(f"{__name__} finish import")
 
 
 async def preparing_violation_data(message: types.Message, chat_id: str):
-    """Подготовка данных предписания
+    """Подготовка данных предписания. первичное заполнение violation_data
 
     :return:
     """
@@ -98,7 +105,7 @@ async def preparing_violations_paths_on_pc(message: types.Message):
 
 
 async def preparing_violation_data_for_loading_to_google_drive(data: dict) -> bool:
-    """
+    """Подготовка данных (id папок) на google_drive
 
     :rtype: dict
     """

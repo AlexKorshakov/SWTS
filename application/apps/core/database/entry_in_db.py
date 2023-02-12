@@ -1,5 +1,10 @@
-from apps.core.database.db_utils import db_check_record_existence, db_add_violation
 from loader import logger
+
+logger.debug(f"{__name__} start import")
+from apps.core.database.db_utils import (db_add_violation,
+                                         db_check_record_existence)
+
+logger.debug(f"{__name__} finish import")
 
 
 async def write_data_in_database(*, violation_data: dict) -> bool:

@@ -1,12 +1,12 @@
-# from aiogram import types
-#
-# from apps.core.bot.keyboards.inline.get_keyboard_fab import get_keyboard_fab
+from loader import logger
 
+logger.debug(f"{__name__} start import")
 
 from aiogram import types
 from aiogram.types import InlineKeyboardMarkup
-
 from apps.core.bot.callbacks.callback_action import cb_start
+
+logger.debug(f"{__name__} finish import")
 
 
 async def get_keyboard_fab() -> InlineKeyboardMarkup:

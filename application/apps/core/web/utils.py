@@ -2,18 +2,24 @@ import asyncio
 import os
 from pathlib import Path
 
-from apps.core.database.db_utils import db_del_violations, db_get_data_list, db_check_record_existence, \
-    db_get_single_violation, db_get_table_headers, db_get_id_violation, db_get_id, db_update_column_value
-from apps.core.database.transformation_category import CATEGORY_ID_TRANSFORM
-from apps.core.bot.handlers.correct_entries.correct_entries_handler import del_file, del_file_from_gdrive
+from apps.core.bot.handlers.correct_entries.correct_entries_handler import (
+    del_file, del_file_from_gdrive)
 from apps.core.bot.messages.messages import Messages
-from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import drive_account_credentials
+from apps.core.database.db_utils import (db_check_record_existence,
+                                         db_del_violations, db_get_data_list,
+                                         db_get_id, db_get_id_violation,
+                                         db_get_single_violation,
+                                         db_get_table_headers,
+                                         db_update_column_value)
+from apps.core.database.transformation_category import CATEGORY_ID_TRANSFORM
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import \
+    drive_account_credentials
 from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.set_user_violation_data_on_google_drave import \
     update_user_violation_data_on_google_drive
 from apps.core.utils.json_worker.read_json_file import read_json_file
 from apps.core.utils.json_worker.writer_json_file import write_json
-from apps.core.utils.secondary_functions.get_filepath import get_json_full_filename
-
+from apps.core.utils.secondary_functions.get_filepath import \
+    get_json_full_filename
 from config.config import WRITE_DATA_ON_GOOGLE_DRIVE
 from loader import logger
 

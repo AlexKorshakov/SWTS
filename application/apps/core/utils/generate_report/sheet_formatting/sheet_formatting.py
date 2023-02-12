@@ -1,8 +1,12 @@
-from apps.core.utils.generate_report.sheet_formatting.set_alignment import set_alignment
-from apps.core.utils.generate_report.sheet_formatting.set_column_widths import set_column_widths
+from apps.core.utils.generate_report.sheet_formatting.set_alignment import \
+    set_alignment
+from apps.core.utils.generate_report.sheet_formatting.set_column_widths import \
+    set_column_widths
 from apps.core.utils.generate_report.sheet_formatting.set_font import set_font
-from apps.core.utils.generate_report.sheet_formatting.set_frame_border import set_border
-from apps.core.utils.generate_report.sheet_formatting.set_row_height import set_row_height
+from apps.core.utils.generate_report.sheet_formatting.set_frame_border import \
+    set_border
+from apps.core.utils.generate_report.sheet_formatting.set_row_height import \
+    set_row_height
 from xlsxwriter.worksheet import Worksheet
 
 

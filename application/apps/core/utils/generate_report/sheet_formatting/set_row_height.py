@@ -1,4 +1,5 @@
-from apps.core.utils.generate_report.create_xlsx.xlsx_config import MAXIMUM_ROW_HEIGHT
+from apps.core.utils.generate_report.create_xlsx.xlsx_config import \
+    MAXIMUM_ROW_HEIGHT
 from loader import logger
 
 

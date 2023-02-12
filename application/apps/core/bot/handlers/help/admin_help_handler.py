@@ -1,10 +1,14 @@
+from loader import logger
+
+logger.debug(f"{__name__} start import")
 from aiogram import types
 from aiogram.dispatcher.filters import Command
-
+from apps.core.bot.bot_utils.check_user_registration import check_user_access
+from apps.core.utils.misc import rate_limit
 from apps.MyBot import MyBot
 from config.config import ADMIN_ID
-from apps.core.utils.misc import rate_limit
-from apps.core.bot.bot_utils.check_user_registration import check_user_access
+
+logger.debug(f"{__name__} finish import")
 
 
 @rate_limit(limit=5)

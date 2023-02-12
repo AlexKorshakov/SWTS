@@ -1,19 +1,22 @@
-from pandas import DataFrame
-
-from apps.MyBot import MyBot
 from apps.core.bot.messages.messages import Messages
 from apps.core.utils.generate_report.create_xlsx.create_xlsx import create_xlsx
-from apps.core.utils.generate_report.generate_stat.set_stat_format import \
-    format_stat_sheet_header, format_stat_sheet_basic, format_stat_sheet_body, format_stat_sheet_footer
-from apps.core.utils.generate_report.generate_stat.set_stat_values import set_stat_values_header, \
-    set_stat_values_body,     set_stat_values_footer, set_stat_headlines_data_values, set_stat_violation_values,\
-    set_stat_header_values
-from apps.core.utils.generate_report.sheet_formatting.set_page_setup import set_row_breaks
-from apps.core.utils.img_processor.insert_img import insert_signalline_to_report_body
+from apps.core.utils.generate_report.generate_stat.set_stat_format import (
+    format_stat_sheet_basic, format_stat_sheet_body, format_stat_sheet_footer,
+    format_stat_sheet_header)
+from apps.core.utils.generate_report.generate_stat.set_stat_values import (
+    set_stat_header_values, set_stat_headlines_data_values,
+    set_stat_values_body, set_stat_values_footer, set_stat_values_header,
+    set_stat_violation_values)
+from apps.core.utils.generate_report.sheet_formatting.set_page_setup import \
+    set_row_breaks
+from apps.core.utils.img_processor.insert_img import \
+    insert_signalline_to_report_body
+from apps.MyBot import MyBot
 from loader import logger
+from pandas import DataFrame
 
 
-async def create_stat(chat_id: int, dataframe: DataFrame = None, full_stat_path: str = None, query_period= None):
+async def create_stat(chat_id: int, dataframe: DataFrame = None, full_stat_path: str = None, query_period = None):
     """Создание отчета xls из данных dataframe
 
     """

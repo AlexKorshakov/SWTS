@@ -1,6 +1,8 @@
-from apps.core.utils.generate_report.create_xlsx.xlsx_config import MAXIMUM_COLUMN_WIDTH
-from loader import logger
 import openpyxl.utils
+from apps.core.utils.generate_report.create_xlsx.xlsx_config import \
+    MAXIMUM_COLUMN_WIDTH
+from loader import logger
+
 # from apps.core.utils.reports_processor.xlsx_config import MAXIMUM_COLUMN_WIDTH
 
 

@@ -1,13 +1,15 @@
+from loader import logger
+
+logger.debug(f"{__name__} start import")
 from aiogram import types
 from aiogram.dispatcher.filters import Command
 from aiogram.utils.markdown import text
-
-from apps.core.bot.keyboards.inline.help_inlinekeyboard import help_inline_button
-from apps.MyBot import MyBot
+from apps.core.bot.keyboards.inline.help_inlinekeyboard import \
+    help_inline_button
 from apps.core.utils.misc import rate_limit
-from loader import logger
+from apps.MyBot import MyBot
 
-logger.debug(f'process_help_command')
+logger.debug(f"{__name__} finish import")
 
 
 @rate_limit(limit=5)

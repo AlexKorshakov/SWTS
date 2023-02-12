@@ -1,13 +1,13 @@
 from loader import logger
 
-logger.debug("start custom_filters")
+logger.debug(f"{__name__} start import")
 
 from aiogram import types
-from aiogram.types import ChatType
 from aiogram.dispatcher.filters import ChatTypeFilter
+from aiogram.types import ChatType
 from config.config import ADMIN_ID
 
-logger.debug("stop custom_filters")
+logger.debug(f"{__name__} finish import")
 
 
 def is_group(message: types.Message):

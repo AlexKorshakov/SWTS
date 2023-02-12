@@ -1,17 +1,17 @@
-from apps.MyBot import MyBot
-from apps.core.utils.generate_report.create_dataframe import create_dataframe_from_data
-from apps.core.utils.generate_report.create_heders import create_headers
-from loader import logger
-from pandas import DataFrame
-
 from apps.core.bot.messages.messages import Messages
+from apps.core.utils.generate_report.create_dataframe import \
+    create_dataframe_from_data
+from apps.core.utils.generate_report.create_heders import create_headers
 from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.download_file_for_google_drive import \
     upload_files_from_google_drive
 from apps.core.utils.json_worker.merge_json import merge_json
 from apps.core.utils.json_worker.read_json_file import read_json_files
-from apps.core.utils.secondary_functions.get_filepath import create_file_path, get_photo_full_filepath, \
-    get_json_full_filepath, \
-    get_report_full_filepath
+from apps.core.utils.secondary_functions.get_filepath import (
+    create_file_path, get_json_full_filepath, get_photo_full_filepath,
+    get_report_full_filepath)
+from apps.MyBot import MyBot
+from loader import logger
+from pandas import DataFrame
 
 
 async def get_data_report(chat_id: int, file_list: list = None):

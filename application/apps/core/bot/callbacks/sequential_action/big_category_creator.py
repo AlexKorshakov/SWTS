@@ -1,7 +1,6 @@
 from aiogram import types
-from loader import logger
-
 from apps.core.bot.keyboards.inline.select_category import bild_inline_keyboard
+from loader import logger
 
 
 async def big_category(call: types.CallbackQuery, big_menu_list, num_col=2):

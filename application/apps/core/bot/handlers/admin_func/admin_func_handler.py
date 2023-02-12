@@ -1,24 +1,26 @@
+from loader import logger
+
+logger.debug(f"{__name__} start import")
 import time
 
 from aiogram import types
 from aiogram.dispatcher.filters import Command
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-
-from apps.MyBot import MyBot
-from apps.core.utils.secondary_functions.get_json_files import get_registered_users
-from loader import logger
-
-from apps.core.bot.data import board_config
-from apps.core.bot.data.category import ADMIN_MENU_LIST
-from config.config import ADMIN_ID, DEVELOPER_ID
-from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard
-
-from apps.core.bot.messages.messages import Messages
-from apps.core.bot.filters.custom_filters import is_private
-from apps.core.utils.misc import rate_limit
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from apps.core.bot.bot_utils.bot_admin_notify import admin_notify
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
+from apps.core.bot.data import board_config
+from apps.core.bot.data.category import ADMIN_MENU_LIST
+from apps.core.bot.filters.custom_filters import is_private
+from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import \
+    build_inlinekeyboard
+from apps.core.bot.messages.messages import Messages
+from apps.core.utils.misc import rate_limit
+from apps.core.utils.secondary_functions.get_json_files import \
+    get_registered_users
+from apps.MyBot import MyBot
+from config.config import ADMIN_ID, DEVELOPER_ID
 
+logger.debug(f"{__name__} finish import")
 
 @rate_limit(limit=10)
 @MyBot.dp.message_handler(Command('admin_func'))

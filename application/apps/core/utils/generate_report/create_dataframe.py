@@ -1,9 +1,8 @@
 from typing import Optional
 
+from apps.core.utils.json_worker.read_json_file import read_json_file
 from loader import logger
 from pandas import DataFrame
-
-from apps.core.utils.json_worker.read_json_file import read_json_file
 
 
 async def create_dataframe_from_data(data: list) -> Optional[DataFrame]:

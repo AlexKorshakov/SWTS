@@ -1,21 +1,26 @@
+from loader import logger
+
+logger.debug(f"{__name__} start import")
 import asyncio
-from datetime import datetime, timedelta
 import typing
+from datetime import datetime, timedelta
 from pprint import pprint
 
 from aiogram import types
 from aiogram.dispatcher.filters import Command
-
-from apps.MyBot import MyBot
+from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
 from apps.core.bot.messages.messages import Messages
-from apps.core.database.db_utils import db_get_username, db_get_period_for_current_week
-from apps.core.utils.misc import rate_limit
+from apps.core.database.db_utils import (db_get_period_for_current_week,
+                                         db_get_username)
 from apps.core.utils.generate_report.generate_act_prescription.create_and_send_act_prescription import \
     create_and_send_act_prescription
-from apps.core.bot.bot_utils.check_user_registration import check_user_access
-from apps.core.utils.secondary_functions.get_part_date import get_week_message, get_year_message
-from loader import logger
+from apps.core.utils.misc import rate_limit
+from apps.core.utils.secondary_functions.get_part_date import (
+    get_week_message, get_year_message)
+from apps.MyBot import MyBot
+
+logger.debug(f"{__name__} finish import")
 
 
 @rate_limit(limit=10)
@@ -49,8 +54,12 @@ async def call_correct_abort_current_post(call: types.CallbackQuery, callback_da
         await call.message.answer(f'{Messages.Report.start_act} \n'
                                   f'{Messages.wait}')
 
+        now = datetime.now()
+        act_date_period: list = [now.strftime("%d.%m.%Y"), now.strftime("%d.%m.%Y"), ]
+        pprint(f'{act_date_period = }')
+
         logger.info(f'User @{username}:{chat_id} generate act prescription')
-        if await create_and_send_act_prescription(chat_id=chat_id, query_act_date_period=None):
+        if await create_and_send_act_prescription(chat_id=chat_id, query_act_date_period=act_date_period):
             logger.info(Messages.Report.acts_generated_successfully)
 
 

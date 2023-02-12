@@ -3,23 +3,28 @@ import os
 from pathlib import Path
 from pprint import pprint
 
-from tqdm.asyncio import tqdm
-
+from apps.core.bot.reports.report_data_preparation import \
+    preparing_violation_data_for_loading_to_google_drive
 from apps.core.database.DataBase import create_file_path
-from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import \
-    drive_account_auth_with_oauth2client, \
-    move_file
-from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.download_file_for_google_drive import upload_file
-from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.find_folder import find_file_by_name, \
-    find_files_or_folders_list_by_parent_id
-from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.get_folder_id import get_folders_ids_from_google_drive
-from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.set_permissions import get_user_permissions
-from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.upload_data_on_gdrive import upload_file_on_gdrave
-from apps.core.utils.goolgedrive_processor.googledrive_worker import ROOT_REPORT_FOLDER_NAME, get_root_folder_id
-from apps.core.utils.secondary_functions.get_json_files import get_dirs_files, get_files
-from apps.core.bot.reports.report_data_preparation import preparing_violation_data_for_loading_to_google_drive
+from apps.core.utils.goolgedrive_processor.googledrive_worker import (
+    ROOT_REPORT_FOLDER_NAME, get_root_folder_id)
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.download_file_for_google_drive import \
+    upload_file
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.find_folder import (
+    find_file_by_name, find_files_or_folders_list_by_parent_id)
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.get_folder_id import \
+    get_folders_ids_from_google_drive
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import (
+    drive_account_auth_with_oauth2client, move_file)
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.set_permissions import \
+    get_user_permissions
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.upload_data_on_gdrive import \
+    upload_file_on_gdrave
+from apps.core.utils.secondary_functions.get_json_files import (get_dirs_files,
+                                                                get_files)
 from config.config import WRITE_DATA_ON_GOOGLE_DRIVE
 from loader import logger
+from tqdm.asyncio import tqdm
 
 BASE_DIR: Path = Path(__file__).resolve()
 DIRECTORY: str = os.path.join(BASE_DIR.parent.parent.parent.parent.parent.parent, 'media')

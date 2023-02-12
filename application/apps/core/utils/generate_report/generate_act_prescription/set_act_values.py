@@ -1,19 +1,23 @@
 import datetime
 import os
-from openpyxl.drawing.image import Image
-from xlsxwriter.worksheet import Worksheet
-
-from pandas import DataFrame
 
 from apps.core.database.db_utils import db_get_data_dict_from_table_with_id
-from apps.core.utils.generate_report.generate_act_prescription.set_act_alignment import set_act_alignment
-from apps.core.utils.generate_report.sheet_formatting.set_font import set_report_font, sets_report_font
-from apps.core.utils.generate_report.generate_act_prescription.set_act_frame_border import set_range_border
-from apps.core.utils.generate_report.sheet_formatting.set_merge_cells import set_merge_cells
-from apps.core.utils.generate_report.sheet_formatting.set_row_dimensions import set_row_dimensions, \
-    set_automatic_row_dimensions
-from apps.core.utils.img_processor.insert_img import image_preparation, insert_images
+from apps.core.utils.generate_report.generate_act_prescription.set_act_alignment import \
+    set_act_alignment
+from apps.core.utils.generate_report.generate_act_prescription.set_act_frame_border import \
+    set_range_border
+from apps.core.utils.generate_report.sheet_formatting.set_font import (
+    set_report_font, sets_report_font)
+from apps.core.utils.generate_report.sheet_formatting.set_merge_cells import \
+    set_merge_cells
+from apps.core.utils.generate_report.sheet_formatting.set_row_dimensions import (
+    set_automatic_row_dimensions, set_row_dimensions)
+from apps.core.utils.img_processor.insert_img import (image_preparation,
+                                                      insert_images)
 from loader import logger
+from openpyxl.drawing.image import Image
+from pandas import DataFrame
+from xlsxwriter.worksheet import Worksheet
 
 
 async def set_act_violation_values(worksheet: Worksheet, dataframe: DataFrame, workbook, full_act_path):

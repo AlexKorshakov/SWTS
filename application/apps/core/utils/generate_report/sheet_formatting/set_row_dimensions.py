@@ -2,7 +2,7 @@ from apps.core.database.db_utils import db_get_data_dict_from_table_with_id
 from loader import logger
 
 
-async def set_row_dimensions(worksheet, row_number, height):
+async def set_row_dimensions(worksheet, row_number: int, height):
     """Установление высоты строки
 
     :param worksheet:
@@ -18,7 +18,7 @@ async def set_row_dimensions(worksheet, row_number, height):
         logger.error(f"set_row_dimensions {repr(err)}")
 
 
-async def set_automatic_row_dimensions(worksheet, row_number, row_value):
+async def set_automatic_row_dimensions(worksheet, row_number: int, row_value) -> bool:
     """Автоматическое установление высоты строки по тексту
 
     :param row_value:
@@ -53,8 +53,7 @@ async def set_automatic_row_dimensions(worksheet, row_number, row_value):
         dim = worksheet.row_dimensions[row_number]
         dim.height = max_height
 
-        logger.info(f"row_number {row_number} max_height {max_height}")
-        print(f"row_number {row_number} max_height {max_height}")
+        logger.debug(f"row_number {row_number} max_height {max_height}")
 
     except Exception as err:
         logger.error(f"Error row {row_number} set_automatic_row_dimensions {repr(err)}")

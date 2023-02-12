@@ -1,7 +1,6 @@
-from aiogram import types, Dispatcher
-from loader import logger
-
+from aiogram import Dispatcher, types
 from apps.core.bot.messages.messages import Messages
+from loader import logger
 
 
 async def set_default_commands(dp: Dispatcher):

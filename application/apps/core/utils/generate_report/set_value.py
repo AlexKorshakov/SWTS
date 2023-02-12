@@ -1,13 +1,17 @@
 import os
-from openpyxl.drawing.image import Image
-from xlsxwriter.worksheet import Worksheet
 
-from apps.core.utils.generate_report.generate_daily_report.set_daily_report_alignment import set_report_alignment
-from apps.core.utils.generate_report.sheet_formatting.set_font import set_report_font
-from apps.core.utils.generate_report.sheet_formatting.set_frame_border import set_range_border
-from apps.core.utils.img_processor.insert_img import image_preparation, insert_images
+from apps.core.utils.generate_report.generate_daily_report.set_daily_report_alignment import \
+    set_report_alignment
+from apps.core.utils.generate_report.sheet_formatting.set_font import \
+    set_report_font
+from apps.core.utils.generate_report.sheet_formatting.set_frame_border import \
+    set_range_border
+from apps.core.utils.img_processor.insert_img import (image_preparation,
+                                                      insert_images)
 from apps.core.utils.json_worker.read_json_file import read_json_file
 from loader import logger
+from openpyxl.drawing.image import Image
+from xlsxwriter.worksheet import Worksheet
 
 not_found: str = 'не выявлено'
 not_tested: str = 'не проверялось'

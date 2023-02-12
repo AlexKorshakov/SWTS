@@ -1,25 +1,31 @@
 import asyncio
 
-from pandas import DataFrame
-
-from apps.MyBot import MyBot
 from apps.core.bot.messages.messages import Messages
-from apps.core.database.db_utils import db_get_max_max_number, db_set_act_value, db_update_column_value
-from apps.core.utils.generate_report.convert_xlsx_to_pdf import convert_report_to_pdf
+from apps.core.database.db_utils import (db_get_max_max_number,
+                                         db_set_act_value,
+                                         db_update_column_value)
+from apps.core.utils.generate_report.convert_xlsx_to_pdf import \
+    convert_report_to_pdf
 from apps.core.utils.generate_report.create_dataframe import create_dataframe
 from apps.core.utils.generate_report.create_xlsx.create_xlsx import create_xlsx
-from apps.core.utils.generate_report.generate_act_prescription.set_act_format_ import \
-    format_act_photo_header, \
-    format_act_photo_description
-from apps.core.utils.generate_report.generate_act_prescription.set_act_value import get_act_headlines_data_values
-from apps.core.utils.generate_report.generate_act_prescription.set_act_values import set_act_photographic_materials
+from apps.core.utils.generate_report.generate_act_prescription.set_act_format_ import (
+    format_act_photo_description, format_act_photo_header)
+from apps.core.utils.generate_report.generate_act_prescription.set_act_value import \
+    get_act_headlines_data_values
+from apps.core.utils.generate_report.generate_act_prescription.set_act_values import \
+    set_act_photographic_materials
 from apps.core.utils.generate_report.get_file_list import get_json_file_list
-from apps.core.utils.generate_report.get_report_path import get_full_report_name
-from apps.core.utils.generate_report.sheet_formatting.sheet_formatting import format_sheets
+from apps.core.utils.generate_report.get_report_path import \
+    get_full_report_name
+from apps.core.utils.generate_report.sheet_formatting.sheet_formatting import \
+    format_sheets
 from apps.core.utils.img_processor.insert_img import insert_images_to_sheet
-from apps.core.utils.reports_processor.report_worker_utils import get_clean_headers
+from apps.core.utils.reports_processor.report_worker_utils import \
+    get_clean_headers
+from apps.MyBot import MyBot
 from config.web.settings import MEDIA_ROOT
 from loader import logger
+from pandas import DataFrame
 
 
 async def create_report_from_other_method(chat_id, full_report_path=None,

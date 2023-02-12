@@ -1,24 +1,24 @@
-from aiogram import types
-
-from apps.MyBot import MyBot
-from apps.core.bot.callbacks.sequential_action.data_answer import \
-    get_and_send_main_locations_data, \
-    get_and_send_sub_locations_data, \
-    get_and_send_main_category_data, \
-    get_and_send_category_data, \
-    get_and_send_null_normative_documents_data, \
-    get_and_send_normative_documents_data, \
-    get_and_send_violation_category_data, \
-    get_and_send_incident_level_data, \
-    get_and_send_act_required_data, \
-    get_and_send_elimination_time_data, get_and_send_null_sub_locations_data, get_and_send_general_contractors_data
-from apps.core.bot.data.category import get_data_list, _PREFIX_ND
-from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import move_action
-from apps.core.bot.reports.report_data import violation_data
-from apps.core.bot.reports.report_data_preparation import set_violation_atr_data
 from loader import logger
 
-logger.debug("previous_paragraph")
+logger.debug(f"{__name__} start import")
+from aiogram import types
+from apps.core.bot.callbacks.sequential_action.data_answer import (
+    get_and_send_act_required_data, get_and_send_category_data,
+    get_and_send_elimination_time_data, get_and_send_general_contractors_data,
+    get_and_send_incident_level_data, get_and_send_main_category_data,
+    get_and_send_main_locations_data, get_and_send_normative_documents_data,
+    get_and_send_null_normative_documents_data,
+    get_and_send_null_sub_locations_data, get_and_send_sub_locations_data,
+    get_and_send_violation_category_data)
+from apps.core.bot.data.category import _PREFIX_ND, get_data_list
+from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import \
+    move_action
+from apps.core.bot.reports.report_data import violation_data
+from apps.core.bot.reports.report_data_preparation import \
+    set_violation_atr_data
+from apps.MyBot import MyBot
+
+logger.debug(f"{__name__} finish import")
 
 
 @MyBot.dp.callback_query_handler(move_action.filter(action=["previous_paragraph"]))
@@ -43,7 +43,6 @@ async def previous_paragraph_answer(call: types.CallbackQuery, callback_data: di
                                 category=violation_data["main_location"],
                                 condition=condition)
         if not sub_loc:
-
             await set_violation_atr_data("sub_location", call.data)
 
         await set_violation_atr_data("sub_location", sub_loc[0].get('title', None))

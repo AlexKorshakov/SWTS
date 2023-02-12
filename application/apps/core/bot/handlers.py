@@ -1,6 +1,5 @@
 from aiogram import Dispatcher
 from aiogram.types import Message
-
 from config.apps import INSTALLED_APPS
 
 from .. import services

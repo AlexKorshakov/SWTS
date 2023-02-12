@@ -1,20 +1,23 @@
+from loader import logger
+
+logger.debug(f"{__name__} start import")
 import asyncio
 from pprint import pprint
 
 from aiogram import types
 from aiogram.types import ReplyKeyboardRemove
-
-# import apps.core.bot.data.board_config
-from apps.MyBot import MyBot
-from apps.core.database.db_utils import db_get_data_dict_from_table_with_id
-from apps.core.database.entry_in_db import write_data_in_database
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.reports.report_data import violation_data
-from apps.core.utils.bot_utils_processor.del_messege import cyclical_delete_message
+from apps.core.database.db_utils import db_get_data_dict_from_table_with_id
+from apps.core.database.entry_in_db import write_data_in_database
 from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.set_user_violation_data_on_google_drave import \
     write_violation_data_on_google_drive
-from apps.core.utils.json_worker.writer_json_file import write_json_violation_user_file
-from loader import logger
+from apps.core.utils.json_worker.writer_json_file import \
+    write_json_violation_user_file
+# import apps.core.bot.data.board_config
+from apps.MyBot import MyBot
+
+logger.debug(f"{__name__} finish import")
 
 
 async def pre_set_violation_data(message: types.Message):
@@ -32,7 +35,8 @@ async def pre_set_violation_data(message: types.Message):
     await MyBot.dp.bot.send_message(chat_id=chat_id, text=Messages.Report.completed_successfully)
     await MyBot.dp.bot.send_message(chat_id=chat_id, text=Messages.help_message, reply_markup=ReplyKeyboardRemove())
 
-    await cyclical_delete_message(chat_id=chat_id)
+    # TODO исправить
+    # await cyclical_delete_message(chat_id=chat_id)
 
 
 async def set_violation_data(*, chat_id: str):

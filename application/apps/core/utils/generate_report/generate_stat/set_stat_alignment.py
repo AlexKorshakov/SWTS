@@ -1,6 +1,5 @@
-from openpyxl.styles import Alignment
-
 from loader import logger
+from openpyxl.styles import Alignment
 
 
 async def set_stat_alignment(worksheet, cell_range, horizontal=None, vertical=None):

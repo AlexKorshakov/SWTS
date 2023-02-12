@@ -1,10 +1,14 @@
+from loader import logger
+
+logger.debug(f"{__name__} start import")
 import asyncio
 
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from apps.xxx import assistant
 from config.config import ADMINS_ID
 from loader import logger
+
+logger.debug(f"{__name__} finish import")
 
 
 async def admin_notify(user_id, notify_text: str, button: InlineKeyboardButton = None) -> bool:

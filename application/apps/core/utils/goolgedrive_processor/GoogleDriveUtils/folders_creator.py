@@ -1,7 +1,8 @@
 from pprint import pprint
-from loader import logger
 
-from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.google_drive_api_worker import drive_service_files_create
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.google_drive_api_worker import \
+    drive_service_files_create
+from loader import logger
 
 G_DRIVE_DIR_MIME_TYPE = "application/vnd.google-apps.folder"
 

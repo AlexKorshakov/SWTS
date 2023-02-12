@@ -1,10 +1,16 @@
-import asyncio
-from datetime import datetime
+import traceback
 
-from pandas import DataFrame
+from loader import logger
+
+logger.debug(f"{__name__} start import")
+from datetime import datetime, timedelta
 
 from apps.core.database.DataBase import DataBase
-from apps.core.utils.secondary_functions.get_part_date import get_year_message
+from apps.core.utils.secondary_functions.get_part_date import (
+    get_month_message, get_year_message)
+from pandas import DataFrame
+
+logger.debug(f"{__name__} finish import")
 
 
 async def db_check_record_existence(file_id: int) -> bool:
@@ -49,11 +55,42 @@ async def db_get_data_dict_from_table_with_id(table_name: str, post_id: int, que
 
 
 async def db_get_categories() -> list:
+    """
+
+    :return:
+    """
+    # TODO заменить на вызов конструктора QueryConstructor
     query: str = "SELECT `title` FROM `core_category`"
     categories: list = await db_get_data_list(query=query)
     clean_categories: list = [item[0] for item in categories]
 
     return clean_categories
+
+
+async def db_get_categories_list() -> list:
+    """
+
+    :return:
+    """
+    # TODO заменить на вызов конструктора QueryConstructor
+    query: str = "SELECT * FROM `core_category`"
+    categories: list = await db_get_data_list(query=query)
+    headers = [row[1] for row in await db_get_table_headers(table_name='core_category')]
+    categories_list = [dict(zip(headers, cat)) for cat in categories]
+    return categories_list
+
+
+async def db_get_elimination_time() -> list:
+    """
+
+    :return:
+    """
+    # TODO заменить на вызов конструктора QueryConstructor
+    query: str = "SELECT `title` FROM `core_eliminationtime`"
+    elimination_time: list = await db_get_data_list(query=query)
+    clean_elimination_time: list = [item[0] for item in elimination_time]
+
+    return clean_elimination_time
 
 
 async def db_del_violations(violation: dict) -> list:
@@ -199,7 +236,8 @@ async def db_get_dict_userdata(user_id: int) -> dict:
     return dict((header, item_value) for header, item_value in zip(clean_headers, clean_values))
 
 
-async def db_get_period_for_current_week(current_week: str, current_year: str = None) -> list:
+async def db_get_period_for_current_week(
+        current_week: str, current_year: str = None) -> list:
     """Получение данных из core_week по week_number
 
     :return:
@@ -210,7 +248,9 @@ async def db_get_period_for_current_week(current_week: str, current_year: str = 
     if not current_year:
         current_year = await get_year_message(current_date=datetime.now())
 
+    # TODO заменить на вызов конструктора QueryConstructor
     query: str = f'SELECT * FROM `core_week` WHERE `week_number` = {current_week}'
+    print(f'{__name__} {say_fanc_name()} {query}')
     datas_query: list = DataBase().get_data_list(query=query)
     period_data = datas_query[0]
 
@@ -224,6 +264,35 @@ async def db_get_period_for_current_week(current_week: str, current_year: str = 
     ]
 
     return period
+
+
+async def db_get_period_for_current_month(
+        current_month: str = None, current_year: str = None) -> list:
+    """Получение данных из core_week по week_number
+
+    :return:
+    """
+
+    if not current_month:
+        current_month = await get_month_message(current_date=datetime.now())
+
+    if not current_year:
+        current_year = await get_year_message(current_date=datetime.now())
+
+    last_day_month = last_day_of_month(current_date=datetime.now())
+    last_day_month = last_day_month.strftime("%d.%m.%Y")
+
+    period = [
+        f'01.{current_month}.{current_year}',
+        f'{last_day_month}',
+    ]
+    return period
+
+
+def last_day_of_month(current_date: datetime):
+    if current_date.month == 12:
+        return current_date.replace(day=31)
+    return current_date.replace(month=current_date.month + 1, day=1) - timedelta(days=1)
 
 
 def db_get_data_list_no_async(query: str) -> list:
@@ -245,15 +314,43 @@ def db_get_table_headers_no_async(db_table_name: str) -> list:
     return result_list
 
 
-def db_get_id_no_async(table, entry, file_id: str = None, name=None) -> int:
+def db_get_id_no_async(table, entry, file_id: str = None, name=None, condition=None) -> int:
     """Получение id записи по значению title из соответствующий таблицы table
 
     :return: int
     """
+
+    # if condition == 'short_title':
+    #     # kwargs: dict = {
+    #     #     "action": 'SELECT',
+    #     #     "subject": 'id',
+    #     #     "conditions": {
+    #     #         'short_title': True
+    #     #     }
+    #     # }
+    #     # query: str = asyncio.run( await QueryConstructor(chat_id=None, table_name=table, **kwargs).prepare_data())
+    #
+    #     query = f"SELECT `id` " \
+    #             f"FROM `{table}` " \
+    #             f"WHERE `short_title` = '{entry}' "
+    #
+    #     print(f'get_stat_dataframe {query = }')
+    #
+    #     datas_query: list = DataBase().get_data_list(query=query)
+    #
+    #     value: int = datas_query[0][0]
+    #     return value
+
     value: int = DataBase().get_id(
         table=table,
         entry=entry,
         file_id=file_id,
         name=name
     )
+
     return value
+
+
+def say_fanc_name():
+    stack = traceback.extract_stack()
+    return str(stack[-2][2])

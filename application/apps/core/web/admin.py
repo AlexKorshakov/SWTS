@@ -1,8 +1,9 @@
 from django.contrib import admin
 from django.core.paginator import Paginator
 
-from .models import User, Violations, Status, MainCategory, Location, WorkShift, Category, EliminationTime, \
-    GeneralContractor, IncidentLevel, ViolationCategory, ActRequired
+from .models import (ActRequired, Category, EliminationTime, GeneralContractor,
+                     IncidentLevel, Location, MainCategory, Status, User,
+                     ViolationCategory, Violations, WorkShift)
 
 # Register your models here.
 # To get django model: models.<ModelName>

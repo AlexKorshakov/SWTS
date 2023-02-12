@@ -33,9 +33,9 @@ def prepare_venv():
 
 
 try:
-    from googleapiclient.discovery import build
     import httplib2
     from google.oauth2 import service_account
+    from googleapiclient.discovery import build
 except Exception as err:
     logger.error(f"*** google api client error {err} ***")
     prepare_venv()

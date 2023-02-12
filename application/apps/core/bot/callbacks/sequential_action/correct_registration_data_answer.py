@@ -1,27 +1,28 @@
+from loader import logger
+
+logger.debug(f"{__name__} start import")
+import apps.xxx
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
-from aiogram.types import ReplyKeyboardMarkup, ReplyKeyboardRemove, CallbackQuery
-
-import apps.xxx
-from apps.MyBot import MyBot
-
+from aiogram.types import (CallbackQuery, ReplyKeyboardMarkup,
+                           ReplyKeyboardRemove)
 from apps.core.bot.data import board_config
 from apps.core.bot.data.category import REGISTRATION_DATA_LIST, get_data_list
-from apps.core.utils.generate_report.get_file_list import get_registration_json_file_list
-from config.config import ADMIN_ID
-from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard
+from apps.core.bot.filters.custom_filters import is_private
+from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import \
+    build_inlinekeyboard
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.states import CorrectRegisterState
-from apps.core.bot.filters.custom_filters import is_private
-# from apps.core.utils.reports_processor.get_file_list import get_registration_json_file_list
+from apps.core.utils.data_recording_processor.set_user_registration_data import \
+    set_user_registration_data
+from apps.core.utils.generate_report.get_file_list import \
+    get_registration_json_file_list
 from apps.core.utils.json_worker.read_json_file import read_json_file
-from apps.core.utils.data_recording_processor.set_user_registration_data import set_user_registration_data
+from apps.MyBot import MyBot
+from config.config import ADMIN_ID
 
-from loader import logger
-
-logger.debug("correct_registration_data_answer")
-
+logger.debug(f"{__name__} finish import")
 
 @MyBot.dp.callback_query_handler(lambda call: call.data in REGISTRATION_DATA_LIST)
 async def correct_registration_data_answer(call: types.CallbackQuery):

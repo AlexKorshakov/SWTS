@@ -2,14 +2,16 @@ import asyncio
 from pprint import pprint
 
 from aiogram import types
-
-from apps.core.bot.reports.report_data_preparation import set_violation_atr_data
-from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import \
-    drive_account_auth_with_oauth2client, \
-    drive_account_credentials, move_file
-from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.find_folder import find_folder_with_name_on_google_drive
-from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.folders_creator import create_directory_on_google_drive
-from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.set_permissions import gaining_access_drive
+from apps.core.bot.reports.report_data_preparation import \
+    set_violation_atr_data
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.find_folder import \
+    find_folder_with_name_on_google_drive
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.folders_creator import \
+    create_directory_on_google_drive
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import (
+    drive_account_auth_with_oauth2client, drive_account_credentials, move_file)
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.set_permissions import \
+    gaining_access_drive
 from config.config import ROOT_REPORT_FOLDER_NAME
 from loader import logger
 

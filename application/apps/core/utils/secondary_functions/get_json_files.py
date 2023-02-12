@@ -1,7 +1,8 @@
 import os
 
 from apps.core.utils.json_worker.read_json_file import read_json_file
-from apps.core.utils.secondary_functions.get_filepath import get_bot_data_path, get_file_path
+from apps.core.utils.secondary_functions.get_filepath import (
+    get_bot_data_path, get_file_path)
 
 
 async def get_files(main_path: str, endswith: str = ".json") -> list:

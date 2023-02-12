@@ -1,10 +1,10 @@
 import openpyxl
-
-from apps.MyBot import MyBot
 from apps.core.bot.messages.messages import Messages
-from apps.core.utils.generate_report.create_xlsx.get_workbook import get_workbook
-from apps.core.utils.generate_report.create_xlsx.get_worksheet import get_worksheet
-
+from apps.core.utils.generate_report.create_xlsx.get_workbook import \
+    get_workbook
+from apps.core.utils.generate_report.create_xlsx.get_worksheet import \
+    get_worksheet
+from apps.MyBot import MyBot
 from loader import logger
 
 

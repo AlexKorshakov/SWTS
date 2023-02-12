@@ -1,3 +1,6 @@
+from loader import logger
+
+logger.debug(f"{__name__} start import")
 import typing
 from datetime import datetime, timedelta
 from pprint import pprint
@@ -6,7 +9,7 @@ from aiogram import types
 from aiogram.dispatcher.filters import Command
 
 from apps.MyBot import MyBot
-from apps.core.bot.bot_utils.check_user_registration import check_user_access, get_user_data_dict
+from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
 from apps.core.bot.messages.messages import Messages
 from apps.core.database.db_utils import db_get_username, db_get_period_for_current_week
@@ -14,7 +17,8 @@ from apps.core.utils.generate_report.generate_daily_report.create_and_send_daily
     create_and_send_daily_report
 from apps.core.utils.misc import rate_limit
 from apps.core.utils.secondary_functions.get_part_date import get_week_message, get_year_message
-from loader import logger
+
+logger.debug(f"{__name__} finish import")
 
 
 @rate_limit(limit=10)
@@ -26,6 +30,8 @@ async def report_generate_handler(message: types.Message) -> None:
     """
     chat_id = message.chat.id
     if not await check_user_access(chat_id=chat_id):
+        print(f'access fail {chat_id = }')
+        logger.error(f'access fail {chat_id = }')
         return
 
     reply_markup = await add_period_inline_keyboard_with_action()
@@ -77,7 +83,7 @@ async def call_correct_abort_current_post(call: types.CallbackQuery, callback_da
         kwargs = {}
 
         logger.info(f'User @{username}:{chat_id} generate report')
-        if await create_and_send_daily_report(chat_id=chat_id, query_period=daily_report_date_period,**kwargs ):
+        if await create_and_send_daily_report(chat_id=chat_id, query_period=daily_report_date_period, **kwargs):
             logger.info(Messages.Report.generated_successfully)
 
 

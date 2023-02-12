@@ -1,18 +1,22 @@
 import datetime
 from math import ceil
-from xlsxwriter.worksheet import Worksheet
 
-from pandas import DataFrame
-
-from apps.core.bot.data.category import ELIMINATION_TIME
 from apps.core.bot.reports.report_data import headlines_data
-from apps.core.database.db_utils import db_get_data_dict_from_table_with_id, db_get_data_list, db_get_dict_userdata, \
-    db_get_categories, db_get_elimination_time, db_get_categories_list
-from apps.core.utils.generate_report.generate_stat.set_stat_alignment import set_stat_alignment
-from apps.core.utils.generate_report.set_value import check_mark_true, \
-    not_found
-from apps.core.utils.generate_report.sheet_formatting.set_font import sets_report_font
+from apps.core.database.db_utils import (db_get_categories_list,
+                                         db_get_data_dict_from_table_with_id,
+                                         db_get_data_list,
+                                         db_get_dict_userdata,
+                                         db_get_elimination_time)
+from apps.core.utils.generate_report.generate_stat.set_stat_alignment import \
+    set_stat_alignment
+from apps.core.utils.generate_report.set_value import (check_mark_true,
+                                                       not_found)
+from apps.core.utils.generate_report.sheet_formatting.set_font import \
+    sets_report_font
 from loader import logger
+from pandas import DataFrame
+from xlsxwriter.workbook import Workbook
+from xlsxwriter.worksheet import Worksheet
 
 
 async def set_stat_violation_values(

@@ -1,14 +1,18 @@
-from aiogram import types
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup
-from aiogram.utils.callback_data import CallbackData
-
-from apps.core.bot.data import board_config
-
-from apps.MyBot import MyBot
 from loader import logger
 
+logger.debug(f"{__name__} start import")
+from aiogram import types
+from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup,
+                           ReplyKeyboardMarkup)
+from aiogram.utils.callback_data import CallbackData
+from apps.core.bot.data import board_config
+from apps.MyBot import MyBot
+
+logger.debug(f"{__name__} finish import")
+
+
 NUM_COL = 2
-STEP_MENU = 8
+STEP_MENU = 10
 move_action: CallbackData = CallbackData("description", "action", "previous_value")
 posts_cb: CallbackData = CallbackData('post', 'id', 'action')
 
@@ -153,8 +157,8 @@ async def add_action_button(reply_markup, start_index: int, stop_index: int, end
 async def add_previous_paragraph_button(reply_markup, previous_level: str) -> InlineKeyboardMarkup:
     """Добавление кнопки - предыдущее действий"""
 
-    logger.info(f"{reply_markup = }")
-    logger.info(f"{previous_level = }")
+    logger.debug(f"{reply_markup = }")
+    logger.debug(f"{previous_level = }")
 
     btn_previous = InlineKeyboardButton(text="previous",
                                         callback_data=move_action.new(

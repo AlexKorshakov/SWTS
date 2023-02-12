@@ -1,7 +1,13 @@
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from loader import logger
 
+logger.debug(f"{__name__} start import")
+
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from apps.core.bot.data.category import ADMIN_MENU_LIST
-from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard
+from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import \
+    build_inlinekeyboard
+
+logger.debug(f"{__name__} finish import")
 
 
 class Keyboard:

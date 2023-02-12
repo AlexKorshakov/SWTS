@@ -1,13 +1,16 @@
-from aiogram import types
+from loader import logger
 
-from apps.MyBot import MyBot
-from apps.core.bot.callbacks.sequential_action.data_answer import get_and_send_incident_level_data
+logger.debug(f"{__name__} start import")
+from aiogram import types
+from apps.core.bot.callbacks.sequential_action.data_answer import \
+    get_and_send_incident_level_data
 from apps.core.bot.data.category import get_data_list
 from apps.core.bot.reports.report_data import violation_data
 from apps.core.utils.json_worker.writer_json_file import write_json_file
-from loader import logger
+from apps.MyBot import MyBot
 
-logger.debug("incident_level")
+
+logger.debug(f"{__name__} finish import")
 
 
 @MyBot.dp.callback_query_handler(lambda call: call.data in get_data_list("INCIDENT_LEVEL"))

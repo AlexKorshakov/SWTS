@@ -1,14 +1,17 @@
+from loader import logger
+
+logger.debug(f"{__name__} start import")
 import asyncio
 from random import choice
 
-from aiogram import types, Dispatcher
+from aiogram import Dispatcher, types
 from aiogram.dispatcher import DEFAULT_RATE_LIMIT
 from aiogram.dispatcher.handler import CancelHandler, current_handler
 from aiogram.dispatcher.middlewares import BaseMiddleware
 from aiogram.utils.exceptions import Throttled
-from loader import logger
-
 from apps.core.bot.data.phrases import throttled_answers
+
+logger.debug(f"{__name__} finish import")
 
 
 class ThrottlingMiddleware(BaseMiddleware):

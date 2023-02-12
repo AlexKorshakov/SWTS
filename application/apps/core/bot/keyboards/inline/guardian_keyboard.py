@@ -1,11 +1,16 @@
+from loader import logger
+
+logger.debug(f"{__name__} start import")
 import random
 from typing import Tuple
 
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.callback_data import CallbackData
-
 from apps.core.bot.data.emojies import emojies
 from config.config import NUM_BUTTONS
+
+logger.debug(f"{__name__} finish import")
+
 
 # создаём CallbackData для удобного парсинга Callback
 confirming_callback = CallbackData("confirm", "subject", "necessary_subject", "user_id")

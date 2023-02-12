@@ -1,7 +1,11 @@
+from loader import logger
+
+logger.debug(f"{__name__} start import")
 from aiogram import types
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-
 from apps.core.bot.messages.messages import Messages
+
+logger.debug(f"{__name__} finish import")
 
 
 async def bild_inline_keyboard(message: types.Message, *, some_list, num_col=1) -> None:

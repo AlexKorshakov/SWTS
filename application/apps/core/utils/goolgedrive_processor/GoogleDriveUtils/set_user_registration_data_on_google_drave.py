@@ -1,14 +1,17 @@
+from apps.core.utils.goolgedrive_processor.googledrive_worker import (
+    ROOT_REPORT_FOLDER_NAME, get_root_folder_id, get_user_folder_id)
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.folders_deleter import \
+    del_by_name_old_data_google_drive
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import (
+    drive_account_auth_with_oauth2client, move_file)
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.set_permissions import \
+    get_user_permissions
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.upload_data_on_gdrive import \
+    upload_file_on_gdrave
+from apps.core.utils.json_worker.writer_json_file import \
+    write_user_registration_data_on_json_on_local_storage
 from config.config import WRITE_DATA_ON_GOOGLE_DRIVE
 from loader import logger
-
-from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import drive_account_auth_with_oauth2client, \
-    move_file
-from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.set_permissions import get_user_permissions
-from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.folders_deleter import del_by_name_old_data_google_drive
-from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.upload_data_on_gdrive import upload_file_on_gdrave
-from apps.core.utils.goolgedrive_processor.googledrive_worker import ROOT_REPORT_FOLDER_NAME, get_root_folder_id, \
-    get_user_folder_id
-from apps.core.utils.json_worker.writer_json_file import write_user_registration_data_on_json_on_local_storage
 
 
 async def write_user_registration_data_on_google_drive(*, chat_id, user_data):

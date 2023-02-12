@@ -1,18 +1,19 @@
-from aiogram import types
-from aiogram.dispatcher.filters import Command
-from aiogram.dispatcher.filters import Text
-from aiogram.dispatcher import FSMContext
-
-from apps.MyBot import MyBot
 from loader import logger
+
+logger.debug(f"{__name__} start import")
+from aiogram import types
+from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher.filters import Command, Text
+from apps.core.bot.bot_utils.check_user_registration import check_user_access
+from apps.core.bot.data import board_config
+from apps.core.bot.messages.messages import Messages
+from apps.core.bot.reports.report_data import (global_reg_form, headlines_data,
+                                               user_data, violation_data)
+from apps.core.utils.misc import rate_limit
+from apps.MyBot import MyBot
 from config.config import ADMIN_ID
 
-from apps.core.bot.messages.messages import Messages
-from apps.core.bot.data import board_config
-from apps.core.bot.reports.report_data import violation_data, headlines_data, user_data, global_reg_form
-
-from apps.core.utils.misc import rate_limit
-from apps.core.bot.bot_utils.check_user_registration import check_user_access
+logger.debug(f"{__name__} finish import")
 
 
 class NamedDict(dict):
@@ -51,10 +52,10 @@ async def cancel_handler(call: types.CallbackQuery, state: FSMContext):
 
     for items_data in dict_list:
         items_data_name = [item for item in items_data.keys()]
-        print(f"Report {str(items_data.name)} {items_data}")
+        logger.debug(f"Report {str(items_data.name)} {items_data}")
         if items_data_name:
             items_data.clear()
-            print(f"Report is clear {str(items_data.name)} {items_data}")
+            logger.info(f"Report is clear {str(items_data.name)} {items_data}")
 
     board_config.menu_level = 1
     board_config.menu_list = []

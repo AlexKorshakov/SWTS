@@ -1,7 +1,8 @@
 import asyncio
-import pandas
+from datetime import date, datetime
 from typing import Optional
-from datetime import datetime, date
+
+import pandas
 from loader import logger
 
 

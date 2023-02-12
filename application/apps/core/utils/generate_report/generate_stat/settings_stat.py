@@ -57,7 +57,7 @@ STATISTIC_ROW_DIMENSIONS_HEADER = [
     ["15", "24.0"],
     ["16", "24.0"],
     ["17", "17.4"],
-    ["18", "17.4"],
+    ["18", "40"],
 ]
 
 STATISTIC_ROW_DIMENSIONS_BODY = [

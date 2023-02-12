@@ -1,16 +1,22 @@
+from apps.core.utils.generate_report.generate_act_prescription.set_act_alignment import \
+    set_act_alignment
+from apps.core.utils.generate_report.generate_act_prescription.set_act_frame_border import \
+    set_range_border
+from apps.core.utils.generate_report.generate_act_prescription.set_act_page_setup import (
+    set_act_page_after_footer_setup, set_act_page_setup)
+from apps.core.utils.generate_report.generate_act_prescription.settings_act_prescription import (
+    ACT_CELL_RANGES, ACT_CELL_RANGES_BASIC_ALIGNMENT,
+    ACT_CELL_RANGES_SET_REPORT_FONT, ACT_MERGED_CELLS, ACT_RANGE_COLUMNS,
+    ACT_ROW_DIMENSIONS)
+from apps.core.utils.generate_report.sheet_formatting.set_column_dimensions import \
+    set_column_dimensions
+from apps.core.utils.generate_report.sheet_formatting.set_font import (
+    set_report_font, sets_report_font)
+from apps.core.utils.generate_report.sheet_formatting.set_merge_cells import \
+    set_merge_cells
+from apps.core.utils.generate_report.sheet_formatting.set_row_dimensions import \
+    set_row_dimensions
 from xlsxwriter.worksheet import Worksheet
-
-from apps.core.utils.generate_report.sheet_formatting.set_column_dimensions import set_column_dimensions
-from apps.core.utils.generate_report.sheet_formatting.set_font import set_report_font, sets_report_font
-from apps.core.utils.generate_report.sheet_formatting.set_merge_cells import set_merge_cells
-from apps.core.utils.generate_report.sheet_formatting.set_row_dimensions import set_row_dimensions
-from apps.core.utils.generate_report.generate_act_prescription.set_act_alignment import set_act_alignment
-from apps.core.utils.generate_report.generate_act_prescription.settings_act_prescription import ACT_RANGE_COLUMNS, \
-    ACT_MERGED_CELLS, ACT_CELL_RANGES, ACT_ROW_DIMENSIONS, ACT_CELL_RANGES_BASIC_ALIGNMENT, \
-    ACT_CELL_RANGES_SET_REPORT_FONT
-from apps.core.utils.generate_report.generate_act_prescription.set_act_frame_border import set_range_border
-from apps.core.utils.generate_report.generate_act_prescription.set_act_page_setup import set_act_page_setup, \
-    set_act_page_after_footer_setup
 
 
 async def format_act_prescription_sheet(worksheet: Worksheet):

@@ -1,13 +1,12 @@
 import asyncio
-import os
 import datetime
+import os
 from os import makedirs
 from pprint import pprint
 
+from config.config import REPORT_NAME
 from config.web.settings import BASE_DIR
 from loader import logger
-
-from config.config import REPORT_NAME
 
 BOT_MEDIA_PATH = os.path.join(BASE_DIR.parent.parent, 'media\\')
 

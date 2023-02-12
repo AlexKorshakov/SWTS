@@ -9,7 +9,7 @@ class Messages:
                         f"Видео инструкция {url_registration_violation}" \
                         f'\n' \
                         f'{write_to_developer}'
-                        # f'Для регистрации в системе (повторной регистрации) нажмите /start \n' \
+    # f'Для регистрации в системе (повторной регистрации) нажмите /start \n' \
     wait: str = f"Это может занять некоторое время"
     cancel: str = f"Отмена!"
     correct_cancel: str = f"продолжить без изменений"
@@ -117,6 +117,8 @@ class Messages:
         dataframe_not_found: str = f'Не удалось получить массив данных для формирования отчета! \n' \
                                    'Обратитесь к разработчику! \n' \
                                    f'чтобы написать разработчику нажмите /developer'
+        dataframe_is_empty: str = f'Массив данных для формирования отчета пуст!'
+
         file_list_not_found: str = f"Список файлов не найден! \n"
         workbook_not_create: str = f"Файл с отчетом не создан! Обратитесь к разработчику! \n" \
                                    f'чтобы написать разработчику нажмите /developer'
@@ -136,3 +138,11 @@ class Messages:
                                        f"Для регистрации нажмите /start" \
                                        f"Если ошибка повторится обратитесь к разработчику " \
                                        f"Чтобы написать разработчику нажмите /developer"
+
+
+class LogMessage:
+    class Check:
+        no_violations: str = f"check_violations_final_date_elimination ::: No violations for check in DataBase"
+        complete_successfully: str = f'check DataBase complete successfully'
+        no_query: str = f'check_violations_status ::: No query for check violations in DataBase'
+        date_created_at: str = f"check_violations_final_date_elimination ::: No date_created_at for check violations in DataBase"

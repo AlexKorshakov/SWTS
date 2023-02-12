@@ -1,10 +1,14 @@
-from apps.MyBot import MyBot
-from config.config import WRITE_DATA_ON_GOOGLE_DRIVE
 from loader import logger
+
+logger.debug(f"{__name__} start import")
 
 from apps.core.bot.messages.messages import Messages
 from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.set_user_report_data_on_google_drive import \
     set_user_report_data_on_google_drive
+from apps.MyBot import MyBot
+from config.config import WRITE_DATA_ON_GOOGLE_DRIVE
+
+logger.debug(f"{__name__} finish import")
 
 
 async def set_report_data(chat_id: int, full_report_path: str):

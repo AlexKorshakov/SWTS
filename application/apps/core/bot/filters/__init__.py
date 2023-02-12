@@ -1,6 +1,7 @@
 from loader import logger
-logger.debug("start registration filters")
-from . import registation_finish
-from . import custom_filters
 
-logger.debug("stop registration filters")
+logger.debug(f"{__name__} start import")
+
+from . import custom_filters, registation_finish
+
+logger.debug(f"{__name__} finish import")

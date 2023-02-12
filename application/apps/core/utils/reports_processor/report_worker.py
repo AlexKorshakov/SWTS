@@ -2,18 +2,21 @@ import asyncio
 from datetime import datetime
 from pprint import pprint
 
-from apps.MyBot import MyBot
 from apps.core.bot.messages.messages import Messages
 from apps.core.database.db_utils import db_get_data_dict_from_table_with_id
+from apps.core.utils.data_recording_processor.set_user_report_data import \
+    set_report_data
 from apps.core.utils.generate_report.generate_act_prescription.create_and_send_act_prescription import \
     create_and_send_act_prescription
-from apps.core.utils.generate_report.generator_report import create_report_from_other_method
+from apps.core.utils.generate_report.generator_report import \
+    create_report_from_other_method
 from apps.core.utils.generate_report.get_data_report import get_data_report
 from apps.core.utils.generate_report.get_file_list import get_json_file_list
-from apps.core.utils.generate_report.get_report_path import get_full_report_name
-from apps.core.utils.generate_report.send_report_from_user import send_report_from_user
-
-from apps.core.utils.data_recording_processor.set_user_report_data import set_report_data
+from apps.core.utils.generate_report.get_report_path import \
+    get_full_report_name
+from apps.core.utils.generate_report.send_report_from_user import \
+    send_report_from_user
+from apps.MyBot import MyBot
 from loader import logger
 
 

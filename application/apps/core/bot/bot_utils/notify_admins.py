@@ -1,9 +1,8 @@
-from aiogram import Dispatcher
 from asyncio import sleep
 
-from loader import logger
-
+from aiogram import Dispatcher
 from config.config import ADMIN_ID
+from loader import logger
 
 
 async def on_startup_notify(dp: Dispatcher):

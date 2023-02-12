@@ -1,6 +1,5 @@
-from openpyxl.styles import Border, Side
-
 from loader import logger
+from openpyxl.styles import Border, Side
 
 
 async def set_range_border(worksheet, cell_range, border):

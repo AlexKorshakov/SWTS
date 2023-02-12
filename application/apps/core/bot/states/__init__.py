@@ -1,3 +1,7 @@
+from loader import logger
+
+logger.debug(f"{__name__} start import")
+
 from .AnswerUserState import AnswerUserState
 from .RegisterState import RegisterState
 from .CorrectRegisterState import CorrectRegisterState
@@ -7,3 +11,5 @@ from .DataUserState import DataUserState
 from . import description
 from . import comment
 from . import location
+
+logger.debug(f"{__name__} finish import")

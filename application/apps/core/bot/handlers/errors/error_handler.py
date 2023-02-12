@@ -1,5 +1,9 @@
-from apps.MyBot import MyBot
 from loader import logger
+
+logger.debug(f"{__name__} start import")
+from apps.MyBot import MyBot
+
+logger.debug(f"{__name__} finish import")
 
 
 @MyBot.dp.errors_handler()
@@ -10,10 +14,13 @@ async def errors_handler(update, exception):
     :param exception:
     :return: stdout logging
     """
-    from aiogram.utils.exceptions import (Unauthorized, InvalidQueryID, TelegramAPIError,
-                                          CantDemoteChatCreator, MessageNotModified, MessageToDeleteNotFound,
-                                          MessageTextIsEmpty, RetryAfter,
-                                          CantParseEntities, MessageCantBeDeleted)
+    from aiogram.utils.exceptions import (CantDemoteChatCreator,
+                                          CantParseEntities, InvalidQueryID,
+                                          MessageCantBeDeleted,
+                                          MessageNotModified,
+                                          MessageTextIsEmpty,
+                                          MessageToDeleteNotFound, RetryAfter,
+                                          TelegramAPIError, Unauthorized)
 
     if isinstance(exception, CantDemoteChatCreator):
         logger.debug("Can't demote chat creator")

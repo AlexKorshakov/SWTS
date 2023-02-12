@@ -1,10 +1,16 @@
+from loader import logger
+
+logger.debug(f"{__name__} start import")
+
 from aiogram import types
 from aiogram.dispatcher import FSMContext
-
-from apps.MyBot import MyBot
 from apps.core.bot.messages.messages import Messages
-from apps.core.bot.reports.report_data_preparation import set_violation_atr_data
+from apps.core.bot.reports.report_data_preparation import \
+    set_violation_atr_data
 from apps.core.bot.states import AnswerUserState
+from apps.MyBot import MyBot
+
+logger.debug(f"{__name__} finish import")
 
 
 # Сюда приходит ответ с description, state=состояние
@@ -16,4 +22,3 @@ async def process_description(message: types.Message, state: FSMContext):
 
     await AnswerUserState.next()
     await message.answer(Messages.Enter.comment)
-

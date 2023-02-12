@@ -1,6 +1,6 @@
 from loader import logger
 
-logger.debug("registration handlers start")
+logger.debug(f"{__name__} start import")
 from . import errors
 from . import cancel
 from . import admin_func
@@ -15,4 +15,4 @@ from . import correct_entries
 from . import developer
 from . import text
 
-logger.debug("registration handlers finish")
+logger.debug(f"{__name__} finish import")
