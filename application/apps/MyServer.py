@@ -1,11 +1,15 @@
 import asyncio
 
 import uvicorn
+# from apps.core.web.middlewares import InjectMiddleware
+# from apps.MyBot import MyBot
+from config.apps import register_apps
 from django.core.asgi import get_asgi_application
 
-from apps.MyBot import MyBot
-from apps.core.web.middlewares import InjectMiddleware
-from config.apps import register_apps
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.web.settings")
+
+import heartrate
+heartrate.trace(browser=True)
 
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
@@ -25,10 +29,12 @@ class MyServer:
 
     @staticmethod
     async def on_startup() -> None:
-        InjectMiddleware.inject_params = dict(bot=MyBot.bot)
+        """Действия при запуске"""
+        # InjectMiddleware.inject_params = {"bot": MyBot.bot()}
 
         await register_apps()
 
-    # @staticmethod
-    # async def on_shutdown() -> None:
-    #     pass
+    @staticmethod
+    async def on_shutdown() -> None:
+        print('Server stopped')
+

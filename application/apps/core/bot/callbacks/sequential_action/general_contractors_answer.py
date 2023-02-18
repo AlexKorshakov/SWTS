@@ -1,20 +1,20 @@
+from loader import logger
+
+logger.debug(f"{__name__} start import")
 from aiogram import types
-
-from apps.MyBot import MyBot
-
 from apps.core.bot.data import board_config
 from apps.core.bot.data.category import get_data_list
+from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import (
+    add_previous_paragraph_button, build_inlinekeyboard)
+from apps.core.bot.messages.messages import Messages
 from apps.core.bot.reports.report_data import violation_data
 from apps.core.database.db_utils import db_get_full_title
 from apps.core.database.transformation_category import CATEGORY_ID_TRANSFORM
-from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard, \
-    add_previous_paragraph_button
 from apps.core.utils.json_worker.writer_json_file import write_json_file
-from apps.core.bot.messages.messages import Messages
+from apps.MyBot import MyBot
 
-from loader import logger
 
-logger.debug("general_contractors_answer")
+logger.debug(f"{__name__} finish import")
 
 
 @MyBot.dp.callback_query_handler(lambda call: call.data in get_data_list("GENERAL_CONTRACTORS"))

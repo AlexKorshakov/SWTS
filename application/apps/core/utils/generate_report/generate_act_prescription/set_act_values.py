@@ -264,7 +264,7 @@ async def set_single_violation(worksheet: Worksheet, violation_values):
         post_id=violation_values.sub_location_id
     )
 
-    title: str = f"{main_location['short_title']} ({sub_location['title']})"
+    title: str = f"{main_location['title']} ({sub_location['title']})"
 
     worksheet.cell(row=27, column=2, value=title)
     worksheet.cell(row=28, column=2, value=1)

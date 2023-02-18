@@ -1,4 +1,5 @@
 from openpyxl.worksheet.pagebreak import Break
+from openpyxl.worksheet.page import PageMargins
 
 
 async def set_act_page_setup(worksheet):
@@ -29,6 +30,19 @@ async def set_act_page_setup(worksheet):
 
     # worksheet.row_breaks.append(Break(id=53))
     # worksheet.col_breaks.append(Break(id=13))
+
+    # задаем собственные значения отступов
+    cm = 1 / 2.54
+    top_bottom = 0.61 / 2.54
+    left_right = 1.91 / 2.54
+    worksheet.page_margins = PageMargins(left=left_right, right=left_right, top=top_bottom, bottom=top_bottom)
+
+    worksheet.oddFooter.left.text = "Страница &[Page] из &N"
+    worksheet.oddFooter.left.size = 10
+    worksheet.oddFooter.left.font = "Arial,Bold"
+    worksheet.oddFooter.left.color = "030303"
+    worksheet.differentFirst = False
+    worksheet.differentOddEven = True
 
 
 async def set_act_page_after_footer_setup(worksheet, print_area, break_line=None):

@@ -13,11 +13,16 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
-from loader import DjangoColorsFormatter
+import sys
+from django.core.management.color import color_style
+from logging import Formatter
+
 from .. import apps
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent  # BASE_DIR = \\application\\config\\web
+
+# print(f'setting: {BASE_DIR.parent.parent}/logs/')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/

@@ -10,7 +10,7 @@ from apps.core.bot.callbacks.sequential_action.data_answer import (
     get_and_send_null_normative_documents_data,
     get_and_send_null_sub_locations_data, get_and_send_sub_locations_data,
     get_and_send_violation_category_data)
-from apps.core.bot.data.category import _PREFIX_ND, get_data_list
+from apps.core.bot.data.category import _PREFIX_ND, get_data_list, _PREFIX_POZ
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import \
     move_action
 from apps.core.bot.reports.report_data import violation_data
@@ -31,7 +31,7 @@ async def previous_paragraph_answer(call: types.CallbackQuery, callback_data: di
 
     elif callback_data['previous_value'] == "sub_location":
 
-        if call.data == _PREFIX_ND + "0":
+        if call.data == _PREFIX_POZ + "0":
             await get_and_send_null_sub_locations_data(call, callback_data)
 
         print(f"{call.data}")

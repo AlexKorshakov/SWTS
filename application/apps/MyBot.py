@@ -3,14 +3,16 @@ from aiogram.utils import executor
 
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.middlewares import setup_middlewares
-from apps.core.utils import on_startup_notify
-from apps.core.utils.bot_utils_processor.set_bot_commands import set_default_commands
+
 from apps.xxx import assistant, dp_assistant
 from config.config import SKIP_UPDATES
 from loader import logger
 
 
 class MyBot:
+    """Основной класс запуска бота
+
+    """
     # storage = MemoryStorage()
     # bot = Bot(token=BOT_TOKEN, parse_mode="HTML")
     # dp = Dispatcher(bot=bot, storage=storage)
@@ -50,7 +52,7 @@ class MyBot:
             logger.info("Все части зарегистрированы...")
         except Exception as err:
             logger.warning(f'Exception in app.py {err}')
-            quit()
+            sys.exit()
 
         setup_middlewares(dp)
         await on_startup_notify(dp)
@@ -62,7 +64,7 @@ class MyBot:
         # await register_apps(dp)
 
     @staticmethod
-    def get_handled_updates_list(dp: Dispatcher):
+    async def get_handled_updates_list(dp: Dispatcher):
         """
         Here we collect only the needed updates for bot based on already registered handlers types.
         This way Telegram doesn't send unwanted updates and bot doesn't have to proceed them.
@@ -95,4 +97,4 @@ class MyBot:
         logger.warning('Bye! Shutting down connection')
         await dp.storage.close()
         await dp.storage.wait_closed()
-        quit()
+        sys.exit()

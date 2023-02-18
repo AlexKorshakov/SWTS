@@ -1,29 +1,32 @@
 import typing
 
 from aiogram import types  # type: ignore
-
-from apps.MyBot import MyBot
-
-from apps.core.bot.callbacks.sequential_action.correct_headlines_data_answer import get_headlines_text
-from apps.core.bot.callbacks.sequential_action.correct_registration_data_answer import get_registration_text
-from apps.core.bot.callbacks.sequential_action.correct_violations_data_answer import get_violations_text
+from apps.core.bot.callbacks.sequential_action.correct_headlines_data_answer import \
+    get_headlines_text
+from apps.core.bot.callbacks.sequential_action.correct_registration_data_answer import \
+    get_registration_text
+from apps.core.bot.callbacks.sequential_action.correct_violations_data_answer import \
+    get_violations_text
 from apps.core.bot.data import board_config
-from apps.core.bot.data.category import REGISTRATION_DATA_LIST, HEADLINES_DATA_LIST, VIOLATIONS_DATA_LIST
-from apps.core.utils.generate_report.get_file_list import get_registration_json_file_list, get_json_file_list
+from apps.core.bot.data.category import (HEADLINES_DATA_LIST,
+                                         REGISTRATION_DATA_LIST,
+                                         VIOLATIONS_DATA_LIST)
+from apps.core.bot.handlers.correct_entries.correct_entries_handler import (
+    delete_violation_files_from_gdrive, delete_violation_files_from_pc)
+from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import (
+    build_inlinekeyboard, posts_cb)
+from apps.core.bot.messages.messages import Messages
+from apps.core.bot.reports.report_data import headlines_data
 from apps.core.utils.generate_report.generate_daily_report.set_daily_report_values import \
     set_report_headlines_data_values
-from config.config import SEPARATOR
-from apps.core.bot.reports.report_data import headlines_data
-from apps.core.bot.handlers.correct_entries.correct_entries_handler import delete_violation_files_from_pc, \
-    delete_violation_files_from_gdrive
-from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb, build_inlinekeyboard
-
-from apps.core.bot.messages.messages import Messages
+from apps.core.utils.generate_report.get_file_list import (
+    get_json_file_list, get_registration_json_file_list)
 from apps.core.utils.json_worker.read_json_file import read_json_file
+from apps.MyBot import MyBot
+from config.config import SEPARATOR
 
-from loader import logger
 
-logger.debug("call_del_current_violation")
+logger.debug(f"{__name__} finish import")
 
 
 @MyBot.dp.callback_query_handler(posts_cb.filter(action=['del_current_post']))
@@ -75,48 +78,48 @@ async def call_del_current_violation(call: types.CallbackQuery, callback_data: t
         break
 
 
-@MyBot.dp.callback_query_handler(posts_cb.filter(action=['correct_registration_data']))
-async def call_correct_registration_data(call: types.CallbackQuery, callback_data: typing.Dict[str, str]):
-    """
-
-    :param call:
-    :param callback_data:
-    :return:
-    """
-    chat_id = call.message.chat.id
-    action: str = callback_data['action']
-    registration_text: str = ''
-
-    if action == 'correct_registration_data':
-
-        registration_file_list = await get_registration_json_file_list(chat_id=chat_id)
-
-        if not registration_file_list:
-            registration_file_list = await get_registration_json_file_list(chat_id=chat_id)
-
-        if not registration_file_list:
-            logger.warning(Messages.Error.registration_file_list_not_found)
-            await MyBot.bot.send_message(chat_id, Messages.Error.file_list_not_found)
-            return
-
-        registration_data: dict = await read_json_file(registration_file_list)
-
-        if not registration_data:
-            logger.error(f"registration_data is empty")
-            await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.file_list_not_found)
-            return
-
-        if registration_data:
-            registration_text = await get_registration_text(registration_data)
-
-        await MyBot.bot.send_message(chat_id, text=registration_text)
-
-        menu_level = board_config.menu_level = 1
-        menu_list = board_config.menu_list = REGISTRATION_DATA_LIST
-
-        reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=menu_level, level=1)
-
-        await call.message.answer(text=Messages.Choose.entry, reply_markup=reply_markup)
+# @MyBot.dp.callback_query_handler(posts_cb.filter(action=['correct_registration_data']))
+# async def call_correct_registration_data(call: types.CallbackQuery, callback_data: typing.Dict[str, str]):
+#     """
+#
+#     :param call:
+#     :param callback_data:
+#     :return:
+#     """
+#     chat_id = call.message.chat.id
+#     action: str = callback_data['action']
+#     registration_text: str = ''
+#
+#     if action == 'correct_registration_data':
+#
+#         registration_file_list = await get_registration_json_file_list(chat_id=chat_id)
+#
+#         if not registration_file_list:
+#             registration_file_list = await get_registration_json_file_list(chat_id=chat_id)
+#
+#         if not registration_file_list:
+#             logger.warning(Messages.Error.registration_file_list_not_found)
+#             await MyBot.bot.send_message(chat_id, Messages.Error.file_list_not_found)
+#             return
+#
+#         registration_data: dict = await read_json_file(registration_file_list)
+#
+#         if not registration_data:
+#             logger.error(f"registration_data is empty")
+#             await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.file_list_not_found)
+#             return
+#
+#         if registration_data:
+#             registration_text = await get_registration_text(registration_data)
+#
+#         await MyBot.bot.send_message(chat_id, text=registration_text)
+#
+#         menu_level = board_config.menu_level = 1
+#         menu_list = board_config.menu_list = REGISTRATION_DATA_LIST
+#
+#         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=menu_level, level=1)
+#
+#         await call.message.answer(text=Messages.Choose.entry, reply_markup=reply_markup)
 
 
 @MyBot.dp.callback_query_handler(posts_cb.filter(action=['correct_commission_composition']))

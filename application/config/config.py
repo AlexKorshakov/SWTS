@@ -1,9 +1,16 @@
 import os
 import sys
+from pathlib import Path
 
 from dotenv import load_dotenv
 from environs import Env, EnvError
-from pathlib import Path
+
+from loader import logger
+
+# import heartrate
+# heartrate.trace(browser=True)
+
+logger.info('start config load')
 
 env = Env()
 env.read_env()
@@ -17,10 +24,8 @@ try:
 except EnvError as env_err:
     BOT_TOKEN: str = os.getenv('BOT_TOKEN')
     if not BOT_TOKEN:
-        print('You have forgot to set BOT_TOKEN')
-        quit()
-
-from loader import logger
+        logger.error('You have forgot to set BOT_TOKEN')
+        sys.exit(0)
 
 WRITE_DATA_ON_GOOGLE_DRIVE = env.bool("WRITE_DATA_ON_GOOGLE_DRIVE", False)
 ADMINS_ID: list = [373084462]
@@ -56,7 +61,8 @@ SEPARATOR = "___"
 # Путь к файлу с данными сервисного аккаунта
 SERVICE_ACCOUNT_FILE: str = '.\\apps\\core\\bot\\data\\service_account_myctng.json'
 
+logger.info('end config load')
 # Init config
 if 'init' in sys.argv:
-    logger.info(f'sys.argv: {sys.argv}')
+    logger.error(f'sys.argv: {sys.argv}')
     sys.exit(0)

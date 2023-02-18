@@ -173,8 +173,13 @@ async def send_act_prescription(chat_id, full_act_prescription_path):
     )
 
 
+def say_fanc_name():
+    stack = traceback.extract_stack()
+    return str(stack[-2][2])
+
+
 async def test():
-    chat_id = 373084462
+    chat_id = 579531613
 
     now = datetime.now()
 
@@ -184,14 +189,9 @@ async def test():
     act_date_period = await db_get_period_for_current_week(current_week, current_year)
     pprint(f"{act_date_period = }")
 
-    act_date_period = now
+    # act_date_period = now
 
     await create_and_send_act_prescription(chat_id, act_date_period)
-
-
-def say_fanc_name():
-    stack = traceback.extract_stack()
-    return str(stack[-2][2])
 
 
 if __name__ == "__main__":

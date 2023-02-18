@@ -38,7 +38,7 @@ logger.debug(f"{__name__} finish import")
 
 @rate_limit(limit=10)
 @MyBot.dp.message_handler(Command('correct_entries'))
-async def correct_entries(message: types.Message):
+async def correct_entries_handler(message: types.Message):
     """Корректирование уже введённых значений на локальном pc и на google drive
 
     :return:

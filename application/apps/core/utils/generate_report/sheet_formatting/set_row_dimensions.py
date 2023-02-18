@@ -66,6 +66,7 @@ async def set_automatic_row_dimensions(worksheet, row_number: int, row_value) ->
         dim.height = max_height
 
         logger.debug(f"row_number {row_number} max_height {max_height}")
+        return True
 
     except Exception as err:
         logger.error(f"Error row {row_number} set_automatic_row_dimensions {repr(err)}")

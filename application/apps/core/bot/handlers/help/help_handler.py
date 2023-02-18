@@ -23,7 +23,7 @@ async def process_help_command(message: types.Message):
         "/cancel- Отмена регистрации",
         "/generate - Формирование отчета",
         "/start - Начало работы",
-        "/correct_entries - Корректировка введённых значений",
+        "/correct_entries_handler - Корректировка введённых значений",
         "/admin_func - Админка",
         "\nВидео инструкция по работе бота",
         sep="\n"

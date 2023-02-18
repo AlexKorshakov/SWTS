@@ -78,7 +78,7 @@ async def admin_function_answer(call: types.CallbackQuery):
         text: str = 'Приветствую! \n' \
                     'Бот MIP_HSE_BOT обновился!\n' \
                     '\n' \
-                    'Команда: Изменение данных или /correct_entries\n' \
+                    'Команда: Изменение данных или /correct_entries_handler\n' \
                     'добавлено: \n' \
                     'коррекция данных регистрации \n' \
                     'возможно исправить \n' \
