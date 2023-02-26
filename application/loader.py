@@ -1,45 +1,96 @@
-import logging
+import json
 import os
-import sys
-from django.core.management.color import color_style
+from pathlib import Path
+from datetime import datetime
+from datetime import timedelta, timezone
+from time import localtime, strftime
+from sys import stderr
+from threading import current_thread
 
-logger = logging.getLogger("django")
+from loguru import logger as Log
 
+from dotenv import load_dotenv
 
-try:
-    from config.config import BOT_TOKEN
-except ModuleNotFoundError as err:
-    BOT_TOKEN = None
-    logger.error(f'file {os.path.basename(__file__)} err {repr(err)}')
-    logger.error("Config file not found!\n"
-                 "Please create config.py file according to config.py.example")
+ALL = ['logger']
+LOGGER_DIR = Path(__file__).resolve().parent
+load_dotenv(LOGGER_DIR / "config" / ".env")
 
-except ImportError as err:
-    BOT_TOKEN = None
-    logger.error(f'file {os.path.basename(__file__)} err {repr(err)}')
-    logger.error(f" BOT_TOKEN {BOT_TOKEN} is not defined in the config file")
-
-if BOT_TOKEN is None:
-    raise TypeError('BOT_TOKEN Is None BOT_TOKEN не должен быть пустым!!')
+logs_path = str(os.environ.get('MAIN_DIR')) + 'logs'
 
 
-class DjangoColorsFormatter(logging.Formatter):
-    def __init__(self, *args, **kwargs):
-        super(DjangoColorsFormatter, self).__init__(*args, **kwargs)
-        self.style = self.configure_style(color_style())
+def serialize(record):
+    subset = {"timestamp": record["time"].timestamp(), "message": record["message"]}
+    return json.dumps(subset, ensure_ascii=False)
 
-    def configure_style(self, style):
-        style.DEBUG = style.HTTP_NOT_MODIFIED
-        style.INFO = style.HTTP_INFO
-        style.WARNING = style.HTTP_NOT_FOUND
-        style.ERROR = style.ERROR
-        style.CRITICAL = style.HTTP_SERVER_ERROR
-        return style
 
-    def format(self, record):
-        message = logging.Formatter.format(self, record)
-        if sys.version_info[0] < 3:
-            if isinstance(message, str):
-                message = message.encode('utf-8')
-        colorizer = getattr(self.style, record.levelname, self.style.HTTP_SUCCESS)
-        return colorizer(message)
+def sink(message):
+    serialized = serialize(message.record)
+    print(serialized)
+
+
+def aware_now():
+    now = datetime.now()
+    timestamp = now.timestamp()
+    local = localtime(timestamp)
+
+    try:
+        seconds = local.tm_gmtoff
+        zone = local.tm_zone
+    except AttributeError:
+        offset = datetime.fromtimestamp(timestamp) - datetime.utcfromtimestamp(timestamp)
+        seconds = offset.total_seconds()
+        zone = strftime("%Z")
+
+    tz_info = timezone(timedelta(seconds=seconds), zone)
+    return now.replace(tzinfo=tz_info)
+
+
+Log.remove()
+Log.add(
+    sink=stderr, level='INFO',
+    #  colorize=True,
+    enqueue=True, backtrace=True
+)
+Log.add(
+    sink=f'{logs_path}/bot_actions.log', rotation='25 MB', level='INFO', backtrace=True,
+    diagnose=True,
+    #  colorize=True,
+    enqueue=True,
+    encoding="utf8"
+)
+Log.add(
+    f'{logs_path}/bot_errors.log', rotation='1 MB', level='ERROR', backtrace=True,
+    diagnose=True,
+    #  colorize=True,
+    enqueue=True,
+    encoding="utf8"
+)
+Log.add(
+    f'{logs_path}/bot_debug.log', rotation='25 MB', level='DEBUG', backtrace=True,
+    diagnose=True,
+    #  colorize=True,
+    enqueue=True,
+    encoding="utf8"
+)
+Log.add(
+    f'{logs_path}/bot_critical.log', rotation='1 MB', level='CRITICAL', backtrace=True,
+    diagnose=True,
+    #  colorize=True,
+    enqueue=True,
+    encoding="utf8"
+)
+
+# Log.add(sink)
+
+thread = current_thread()
+current_datetime = aware_now()
+
+Log.info(f"{thread.ident = } ::: {thread.name = }")
+Log.info(f'Log. {repr(Log)}')
+Log.info(f"{current_datetime = } Логирование успешно настроено\n")
+
+logger = Log
+
+if __name__ == '__main__':
+    logger.info("Логирование успешно настроено\n")
+    print(1)

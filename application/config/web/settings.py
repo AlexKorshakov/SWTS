@@ -153,6 +153,30 @@ CACHES = {
         }
     }
 }
+
+
+class DjangoColorsFormatter(Formatter):
+    def __init__(self, *args, **kwargs):
+        super(DjangoColorsFormatter, self).__init__(*args, **kwargs)
+        self.style = self.configure_style(color_style())
+
+    def configure_style(self, style):
+        style.DEBUG = style.HTTP_NOT_MODIFIED
+        style.INFO = style.HTTP_INFO
+        style.WARNING = style.HTTP_NOT_FOUND
+        style.ERROR = style.ERROR
+        style.CRITICAL = style.HTTP_SERVER_ERROR
+        return style
+
+    def format(self, record):
+        message = Formatter.format(self, record)
+        if sys.version_info[0] < 3:
+            if isinstance(message, str):
+                message = message.encode('utf-8')
+        colorizer = getattr(self.style, record.levelname, self.style.HTTP_SUCCESS)
+        return colorizer(message)
+
+
 # LOGGING_LEVEL = 'DEBUG'
 LOGGING_LEVEL = 'INFO'
 
@@ -188,12 +212,12 @@ LOGGING = {
             'level': LOGGING_LEVEL,
             # 'filters': ['require_debug_true'],
             'class': 'logging.StreamHandler',
-            'formatter': 'colored',
+            'formatter': 'main_formatter',
         },
         'production_file': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': f'{BASE_DIR.parent.parent}/logs/main.log',
+            'filename': f'{BASE_DIR.parent.parent}/logs/django_main.log',
             'maxBytes': 1024 * 1024 * 5,  # 5 MB
             'backupCount': 7,
             'formatter': 'main_formatter',
@@ -202,7 +226,7 @@ LOGGING = {
         'debug_file': {
             'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': f'{BASE_DIR.parent.parent}/logs/main_debug.log',
+            'filename': f'{BASE_DIR.parent.parent}/logs/django_main_debug.log',
             'maxBytes': 1024 * 1024 * 5,  # 5 MB
             'backupCount': 7,
             'formatter': 'main_formatter',
@@ -211,7 +235,7 @@ LOGGING = {
         'warning_file': {
             'level': 'WARNING',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': f'{BASE_DIR.parent.parent}/logs/warning.log',
+            'filename': f'{BASE_DIR.parent.parent}/logs/django_warning.log',
             'maxBytes': 1024 * 1024 * 5,  # 5 MB
             'backupCount': 7,
             'formatter': 'main_formatter',

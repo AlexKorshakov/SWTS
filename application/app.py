@@ -1,11 +1,14 @@
+import asyncio
 import os
-from multiprocessing import Process
+import sys
 from pathlib import Path
 
-from apps.MyBot import MyBot
-from apps.MyServer import MyServer
-from apps.PeriodicCheck import PeriodicCheck
 from loader import logger
+
+#  import heartrate
+#  heartrate.trace(browser=True)
+
+logger.info('start app load')
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -13,23 +16,25 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.web.settings")
 os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 
 
-def run_app():
+async def run_app():
     try:
-        bot = Process(target=MyBot.run)
-        server = Process(target=MyServer.run)
-        check = Process(target=PeriodicCheck.run)
 
-        bot.start()
-        server.start()
-        check.start()
+        from apps.MyBot import MyBot
+        from apps.MyServer import MyServer
+        from apps.PeriodicCheck import PeriodicCheck
+
+        my_bot_task = asyncio.create_task(MyBot.run(), name='MyBot.run')
+        my_server_task = asyncio.create_task(MyServer.run(), name='MyServer.run')
+        periodic_check_task = asyncio.create_task(await PeriodicCheck.run(), name='PeriodicCheck.run')
+
+        await my_bot_task
+        await my_server_task
+        await periodic_check_task
 
     except KeyboardInterrupt as err:
-        logger.errror(f'Error run_app {repr(err)}')
-        exit()
+        logger.error(f'Error run_app {repr(err)}')
+        sys.exit(0)
 
 
 if __name__ == "__main__":
-    run_app()
-
-    # bot = Process(target=MyBot.run)
-    # bot.start()
+    asyncio.run(run_app())

@@ -1,12 +1,26 @@
+import asyncio
+import sys
+
 from aiogram import Bot, Dispatcher
 from aiogram.utils import executor
+from aiohttp import ClientConnectorError
 
+from apps.core.bot.bot_utils.notify_admins import on_startup_notify
+from apps.core.bot.bot_utils.set_bot_commands import set_default_commands
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.middlewares import setup_middlewares
 
 from apps.xxx import assistant, dp_assistant
 from config.config import SKIP_UPDATES
 from loader import logger
+
+import nest_asyncio
+
+nest_asyncio.apply()
+
+
+# import heartrate
+# heartrate.trace(browser=True)
 
 
 class MyBot:
@@ -22,16 +36,31 @@ class MyBot:
     Bot.set_current(bot)
     Dispatcher.set_current(dp)
 
+    __instance = None
+
+    def __new__(cls, val):
+        if MyBot.__instance is None:
+            MyBot.__instance = object.__new__(cls)
+        MyBot.__instance.val = val
+        return MyBot.__instance
+
     @classmethod
-    def run(cls):
+    async def run(cls):
+        """Сборка и запуск бота"""
         try:
             executor.start_polling(
                 dispatcher=cls.dp,
                 on_startup=cls.on_startup,
                 on_shutdown=cls.on_shutdown,
                 skip_updates=SKIP_UPDATES,
-                allowed_updates=cls.get_handled_updates_list(cls.dp)
+                allowed_updates=await cls.get_handled_updates_list(cls.dp)
             )
+        except RuntimeWarning as err:
+            logger.error(f"Bot start RuntimeWarning {repr(err)}")
+
+        except ClientConnectorError as err:
+            logger.error(f"Bot start ClientConnectorError {repr(err)}")
+
         except Exception as err:
             logger.error(f"Bot start Exception {repr(err)}")
 
@@ -54,7 +83,7 @@ class MyBot:
             logger.warning(f'Exception in app.py {err}')
             sys.exit()
 
-        setup_middlewares(dp)
+        await setup_middlewares(dp)
         await on_startup_notify(dp)
         await set_default_commands(dp)
 
@@ -98,3 +127,17 @@ class MyBot:
         await dp.storage.close()
         await dp.storage.wait_closed()
         sys.exit()
+
+
+async def test():
+    try:
+        my_bot_task = asyncio.create_task(MyBot.run(), name='MyBot.run')
+        await my_bot_task
+
+    except KeyboardInterrupt as err:
+        logger.error(f'Error run_app {repr(err)}')
+        sys.exit(0)
+
+
+if __name__ == '__main__':
+    asyncio.run(test())

@@ -5,19 +5,14 @@ from pathlib import Path
 from dotenv import load_dotenv
 from environs import Env, EnvError
 
-from loader import logger
-
-# import heartrate
-# heartrate.trace(browser=True)
-
-logger.info('start config load')
-
 env = Env()
 env.read_env()
 
 BASE_DIR = Path(__file__).resolve().parent
-
 load_dotenv(BASE_DIR / "config" / ".env")
+
+from loader import logger
+logger.info('start config load')
 
 try:
     BOT_TOKEN: str = env("BOT_TOKEN")

@@ -12,13 +12,9 @@ from apps.core.bot.messages.messages import LogMessage
 from apps.core.database.query_constructor import QueryConstructor
 from config.config import DATA_BASE_DIR
 
-import heartrate
-
-heartrate.trace(browser=True)
-
 logger.debug(f"{__name__} finish import")
 
-PERIOD = 60  * 30
+PERIOD = 60 * 30
 
 
 class DataBaseForCheck:

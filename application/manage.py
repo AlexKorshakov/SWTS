@@ -1,10 +1,14 @@
 #!/usr/bin/env python
 """Django's command-line utility for administrative tasks."""
+import asyncio
 import os
 import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
+
+# import heartrate
+# heartrate.trace(browser=True)
 
 MANAGE_DIR = Path(__file__).resolve().parent
 
@@ -51,13 +55,13 @@ def main():
         from apps.MyBot import MyBot
         return MyBot.run()
 
-    elif "runapp" in sys.argv:
-        from app import run_app
-        return run_app()
-
     elif "runcheck" in sys.argv:
         from apps.PeriodicCheck import PeriodicCheck
         return PeriodicCheck.run()
+
+    elif "runapp" in sys.argv:
+        from app import run_app
+        return asyncio.run(run_app())
 
     load_dotenv(MANAGE_DIR / "config" / ".env")
 
