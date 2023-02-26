@@ -123,7 +123,7 @@ async def preparing_violation_data_for_loading_to_google_drive(data: dict) -> bo
     return True
 
 
-async def set_violation_atr_data(atr_name, art_val, **kvargs):
+async def set_violation_atr_data(atr_name, art_val, **kvargs) -> bool:
     """
 
     :param atr_name:
@@ -134,9 +134,12 @@ async def set_violation_atr_data(atr_name, art_val, **kvargs):
     pprint(f'set_violation_atr_data: {atr_name = } {art_val = }')
     logger.debug(f'set_violation_atr_data: {atr_name = } {art_val = }')
 
-    if atr_name:
-        violation_data[atr_name] = art_val
-        await write_json_file(data=violation_data, name=violation_data["json_full_name"])
+    if not atr_name:
+        return False
+
+    violation_data[atr_name] = art_val
+    await write_json_file(data=violation_data, name=violation_data["json_full_name"])
+    return True
 
 
 def get_vio_atr_data(atr_name: str):

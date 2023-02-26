@@ -1,17 +1,18 @@
 from openpyxl.worksheet.pagebreak import Break
 from openpyxl.worksheet.page import PageMargins
+from openpyxl.worksheet.worksheet import Worksheet
 
 
-async def set_act_page_setup(worksheet):
+async def set_act_page_setup(worksheet: Worksheet) -> bool:
     """Установка параметров страницы
 
     :param worksheet:
-    :return:
+    :return: bool
     """
 
     #  https://xlsxwriter.readthedocs.io/page_setup.html
-    # worksheet.print_title_rows = '$2:$3'
-    # worksheet.print_title = '$2:$3'
+    #  worksheet.print_title_rows = '$2:$3'
+    #  worksheet.print_title = '$2:$3'
 
     # Printer Settings
     worksheet.page_setup.orientation = worksheet.ORIENTATION_PORTRAIT
@@ -26,15 +27,14 @@ async def set_act_page_setup(worksheet):
     worksheet.print_area = '$A$1:M56'
 
     #  масштабный коэффициент для распечатываемой страницы
-    # worksheet.set_print_scale(75)
+    #  worksheet.set_print_scale(75)
 
-    # worksheet.row_breaks.append(Break(id=53))
-    # worksheet.col_breaks.append(Break(id=13))
+    #  worksheet.row_breaks.append(Break(id=53))
+    #  worksheet.col_breaks.append(Break(id=13))
 
     # задаем собственные значения отступов
-    cm = 1 / 2.54
-    top_bottom = 0.61 / 2.54
-    left_right = 1.91 / 2.54
+    top_bottom = 2 / 2.54
+    left_right = 2 / 2.54
     worksheet.page_margins = PageMargins(left=left_right, right=left_right, top=top_bottom, bottom=top_bottom)
 
     worksheet.oddFooter.left.text = "Страница &[Page] из &N"
@@ -44,14 +44,16 @@ async def set_act_page_setup(worksheet):
     worksheet.differentFirst = False
     worksheet.differentOddEven = True
 
+    return True
 
-async def set_act_page_after_footer_setup(worksheet, print_area, break_line=None):
+
+async def set_act_page_after_footer_setup(worksheet: Worksheet, print_area: str, break_line: int = None) -> bool:
     """Установка параметров страницы
 
-    :param break_line:
-    :param print_area:
-    :param worksheet:
-    :return:
+    :param break_line: int
+    :param print_area: str
+    :param worksheet: Worksheet
+    :return: bool
     """
 
     #  https://xlsxons.horizontalCentered = True
@@ -63,3 +65,5 @@ async def set_act_page_after_footer_setup(worksheet, print_area, break_line=None
     if break_line:
         worksheet.row_breaks.append(Break(id=break_line))
         # worksheet.col_breaks.append(Break(id=13))
+
+    return True

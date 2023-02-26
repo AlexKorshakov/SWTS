@@ -1,5 +1,9 @@
 import datetime
 import os
+from openpyxl import Workbook
+from openpyxl.worksheet.worksheet import Worksheet
+from openpyxl.drawing.image import Image
+from pandas import DataFrame
 
 from apps.core.database.db_utils import db_get_data_dict_from_table_with_id
 from apps.core.utils.generate_report.generate_act_prescription.set_act_alignment import \
@@ -15,12 +19,10 @@ from apps.core.utils.generate_report.sheet_formatting.set_row_dimensions import 
 from apps.core.utils.img_processor.insert_img import (image_preparation,
                                                       insert_images)
 from loader import logger
-from openpyxl.drawing.image import Image
-from pandas import DataFrame
-from xlsxwriter.worksheet import Worksheet
 
 
-async def set_act_violation_values(worksheet: Worksheet, dataframe: DataFrame, workbook, full_act_path):
+async def set_act_violation_values(worksheet: Worksheet, dataframe: DataFrame, workbook: Workbook,
+                                   full_act_path: str) -> int:
     """Заполнение акта значениями из dataframe. Сортировка по main_location_id и sub_locations_id
 
     :param full_act_path:
@@ -67,7 +69,7 @@ async def set_act_violation_values(worksheet: Worksheet, dataframe: DataFrame, w
 
 async def set_act_worksheet_cell_value(worksheet: Worksheet, violation_values: DataFrame, row_number: int,
                                        new_header_row: bool,
-                                       workbook, full_act_path: str, item_row_value: int):
+                                       workbook: Workbook, full_act_path: str, item_row_value: int) -> int:
     """Заполнение тела акта каждым пунктом
 
         :param item_row_value:
@@ -106,7 +108,8 @@ async def set_act_worksheet_cell_value(worksheet: Worksheet, violation_values: D
         return row_number
 
 
-async def set_act_violation(worksheet: Worksheet, violation_values, row_number: int, item_row_value: int):
+async def set_act_violation(worksheet: Worksheet, violation_values: DataFrame, row_number: int,
+                            item_row_value: int) -> int:
     """
 
     :param item_row_value:
@@ -196,7 +199,7 @@ async def set_act_violation(worksheet: Worksheet, violation_values, row_number: 
     return row_value
 
 
-async def set_act_photographic_materials_values(worksheet: Worksheet, row_value):
+async def set_act_photographic_materials_values(worksheet: Worksheet, row_value: int):
     """
 
     :param row_value:
@@ -218,10 +221,11 @@ async def set_act_photographic_materials_values(worksheet: Worksheet, row_value)
 
         except Exception as err:
             logger.error(f"set_act_photographic_materials_values {repr(err)}")
-            return None
+            continue
+    return True
 
 
-async def set_act_photographic_materials(worksheet: Worksheet, img_params: dict):
+async def set_act_photographic_materials(worksheet: Worksheet, img_params: dict) -> bool:
     """Вставка фото нарушения на страницу акта
 
     :param img_params:
@@ -230,12 +234,13 @@ async def set_act_photographic_materials(worksheet: Worksheet, img_params: dict)
     """
 
     if not img_params:
-        logger.error(f'set_act_photographic_materials not found dict img_params')
+        logger.error(f'set_act_photographic_materials not found dict img_params {img_params = }')
         return False
 
     photo_full_name = img_params.get("photo_full_name", None)
     if not photo_full_name:
-        logger.error(f'set_act_photographic_materials not found param img_params["photo_full_name"]')
+        logger.error(
+            f'set_act_photographic_materials not found param img_params["photo_full_name"] {photo_full_name = }')
         return False
 
     if not os.path.isfile(photo_full_name):
@@ -303,7 +308,7 @@ async def set_single_violation(worksheet: Worksheet, violation_values):
     worksheet.cell(row=28, column=12, value=elimination_data)
 
 
-async def set_value_title(worksheet: Worksheet, violation_values, row_number: int):
+async def set_value_title(worksheet: Worksheet, violation_values: DataFrame, row_number: int) -> bool:
     """
 
     :param row_number:
@@ -358,3 +363,5 @@ async def set_value_title(worksheet: Worksheet, violation_values, row_number: in
     ]
     for cell_range in report_font:
         await sets_report_font(worksheet, cell_range[0], params=cell_range[1])
+
+    return True

@@ -46,8 +46,12 @@ async def format_act_prescription_sheet(worksheet: Worksheet):
         await sets_report_font(worksheet, cell_range[0], params=cell_range[1])
 
 
-async def format_act_footer_prescription_sheet(worksheet: Worksheet, row_number):
+async def format_act_footer_prescription_sheet(worksheet: Worksheet, row_number:int) -> bool:
     """Пошаговое форматирование страницы
+
+    :param row_number:
+    :param worksheet:
+    :return: bool
     """
     await set_act_page_setup(worksheet)
 
@@ -132,11 +136,15 @@ async def format_act_footer_prescription_sheet(worksheet: Worksheet, row_number)
     break_line = 58 + row_number
     await set_act_page_after_footer_setup(worksheet, print_area, break_line)
 
+    return True
 
-async def format_act_photo_header(worksheet, row_number):
+
+async def format_act_photo_header(worksheet: Worksheet, row_number: int)-> bool:
     """Форматирование строк с фото материалами
 
-    :return:
+    :param row_number:
+    :param worksheet
+    :return: bool
     """
     merged_cells = [
         f'B{row_number}:E{row_number}',
@@ -169,10 +177,14 @@ async def format_act_photo_header(worksheet, row_number):
     for item, cell_range in enumerate(photographic_report_font, start=1):
         await sets_report_font(worksheet, cell_range[0], params=cell_range[1])
 
+    return True
 
-async def format_act_photo_description(worksheet, row_number):
+
+async def format_act_photo_description(worksheet: Worksheet, row_number: int):
     """Форматирование строк с фото материалами
 
+    :param row_number:
+    :param worksheet
     :return:
     """
     merged_cells = [

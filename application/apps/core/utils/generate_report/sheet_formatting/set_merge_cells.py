@@ -1,8 +1,9 @@
 from loader import logger
+from xlsxwriter.worksheet import Worksheet
 
 
-async def set_merge_cells(worksheet, merged_cell):
-    """ФОрматирование: jбьединение ячеек
+async def set_merge_cells(worksheet: Worksheet, merged_cell: str) -> bool:
+    """Форматирование: обьединение ячеек
 
     :param worksheet:
     :param merged_cell:
@@ -10,5 +11,7 @@ async def set_merge_cells(worksheet, merged_cell):
     """
     try:
         worksheet.merge_cells(merged_cell)
+        return True
     except Exception as err:
         logger.error(f"set_merge_cells {repr(err)}")
+        return False

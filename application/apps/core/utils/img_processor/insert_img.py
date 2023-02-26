@@ -1,13 +1,12 @@
 import os.path
-
-import openpyxl
-from apps.core.utils.json_worker.read_json_file import read_json_file
-from apps.core.utils.secondary_functions.get_json_files import get_files
-from config.config import MEDIA_DIR, WORK_PATH
-from config.web.settings import MEDIA_ROOT
-from loader import logger
 from openpyxl.drawing.image import Image
 from xlsxwriter.worksheet import Worksheet
+
+from apps.core.utils.json_worker.read_json_file import read_json_file
+from apps.core.utils.secondary_functions.get_json_files import get_files
+from config.config import MEDIA_DIR
+from config.web.settings import MEDIA_ROOT
+from loader import logger
 
 COLUMN_STR_INDEX: str = 'O'
 SIGNALLINE_COLUMN_STR_INDEX: str = "B"
@@ -23,7 +22,7 @@ async def insert_images_to_sheet(json_data: list, worksheet: Worksheet, height: 
         try:
             img_data = await read_json_file(j_data)
 
-            img: Image = openpyxl.drawing.image.Image(img_data['photo_full_name'])
+            img: Image = Image(img_data['photo_full_name'])
 
             if img is None:
                 logger.error(f"Изображение для вставки в строку {ind} не найдено!")
@@ -46,23 +45,23 @@ async def insert_images_to_sheet(json_data: list, worksheet: Worksheet, height: 
             return None
 
 
-async def insert_signalline_to_report_body(worksheet: Worksheet) -> None:
+async def insert_signalline_to_report_body(worksheet: Worksheet) -> bool:
     """
     :param worksheet:
     :return:
     """
     photo_full_name = ".\\signalline.jpeg"
 
-    files = await get_files(main_path=MEDIA_DIR+"\\!service_img", endswith=".jpg")
+    files = await get_files(main_path=MEDIA_DIR + "\\!service_img", endswith=".jpg")
 
     for file in files:
         photo_full_name = file if file.split('\\')[-1].split('.')[0] == "signalline" else ''
 
     if not os.path.isfile(photo_full_name):
         logger.error("signalline not found")
-        return
+        return False
 
-    img: Image = openpyxl.drawing.image.Image(photo_full_name)
+    img: Image = Image(photo_full_name)
 
     img_params: dict = {
         "anchor": IMG_ANCHOR,
@@ -74,18 +73,32 @@ async def insert_signalline_to_report_body(worksheet: Worksheet) -> None:
 
     await insert_images(worksheet, img=img)
 
+    return True
 
-async def insert_service_image(worksheet: Worksheet, img_params: dict = None) -> bool:
+
+async def insert_service_image(worksheet: Worksheet, *, chat_id: int = None, service_image_name: str = 'Logo',
+                               img_params: dict = None) -> bool:
     """Вставка изображений в файл
 
+    :param service_image_name: str - имя файла для обработки
+    :param chat_id: int - id пользователя (папки) где находится logo
     :param img_params: dict параметры вставки
     :param worksheet:
-    :return:
+    :return: bool
     """
+
+    photo_full_name = f"{MEDIA_ROOT}\\{service_image_name}.jpg"
+
+    if chat_id:
+        photo_full_name = f"{MEDIA_ROOT}\\{chat_id}\\{service_image_name}.jpg"
+
+    if not os.path.isfile(photo_full_name):
+        logger.error("service image not found")
+        photo_full_name = f"{MEDIA_ROOT}\\Logo.jpg"
 
     if not img_params:
         img_params: dict = {
-            'photo_full_name': MEDIA_ROOT + "\\" + "Logo.jpg",
+            'photo_full_name': photo_full_name,
             "height": 75,
             "width": 230,
             "anchor": True,
@@ -93,12 +106,13 @@ async def insert_service_image(worksheet: Worksheet, img_params: dict = None) ->
             "column_img": 2,
             "row": 2,
         }
+    img_params['photo_full_name'] = photo_full_name
 
-    if not os.path.isfile(img_params['photo_full_name']):
+    if not os.path.isfile(img_params.get('photo_full_name', None)):
         logger.error("service image not found")
         return False
 
-    img: Image = openpyxl.drawing.image.Image(img_params['photo_full_name'])
+    img: Image = Image(img_params['photo_full_name'])
 
     img = await image_preparation(img, img_params)
 
@@ -138,7 +152,7 @@ async def image_preparation(img: Image, img_params: dict):
     return img
 
 
-async def insert_images(worksheet: Worksheet, img: Image):
+async def insert_images(worksheet: Worksheet, img: Image) -> bool:
     """Вставка изображения на лист worksheet*,
     :param img: файл изображения
     :param worksheet: Worksheet - страница документа для вставки изображения
@@ -147,6 +161,7 @@ async def insert_images(worksheet: Worksheet, img: Image):
 
     try:
         worksheet.add_image(img)
+        return True
     except Exception as err:
         logger.error(f"insert_images {repr(err)}")
-        return None
+        return False

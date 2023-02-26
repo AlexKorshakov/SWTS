@@ -6,6 +6,7 @@ from pprint import pprint
 from pandas import DataFrame
 
 from apps.MyBot import MyBot
+from apps.core.bot.bot_utils.progress_bar import ProgressBar
 from apps.core.bot.messages.messages import Messages
 from apps.core.database.db_utils import db_get_period_for_current_week
 from apps.core.database.query_constructor import QueryConstructor
@@ -18,6 +19,7 @@ from apps.core.utils.generate_report.send_report_from_user import send_report_fr
 from apps.core.utils.reports_processor.report_worker_utils import format_data_db, get_clean_headers, get_query, \
     get_clear_list_value, get_general_constractor_list, create_lite_dataframe_from_query, get_general_constractor_data
 from apps.core.utils.secondary_functions.get_part_date import get_week_message, get_year_message
+from loader import logger
 
 
 async def create_and_send_act_prescription(chat_id: int, query_act_date_period=None, **kwargs) -> bool:
@@ -28,22 +30,39 @@ async def create_and_send_act_prescription(chat_id: int, query_act_date_period=N
     :return:
     """
 
+    msg = await MyBot.bot.send_message(chat_id=chat_id, text='⬜' * 10)
+    p_bar = ProgressBar(msg=msg)
+
+    # # await p_bar.start()
+    # await p_bar.update_msg(3)
+    # await p_bar.update_msg(7)
+    # await p_bar.finish()
+
+    await p_bar.update_msg(1)
+    act_kwargs = {**kwargs}
+    if act_kwargs:
+        logger.info(f"{act_kwargs = }")
+
     act_date: str = datetime.now().strftime("%d.%m.%Y")  # '28.10.2022'  #
 
+    await p_bar.update_msg(2)
     if not query_act_date_period:
         date_now = await format_data_db(act_date)
         query_act_date_period = [date_now, date_now]
 
     clean_headers: list = await get_clean_headers(table_name='core_violations')
 
+    await p_bar.update_msg(3)
     clear_list_value = await get_clean_data(chat_id, query_act_date_period, headers=clean_headers)
     if not clear_list_value:
         return False
 
+    await p_bar.update_msg(4)
     general_constractor_ids_list: list = await get_general_constractor_list(clear_list_value=clear_list_value)
     if not general_constractor_ids_list:
         return False
 
+    await p_bar.update_msg(5)
     for constractor_id in general_constractor_ids_list:
 
         act_dataframe: DataFrame = await get_act_dataframe(
@@ -55,7 +74,7 @@ async def create_and_send_act_prescription(chat_id: int, query_act_date_period=N
         act_number: int = await get_act_number_on_data_base()
         if not act_number:
             act_number: str = '00000'
-
+        await p_bar.update_msg(6)
         full_act_prescription_path: str = await get_full_act_prescription_path(
             chat_id=chat_id, act_number=act_number, act_date=act_date, constractor_id=constractor_id
         )
@@ -69,21 +88,26 @@ async def create_and_send_act_prescription(chat_id: int, query_act_date_period=N
         if not act_is_created:
             continue
 
+        await p_bar.update_msg(7)
         await MyBot.bot.send_message(
             chat_id=chat_id, text=f'{Messages.Report.create_successfully} \n'
         )
+
         await set_act_data_on_data_base(
             act_data=act_dataframe, act_num=act_number, act_date=act_date
         )
+        await p_bar.update_msg(8)
         await set_act_data_on_google_drive(
             chat_id=chat_id, full_report_path=full_act_prescription_path
         )
 
+        await p_bar.update_msg(9)
         await send_act_prescription(chat_id, full_act_prescription_path)
 
         await MyBot.bot.send_message(
             chat_id=chat_id, text=f'{Messages.Report.done} \n'
         )
+        await p_bar.update_msg(10)
 
     return True
 
@@ -154,9 +178,11 @@ async def get_clean_data(chat_id, query_act_date_period, headers, **stat_kwargs)
     return clear_list_value
 
 
-async def send_act_prescription(chat_id, full_act_prescription_path):
+async def send_act_prescription(chat_id: int or str, full_act_prescription_path: str) -> bool:
     """Отправка акта-предписания пользователю в заданных форматах
 
+    :param full_act_prescription_path: int or str
+    :param chat_id: str
     :return:
     """
 
@@ -171,6 +197,7 @@ async def send_act_prescription(chat_id, full_act_prescription_path):
     await send_report_from_user(
         chat_id=chat_id, full_report_path=full_act_prescription_path
     )
+    return True
 
 
 def say_fanc_name():
@@ -189,7 +216,7 @@ async def test():
     act_date_period = await db_get_period_for_current_week(current_week, current_year)
     pprint(f"{act_date_period = }")
 
-    # act_date_period = now
+    #  act_date_period = now
 
     await create_and_send_act_prescription(chat_id, act_date_period)
 
