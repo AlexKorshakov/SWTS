@@ -28,5 +28,5 @@ async def process_help_command(message: types.Message):
         "\nВидео инструкция по работе бота",
         sep="\n"
     )
-    await message.answer(f'Меня создал https://t.me/AlexKor_MSK')
+    await message.answer('Меня создал https://t.me/AlexKor_MSK')
     await message.reply(text=help_message, reply_markup=await help_inline_button())

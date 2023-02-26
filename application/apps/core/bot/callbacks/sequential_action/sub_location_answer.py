@@ -40,6 +40,8 @@ async def sub_location_answer(call: types.CallbackQuery):
             if not sub_loc:
                 await set_violation_atr_data("sub_location", call.data)
 
+            sub_loc = [item for item in sub_loc if (isinstance(item, dict) and item.get("id", None))]
+
             await set_violation_atr_data("sub_location", sub_loc[0].get('title', None))
             await get_and_send_sub_locations_data(call)
 

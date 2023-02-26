@@ -1,14 +1,18 @@
-# import asyncio
+import asyncio
 
+from loader import logger
+
+logger.debug(f"{__name__} start import")
 from aiogram import types
-
 from apps.core.bot.data import board_config
 from apps.core.bot.data.category import get_data_list
-from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard
+from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import \
+    build_inlinekeyboard
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.reports.report_data import violation_data
 from apps.core.bot.states import AnswerUserState
-from loader import logger
+
+logger.debug(f"{__name__} finish import")
 
 
 async def get_and_send_start_main_locations_data(call: types.CallbackQuery, callback_data: dict = None):
@@ -18,7 +22,6 @@ async def get_and_send_start_main_locations_data(call: types.CallbackQuery, call
     :param call:
     :return:
     """
-
     this_level = 'main_locations'.upper()
 
     await notify_user_for_choice(call, callback_data, level=this_level)
@@ -51,7 +54,7 @@ async def get_and_send_main_locations_data(call: types.CallbackQuery, callback_d
                                 condition='short_title'
                                 )
 
-    print(f'{short_title = }')
+    logger.debug(f'{short_title = }')
 
     data_list = get_data_list(next_level,
                               category=violation_data["main_location"],
@@ -64,13 +67,15 @@ async def get_and_send_main_locations_data(call: types.CallbackQuery, callback_d
 
     zipped_list: list = list(zip(short_title, data_list))
 
-    text = f'{Messages.Choose.sub_location} \n\n' + \
-           ' \n\n'.join(str(item[0]) + " : " + str(item[1]) for item in zipped_list)
+    text_list = await text_process(zipped_list)
+
+    for txt in text_list:
+        await call.message.answer(text=txt)
 
     reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=count_col, level=menu_level,
                                               previous_level=previous_level)
 
-    await call.message.answer(text=text, reply_markup=reply_markup)
+    await call.message.answer(text=Messages.Choose.sub_location, reply_markup=reply_markup)
 
 
 async def get_and_send_null_sub_locations_data(call: types.CallbackQuery, callback_data: dict = None):
@@ -103,7 +108,6 @@ async def get_and_send_sub_locations_data(call: types.CallbackQuery, callback_da
     :param call:
     :return:
     """
-
     previous_level = 'main_locations'
     this_level = 'sub_locations'
     next_level = 'main_category'.upper()
@@ -171,12 +175,14 @@ async def get_and_send_category_data(call: types.CallbackQuery, callback_data: d
 
     zipped_list: list = list(zip(short_title, data_list))
 
-    text = f'{Messages.Choose.normative_documents} \n\n' + \
-           ' \n\n'.join(str(item[0]) + " : " + str(item[1]) for item in zipped_list)
+    text_list = await text_process(zipped_list)
+
+    for txt in text_list:
+        await call.message.answer(text=txt)
 
     reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=count_col, level=menu_level,
                                               previous_level=previous_level)
-    await call.message.answer(text=text, reply_markup=reply_markup)
+    await call.message.answer(text=Messages.Choose.normative_documents, reply_markup=reply_markup)
 
 
 async def get_and_send_null_normative_documents_data(call: types.CallbackQuery, callback_data: dict = None):
@@ -278,7 +284,6 @@ async def get_and_send_incident_level_data(call: types.CallbackQuery, callback_d
     :param callback_data:
     :return:
     """
-
     previous_level = 'general_contractors'
     this_level = 'incident_level'
     next_level = 'act_required'.upper()
@@ -336,7 +341,7 @@ async def get_and_send_elimination_time_data(call: types.CallbackQuery, callback
 
 
 async def notify_user_for_choice(call, callback_data, level):
-    """Уведомление пользователя о выборе и логирование
+    """Уведомление пользователя о выборе + логирование
 
     :return:
     """
@@ -348,3 +353,64 @@ async def notify_user_for_choice(call, callback_data, level):
     if callback_data:
         logger.debug(f"Выбрано: {callback_data.get('action', None)}")
         logger.debug(f"User {call.message.chat.id} choices {callback_data.get('action', None)} {level}")
+
+
+async def text_process(zipped_list: list) -> list:
+    """Формирование тела сообщения
+
+    :param zipped_list:
+    :return:
+    """
+
+    text = '\n\n'.join(str(item[0]) + " : " + str(item[1]) for item in zipped_list)
+
+    if len(text) <= 3500:
+        return [text]
+
+    text = ''
+    text_list = []
+    for item in zipped_list:
+        if item[0][0] == '#': continue
+
+        text = text + f' \n\n {str(item[0])} : {str(item[1])}'
+        if len(text) > 3500:
+            text_list.append(text)
+            text = ''
+
+    return text_list
+
+
+async def test():
+    previous_level = 'main_category'
+    this_level = 'category'
+    next_level = 'normative_documents'.upper()
+
+    short_title = get_data_list(next_level,
+                                category='ТС/Спецтехника',
+                                condition='short_title'
+                                )
+    data_list = get_data_list(next_level,
+                              category='ТС/Спецтехника',
+                              condition='data_list'
+                              )
+    menu_level = board_config.menu_level = 1
+    menu_list = board_config.menu_list = short_title
+    count_col = board_config.count_col = 2
+    board_config.previous_level = previous_level
+    board_config.this_level = this_level
+
+    zipped_list: list = list(zip(short_title, data_list))
+
+    text_list = await text_process(zipped_list)
+
+    for txt in text_list:
+        print(txt)
+        # await call.message.answer(text=txt)
+
+    reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=count_col, level=menu_level,
+                                              previous_level=previous_level)
+    print(reply_markup)
+
+
+if __name__ == '__main__':
+    asyncio.run(test())

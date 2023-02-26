@@ -41,6 +41,8 @@ async def normative_documents_answer(call: types.CallbackQuery):
             if not nd_data:
                 await set_violation_atr_data("normative_documents", call.data)
 
+            nd_data = [item for item in nd_data if (isinstance(item, dict) and item.get("id", None))]
+
             await set_violation_atr_data("normative_documents", nd_data[0].get('title', None))
             await set_violation_atr_data("normative_documents_normative", nd_data[0].get('normative', None))
             await set_violation_atr_data("normative_documents_procedure", nd_data[0].get('procedure', None))
@@ -48,4 +50,4 @@ async def normative_documents_answer(call: types.CallbackQuery):
             await get_and_send_normative_documents_data(call)
 
         except Exception as callback_err:
-            logger.error(f"{repr(callback_err)}")
+            logger.error(f"{repr(callback_err)} {nd_data = }")

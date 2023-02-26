@@ -59,6 +59,7 @@ async def preparing_violation_data(message: types.Message, chat_id: str):
     violation_data["parent_id"] = user_registration_data.get("parent_id")
 
     violation_data["main_location"] = ''
+    violation_data["main_location_id"] = ''
     violation_data["category"] = ''
 
     violation_data["day"] = await get_day_message()

@@ -1,4 +1,5 @@
 import traceback
+from sqlite3 import OperationalError
 
 from loader import logger
 
@@ -147,6 +148,10 @@ async def db_get_id_violation(file_id) -> int:
 async def db_get_id(table, entry, file_id, name) -> int:
     """Получение id записи по значению title из соответствующий таблицы table
 
+    :param file_id:
+    :param name:
+    :param entry:
+    :param table: str - имя таблицы
     :return: int
     """
     value: int = DataBase().get_id(
@@ -300,12 +305,16 @@ def db_get_data_list_no_async(query: str) -> list:
 
     :return: list
     """
-    datas_query: list = DataBase().get_data_list(query=query)
+    try:
+        datas_query: list = DataBase().get_data_list(query=query)
+    except OperationalError as err:
+        logger.error(f'{repr(err)} {query = }')
+        return []
     return datas_query
 
 
 def db_get_table_headers_no_async(db_table_name: str) -> list:
-    """
+    """Получение заголовков таблицы
 
     :return:
     """

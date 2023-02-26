@@ -1,3 +1,6 @@
+from loader import logger
+
+logger.debug(f"{__name__} start import")
 import asyncio
 import os
 import re
@@ -8,7 +11,8 @@ from apps.core.bot.messages.messages import Messages
 from apps.core.bot.bot_utils.bot_admin_notify import admin_notify
 from apps.core.database.db_utils import db_get_table_headers, db_get_data_list
 from apps.core.utils.json_worker.read_json_file import read_json_file
-from loader import logger
+
+logger.debug(f"{__name__} finish import")
 
 
 async def get_list_table_headers() -> list:
@@ -21,7 +25,7 @@ async def get_list_table_headers() -> list:
     return table_headers
 
 
-async def get_list_table_values(chat_id: str) -> list:
+async def get_list_table_values(chat_id: int) -> list:
     """Получение данных таблицы по chat_id
 
     :param chat_id:
@@ -29,7 +33,7 @@ async def get_list_table_values(chat_id: str) -> list:
     """
 
     db_table_name: str = 'core_hseuser'
-    query: str = f'SELECT * FROM {db_table_name} WHERE `hse_telegram_id` = {chat_id}'
+    query: str = f'SELECT * FROM {db_table_name} WHERE `hse_telegram_id` = {str(chat_id)}'
     datas_query: list = await db_get_data_list(query=query)
 
     if not datas_query:
@@ -55,10 +59,10 @@ async def get_data_dict(table_headers: list, table_data: list) -> dict:
 
 
 async def get_hse_role(hse_user_data_dict: dict) -> list:
-    """
+    """Получение ролей пользователя из БД на основе chat_id
 
     :param hse_user_data_dict:
-    :return:
+    :return: list
     """
 
     hse_role_name: list = [name for name, value in hse_user_data_dict.items() if re.search(r'_role_', name)]
@@ -66,7 +70,9 @@ async def get_hse_role(hse_user_data_dict: dict) -> list:
 
 
 async def get_dict_hse_user_role(hse_user_data_dict: dict) -> dict:
-    """
+    """Получение ролей пользователя из БД на основе chat_id
+
+    :return: dict
     """
 
     hse_roles: list = await get_hse_role(hse_user_data_dict)
@@ -75,9 +81,9 @@ async def get_dict_hse_user_role(hse_user_data_dict: dict) -> dict:
 
 
 async def get_hse_user_data(*, message: types.Message = None) -> dict:
-    """
+    """Получение данных пользователя из БД на основе chat_id
 
-    :return:
+    :return: dict
     """
 
     chat_id = message.chat.id
@@ -97,6 +103,8 @@ async def get_hse_user_data(*, message: types.Message = None) -> dict:
 
 async def check_user_access(*, chat_id, message: types.Message = None, notify_admin: bool = None) -> bool:
     """Проверка наличия регистрационных данных пользователя
+
+    :return: bool
     """
 
     if message:
@@ -104,39 +112,52 @@ async def check_user_access(*, chat_id, message: types.Message = None, notify_ad
 
     table_data: list = await get_list_table_values(chat_id)
     if not table_data:
+        logger.error(f'access fail {chat_id = } {table_data =}')
         await user_access_fail(chat_id, message)
         return False
 
     table_headers: list = await get_list_table_headers()
     hse_user_data_dict: dict = await get_data_dict(table_headers, table_data)
-    # pprint(f'{hse_user_data_dict = }')
+
     if not hse_user_data_dict:
+        logger.error(f'access fail {chat_id = } {hse_user_data_dict =}')
         await user_access_fail(chat_id, message)
         return False
 
     if not hse_user_data_dict.get('hse_is_work', None):
+        logger.error(
+            f"access fail {chat_id = } {hse_user_data_dict =} hse_is_work {hse_user_data_dict.get('hse_is_work', None)}")
         await user_access_fail(chat_id, message)
         return False
 
     if not hse_user_data_dict.get('hse_status', None):
+        logger.error(
+            f"access fail {chat_id = } {hse_user_data_dict =} hse_status {hse_user_data_dict.get('hse_status', None)}")
         await user_access_fail(chat_id, message)
         return False
 
     hse_user_role_dict: dict = await get_dict_hse_user_role(hse_user_data_dict)
-    pprint(f'{hse_user_role_dict = }')
+    logger.debug(f'{chat_id} ::: {hse_user_role_dict = }')
 
     if not hse_user_role_dict.get('hse_role_is_user', None):
+        logger.info(f"{chat_id} ::: {hse_user_role_dict.get('hse_role_is_user', None) = }")
+        logger.error(
+            f"access fail {chat_id = } {hse_user_role_dict =} hse_status {hse_user_role_dict.get('hse_role_is_user', None)}")
         await user_access_fail(chat_id, message)
         return False
 
     if notify_admin:
+        logger.error(f"{notify_admin = }")
         await user_access_granted(chat_id)
 
     return True
 
 
-async def check_user_registration_data_file(file_path) -> bool:
-    """Check"""
+async def check_user_registration_data_file(file_path: str) -> bool:
+    """Check
+
+    :return: bool
+    """
 
     if not os.path.isfile(file_path):
         return False
@@ -149,17 +170,19 @@ async def check_user_registration_data_file(file_path) -> bool:
     return False
 
 
-async def user_access_fail(chat_id, messege, notify_text: str = None):
-    """Отправка сообщения о недостатке прав"""
+async def user_access_fail(chat_id: int, message: types.Message, notify_text: str = None):
+    """Отправка сообщения о недостатке прав
+    """
 
     if not notify_text:
         notify_text: str = f'User {chat_id} попытка доступа к функциям без регистрации'
     logger.error(notify_text)
 
     await admin_notify(user_id=chat_id, notify_text=notify_text)
+
     try:
 
-        await messege.answer(
+        await message.answer(
             text=f'У вас нет прав доступа \n {Messages.help_message}!\n'
                  f'По всем вопросам обращайтесь к администратору\n'
                  f'https://t.me/AlexKor_MSK',
@@ -171,14 +194,13 @@ async def user_access_fail(chat_id, messege, notify_text: str = None):
         logger.error(f'User {chat_id} ошибка уведомления пользователя {repr(err)}')
 
         try:
-
             button = types.InlineKeyboardButton(text=f'{chat_id}', url=f"tg://user?id={chat_id}")
             await admin_notify(user_id=chat_id, notify_text=notify_text, button=button)
         except Exception as err:
             logger.error(f'User {chat_id} ошибка уведомления ADMIN_ID {repr(err)}')
 
 
-async def user_access_granted(chat_id):
+async def user_access_granted(chat_id: int):
     """Отправка сообщения - доступ разрешен"""
 
     reply_markup = types.InlineKeyboardMarkup()
@@ -186,6 +208,21 @@ async def user_access_granted(chat_id):
 
     logger.info(f'доступ разрешен {chat_id}')
     await admin_notify(user_id=chat_id, notify_text=f'доступ разрешен {chat_id}')
+
+
+async def get_user_data_dict(chat_id: int) -> tuple[dict, dict]:
+    """Получение данных пользователя и ролей пользователя отдельно
+
+    :param chat_id:
+    :return: tuple[dict, dict]
+    """
+
+    table_data: list = await get_list_table_values(chat_id)
+    table_headers: list = await get_list_table_headers()
+    hse_user_data_dict: dict = await get_data_dict(table_headers, table_data)
+    hse_user_role_dict: dict = await get_dict_hse_user_role(hse_user_data_dict)
+
+    return hse_user_data_dict, hse_user_role_dict
 
 
 async def test2():

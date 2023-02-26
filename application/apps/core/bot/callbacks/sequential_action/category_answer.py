@@ -1,3 +1,5 @@
+from apps.core.database.db_utils import db_get_data_list
+from apps.core.database.query_constructor import QueryConstructor
 from loader import logger
 
 logger.debug(f"{__name__} start import")
@@ -19,6 +21,19 @@ async def category_answer(call: types.CallbackQuery):
     if call.data in get_data_list("CATEGORY"):
         try:
             await set_violation_atr_data("category", call.data)
+
+            kwargs: dict = {
+                "action": 'SELECT',
+                "subject": 'id',
+                "conditions": {
+                    "title": f"{call.data}",
+                }
+            }
+            query: str = await QueryConstructor(table_name='core_category', **kwargs).prepare_data()
+
+            datas_query: list = await db_get_data_list(query=query)
+            category_id = datas_query[0][0] if datas_query else None
+            await set_violation_atr_data("category_id", category_id)
 
             await get_and_send_category_data(call)
 
