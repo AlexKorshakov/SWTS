@@ -1,3 +1,5 @@
+import typing
+
 from loader import logger
 
 logger.debug(f"{__name__} start import")
@@ -9,8 +11,11 @@ from aiogram import types
 from aiogram.dispatcher.filters import Command
 
 from apps.MyBot import MyBot
+from config.config import WRITE_DATA_ON_GOOGLE_DRIVE
 
-from config.config import SEPARATOR, WRITE_DATA_ON_GOOGLE_DRIVE
+from apps.core.bot.bot_utils.check_user_registration import check_user_access
+from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
+from apps.core.bot.messages.messages import Messages
 
 # from apps.core.utils.generate_report.get_file_list import get_json_file_list
 # from apps.core.bot.callbacks.sequential_action.correct_registration_data_answer import get_correct_data
@@ -20,18 +25,15 @@ from config.config import SEPARATOR, WRITE_DATA_ON_GOOGLE_DRIVE
 # from apps.core.bot.data.category import CORRECT_COMMANDS_LIST
 # from apps.core.bot.messages.messages import Messages
 # from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard
-#
 # from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import drive_account_credentials
-from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.find_folder import q_request_constructor, params_constructor, \
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.find_folder import q_request_constructor, \
+    params_constructor, \
     find_files_by_params
 from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.folders_deleter import delete_folder
-# from apps.core.utils.json_worker.read_json_file import read_json_file
 from apps.core.utils.misc import rate_limit
 
-# # from apps.core.utils.secondary_functions.check_user_registration import check_user_access
-# from apps.core.bot.bot_utils.check_user_registration import check_user_access
-#
 logger.debug(f"{__name__} finish import")
+
 
 # len_description = 25
 
@@ -45,6 +47,57 @@ async def correct_entries_handler(message: types.Message):
     """
 
     chat_id = message.chat.id
+
+    if not await check_user_access(chat_id=chat_id):
+        logger.error(f'access fail {chat_id = }')
+        return
+
+    reply_markup = await add_correct_inline_keyboard_with_action()
+
+    await message.answer(text=Messages.Choose.correct_entries, reply_markup=reply_markup)
+
+
+async def add_correct_inline_keyboard_with_action():
+    """Формирование сообщения с текстом и кнопками действий в зависимости от параметров
+
+    :return:
+    """
+
+    markup = types.InlineKeyboardMarkup()
+
+    markup.add(types.InlineKeyboardButton('Акты - предписания',
+                                          callback_data=posts_cb.new(id='-', action='correct_acts')))
+    markup.add(types.InlineKeyboardButton('Записи в реестре',
+                                          callback_data=posts_cb.new(id='-', action='correct_item_violations')))
+    markup.add(types.InlineKeyboardButton('Данные базы данных',
+                                          callback_data=posts_cb.new(id='-', action='correct_db_items')))
+    return markup
+
+
+@MyBot.dp.callback_query_handler(posts_cb.filter(action=['correct_acts']))
+async def call_generate_act(call: types.CallbackQuery, callback_data: typing.Dict[str, str]):
+    """Обработка ответов содержащихся в ADMIN_MENU_LIST
+    """
+    pass
+    # await act_generate_handler(call.message)
+
+
+@MyBot.dp.callback_query_handler(posts_cb.filter(action=['correct_item_violations']))
+async def call_generate_act(call: types.CallbackQuery, callback_data: typing.Dict[str, str]):
+    """Обработка ответов содержащихся в ADMIN_MENU_LIST
+    """
+    pass
+    # await act_generate_handler(call.message)
+
+
+@MyBot.dp.callback_query_handler(posts_cb.filter(action=['correct_db_items']))
+async def call_generate_act(call: types.CallbackQuery, callback_data: typing.Dict[str, str]):
+    """Обработка ответов содержащихся в ADMIN_MENU_LIST
+    """
+    pass
+    # await act_generate_handler(call.message)
+
+
 #     violation_description: list = []
 #     violation_files: list = []
 #
@@ -170,6 +223,8 @@ async def delete_violation_files_from_pc(message: types.Message, file):
     :param file:
     :return:
     """
+
+
 #     if not await del_file(path=file['json_full_name']):
 #         await MyBot.bot.message.answer(text=Messages.Error.file_not_found)
 #     await message.answer(text=Messages.Removed.violation_data_pc)
@@ -205,6 +260,8 @@ async def delete_violation_files_from_gdrive(message, file, violation_file):
         return False
 
     # drive_service = await drive_account_credentials()
+
+
 #
 #     if file.get("violation_id"):
 #         name: str = file.get("violation_id")

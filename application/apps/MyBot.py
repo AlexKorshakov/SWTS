@@ -27,9 +27,6 @@ class MyBot:
     """Основной класс запуска бота
 
     """
-    # storage = MemoryStorage()
-    # bot = Bot(token=BOT_TOKEN, parse_mode="HTML")
-    # dp = Dispatcher(bot=bot, storage=storage)
     bot = assistant
     dp = dp_assistant
 

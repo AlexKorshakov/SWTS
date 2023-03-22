@@ -22,13 +22,14 @@ from config.config import ADMIN_ID, DEVELOPER_ID
 
 logger.debug(f"{__name__} finish import")
 
+
 @rate_limit(limit=10)
 @MyBot.dp.message_handler(Command('admin_func'))
-async def admin_func_handler(message: types.Message) -> None:
+async def admin_func_handler(message: types.Message) :
     """Административные функции
 
     :param message:
-    :return:
+    :return: None
     """
 
     chat_id = message.chat.id
@@ -42,7 +43,7 @@ async def admin_func_handler(message: types.Message) -> None:
             notify_text=f'User @{message.from_user.username}:{chat_id} попытка доступа в админку!'
         )
         await message.answer(
-            text=f'У Вас нет прав доступа к административным функциям!\n'
+            text='У Вас нет прав доступа к административным функциям!\n'
                  f'По всем вопросам обращайтесь к администратору\n'
                  f'https://t.me/AlexKor_MSK',
             disable_web_page_preview=True)
@@ -57,10 +58,10 @@ async def admin_func_handler(message: types.Message) -> None:
 
         return
 
-    await message.answer(f'у вас нет доступа к функциям администратора')
+    await message.answer('у вас нет доступа к функциям администратора')
 
 
-@MyBot.dp.callback_query_handler(is_private, lambda call: call.data in [item for item in ADMIN_MENU_LIST])
+@MyBot.dp.callback_query_handler(is_private, lambda call: call.data in ADMIN_MENU_LIST)
 async def admin_function_answer(call: types.CallbackQuery):
     """Обработка ответов содержащихся в ADMIN_MENU_LIST
     """
@@ -134,7 +135,7 @@ async def admin_function_answer(call: types.CallbackQuery):
                 await MyBot.dp.bot.send_message(chat_id=user_id, text=text, reply_markup=reply_markup)
             except Exception as err:
                 logger.error(f'bot.send_message error {repr(err)}')
-                MyBot.dp.bot.send_message(chat_id=ADMIN_ID, text=f'bot.send_message error user_id')
+                MyBot.dp.bot.send_message(chat_id=ADMIN_ID, text='bot.send_message error user_id')
                 continue
 
             await admin_notify(

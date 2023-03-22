@@ -107,6 +107,10 @@ class Messages:
 
         period: str = f"Выберите период формирования акта"
 
+        generate_doc: str = "Выберите вид документа для формирования"
+
+        correct_entries: str = "Выберите запись для изменения"
+
     class Error:
         workbook_not_found: str = f"Файл с отчетом не найден! Обратитесь к разработчику! \n" \
                                   f'чтобы написать разработчику нажмите /developer'

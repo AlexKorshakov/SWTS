@@ -25,6 +25,7 @@ logger.debug(f"{__name__} finish import")
 @MyBot.dp.message_handler(Command('generate_report'))
 async def report_generate_handler(message: types.Message) -> None:
     """Формирование и отправка отчета пользователю
+
     :param message:
     :return: None
     """
@@ -34,10 +35,8 @@ async def report_generate_handler(message: types.Message) -> None:
         logger.error(f'access fail {chat_id = }')
         return
 
-    print(f'reply_markup')
     reply_markup = await add_period_inline_keyboard_with_action()
 
-    print(f'{reply_markup = }')
     await message.answer(text=Messages.Choose.period, reply_markup=reply_markup)
 
 

@@ -20,12 +20,6 @@ async def on_startup_notify(dp: Dispatcher) -> bool:
     }
     query: str = await QueryConstructor(table_name='core_hseuser', **kwargs).prepare_data()
     admins_datas: list = DataBase().get_data_list(query=query)
-    if admins_datas:
-        admins_datas = [item[0] for item in admins_datas if item]
-
-    # table_name = 'core_hseuser'
-    # headers = DataBase().get_table_headers(table_name=table_name)
-    # clean_headers: list = [item[1] for item in headers]
 
     if not admins_datas:
         try:
@@ -36,10 +30,9 @@ async def on_startup_notify(dp: Dispatcher) -> bool:
             logger.error(f"Чат с админом не найден {err} ")
             return False
 
+    admins_datas = [item[0] for item in admins_datas if item]
+
     for num, hse_telegram_id in enumerate(admins_datas, start=1):
-        # adm_data: dict = dict(zip(clean_headers, adm_data))
-        # hse_telegram_id = adm_data.get('id', None)
-        # hse_telegram_id =adm_data[0]
 
         if not hse_telegram_id:
             logger.debug(f"Значение не найдено {num = } for {len(admins_datas)} {hse_telegram_id = }")
@@ -48,9 +41,10 @@ async def on_startup_notify(dp: Dispatcher) -> bool:
         try:
             await dp.bot.send_message(hse_telegram_id, "Бот был успешно запущен", disable_notification=True)
             logger.info(f"Сообщение отправлено {hse_telegram_id}")
-            await asyncio.sleep(0.3)
+            await asyncio.sleep(0.5)
         except Exception as err:
-            logger.error(f"Чат с админом {hse_telegram_id} не найден {err = } ")
+            logger.error(f"Чат {num = } с админом {hse_telegram_id} не найден {err = } ")
+
     return True
 
 

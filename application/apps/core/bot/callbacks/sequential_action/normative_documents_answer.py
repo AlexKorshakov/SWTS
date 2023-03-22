@@ -11,7 +11,6 @@ from apps.core.bot.reports.report_data_preparation import \
     set_violation_atr_data
 from apps.MyBot import MyBot
 
-
 logger.debug(f"{__name__} finish import")
 
 
@@ -30,6 +29,7 @@ async def normative_documents_answer(call: types.CallbackQuery):
         if call.data == _PREFIX_ND + "0":
             await get_and_send_null_normative_documents_data(call)
 
+        nd_data: list = []
         try:
             condition: dict = {
                 "data": call.data,
