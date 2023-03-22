@@ -14,7 +14,6 @@ from django.shortcuts import redirect, render
 from django.views.generic import CreateView, DetailView, ListView
 from loader import logger
 
-#
 from .forms import (UserLoginForm, UsrRegisterForm, ViolationsAddForm,
                     ViolationsForm)
 from .models import (ActsPrescriptions, GeneralContractor, IncidentLevel,
@@ -36,7 +35,7 @@ def upload_too_db_from_local_storage(request: HttpRequest):
 
         for param in params:
             asyncio.run(upload_from_local(params=param))
-            logger.info(f'Данные загружены в БД')
+            logger.info('Данные загружены в БД')
         return redirect('home')
 
 
@@ -126,8 +125,8 @@ class PostEdit(CreateView):
 
     def get_context_data(self, **kwargs):
         """Дополнение данных перед отправкой на рендер"""
-        print(f"get_context_data")
-        print(f"{kwargs = }")
+        # print("get_context_data")
+        # print(f"{kwargs = }")
 
         context = super(PostEdit, self).get_context_data(**kwargs)
         print(f"{context = }")
@@ -137,11 +136,11 @@ class PostEdit(CreateView):
         return context
 
     def get_queryset(self):
-        print(f"get_queryset")
+        # print(f"get_queryset")
         return Violations.objects.get(pk=self.violations_id)
 
     def get_object(self, queryset=None):
-        print(f"get_object")
+        # print(f"get_object")
         self.slug = self.kwargs.get('slug', None)
         return queryset.get(slug=self.slug)
 
@@ -162,10 +161,10 @@ def post_edit(request: HttpRequest, violations_id):
         form = ViolationsForm(instance=violation)
 
         if form.is_bound:
-            print(f"form is_bound ")
+            print("form is_bound ")
 
         if form.is_valid():
-            print(f"form is_valid ")
+            print("form is_valid ")
 
     context = {
         'form': form,
@@ -391,6 +390,8 @@ class ViolationsByWeek(MyMixin, ListView):
             week_id=self.kwargs['week_id'],
             is_published=True
         )
+
+
 # .prefetch_related('week')
 
 # class ViolationsByIsPublished(MyMixin, ListView):
@@ -461,7 +462,7 @@ class HomeRegisterNormativeDocuments(MyMixin, ListView):
     model = NormativeDocuments
     template_name = 'register_normative_documents.html'
     context_object_name = 'normative_docs'
-    # paginate_by = 50
+    paginate_by = 30
     allow_empty = False
 
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -480,14 +481,25 @@ class HomeRegisterUnclosedPoints(MyMixin, ListView):
     model = Violations
     template_name = 'register_of_unclosed_points.html'
     context_object_name = 'unclosed_points'
-    paginate_by = 20
+    paginate_by = 30
     allow_empty = False
 
     def get_context_data(self, *, object_list=None, **kwargs):
         """Дополнение данных перед отправкой на рендер"""
         context = super().get_context_data(**kwargs)
+        # logger.info(f"HomeRegisterUnclosedPoints 490 : {context = }")
+        context = self.set_final_date(context)
+        # context = dict(
+        #     list(context.items()) + list(final_date.items())
+        # )
 
-        logger.debug(f"{context=}")
+        try:
+            final_date = context['object_list'][0].final_date
+            logger.info(f"HomeRegisterUnclosedPoints 495: {final_date = }")
+        except Exception as err:
+            logger.error(f"get_context_data 495: {err = }")
+
+        # logger.info(f"HomeRegisterUnclosedPoints 495: {context = }")
         return context
 
     def get_queryset(self):

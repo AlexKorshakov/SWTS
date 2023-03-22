@@ -6,7 +6,7 @@ import pandas
 from loader import logger
 
 
-async def str_to_datetime(date_str) -> Optional[date]:
+async def str_to_datetime(date_str: str) -> Optional[date]:
     """Преобразование str даты в datetime
 
     :param

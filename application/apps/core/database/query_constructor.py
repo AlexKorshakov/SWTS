@@ -283,7 +283,7 @@ class QueryConstructor(QueryStorageMethods):
         self.__part_lazy_query = await self.get_part_lazy_query()
 
         self.query = await self.get_query()
-        logger.info(f'QueryConstructor: {self.query = }')
+        logger.info(f'\nQueryConstructor: {self.query = }')
         return self.query
 
     async def get_action_part(self) -> str:

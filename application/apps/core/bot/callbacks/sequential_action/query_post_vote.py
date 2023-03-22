@@ -1,3 +1,6 @@
+from loader import logger
+
+logger.debug(f"{__name__} start import")
 import typing
 
 from aiogram import types  # type: ignore

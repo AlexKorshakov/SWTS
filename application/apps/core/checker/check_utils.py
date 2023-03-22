@@ -57,10 +57,10 @@ class DataBaseForCheck:
             return result
 
     async def get_dict_data_from_table_from_id(self, table_name: str, violation_id: int) -> dict:
-        """
+        """Получение данных dict из таблицы table_name по id
         :param table_name: имя таблицы в которой осуществляется поиск
         :param violation_id: id записи
-        :return
+        :return dict('header': item_value, ...)
         """
 
         query_kwargs: dict = {
@@ -99,7 +99,6 @@ async def periodic_check_data_base() -> None:
     """Периодическая проверка базы данных.
     Проверяет дату final_date_elimination в DataBase
 
-    :return: None
     """
     while True:
         await check_violations_final_date_elimination()

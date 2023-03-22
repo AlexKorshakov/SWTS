@@ -106,7 +106,7 @@ def add_null_value_to_ziped_list(zip_list: list) -> list:
 def add_null_value_to_list(zip_list: list, condition: str, db_table_name: str) -> list:
     """
 
-    :param db_table_name:
+    :param db_table_name: имя базы данных
     :param condition:
     :param zip_list:
     :return:
@@ -128,7 +128,7 @@ def add_null_value_to_list(zip_list: list, condition: str, db_table_name: str) -
 def add_hashtags(datas_from_bd, db_table_name: str, item_id) -> list:
     """Добавление хештегов
 
-    :param db_table_name:
+    :param db_table_name: имя базы данных
     :param datas_from_bd:
     :param item_id:
     :return:
@@ -155,7 +155,7 @@ def get_category_data_list_whits_single_condition(db_table_name: str, item_id: i
 
     :param single_condition:
     :param item_id:
-    :param db_table_name:
+    :param db_table_name: имя базы данных
     :return: list
     """
     clean_datas_query: list = []
@@ -238,7 +238,7 @@ def get_category_data_list_whits_condition(db_table_name: str, category, conditi
     """Получение
 
     :param category:
-    :param db_table_name:
+    :param db_table_name: имя базы данных
     :type condition: Union[str, dict]
 
     """
@@ -251,16 +251,6 @@ def get_category_data_list_whits_condition(db_table_name: str, category, conditi
         main_table_name = 'core_mainlocation'
 
     category_id = db_get_id_no_async(table=main_table_name, entry=category, condition=condition, )
-
-    # kwargs: dict = {
-    #     "action": 'SELECT',
-    #     "subject": 'id',
-    #     "conditions": {
-    #         f"{condition}": f"{condition}",
-    #     }
-    # }
-    # query: str =  QueryConstructor(table_name=main_table_name, **kwargs).prepare_data()
-    # datas_query: list =  db_get_data_list(query=query)
 
     if category_id is None:
         return []
@@ -296,7 +286,6 @@ def get_data_from_db(db_table_name: str) -> list:
 
     # TODO заменить на вызов конструктора QueryConstructor
     query: str = f'SELECT * FROM {db_table_name}'
-    # print(f'{__name__} {say_fanc_name()} {query = }')
     datas_query: list = db_get_data_list_no_async(query=query)
     headers: list = [item[1] for item in db_get_table_headers_no_async(db_table_name=db_table_name)]
 
@@ -349,8 +338,9 @@ def get_data_list(category_in_db: str = None, category: str = None, condition: U
 def get_data_with_hashtags(db_table_name: str, item_id: int) -> list:
     """Получение хештегов
 
+    :param db_table_name: имя базы данных
     :param item_id:
-    :return: hashtags: list
+    :return: hashtags: [#str, ...]
     """
 
     if not item_id:
@@ -362,31 +352,6 @@ def get_data_with_hashtags(db_table_name: str, item_id: int) -> list:
 
     return hashtags
 
-
-# def get_data_from_json(name: str) -> list:
-#     """Получение данных из json
-#
-#     :param name имя файла без расширения
-#
-#     """
-#     if not name:
-#         return []
-#
-#     try:
-#         with open(PATH + "\\" + name + ".json", "r", encoding="UTF-8") as read_file:
-#             list_value = json.loads(read_file.read())
-#             if not list_value:
-#
-#                 if name not in [key for key, value in ALL_CATEGORY.items()]:
-#                     return []
-#
-#                 return ALL_CATEGORY[name]
-#
-#             return list_value
-#
-#     except (FileNotFoundError, JSONDecodeError) as err:+
-#         logger.error(f" {name} {repr(err)}")
-#         return []
 
 def get_hashtags(db_table_name: str, item_id: int = None) -> list:
     """Возвращает список хештегов для найденных данных"""
@@ -405,15 +370,9 @@ def get_hashtags(db_table_name: str, item_id: int = None) -> list:
             "action": 'SELECT', "subject": 'hashtags',
             "conditions": {
                 "category_id": item_id,
-                # "hashtag": call.data,
-                # "hashtag_condition": 'like',
             }
         }
         query = asyncio.run(QueryConstructor(None, db_table_name, **kwargs).prepare_data())
-
-        # TODO заменить на вызов конструктора QueryConstructor
-        # query: str = f'SELECT * FROM {db_table_name} WHERE `category_id` == {item_id}'
-        logger.info(f'{__name__} {say_fanc_name()} {query}')
         data_list: list = db_get_data_list_no_async(query=query)
 
     elif db_table_name == 'core_sublocation':
@@ -425,10 +384,6 @@ def get_hashtags(db_table_name: str, item_id: int = None) -> list:
             }
         }
         query = asyncio.run(QueryConstructor(None, db_table_name, **kwargs).prepare_data())
-
-        # TODO заменить на вызов конструктора QueryConstructor
-        # query: str = f'SELECT * FROM {db_table_name} WHERE `main_location_id` == {item_id}'
-        logger.info(f'{__name__} {say_fanc_name()} {query = }')
         data_list: list = db_get_data_list_no_async(query=query)
 
     else:
@@ -444,23 +399,11 @@ def get_hashtags(db_table_name: str, item_id: int = None) -> list:
     data_unpac = [item for sublist in list_of_lists for item in sublist]
     if not data_unpac: return []
 
-    logger.info(f'{len(data_unpac) = }')
-    unique_hash_t = list(set(data_unpac))
-    if not unique_hash_t: return []
+    clean_data_unpac = [item.lstrip().rstrip() for item in data_unpac]
 
-    # try:
-    #     dataframe: DataFrame = DataFrame(data_list, columns=clean_headers)
-    # except Exception as err:
-    #     logger.error(f"create_dataframe {repr(err)}")
-    #     return []
-    #
-    # if dataframe.empty:
-    #     return []
-    #
-    # hashtags: list = dataframe.hashtags.unique().tolist()
-    #
-    # exception_list = [None, '', 'None']
-    # unique_hash_t = [tag for tag in hashtags if tag or tag not in exception_list]
+    logger.info(f'{len(clean_data_unpac) = }')
+    unique_hash_t = list(set(clean_data_unpac))
+    if not unique_hash_t: return []
 
     return unique_hash_t
 
@@ -477,7 +420,6 @@ async def test():
     #     print(f'{__name__} {say_fanc_name()} {short_title =}')
 
     db_table_name = 'core_normativedocuments'
-    # condition = 'data_list'
     condition = 'short_title'
     category_id = 5
 
@@ -486,9 +428,12 @@ async def test():
         item_id=category_id,
         single_condition=condition
     )
-    # pprint(f'{__name__} {say_fanc_name()} {datas_from_bd = }')
+
+    pprint(f'{__name__} {say_fanc_name()} {datas_from_bd = }')
 
     datas_from_bd: list = add_hashtags(datas_from_bd, db_table_name=db_table_name, item_id=category_id)
+
+    pprint(f'{__name__} {say_fanc_name()} {datas_from_bd = }')
 
     datas_from_bd: list = add_null_value_to_list(
         datas_from_bd, condition=condition, db_table_name=db_table_name
@@ -497,7 +442,8 @@ async def test():
     pprint(f'{__name__} {say_fanc_name()} {datas_from_bd = }')
 
 
-def say_fanc_name():
+def say_fanc_name() -> str:
+    """Возвращает имя вызываемой функции"""
     stack = traceback.extract_stack()
     return str(stack[-2][2])
 

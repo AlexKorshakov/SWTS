@@ -1,5 +1,6 @@
 import asyncio
 import os
+from datetime import timedelta
 from pathlib import Path
 
 from apps.core.bot.handlers.correct_entries.correct_entries_handler import (
@@ -20,6 +21,7 @@ from apps.core.utils.json_worker.read_json_file import read_json_file
 from apps.core.utils.json_worker.writer_json_file import write_json
 from apps.core.utils.secondary_functions.get_filepath import \
     get_json_full_filename
+from apps.core.web.models import Violations
 from config.config import WRITE_DATA_ON_GOOGLE_DRIVE
 from loader import logger
 
@@ -27,9 +29,8 @@ DIRECTORY = Path(__file__).resolve().parent
 LOCAL_MEDIA_STORAGE = str(DIRECTORY.parent.parent.parent) + '/media'
 
 
-class MyMixin(object):
+class MyMixin:
     """Миксина дополнения классов
-
     """
     mixin_prop = ''
 
@@ -38,10 +39,102 @@ class MyMixin(object):
 
     def get_upper(self, s):
         """Приведение к верхнему регистру"""
-        if isinstance(s, str):
-            return s.upper()
-        else:
+        if not isinstance(s, str):
             return s.title.upper()
+        return s.upper()
+
+    def set_final_date(self, context, **kwargs):
+        """Добавление финальной даты устранения"""
+        # context = kwargs
+
+        # print(f"\nMyMixin set_final_date {context = }")
+        violations = Violations.objects.filter(
+            status=2,
+            is_published=True,
+        )
+        # print(f"MyMixin set_final_date violations {len(violations) = }\n")
+        # print(f"MyMixin set_final_date {violations[1] = }\n")
+        #
+        # now = '01.03.2023'
+        # current_date: date = datetime.strptime(now, "%d.%m.%Y").date()
+        # date_start = violations.final_date
+        # violations.final_date = current_date
+        # print(f"MyMixin set_final_date {violations = }")
+        #
+        # vio_10411 = Violations.objects.get(pk=10411)
+        #
+        # days = vio_10411.elimination_time.days
+        #
+        # start_date = vio_10411.created_at
+        # start_date: date = datetime.strptime(start_date, "%d.%m.%Y").date()
+        # print(f"MyMixin set_final_date {start_date = }\n")
+        #
+        # final_date = start_date + timedelta(days=days)
+        # final_date.strftime('%d-%m-%Y')
+        #
+        # print(f"MyMixin set_final_date {final_date = }\n")
+        #
+        # if not hasattr(vio_10411, 'final_date'):
+        #     setattr(vio_10411, 'final_date', None)
+        # vio_10411.final_date = final_date
+        #
+        # print(f"MyMixin set_final_date {vio_10411.final_date = }\n")
+        #
+        # print(f"MyMixin set_final_date {vio_10411 = }\n")
+        # print(f"MyMixin set_final_date {vio_10411.elimination_time.title = }\n")
+        # print(f"MyMixin set_final_date {vio_10411.elimination_time.days = }\n")
+        # print(f"MyMixin set_final_date {vio_10411.hse_id = }\n")
+        #
+        # if not violations['final_date']:
+        #     violations['final_date'] = violations
+        # print(f"MyMixin set_final_date {elimination_time = }")
+        #
+        # context_query_set: QuerySet = None
+
+        custom_list = []
+        for violations_object in violations:
+
+            days = violations_object.elimination_time.days
+
+            start_date = violations_object.created_at
+            final_date = start_date + timedelta(days=days)
+            final_date.strftime('%d-%m-%Y')
+
+            if not hasattr(violations_object, 'final_date'):
+                setattr(violations_object, 'final_date', None)
+            violations_object.final_date = str(final_date.strftime('%d-%m-%Y'))
+
+            # print(f"MyMixin set_final_date {violations_object.final_date = }\n")
+
+            custom_list.append(violations_object)
+
+        # print(f"MyMixin set_final_date {custom_list = }\n")
+        # final_date = custom_list[0].final_date
+        # print(f"MyMixin set_final_date {final_date = }\n")
+
+        context_query_set = ListAsQuerySet(custom_list, model=Violations)
+        # print(f"MyMixin set_final_date {context_query_set = }\n")
+
+        # vio = Violations.objects.get(pk=10242)
+
+        context['object_list'] = context_query_set
+        return context
+
+
+class ListAsQuerySet(list):
+
+    def __init__(self, *args, model, **kwargs):
+        self.model = model
+        super().__init__(*args, **kwargs)
+
+    def filter(self, *args, **kwargs):
+        return self  # filter ignoring, but you can impl custom filter
+
+    def order_by(self, *args, **kwargs):
+        return self
+
+
+# qs = ListAsQuerySet(custom_list, model=Post)
 
 
 async def delete_violation_files_from_gdrive(violation: dict):
@@ -140,7 +233,7 @@ async def update_violation_files_from_gdrive(data_for_update: dict = None):
 
     user_id: str = str(data_for_update.get('user_id'))
     file_id: str = str(data_for_update.get('file_id'))
-    date: str = str(file_id).split("___")[0]
+    date: str = file_id.split("___")[0]
 
     file_full_name = LOCAL_MEDIA_STORAGE + f'/{user_id}/data_file/{date}/json/report_data___{file_id}.json'
 
@@ -151,7 +244,7 @@ async def update_violation_files_from_gdrive(data_for_update: dict = None):
         notify_user=False
     )
 
-    logger.info(f'данные обновлены в Google Drive!')
+    logger.info('данные обновлены в Google Drive!')
 
 
 async def check_data_before_update(request_data: dict = None) -> dict:
@@ -177,7 +270,7 @@ async def check_key(violation_data_for_check: dict, key: str) -> bool:
     """Проверка наличие key in violation_data
 
     :param key: ключ словаря
-    :param violation_data_for_check данные для проверки
+    :param violation_data_for_check: данные для проверки
     :return: True if key in violation_data or False
     """
     if key in [
@@ -227,6 +320,7 @@ async def generation_query(key: str, id_item: int) -> str:
     db_table_name = CATEGORY_ID_TRANSFORM.get(key, None)
     table_name = db_table_name['table']
 
+    # TODO заменить на вызов конструктора QueryConstructor
     query: str = f'SELECT `title` FROM {table_name} WHERE id = {id_item}'
 
     return query
@@ -339,7 +433,7 @@ async def update_violation_files_from_local(data: dict = None):
 
     await write_json(name=name, data=data)
 
-    logger.info(f'данные обновлены в local storage!')
+    logger.info('данные обновлены в local storage!')
 
 
 async def update_violations_from_db(data: dict = None):
@@ -375,7 +469,7 @@ async def update_violations_from_db(data: dict = None):
         )
 
         if result_execute:
-            logger.info(f'данные обновлены в database!')
+            logger.info('данные обновлены в database!')
 
 
 async def get_violation_data_to_update(data_from_form: dict) -> dict:
@@ -403,14 +497,14 @@ async def update_violations_from_all_repo(data_from_form: dict = None) -> bool:
     :return: bool
     """
     if not isinstance(data_from_form, dict):
-        logger.error(f'data: dict не содержит данных!')
+        logger.error('data: dict не содержит данных!')
         return False
 
     logger.debug(data_from_form)
 
     normalize_data = await get_violation_data_to_update(data_from_form)
     if not normalize_data:
-        logger.error(f'data: violation_data не содержит данных!')
+        logger.error('data: violation_data не содержит данных!')
         return False
 
     # TODO проверить переключатели is_finished is_published

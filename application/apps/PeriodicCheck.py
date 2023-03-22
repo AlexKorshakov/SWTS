@@ -2,8 +2,6 @@
 import asyncio
 from apps.core.checker.check_utils import (periodic_check_data_base,
                                            periodic_check_work)
-import heartrate
-heartrate.trace(browser=True)
 
 
 class PeriodicCheck:

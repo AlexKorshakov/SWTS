@@ -1,5 +1,6 @@
 import asyncio
 import os
+import sys
 
 import uvicorn
 #  from apps.core.web.middlewares import InjectMiddleware
@@ -7,7 +8,14 @@ import uvicorn
 from config.apps import register_apps
 from django.core.asgi import get_asgi_application
 
+from loader import logger
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.web.settings")
+
+import nest_asyncio
+
+nest_asyncio.apply()
+
 
 #  import heartrate
 #  heartrate.trace(browser=True)
@@ -52,3 +60,16 @@ class MyServer:
     async def on_shutdown() -> None:
         print('Server stopped')
 
+
+async def test():
+    try:
+        my_server_task = asyncio.create_task(MyServer.run(), name='MyServer.run')
+        await my_server_task
+
+    except KeyboardInterrupt as err:
+        logger.error(f'Error run_app {repr(err)}')
+        sys.exit(0)
+
+
+if __name__ == '__main__':
+    asyncio.run(test())
