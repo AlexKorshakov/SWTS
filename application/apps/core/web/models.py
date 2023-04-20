@@ -51,6 +51,8 @@ class Violations(models.Model):
     elimination_time = models.ForeignKey(to='EliminationTime', on_delete=models.PROTECT,
                                          verbose_name='Время на устранение', default='')
 
+    # final_date = models.DateField(auto_now_add=True, verbose_name='Финальная дата')
+
     hse = models.ForeignKey(to='HSEUser', on_delete=models.PROTECT,
                             verbose_name='Специалист', default='')
 
@@ -58,16 +60,15 @@ class Violations(models.Model):
     user_id = models.CharField(max_length=255, verbose_name='ID пользователя', default='', blank=True)
     file_id = models.CharField(max_length=255, verbose_name='file_id', default='', blank=True)
 
-    photo = models.ImageField(upload_to=f'{user_id}/data_file/{str(file_id).split("___")[0]}/photo/',
+    photo = models.ImageField(upload_to=f'{user_id}/data_file/{str(file_id).split("___",maxsplit=1)[0]}/photo/',
                               verbose_name='Фото', blank=True)
-    json = models.FileField(upload_to=f'{user_id}/data_file/{str(file_id).split("___")[0]}/json/',
+    json = models.FileField(upload_to=f'{user_id}/data_file/{str(file_id).split("___",maxsplit=1)[0]}/json/',
                             verbose_name='Json', blank=True)
 
     day = models.PositiveSmallIntegerField(blank=True, verbose_name='День', default=1)
     month = models.PositiveSmallIntegerField(blank=True, verbose_name='Месяц', default=1)
     year = models.PositiveSmallIntegerField(blank=True, verbose_name='Год', default=2000)
 
-    # week = models.PositiveSmallIntegerField(blank=True, verbose_name='Неделя', default=1)
     week = models.ForeignKey(to='Week', on_delete=models.PROTECT,
                              verbose_name='Неделя', default='')
 
@@ -114,7 +115,7 @@ class MainCategory(models.Model):
         ordering = ['title']  # порядок сортировки
 
     def __str__(self):
-        return self.title
+        return f'{self.title}'
 
     def get_absolute_url(self):
         """Метод, согласно конвекции, для создания ссылок на части экземпляра модели (класса)
@@ -132,7 +133,7 @@ class HSEUser(models.Model):
         ordering = ['hse_short_name']  # порядок сортировки
 
     def __str__(self):
-        return self.hse_short_name
+        return f'{self.hse_short_name}'
 
     def get_absolute_url(self):
         """Метод, согласно конвекции, для создания ссылок на части экземпляра модели (класса)
@@ -149,7 +150,7 @@ class Location(models.Model):
         ordering = ['title']  # порядок сортировки
 
     def __str__(self):
-        return self.title
+        return f'{self.title}'
 
     def get_absolute_url(self):
         """Метод, согласно конвекции, для создания ссылок на части экземпляра модели (класса)
@@ -166,7 +167,7 @@ class SubLocation(models.Model):
         ordering = ['title']  # порядок сортировки
 
     def __str__(self):
-        return self.title
+        return f'{self.title}'
 
     def get_absolute_url(self):
         """Метод, согласно конвекции, для создания ссылок на части экземпляра модели (класса)
@@ -183,7 +184,7 @@ class MainLocation(models.Model):
         ordering = ['title']  # порядок сортировки
 
     def __str__(self):
-        return self.title
+        return f'{self.title}'
 
     def get_absolute_url(self):
         """Метод, согласно конвекции, для создания ссылок на части экземпляра модели (класса)
@@ -200,7 +201,7 @@ class WorkShift(models.Model):
         ordering = ['title']  # порядок сортировки
 
     def __str__(self):
-        return self.title
+        return f'{self.title}'
 
     def get_absolute_url(self):
         """Метод, согласно конвекции, для создания ссылок на части экземпляра модели (класса)
@@ -217,7 +218,7 @@ class Category(models.Model):
         ordering = ['title']  # порядок сортировки
 
     def __str__(self):
-        return self.title
+        return f'{self.title}'
 
     def get_absolute_url(self):
         """Метод, согласно конвекции, для создания ссылок на части экземпляра модели (класса)
@@ -237,7 +238,7 @@ class NormativeDocuments(models.Model):
         ordering = ['category_id']  # порядок сортировки
 
     def __str__(self):
-        return self.title
+        return f'{self.title}'
 
     def get_absolute_url(self):
         """Метод, согласно конвекции, для создания ссылок на части экземпляра модели (класса)
@@ -247,6 +248,7 @@ class NormativeDocuments(models.Model):
 
 class EliminationTime(models.Model):
     title = models.CharField(max_length=255, db_index=True, verbose_name='Время на устранение')
+    days = models.PositiveSmallIntegerField(blank=True, verbose_name='Дней')
 
     class Meta:
         verbose_name = "Время на устранение"  # единственное число
@@ -254,7 +256,7 @@ class EliminationTime(models.Model):
         ordering = ['title']  # порядок сортировки
 
     def __str__(self):
-        return self.title
+        return f'{self.title}'
 
     def get_absolute_url(self):
         """Метод, согласно конвекции, для создания ссылок на части экземпляра модели (класса)
@@ -271,7 +273,7 @@ class GeneralContractor(models.Model):
         ordering = ['title']  # порядок сортировки
 
     def __str__(self):
-        return self.title
+        return f'{self.title}'
 
     def get_absolute_url(self):
         """Метод, согласно конвекции, для создания ссылок на части экземпляра модели (класса)
@@ -280,15 +282,15 @@ class GeneralContractor(models.Model):
 
 
 class IncidentLevel(models.Model):
-    title = models.CharField(max_length=255, db_index=True, verbose_name='Уровень происшествия')
+    title: str = models.CharField(max_length=255, db_index=True, verbose_name='Уровень происшествия')
 
     class Meta:
         verbose_name = "Уровень происшествия"  # единственное число
         verbose_name_plural = "Уровни происшествия"  # множественное число
         ordering = ['title']  # порядок сортировки
 
-    def __str__(self):
-        return self.title
+    def __str__(self) -> str:
+        return f'{self.title}'
 
     def get_absolute_url(self):
         """Метод, согласно конвекции, для создания ссылок на части экземпляра модели (класса)
@@ -305,7 +307,7 @@ class ViolationCategory(models.Model):
         ordering = ['title']  # порядок сортировки
 
     def __str__(self):
-        return self.title
+        return f'{self.title}'
 
     def get_absolute_url(self):
         """Метод, согласно конвекции, для создания ссылок на части экземпляра модели (класса)
@@ -322,7 +324,7 @@ class ActRequired(models.Model):
         ordering = ['title']  # порядок сортировки
 
     def __str__(self):
-        return self.title
+        return f'{self.title}'
 
     def get_absolute_url(self):
         """Метод, согласно конвекции, для создания ссылок на части экземпляра модели (класса)
@@ -339,7 +341,7 @@ class Status(models.Model):
         ordering = ['title']  # порядок сортировки
 
     def __str__(self):
-        return self.title
+        return f'{self.title}'
 
     def get_absolute_url(self):
         """Метод, согласно конвекции, для создания ссылок на части экземпляра модели (класса)
@@ -353,10 +355,9 @@ class Week(models.Model):
     class Meta:
         verbose_name = "Неделя"  # единственное число
         verbose_name_plural = "Недели"  # множественное число
-        # ordering = ['title']  # порядок сортировки
 
     def __str__(self):
-        return self.week_number
+        return f"{self.week_number}"
 
     def get_absolute_url(self):
         """Метод, согласно конвекции, для создания ссылок на части экземпляра модели (класса)
@@ -368,7 +369,7 @@ class Finished(models.Model):
     title = models.CharField(max_length=255, db_index=True, verbose_name='Устранено?')
 
     def __str__(self):
-        return self.title
+        return f'{self.title}'
 
     def get_absolute_url(self):
         """Метод, согласно конвекции, для создания ссылок на части экземпляра модели (класса)
@@ -380,7 +381,7 @@ class IsAgreed(models.Model):
     title = models.CharField(max_length=255, db_index=True, verbose_name='Согласовано?')
 
     def __str__(self):
-        return self.title
+        return f'{self.title}'
 
     def get_absolute_url(self):
         """Метод, согласно конвекции, для создания ссылок на части экземпляра модели (класса)
@@ -411,7 +412,6 @@ class ActsPrescriptions(models.Model):
 
     act_hse = models.ForeignKey(to='HSEUser', on_delete=models.CASCADE, verbose_name='Специалист', default='')
 
-    # act_day = models.PositiveSmallIntegerField(blank=True, verbose_name='День', default=1)
     act_month = models.PositiveSmallIntegerField(blank=True, verbose_name='Месяц', default=1)
     act_year = models.PositiveSmallIntegerField(blank=True, verbose_name='Год', default=2000)
     act_week = models.PositiveSmallIntegerField(blank=True, verbose_name='Неделя', default=1)
@@ -422,44 +422,6 @@ class ActsPrescriptions(models.Model):
     act_status = models.ForeignKey(to='Status', on_delete=models.PROTECT, verbose_name='Статус', default=1)
     act_general_contractor = models.ForeignKey(to='GeneralContractor', on_delete=models.PROTECT,
                                                verbose_name='Подрядчик', default='')
-
-    # act_day_of_year = models.PositiveSmallIntegerField(blank=True, verbose_name='Номер дня в году', default=1)
-    # sub_location = models.ForeignKey(to='SubLocation', on_delete=models.PROTECT,
-    # verbose_name='Под площадка / участок',
-    #                                  default='')
-    # created_at = models.DateField(auto_now_add=True, verbose_name='Дата регистрации')
-    # updated_at = models.DateField(auto_now=True, verbose_name='Обновлено')
-    #
-    # act_main_category = models.ForeignKey(to='MainCategory', on_delete=models.PROTECT,
-    #                                       verbose_name='Основная категория',
-    #                                       default='')
-    #
-    # is_published = models.BooleanField(default=True, verbose_name='Опубликовано?')
-    # is_finished = models.BooleanField(default=False, verbose_name='Устранено?')
-    #
-    # category = models.ForeignKey(to='Category', on_delete=models.PROTECT, verbose_name='Категория', default='')
-    # normative_documents = models.ForeignKey(to='NormativeDocuments', on_delete=models.PROTECT,
-    #                                         verbose_name='Нормативная документация', default='')
-    #
-    # violation_category = models.ForeignKey(to='ViolationCategory', on_delete=models.PROTECT,
-    #                                        verbose_name='Категория нарушения', default='')
-    #
-    # incident_level = models.ForeignKey(to='IncidentLevel', on_delete=models.PROTECT,
-    #                                    verbose_name='Уровень происшествия', default='')
-    #
-    # act_required = models.ForeignKey(to='ActRequired', on_delete=models.PROTECT, verbose_name='Требуется Акт?',
-    #                                  default='')
-    #
-    # elimination_time = models.ForeignKey(to='EliminationTime', on_delete=models.PROTECT,
-    #                                      verbose_name='Время на устранение', default='')
-    #
-    # title = models.CharField(max_length=100, verbose_name='Заголовок')
-    # user_id = models.CharField(max_length=255, verbose_name='ID пользователя', default='', blank=True)
-    #
-    # file_id = models.CharField(max_length=255, verbose_name='file_id', default='', blank=True)
-    #
-    # acts_prescriptions_id = models.CharField(max_length=255,
-    # verbose_name='acts_prescriptions_id', default='', blank=True)
 
     class Meta:
         verbose_name = "Акт-предписание"  # единственное число

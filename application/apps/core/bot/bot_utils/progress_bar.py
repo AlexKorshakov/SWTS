@@ -3,7 +3,7 @@ import asyncio
 from aiogram import types
 from aiogram.types import InlineKeyboardMarkup
 
-from apps.MyBot import MyBot
+from apps.MyBot import MyBot, _send_message
 from loader import logger
 
 
@@ -49,6 +49,7 @@ class ProgressBar:
         :return:
         """
         msg = await self.message_edit_text(text=self.complete_character * 10, reply_markup=self.reply_markup)
+
         await asyncio.sleep(1)
         return msg
 
@@ -77,7 +78,11 @@ class ProgressBar:
         if not text: text = self.text
         if not reply_markup:  reply_markup = self.reply_markup
 
-        self.msg = await self.msg.edit_text(text=text, reply_markup=reply_markup)
+        try:
+            self.msg = await self.msg.edit_text(text=text, reply_markup=reply_markup)
+        except UnicodeEncodeError as err:
+            logger.debug(f'{repr(err)}')
+
         await asyncio.sleep(1)
         return self.msg
 
@@ -85,17 +90,21 @@ class ProgressBar:
 async def test():
     chat = 373084462
 
+    # p_bar_2 = ProgressBar(chat=chat)
+    # await p_bar_2.start()
+    # await p_bar_2.update_msg(3)
+    # await p_bar_2.update_msg(7)
+    # await p_bar_2.finish()
+
     # msg = await MyBot.bot.send_message(chat_id=chat, text='□' * 10)
-    p_bar_2 = ProgressBar(chat=chat)
-
-    await p_bar_2.start()
-    await p_bar_2.update_msg(3)
-    await p_bar_2.update_msg(7)
-    await p_bar_2.finish()
-
     # msg = await progress_bar_start(chat)
-    # await progress_bar(msg, persent=1)
-    # await progress_bar(msg, persent=10)
+    msg = await _send_message(chat_id=chat, text='⬜' * 10)
+
+    p_bar = ProgressBar(msg=msg)
+
+    await p_bar.update_msg(1)
+    await p_bar.update_msg(5)
+    await p_bar.update_msg(10)
 
 
 if __name__ == "__main__":

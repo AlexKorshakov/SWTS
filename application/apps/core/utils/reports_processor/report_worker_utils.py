@@ -101,8 +101,6 @@ async def create_lite_dataframe_from_query(chat_id: int, query: str, clean_heade
     :return:
     """
 
-    logger.debug(f'{query = }')
-
     item_datas_query: list = await db_get_data_list(query=query)
     report_dataframe: DataFrame = await create_lite_dataframe(
         chat_id=chat_id, data_list=item_datas_query, header_list=clean_headers

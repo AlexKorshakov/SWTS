@@ -1,8 +1,7 @@
 import json
 import os
 from pathlib import Path
-from datetime import datetime
-from datetime import timedelta, timezone
+from datetime import datetime,  timedelta, timezone
 from time import localtime, strftime
 from sys import stderr
 from threading import current_thread
@@ -18,7 +17,7 @@ load_dotenv(LOGGER_DIR / "config" / ".env")
 logs_path = str(os.environ.get('MAIN_DIR')) + 'logs'
 
 
-def serialize(record):
+def serialize(record: dict):
     subset = {"timestamp": record["time"].timestamp(), "message": record["message"]}
     return json.dumps(subset, ensure_ascii=False)
 
@@ -48,34 +47,29 @@ def aware_now():
 Log.remove()
 Log.add(
     sink=stderr, level='INFO',
-    #  colorize=True,
     enqueue=True, backtrace=True
 )
 Log.add(
     sink=f'{logs_path}/bot_actions.log', rotation='25 MB', level='INFO', backtrace=True,
     diagnose=True,
-    #  colorize=True,
     enqueue=True,
     encoding="utf8"
 )
 Log.add(
     f'{logs_path}/bot_errors.log', rotation='1 MB', level='ERROR', backtrace=True,
     diagnose=True,
-    #  colorize=True,
     enqueue=True,
     encoding="utf8"
 )
 Log.add(
     f'{logs_path}/bot_debug.log', rotation='25 MB', level='DEBUG', backtrace=True,
     diagnose=True,
-    #  colorize=True,
     enqueue=True,
     encoding="utf8"
 )
 Log.add(
     f'{logs_path}/bot_critical.log', rotation='1 MB', level='CRITICAL', backtrace=True,
     diagnose=True,
-    #  colorize=True,
     enqueue=True,
     encoding="utf8"
 )
@@ -86,7 +80,7 @@ thread = current_thread()
 current_datetime = aware_now()
 
 Log.info(f"{thread.ident = } ::: {thread.name = }")
-Log.info(f'Log. {repr(Log)}')
+Log.debug(f'Log. {repr(Log)}')
 Log.info(f"{current_datetime = } Логирование успешно настроено\n")
 
 logger = Log

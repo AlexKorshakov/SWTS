@@ -40,6 +40,23 @@ async def act_generate_handler(message: types.Message) -> None:
     await message.answer(text=Messages.Choose.period, reply_markup=reply_markup)
 
 
+async def add_period_inline_keyboard_with_action():
+    """Формирование сообщения с текстом и кнопками действий в зависимости от параметров
+
+    :return:
+    """
+
+    markup = types.InlineKeyboardMarkup()
+
+    markup.add(types.InlineKeyboardButton('за сегодня',
+                                          callback_data=posts_cb.new(id='-', action='gen_act_today')))
+    markup.add(types.InlineKeyboardButton('за сегодня и вчера',
+                                          callback_data=posts_cb.new(id='-', action='gen_act_today_and_previous')))
+    markup.add(types.InlineKeyboardButton('за текущую неделю',
+                                          callback_data=posts_cb.new(id='-', action='gen_act_current_week')))
+    return markup
+
+
 @MyBot.dp.callback_query_handler(posts_cb.filter(action=['gen_act_today']))
 async def call_correct_abort_current_post(call: types.CallbackQuery, callback_data: typing.Dict[str, str]):
     """Обработка ответов содержащихся в ADMIN_MENU_LIST
@@ -122,23 +139,6 @@ async def call_correct_abort_current_post(call: types.CallbackQuery, callback_da
             logger.info(Messages.Report.acts_generated_successfully)
 
 
-async def add_period_inline_keyboard_with_action():
-    """Формирование сообщения с текстом и кнопками действий в зависимости от параметров
-
-    :return:
-    """
-
-    markup = types.InlineKeyboardMarkup()
-
-    markup.add(types.InlineKeyboardButton('за сегодня',
-                                          callback_data=posts_cb.new(id='-', action='gen_act_today')))
-    markup.add(types.InlineKeyboardButton('за сегодня и вчера',
-                                          callback_data=posts_cb.new(id='-', action='gen_act_today_and_previous')))
-    markup.add(types.InlineKeyboardButton('за текущую неделю',
-                                          callback_data=posts_cb.new(id='-', action='gen_act_current_week')))
-    return markup
-
-
 async def test():
     user_id = 579531613
     now = datetime.now()
@@ -155,4 +155,3 @@ async def test():
 
 if __name__ == "__main__":
     asyncio.run(test())
-

@@ -1,3 +1,4 @@
+from __future__ import annotations
 from loader import logger
 
 logger.debug(f"{__name__} start import")
@@ -123,15 +124,15 @@ async def preparing_violation_data_for_loading_to_google_drive(data: dict) -> bo
     return True
 
 
-async def set_violation_atr_data(atr_name, art_val, **kvargs) -> bool:
+async def set_violation_atr_data(atr_name: str, art_val: str | int, **kvargs) -> bool:
+    """Запись данных  атрибута 'atr_name': art_val глобального словаря violation_data в файл json
+
+    :param atr_name: str имя ключа
+    :param art_val: str|int значение ключа
+    :return: bool True если успешно.
     """
 
-    :param atr_name:
-    :param art_val:
-    :return:
-    """
-
-    pprint(f'set_violation_atr_data: {atr_name = } {art_val = }')
+    # pprint(f'set_violation_atr_data: {atr_name = } {art_val = }')
     logger.debug(f'set_violation_atr_data: {atr_name = } {art_val = }')
 
     if not atr_name:

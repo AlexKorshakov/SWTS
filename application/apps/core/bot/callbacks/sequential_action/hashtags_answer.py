@@ -100,9 +100,6 @@ async def normative_documents_answer_with_hashtags(call: types.CallbackQuery) ->
         db_table_name = 'core_sublocation'
         main_location_id = violation_data.get('main_location_id', None)
 
-        # TODO заменить на вызов конструктора QueryConstructor
-        query: str = f"SELECT * FROM {db_table_name} WHERE `main_location_id` == {main_location_id} AND `hashtags` = '{hashtag}'"
-
         kwargs: dict = {
             "action": 'SELECT', "subject": '*',
             "conditions": {
@@ -141,7 +138,7 @@ async def normative_documents_answer_with_hashtags(call: types.CallbackQuery) ->
 
 
 def text_process(data_list_to_text: list) -> list:
-    """Принимает data_list_to_text[] для формирования текста ответаю
+    """Принимает data_list_to_text[] для формирования текста ответа
     Если len(text) <= 3500 - отправляет [сообщение]
     Если len(text) > 3500 - формирует list_with_parts_text = []
 

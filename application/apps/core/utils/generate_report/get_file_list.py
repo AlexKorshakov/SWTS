@@ -72,7 +72,7 @@ async def get_report_file_list(chat_id, endswith=".xlsx", params=None) -> list:
 
     if params.get('all_files'):
         try:
-            return [file for file in files]
+            return [file for file in files if file]
         except IndexError:
             return []
 

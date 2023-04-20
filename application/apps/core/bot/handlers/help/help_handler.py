@@ -19,11 +19,11 @@ async def process_help_command(message: types.Message):
     """
     help_message = text(
         "Справка по командам\n",
-        "/developer- написать разработчику",
-        "/cancel- Отмена регистрации",
-        "/generate - Формирование отчета",
+        "/developer - написать разработчику",
+        "/cancel- Отмена всех действий",
+        "/generate - Формирование документов",
         "/start - Начало работы",
-        "/correct_entries_handler - Корректировка введённых значений",
+        "/correct_entries - Корректировка введённых значений",
         "/admin_func - Админка",
         "\nВидео инструкция по работе бота",
         sep="\n"

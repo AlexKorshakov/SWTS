@@ -12,6 +12,7 @@ from config.config import DEVELOPER_ID
 
 logger.debug(f"{__name__} finish import")
 
+
 @rate_limit(limit=10)
 @MyBot.dp.message_handler(Command('developer'))
 async def send_msg_from_developer(message: types.Message):
@@ -31,6 +32,10 @@ async def text_message_handler(message: types.Message):
     :return:
     """
 
+    chat_id = message.chat.id
+    if not await check_user_access(chat_id=chat_id):
+        return
+
     if "@dev" in message.text.strip().lower():
         logger.info(f'message from developer user {message.from_user.id} name {message.from_user.full_name}')
 
@@ -39,7 +44,4 @@ async def text_message_handler(message: types.Message):
                f"message: {message.text.replace('@dev', '')}"
         await MyBot.bot.send_message(chat_id=DEVELOPER_ID, text=text)
 
-    chat_id = message.chat.id
 
-    if not await check_user_access(chat_id=chat_id, message=message):
-        return

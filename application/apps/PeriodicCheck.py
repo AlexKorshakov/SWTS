@@ -30,8 +30,10 @@ class PeriodicCheck:
     async def start_checks() -> None:
         """Запуск указанных поверок"""
 
-        task1 = asyncio.create_task(periodic_check_data_base(), name='check_data_base')
-        task2 = asyncio.create_task(periodic_check_work(), name='check_work')
+        # await asyncio.gather(periodic_check_data_base(), periodic_check_work(),periodic_check_unclosed_points())
+        # check_data_base_task = asyncio.create_task(periodic_check_data_base(), name='check_data_base')
+        # check_work_task = asyncio.create_task(periodic_check_work(), name='check_work')
+        # check_unclosed_points_task = asyncio.create_task(periodic_check_unclosed_points(), name='check_unclosed_points')
 
         check_data_base_task = asyncio.gather(periodic_check_data_base())
         check_work_task = asyncio.gather(periodic_check_work())

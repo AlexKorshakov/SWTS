@@ -45,13 +45,15 @@ async def cancel_handler(call: types.CallbackQuery, state: FSMContext):
     if not await check_user_access(chat_id=chat_id):
         return
 
-    dict_list = [NamedDict.fromkeys('violation_data', violation_data),
-                 NamedDict.fromkeys('user_data', user_data),
-                 NamedDict.fromkeys('global_reg_form', global_reg_form),
-                 NamedDict.fromkeys('headlines_data', headlines_data)]
+    dict_list = [
+        NamedDict.fromkeys('violation_data', violation_data),
+        NamedDict.fromkeys('user_data', user_data),
+        NamedDict.fromkeys('global_reg_form', global_reg_form),
+        NamedDict.fromkeys('headlines_data', headlines_data)
+    ]
 
     for items_data in dict_list:
-        items_data_name = [item for item in items_data.keys()]
+        items_data_name =  list(items_data.keys())
         logger.debug(f"Report {str(items_data.name)} {items_data}")
         if items_data_name:
             items_data.clear()
@@ -68,7 +70,6 @@ async def cancel_handler(call: types.CallbackQuery, state: FSMContext):
 
     await call.answer(text=Messages.all_canceled)
     await MyBot.bot.send_message(chat_id=ADMIN_ID, text=f'cancel_all from {chat_id}')
-    # await call.answer(text='Cancelled.')
 
     current_state = await state.get_state()
     logger.info(f'Cancelling state {current_state}')

@@ -1,5 +1,4 @@
 import traceback
-from pprint import pprint
 
 from apps.core.database.query_constructor import QueryConstructor
 from loader import logger
@@ -138,14 +137,13 @@ def add_hashtags(datas_from_bd, db_table_name: str, item_id) -> list:
 
     # TODO добавить хештеги для всех вариантов
     hashtags: list = get_hashtags(db_table_name, item_id=item_id)
-    pprint(f'{__name__} {say_fanc_name()} {hashtags = }')
+    logger.debug(f'{__name__} {say_fanc_name()} {hashtags = }')
 
     if not hashtags:
         return datas_from_bd
 
     for tag in hashtags:
         datas_from_bd.insert(0, tag)
-    # pprint(f'witch hashtags {datas_from_bd = }')
 
     return datas_from_bd
 
@@ -164,12 +162,12 @@ def get_category_data_list_whits_single_condition(db_table_name: str, item_id: i
     # TODO заменить на вызов конструктора QueryConstructor
     if db_table_name == 'core_sublocation':
         query: str = f'SELECT * FROM {db_table_name} WHERE `main_location_id` == {item_id}'
-        print(f'{__name__} {say_fanc_name()} {query = }')
+        logger.debug(f'{__name__} {say_fanc_name()} {query = }')
 
     # TODO заменить на вызов конструктора QueryConstructor
     if db_table_name == 'core_normativedocuments':
         query: str = f'SELECT * FROM {db_table_name} WHERE `category_id` == {item_id}'
-        print(f'{__name__} {say_fanc_name()} {query = }')
+        logger.debug(f'{__name__} {say_fanc_name()} {query = }')
 
     datas_query: list = db_get_data_list_no_async(query=query)
 
@@ -213,7 +211,7 @@ def get_category_data_list_whits_dict_condition(db_table_name, dict_condition) -
 
     # TODO заменить на вызов конструктора QueryConstructor
     query: str = f'SELECT * FROM {db_table_name} WHERE `id` == {item_id}'
-    print(f'{__name__} {say_fanc_name()} {query = }')
+    logger.debug(f'{__name__} {say_fanc_name()} {query = }')
     datas_query: list = db_get_data_list_no_async(query=query)
 
     if not datas_query:
@@ -401,7 +399,7 @@ def get_hashtags(db_table_name: str, item_id: int = None) -> list:
 
     clean_data_unpac = [item.lstrip().rstrip() for item in data_unpac]
 
-    logger.info(f'{len(clean_data_unpac) = }')
+    logger.debug(f'{len(clean_data_unpac) = }')
     unique_hash_t = list(set(clean_data_unpac))
     if not unique_hash_t: return []
 
@@ -410,14 +408,14 @@ def get_hashtags(db_table_name: str, item_id: int = None) -> list:
 
 async def test():
     # data_list = get_data_list("MAIN_LOCATIONS", condition='short_title')
-    # print(f'{__name__} {say_fanc_name()} {data_list = }')
+    # logger.info(f'{__name__} {say_fanc_name()} {data_list = }')
     #
     # for i in data_list:
     #     short_title = get_data_list('sub_locations'.upper(),
     #                                 category=i,
     #                                 condition='short_title'
     #                                 )
-    #     print(f'{__name__} {say_fanc_name()} {short_title =}')
+    #     logger.info(f'{__name__} {say_fanc_name()} {short_title =}')
 
     db_table_name = 'core_normativedocuments'
     condition = 'short_title'
@@ -429,17 +427,17 @@ async def test():
         single_condition=condition
     )
 
-    pprint(f'{__name__} {say_fanc_name()} {datas_from_bd = }')
+    logger.info(f'{__name__} {say_fanc_name()} {datas_from_bd = }')
 
     datas_from_bd: list = add_hashtags(datas_from_bd, db_table_name=db_table_name, item_id=category_id)
 
-    pprint(f'{__name__} {say_fanc_name()} {datas_from_bd = }')
+    logger.info(f'{__name__} {say_fanc_name()} {datas_from_bd = }')
 
     datas_from_bd: list = add_null_value_to_list(
         datas_from_bd, condition=condition, db_table_name=db_table_name
     )
 
-    pprint(f'{__name__} {say_fanc_name()} {datas_from_bd = }')
+    logger.info(f'{__name__} {say_fanc_name()} {datas_from_bd = }')
 
 
 def say_fanc_name() -> str:

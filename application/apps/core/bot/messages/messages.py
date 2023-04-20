@@ -112,6 +112,11 @@ class Messages:
         correct_entries: str = "Выберите запись для изменения"
 
     class Error:
+        error_command: str =f'Неверно выбрана команда'
+        error_call: str = f'Нет данных сообщения'
+        error_call_text: str = f'Нет текстовых данных в сообщении'
+        error_action: str = f"раздел находится в разработке. обратитесь к разработчику..."
+
         workbook_not_found: str = f"Файл с отчетом не найден! Обратитесь к разработчику! \n" \
                                   f'чтобы написать разработчику нажмите /developer'
         worksheet_not_found: str = f"Страница с отчетом не найден! Обратитесь к разработчику! \n" \

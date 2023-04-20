@@ -43,8 +43,8 @@ async def set_violation_data(*, chat_id: str):
     """Запись и сохранение данных в local storage, database, Google Drive
     """
 
-    pprint(f'{violation_data = }')
-    pprint(f'{violation_data.get("json_full_name", None) = }')
+    logger.debug(f'{violation_data = }')
+    # pprint(f'{violation_data.get("json_full_name", None) = }')
 
     if await write_json_violation_user_file(data=violation_data):
         logger.info(f"Данные сохранены в local storage {violation_data['json_full_name']}")
