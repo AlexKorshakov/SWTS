@@ -14,11 +14,11 @@ from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import \
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.reports.report_data import headlines_data
 from apps.core.bot.states.CorrectHeadlinesState import CorrectHeadlinesState
-from apps.MyBot import MyBot
+from apps.MyBot import MyBot, bot_send_message
 from config.config import ADMIN_ID
 
-
 logger.debug(f"{__name__} finish import")
+
 
 @MyBot.dp.callback_query_handler(lambda call: call.data in HEADLINES_DATA_LIST)
 async def correct_headlines_data_answer(call: types.CallbackQuery):
@@ -34,14 +34,14 @@ async def correct_headlines_data_answer(call: types.CallbackQuery):
         logger.debug(f"id {chat_id} Выбрано: {call.data}")
         await CorrectHeadlinesState.construction_manager.set()
 
-        await MyBot.bot.send_message(chat_id, Messages.Ask.construction_manager, reply_markup=reply_markup)
+        await bot_send_message(chat_id=chat_id, text=Messages.Ask.construction_manager, reply_markup=reply_markup)
         return
 
     if call.data == "Инженер СК":
         logger.debug(f"id {chat_id} Выбрано: {call.data}")
         await CorrectHeadlinesState.building_control_engineer.set()
 
-        await MyBot.bot.send_message(chat_id, Messages.Ask.building_control_engineer, reply_markup=reply_markup)
+        await bot_send_message(chat_id=chat_id, text=Messages.Ask.building_control_engineer, reply_markup=reply_markup)
         return
 
     if call.data == "Подрядчик":
@@ -51,7 +51,7 @@ async def correct_headlines_data_answer(call: types.CallbackQuery):
         menu_list = board_config.menu_list = [item for item in get_data_list("GENERAL_CONTRACTORS")]
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
-        await call.message.answer(text=Messages.Ask.contractor, reply_markup=reply_markup)
+        await bot_send_message(chat_id=chat_id, text=Messages.Ask.contractor, reply_markup=reply_markup)
 
         await CorrectHeadlinesState.general_contractor.set()
         return
@@ -60,28 +60,29 @@ async def correct_headlines_data_answer(call: types.CallbackQuery):
         logger.debug(f"id {chat_id} Выбрано: {call.data}")
         await CorrectHeadlinesState.subcontractor.set()
 
-        await MyBot.bot.send_message(chat_id, Messages.Ask.subcontractor, reply_markup=reply_markup)
+        await bot_send_message(chat_id=chat_id, text=Messages.Ask.subcontractor, reply_markup=reply_markup)
         return
 
     if call.data == "Вид обхода":
         logger.debug(f"id {chat_id} Выбрано: {call.data}")
         await CorrectHeadlinesState.linear_bypass.set()
 
-        await MyBot.bot.send_message(chat_id, Messages.Ask.linear_bypass, reply_markup=reply_markup)
+        await bot_send_message(chat_id=chat_id, text=Messages.Ask.linear_bypass, reply_markup=reply_markup)
         return
 
     if call.data == "Представитель подрядчика":
         logger.debug(f"id {chat_id} Выбрано: {call.data}")
         await CorrectHeadlinesState.contractor_representative.set()
 
-        await MyBot.bot.send_message(chat_id, Messages.Ask.contractor_representative, reply_markup=reply_markup)
+        await bot_send_message(chat_id=chat_id, text=Messages.Ask.contractor_representative, reply_markup=reply_markup)
         return
 
     if call.data == "Представитель субподрядчика":
         logger.debug(f"id {chat_id} Выбрано: {call.data}")
         await CorrectHeadlinesState.subcontractor_representative.set()
 
-        await MyBot.bot.send_message(chat_id, Messages.Ask.subcontractor_representative, reply_markup=reply_markup)
+        await bot_send_message(chat_id=chat_id, text=Messages.Ask.subcontractor_representative,
+                               reply_markup=reply_markup)
 
 
 @MyBot.dp.message_handler(is_private, Text(equals=Messages.correct_cancel), state=CorrectHeadlinesState.all_states)
@@ -122,7 +123,6 @@ async def correct_headlines_data_all_states_answer(message: types.Message, state
     """
     chat_id = message.chat.id
 
-
     state_name = await get_state_storage_name(state, chat_id)
     await all_states(chat_id=chat_id, correct_data=message.text, state_name=state_name)
     await state.finish()
@@ -153,11 +153,11 @@ async def all_states(*, chat_id, correct_data, state_name):
     if headlines_data:
         headlines_text = await get_headlines_text(headlines_data)
 
-    await MyBot.bot.send_message(chat_id=chat_id, text=headlines_text)
+    await bot_send_message(chat_id=chat_id, text=headlines_text)
 
-    await MyBot.dp.bot.send_message(chat_id=chat_id,
-                                    text=Messages.Successfully.correct_headlines_completed,
-                                    reply_markup=ReplyKeyboardRemove())
+    await bot_send_message(chat_id=chat_id,
+                           text=Messages.Successfully.correct_headlines_completed,
+                           reply_markup=ReplyKeyboardRemove())
 
 
 async def get_correct_data(*, chat_id, call, json_file_name) -> str:
@@ -181,12 +181,12 @@ async def get_correct_data(*, chat_id, call, json_file_name) -> str:
     if not correct_data:
         text = f'get_correct_data is None or error {json_file_name = }'
         logger.error(text)
-        await MyBot.dp.bot.send_message(chat_id=ADMIN_ID, text=text)
-        await MyBot.dp.bot.send_message(chat_id=chat_id, text=text)
+        await bot_send_message(chat_id=ADMIN_ID, text=text)
+        await bot_send_message(chat_id=chat_id, text=text)
         return correct_data
 
     logger.debug(f"chat_id {chat_id} Выбрано: {correct_data}")
-    await call.message.answer(text=f"Выбрано: {correct_data}")
+    await bot_send_message(chat_id=chat_id, text=f"Выбрано: {correct_data}")
     await call.message.edit_reply_markup()
 
     return correct_data
@@ -212,5 +212,3 @@ async def get_headlines_text(headlines_data: dict) -> str:
 
         return headlines_text
     return ''
-
-

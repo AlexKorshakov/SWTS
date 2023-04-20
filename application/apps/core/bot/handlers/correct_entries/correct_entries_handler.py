@@ -10,7 +10,7 @@ from pprint import pprint
 from aiogram import types
 from aiogram.dispatcher.filters import Command
 
-from apps.MyBot import MyBot
+from apps.MyBot import MyBot, bot_send_message
 from config.config import WRITE_DATA_ON_GOOGLE_DRIVE
 
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
@@ -22,7 +22,7 @@ from apps.core.bot.messages.messages import Messages
 # from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb, \
 #     add_subtract_inline_keyboard_with_action
 # from apps.core.bot.data import board_config
-# from apps.core.bot.data.category import CORRECT_COMMANDS_LIST
+from apps.core.bot.data.category import CORRECT_COMMANDS_LIST
 # from apps.core.bot.messages.messages import Messages
 # from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard
 # from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import drive_account_credentials
@@ -40,21 +40,21 @@ logger.debug(f"{__name__} finish import")
 
 @rate_limit(limit=10)
 @MyBot.dp.message_handler(Command('correct_entries'))
-async def correct_entries_handler(message: types.Message):
+async def correct_entries_handler(message: types.Message = None, *, hse_user_id=None):
     """Корректирование уже введённых значений на локальном pc и на google drive
 
     :return:
     """
 
-    chat_id = message.chat.id
-
+    chat_id = message.chat.id if message else hse_user_id
     if not await check_user_access(chat_id=chat_id):
         logger.error(f'access fail {chat_id = }')
         return
 
     reply_markup = await add_correct_inline_keyboard_with_action()
+    text: str = 'Выберите действие'
 
-    await message.answer(text=Messages.Choose.correct_entries, reply_markup=reply_markup)
+    await bot_send_message(chat_id=chat_id, text=text, reply_markup=reply_markup)
 
 
 async def add_correct_inline_keyboard_with_action():
@@ -65,36 +65,25 @@ async def add_correct_inline_keyboard_with_action():
 
     markup = types.InlineKeyboardMarkup()
 
-    markup.add(types.InlineKeyboardButton('Акты - предписания',
+    markup.add(types.InlineKeyboardButton('Незакрытые акты',
                                           callback_data=posts_cb.new(id='-', action='correct_acts')))
-    markup.add(types.InlineKeyboardButton('Записи в реестре',
-                                          callback_data=posts_cb.new(id='-', action='correct_item_violations')))
-    markup.add(types.InlineKeyboardButton('Данные базы данных',
-                                          callback_data=posts_cb.new(id='-', action='correct_db_items')))
+    markup.add(types.InlineKeyboardButton('Незакрытые записи не в актах',
+                                          callback_data=posts_cb.new(id='-', action='correct_non_act_item')))
     return markup
 
 
-@MyBot.dp.callback_query_handler(posts_cb.filter(action=['correct_acts']))
-async def call_generate_act(call: types.CallbackQuery, callback_data: typing.Dict[str, str]):
-    """Обработка ответов содержащихся в ADMIN_MENU_LIST
-    """
-    pass
-    # await act_generate_handler(call.message)
-
-
-@MyBot.dp.callback_query_handler(posts_cb.filter(action=['correct_item_violations']))
-async def call_generate_act(call: types.CallbackQuery, callback_data: typing.Dict[str, str]):
-    """Обработка ответов содержащихся в ADMIN_MENU_LIST
-    """
-    pass
-    # await act_generate_handler(call.message)
-
-
 @MyBot.dp.callback_query_handler(posts_cb.filter(action=['correct_db_items']))
-async def call_generate_act(call: types.CallbackQuery, callback_data: typing.Dict[str, str]):
+async def call_correct_db_items(call: types.CallbackQuery, callback_data: typing.Dict[str, str]):
     """Обработка ответов содержащихся в ADMIN_MENU_LIST
     """
-    pass
+    hse_user_id = call.message.chat.id
+    if not await check_user_access(chat_id=hse_user_id):
+        logger.error(f'access fail {hse_user_id = }')
+        return
+
+    await MyBot.bot.send_message(chat_id=hse_user_id, text=Messages.Error.error_action)
+    logger.error(f'{hse_user_id = } Messages.Error.error_action')
+
     # await act_generate_handler(call.message)
 
 
@@ -217,15 +206,16 @@ async def call_generate_act(call: types.CallbackQuery, callback_data: typing.Dic
 
 
 async def delete_violation_files_from_pc(message: types.Message, file):
-    """Удаление файлов из памяти
+    """Удаление файлов из сервера
 
     :param message:
     :param file:
     :return:
     """
 
+    # if not await del_file(path=file['json_full_name']):
 
-#     if not await del_file(path=file['json_full_name']):
+
 #         await MyBot.bot.message.answer(text=Messages.Error.file_not_found)
 #     await message.answer(text=Messages.Removed.violation_data_pc)
 #
@@ -235,14 +225,18 @@ async def delete_violation_files_from_pc(message: types.Message, file):
 
 
 async def del_file(path) -> bool:
-    """Удаление файла из памяти pc
+    """Удаление файла из памяти сервера
 
     :param path:
     :return:
     """
     if os.path.isfile(path):
-        os.remove(path)
-        return True
+        try:
+            os.remove(path)
+            return True
+        except os.error as err:
+            logger.error(f'{Messages.Error.file_not_found} {repr(err)}')
+            return False
     return False
 
 

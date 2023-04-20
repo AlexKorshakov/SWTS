@@ -16,8 +16,8 @@ from . import sub_location_answer
 from . import normative_documents_answer
 from . import query_post_vote
 from . import data_view_answers
-from . import correct_registration_data_answer
+# from . import correct_registration_data_answer
 from . import correct_headlines_data_answer
-from . import correct_violations_data_answer
+# from . import correct_violations_data_answer
 
 logger.debug(f"{__name__} finish import")
