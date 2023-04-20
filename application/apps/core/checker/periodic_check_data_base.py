@@ -1,17 +1,12 @@
-"""Модуль со вспомогательными функциями класса PeriodicCheck"""
-from loader import logger
-
-logger.debug(f"{__name__} start import")
-
+import asyncio
 import sqlite3
-from datetime import datetime, timedelta
 import traceback
+from datetime import datetime, timedelta
 
 from apps.core.bot.messages.messages import LogMessage
-from apps.core.database.query_constructor import QueryConstructor
 from config.config import DATA_BASE_DIR
-
-logger.debug(f"{__name__} finish import")
+from apps.core.database.query_constructor import QueryConstructor
+from loader import logger
 
 PERIOD = 60 * 30
 
@@ -46,7 +41,6 @@ class DataBaseForCheck:
         if table_name:
             # TODO заменить на вызов конструктора QueryConstructor
             query: str = f"PRAGMA table_info('{table_name}')"
-            print(f'{__name__} {say_fanc_name()} {query}')
             with self.connection:
                 result = self.cursor.execute(query).fetchall()
                 return result
@@ -55,10 +49,10 @@ class DataBaseForCheck:
             result = self.cursor.execute("PRAGMA table_info('core_violations')").fetchall()
             return result
 
-    async def get_dict_data_from_table_from_id(self, table_name: str, violation_id: int) -> dict:
+    async def get_dict_data_from_table_from_id(self, table_name: str, id: int) -> dict:
         """Получение данных dict из таблицы table_name по id
         :param table_name: имя таблицы в которой осуществляется поиск
-        :param violation_id: id записи
+        :param id: id записи
         :return dict('header': item_value, ...)
         """
 
@@ -66,7 +60,7 @@ class DataBaseForCheck:
             "action": 'SELECT',
             "subject": '*',
             "conditions": {
-                "violation_id": violation_id,
+                "id": id,
             },
         }
         query: str = await QueryConstructor(None, table_name, **query_kwargs).prepare_data()
@@ -86,12 +80,25 @@ class DataBaseForCheck:
         """
         # TODO заменить на вызов конструктора QueryConstructor
         query: str = f"UPDATE `core_violations` SET {column_name} = ? WHERE `id` = ?"
-        print(f'{__name__} {say_fanc_name()} {query}')
 
         logger.debug(f'{column_name = } {value = }')
         with self.connection:
             self.cursor.execute(query, (value, violation_id,))
         self.connection.commit()
+
+
+async def periodic_check_data_base() -> None:
+    """Периодическая проверка базы данных.
+    Проверяет дату final_date_elimination в DataBase
+
+    """
+    while True:
+        await check_violations_final_date_elimination()
+        await check_violations_status()
+
+        logger.info(f"{LogMessage.Check.complete_successfully} ::: {await get_now()}")
+
+        await asyncio.sleep(PERIOD)
 
 
 async def check_violations_final_date_elimination() -> bool:
@@ -110,6 +117,9 @@ async def check_violations_final_date_elimination() -> bool:
     query: str = await QueryConstructor(None, 'core_violations', **query_kwargs).prepare_data()
 
     list_violations: list = await get_list_violations_for_query(query=query)
+
+    if not list_violations:
+        logger.debug(f"{LogMessage.Check.no_violations} ::: {await get_now()}")
 
     counter: int = 0
     for violation in list_violations:
@@ -202,22 +212,6 @@ async def get_list_violations_for_query(query: str) -> list:
     return list_violations
 
 
-async def get_clean_headers(table_name: str) -> list:
-    """Получение заголовков таблицы
-
-    :param table_name: имя таблицы в которой осуществляется поиск
-    """
-
-    if not table_name:
-        return []
-
-    headers = await DataBaseForCheck().get_table_headers(table_name=table_name)
-    clean_headers: list = [item[1] for item in headers]
-
-    logger.debug(f'{clean_headers = }')
-    return clean_headers
-
-
 async def get_dates_violation(violation: dict):
     """Возвращает дату регистрации и конечную даты акта
 
@@ -229,6 +223,9 @@ async def get_dates_violation(violation: dict):
         return None, None
 
     elimination_days: int = await get_elimination_days(e_time=violation.get('elimination_time_id', None))
+
+    if not elimination_days:
+        elimination_days = 0
 
     date_now: datetime = datetime.strptime(created_at, '%Y-%m-%d')
     final_date_elimination = date_now + timedelta(days=elimination_days)
@@ -246,7 +243,7 @@ async def get_elimination_days(e_time: int) -> int:
 
     elimination_time: dict = await DataBaseForCheck().get_dict_data_from_table_from_id(
         table_name='core_eliminationtime',
-        violation_id=e_time
+        id=e_time
     )
     elimination_days = elimination_time.get('days', None)
     return elimination_days
@@ -264,5 +261,9 @@ def say_fanc_name():
     return str(stack[-2][2])
 
 
-# if __name__ == '__main__':
-#     asyncio.run(periodic_check_data_base())
+async def test():
+    await periodic_check_data_base()
+
+
+if __name__ == '__main__':
+    asyncio.run(test())

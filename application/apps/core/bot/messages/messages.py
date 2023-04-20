@@ -149,4 +149,8 @@ class LogMessage:
         no_violations: str = f"check_violations_final_date_elimination ::: No violations for check in DataBase"
         complete_successfully: str = f'check DataBase complete successfully'
         no_query: str = f'check_violations_status ::: No query for check violations in DataBase'
-        date_created_at: str = f"check_violations_final_date_elimination ::: No date_created_at for check violations in DataBase"
+        date_created_at: str = f"check_violations_final_date_elimination ::: " \
+                               f"No date_created_at for check violations in DataBase"
+
+        periodic_check_unclosed_points: str = f"check unclosed points complete successfully"
+        time_period_error: str = f'Проверка будет выполнена в разрешенный промежуток времени'

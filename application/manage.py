@@ -49,15 +49,15 @@ def main():
 
     elif "runserver" in sys.argv:
         from apps.MyServer import MyServer
-        return MyServer.run()
+        return asyncio.run(MyServer.run())
 
     elif "runbot" in sys.argv:
         from apps.MyBot import MyBot
-        return MyBot.run()
+        return asyncio.run(MyBot.run())
 
     elif "runcheck" in sys.argv:
         from apps.PeriodicCheck import PeriodicCheck
-        return PeriodicCheck.run()
+        return asyncio.run(PeriodicCheck.run())
 
     elif "runapp" in sys.argv:
         from app import run_app

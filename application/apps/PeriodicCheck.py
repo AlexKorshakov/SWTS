@@ -1,7 +1,9 @@
 """Модуль содержащий класс(-ы) функций периодических проверок по времени"""
 import asyncio
-from apps.core.checker.check_utils import (periodic_check_data_base,
-                                           periodic_check_work)
+
+from apps.core.checker.periodic_check_work import periodic_check_work
+from apps.core.checker.periodic_check_data_base import periodic_check_data_base
+from apps.core.checker.periodic_check_unclosed_points import periodic_check_unclosed_points
 
 
 class PeriodicCheck:
@@ -15,6 +17,10 @@ class PeriodicCheck:
         PeriodicCheck.__instance.val = val
         return PeriodicCheck.__instance
 
+    def __repr__(self):
+        """"""
+        return str(self)
+
     @classmethod
     async def run(cls):
         """Функция запуска проверок"""
@@ -27,5 +33,10 @@ class PeriodicCheck:
         task1 = asyncio.create_task(periodic_check_data_base(), name='check_data_base')
         task2 = asyncio.create_task(periodic_check_work(), name='check_work')
 
-        await task1
-        await task2
+        check_data_base_task = asyncio.gather(periodic_check_data_base())
+        check_work_task = asyncio.gather(periodic_check_work())
+        check_unclosed_points_task = asyncio.gather(periodic_check_unclosed_points())
+
+        await check_data_base_task
+        await check_work_task
+        await check_unclosed_points_task

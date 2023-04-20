@@ -25,7 +25,7 @@ async def run_app():
 
         my_bot_task = asyncio.create_task(MyBot.run(), name='MyBot.run')
         my_server_task = asyncio.create_task(MyServer.run(), name='MyServer.run')
-        periodic_check_task = asyncio.create_task(await PeriodicCheck.run(), name='PeriodicCheck.run')
+        periodic_check_task = asyncio.create_task(PeriodicCheck.run(), name='PeriodicCheck.run')
 
         await my_bot_task
         await my_server_task
