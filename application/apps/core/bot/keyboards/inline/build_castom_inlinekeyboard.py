@@ -2,8 +2,7 @@ from loader import logger
 
 logger.debug(f"{__name__} start import")
 from aiogram import types
-from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup,
-                           ReplyKeyboardMarkup)
+from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup)
 from aiogram.utils.callback_data import CallbackData
 from apps.core.bot.data import board_config
 from apps.MyBot import MyBot
@@ -17,7 +16,7 @@ move_action: CallbackData = CallbackData("description", "action", "previous_valu
 posts_cb: CallbackData = CallbackData('post', 'id', 'action')
 
 
-async def build_inlinekeyboard(*, some_list, num_col=1, level=1, step=None,
+async def build_inlinekeyboard(*, some_list, num_col=1, level=1, step=None, calld_prefix: str = '',
                                addition: list = None, previous_level: str = None) -> InlineKeyboardMarkup:
     """Создание кнопок в чате для пользователя на основе some_list.
     Количество кнопок = количество элементов в списке some_list
@@ -30,10 +29,12 @@ async def build_inlinekeyboard(*, some_list, num_col=1, level=1, step=None,
     some_list = check_list_bytes_len(some_list)
 
     if addition:
-        button_list = [item for item in addition]
+        button_list = [item for item in addition if item]
 
     if step:
-        button_list = button_list + [InlineKeyboardButton(text=ss, callback_data=ss) for ss in some_list]
+        button_list = button_list + [
+            InlineKeyboardButton(text=ss, callback_data=f'{calld_prefix}{ss}') for ss in some_list
+        ]
         menu = await _build_menu(buttons=button_list, n_cols=num_col)
 
         reply_markup = InlineKeyboardMarkup(resize_keyboard=True, inline_keyboard=menu)
@@ -45,7 +46,9 @@ async def build_inlinekeyboard(*, some_list, num_col=1, level=1, step=None,
     if len(some_list) <= STEP_MENU:
         logger.debug(f'len(some_list) <= STEP_MENU {len(some_list) <= STEP_MENU}')
 
-        button_list = button_list + [InlineKeyboardButton(text=ss, callback_data=ss) for ss in some_list]
+        button_list = button_list + [
+            InlineKeyboardButton(text=ss, callback_data=f'{calld_prefix}{ss}') for ss in some_list
+        ]
         menu = await _build_menu(buttons=button_list, n_cols=num_col)
 
         reply_markup = InlineKeyboardMarkup(resize_keyboard=True, inline_keyboard=menu)
@@ -59,8 +62,10 @@ async def build_inlinekeyboard(*, some_list, num_col=1, level=1, step=None,
         end_list = len(some_list)
         start_index, stop_index = await define_indices(level, end_list)
 
-        for batn in some_list[start_index:stop_index]:
-            button_list.append(InlineKeyboardButton(text=batn, callback_data=batn))
+        button_list = button_list + [
+            InlineKeyboardButton(text=ss, callback_data=f'{calld_prefix}{ss}')
+            for ss in some_list[start_index:stop_index]
+        ]
 
         menu = await _build_menu(buttons=button_list, n_cols=num_col)
 
@@ -133,7 +138,7 @@ async def add_action_button(reply_markup, start_index: int, stop_index: int, end
     :param end_list:
     :param stop_index:
     :param reply_markup:
-    :return:
+    :return: reply_markup
     """
     bt_down = InlineKeyboardButton(text="<--", callback_data=move_action.new(action="move_down", previous_value=''))
     bt_up = InlineKeyboardButton(text="-->", callback_data=move_action.new(action="move_up", previous_value=''))
