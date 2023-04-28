@@ -102,24 +102,6 @@ async def call_correct_non_act_item_item_correct(call: types.CallbackQuery = Non
     item_number_text = await get_item_number_from_call(call, hse_user_id)
     if not item_number_text: return
 
-    # if not call:
-    #     await bot_send_message(chat_id=hse_user_id, text=Messages.Error.error_call)
-    #     return
-    #
-    # if not call.message.values['text']:
-    #     await bot_send_message(chat_id=hse_user_id, text=Messages.Error.error_call_text)
-    #     return
-    #
-    # item_number_text = call.message.values['text'].split('_')[-1]
-    # logger.debug(f'{hse_user_id = } {item_number_text = }')
-    # try:
-    #     item_number_text = int(item_number_text)
-    # except Exception as err:
-    #     logger.error(f'{hse_user_id = } {repr(err)} {item_number_text = }')
-    #     await bot_send_message(chat_id=hse_user_id, text=Messages.Error.error_command)
-    #     await bot_send_message(chat_id=hse_user_id, text=Messages.Error.error_action)
-    #     return
-
     query_kwargs: dict = {
         "action": 'SELECT', "subject": '*',
         "conditions": {
@@ -129,26 +111,11 @@ async def call_correct_non_act_item_item_correct(call: types.CallbackQuery = Non
     query: str = await QueryConstructor(None, 'core_violations', **query_kwargs).prepare_data()
 
     violations_dataframe: DataFrame = await create_lite_dataframe_from_query(query=query, table_name='core_violations')
-    # if violations_dataframe is None:
-    #     text_violations: str = 'Незакрытых записей вне актов не обнаружено!'
-    #     await bot_send_message(chat_id=hse_user_id, text=text_violations)
-    #     return False
-    #
-    # if violations_dataframe.empty:
-    #     logger.error(f'{hse_user_id = } {Messages.Error.dataframe_is_empty}  \n{query = }')
-    #     return False
 
     if not await check_dataframe(violations_dataframe, hse_user_id):
         return False
 
     user_violations_df: DataFrame = await create_user_dataframe(hse_user_id, violations_dataframe)
-    # if user_violations_df is None:
-    #     text_violations: str = 'Незакрытых записей вне актов не обнаружено!'
-    #     await bot_send_message(chat_id=hse_user_id, text=text_violations)
-    #     return False
-    #
-    # if user_violations_df.empty:
-    #     return False
 
     if not await check_dataframe(user_violations_df, hse_user_id):
         return False
@@ -177,10 +144,6 @@ async def text_processor_user_violations(user_violations_df: DataFrame, hse_user
 
         item_violations_dataframe = user_violations_df.copy(deep=True)
         item_df = item_violations_dataframe.loc[item_violations_dataframe['id'] == item_id]
-
-        # if item_violations_dataframe.empty:
-        #     logger.error(f'{Messages.Error.dataframe_is_empty}')
-        #     continue
 
         if not await check_dataframe(item_violations_dataframe, hse_user_id):
             continue
@@ -266,19 +229,6 @@ async def add_correct_inline_keyboard_with_action(item_number_text: str | int = 
     for k, v in COLUMNS_DICT.items():
         markup.add(types.InlineKeyboardButton(text=v, callback_data=f'characteristic_{k}_{item_number_text}'))
 
-    return markup
-
-
-async def add_act_inline_keyboard_with_action():
-    """Формирование сообщения с текстом и кнопками действий в зависимости от параметров
-
-    :return:
-    """
-    markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton('Изменить значение',
-                                          callback_data=posts_cb.new(id='-', action='correct_character')))
-    markup.add(types.InlineKeyboardButton('Пропустить',
-                                          callback_data=posts_cb.new(id='-', action='correct_characteristic_not')))
     return markup
 
 

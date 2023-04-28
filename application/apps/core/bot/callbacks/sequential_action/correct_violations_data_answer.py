@@ -9,8 +9,7 @@ from aiogram.types import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from apps.core.bot.data import board_config
 from apps.core.bot.data.category import VIOLATIONS_DATA_LIST, get_data_list
 from apps.core.bot.filters.custom_filters import is_private
-from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import \
-    build_inlinekeyboard
+from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.states import CorrectViolationsState
 from apps.core.utils.generate_report.get_file_list import get_json_file_list
@@ -52,7 +51,7 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
         logger.debug(f"id {chat_id} Выбрано: {call.data}")
 
         menu_level = board_config.menu_level = 2
-        menu_list = board_config.menu_list = [item for item in get_data_list("MAIN_CATEGORY")]
+        menu_list = board_config.menu_list = [item for item in get_data_list("MAIN_CATEGORY") if item is not None]
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
         await bot_send_message(chat_id=chat_id, text=Messages.Choose.main_category, reply_markup=reply_markup)
@@ -64,7 +63,7 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
         logger.debug(f"id {chat_id} Выбрано: {call.data}")
 
         menu_level = board_config.menu_level = 2
-        menu_list = board_config.menu_list = [item for item in get_data_list("ELIMINATION_TIME")]
+        menu_list = board_config.menu_list = [item for item in get_data_list("ELIMINATION_TIME") if item is not None]
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
         await bot_send_message(chat_id=chat_id, text=Messages.Choose.elimination_time, reply_markup=reply_markup)
@@ -76,7 +75,7 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
         logger.debug(f"id {chat_id} Выбрано: {call.data}")
 
         menu_level = board_config.menu_level = 2
-        menu_list = board_config.menu_list = [item for item in get_data_list("INCIDENT_LEVEL")]
+        menu_list = board_config.menu_list = [item for item in get_data_list("INCIDENT_LEVEL") if item is not None]
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
         await bot_send_message(chat_id=chat_id, text=Messages.Choose.incident_level, reply_markup=reply_markup)
@@ -88,7 +87,7 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
         logger.debug(f"id {chat_id} Выбрано: {call.data}")
 
         menu_level = board_config.menu_level = 2
-        menu_list = board_config.menu_list = [item for item in get_data_list("ACT_REQUIRED")]
+        menu_list = board_config.menu_list = [item for item in get_data_list("ACT_REQUIRED") if item is not None]
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
         await bot_send_message(chat_id=chat_id, text=Messages.Choose.act_required, reply_markup=reply_markup)
@@ -100,7 +99,7 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
         logger.debug(f"id {chat_id} Выбрано: {call.data}")
 
         menu_level = board_config.menu_level = 1
-        menu_list = board_config.menu_list = [item for item in get_data_list("GENERAL_CONTRACTORS")]
+        menu_list = board_config.menu_list = [item for item in get_data_list("GENERAL_CONTRACTORS") if item is not None]
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
         await bot_send_message(chat_id=chat_id, text=Messages.Choose.general_constractor, reply_markup=reply_markup)
@@ -112,7 +111,7 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
         logger.debug(f"id {chat_id} Выбрано: {call.data}")
 
         menu_level = board_config.menu_level = 2
-        menu_list = board_config.menu_list = [item for item in get_data_list("VIOLATION_CATEGORY")]
+        menu_list = board_config.menu_list = [item for item in get_data_list("VIOLATION_CATEGORY") if item is not None]
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
         await bot_send_message(chat_id=chat_id, text=Messages.Choose.violation_category, reply_markup=reply_markup)
@@ -124,7 +123,7 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
         logger.debug(f"id {chat_id} Выбрано: {call.data}")
 
         menu_level = board_config.menu_level = 2
-        menu_list = board_config.menu_list = [item for item in get_data_list("CATEGORY")]
+        menu_list = board_config.menu_list = [item for item in get_data_list("CATEGORY") if item]
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
         await bot_send_message(chat_id=chat_id, text=Messages.Choose.category, reply_markup=reply_markup)
@@ -136,7 +135,7 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
         logger.debug(f"id {chat_id} Выбрано: {call.data}")
 
         menu_level = board_config.menu_level = 2
-        menu_list = board_config.menu_list = [item for item in get_data_list("INCIDENT_LEVEL")]
+        menu_list = board_config.menu_list = [item for item in get_data_list("INCIDENT_LEVEL") if item]
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
         await bot_send_message(chat_id=chat_id, text=Messages.Choose.incident_level, reply_markup=reply_markup)
@@ -156,7 +155,8 @@ async def cancel(message: types.Message, state: FSMContext):
 
 
 @MyBot.dp.callback_query_handler(is_private,
-                                 lambda call: call.data in [item for item in get_data_list('MAIN_CATEGORY')],
+                                 lambda call: call.data in [item for item in get_data_list('MAIN_CATEGORY') if
+                                                            item is not None],
                                  state=CorrectViolationsState.main_category)
 async def correct_headlines_data_work_shift_answer(call: types.CallbackQuery, state: FSMContext):
     """Обработка ответов содержащихся в WORK_SHIFT
@@ -173,7 +173,8 @@ async def correct_headlines_data_work_shift_answer(call: types.CallbackQuery, st
 
 
 @MyBot.dp.callback_query_handler(is_private,
-                                 lambda call: call.data in [item for item in get_data_list('ACT_REQUIRED')],
+                                 lambda call: call.data in [item for item in get_data_list('ACT_REQUIRED') if
+                                                            item is not None],
                                  state=CorrectViolationsState.act_required)
 async def correct_headlines_data_work_shift_answer(call: types.CallbackQuery, state: FSMContext):
     """Обработка ответов содержащихся в state и call
@@ -190,7 +191,8 @@ async def correct_headlines_data_work_shift_answer(call: types.CallbackQuery, st
 
 
 @MyBot.dp.callback_query_handler(is_private,
-                                 lambda call: call.data in [item for item in get_data_list('CATEGORY')],
+                                 lambda call: call.data in [item for item in get_data_list('CATEGORY') if
+                                                            item is not None],
                                  state=CorrectViolationsState.category)
 async def correct_headlines_data_work_shift_answer(call: types.CallbackQuery, state: FSMContext):
     """Обработка ответов содержащихся в WORK_SHIFT
@@ -207,7 +209,8 @@ async def correct_headlines_data_work_shift_answer(call: types.CallbackQuery, st
 
 
 @MyBot.dp.callback_query_handler(is_private,
-                                 lambda call: call.data in [item for item in get_data_list('ELIMINATION_TIME')],
+                                 lambda call: call.data in [item for item in get_data_list('ELIMINATION_TIME') if
+                                                            item is not None],
                                  state=CorrectViolationsState.elimination_time)
 async def correct_headlines_data_work_shift_answer(call: types.CallbackQuery, state: FSMContext):
     """Обработка ответов содержащихся в WORK_SHIFT
@@ -225,7 +228,7 @@ async def correct_headlines_data_work_shift_answer(call: types.CallbackQuery, st
 
 @MyBot.dp.callback_query_handler(is_private,
                                  lambda call: call.data in [item for item in
-                                                            get_data_list('GENERAL_CONTRACTORS')],
+                                                            get_data_list('GENERAL_CONTRACTORS') if item is not None],
                                  state=CorrectViolationsState.general_constractor)
 async def correct_headlines_data_work_shift_answer(call: types.CallbackQuery, state: FSMContext):
     """Обработка ответов содержащихся в WORK_SHIFT
@@ -242,7 +245,8 @@ async def correct_headlines_data_work_shift_answer(call: types.CallbackQuery, st
 
 
 @MyBot.dp.callback_query_handler(is_private,
-                                 lambda call: call.data in [item for item in get_data_list('VIOLATION_CATEGORY')],
+                                 lambda call: call.data in [item for item in get_data_list('VIOLATION_CATEGORY') if
+                                                            item is not None],
                                  state=CorrectViolationsState.violation_category)
 async def correct_headlines_data_work_shift_answer(call: types.CallbackQuery, state: FSMContext):
     """Обработка ответов содержащихся в WORK_SHIFT

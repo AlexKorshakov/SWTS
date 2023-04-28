@@ -7,7 +7,7 @@ from datetime import datetime
 from aiogram import types
 from pandas import DataFrame
 
-from apps.MyBot import MyBot, bot_send_message
+from apps.MyBot import MyBot, bot_send_message, bot_delete_message
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.bot.data import board_config
 from apps.core.bot.handlers.correct_entries.correct_support import create_user_dataframe
@@ -64,6 +64,9 @@ async def call_correct_acts(call: types.CallbackQuery = None, callback_data: typ
     reply_markup: types.InlineKeyboardMarkup = await add_correct_inline_keyboard_with_action(user_violations)
 
     await bot_send_message(chat_id=hse_user_id, text=text_violations, reply_markup=reply_markup)
+
+    # msg_id = call.message.message_id
+    # await bot_delete_message(chat_id=hse_user_id, message_id=msg_id, sleep_sec=15)
 
     return True
 

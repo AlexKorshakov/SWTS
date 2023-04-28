@@ -6,12 +6,13 @@ from pandas import DataFrame
 from apps.MyBot import MyBot, bot_send_message, bot_delete_message
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.bot.data import board_config
+from apps.core.bot.handlers.correct_entries.correct_acts import call_correct_acts
 from apps.core.bot.handlers.correct_entries.correct_non_act_item_item_correct import \
-    add_act_inline_keyboard_with_action, RESULT_DICT, create_lite_dataframe_from_query
+    RESULT_DICT, create_lite_dataframe_from_query, COLUMNS_DICT
 from apps.core.bot.handlers.correct_entries.correct_support_updater import update_column_value_in_db, \
     update_column_value_in_local, update_column_value_in_google_disk
 from apps.core.bot.handlers.correct_entries.correct_support import spotter_data, get_item_number_from_call, \
-    check_dataframe, check_spotter_data, clear_spotter
+    check_dataframe, check_spotter_data, get_violations_df
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard, posts_cb
 from apps.core.bot.messages.messages import Messages
 from apps.core.database.query_constructor import QueryConstructor
@@ -70,19 +71,11 @@ async def call_correct_character_answer(call: types.CallbackQuery, user_id: str 
         if not await check_dataframe(table_dataframe, hse_user_id):
             return
 
-        # if table_dataframe is None:
-        #     text_violations: str = 'Незакрытых записей вне актов не обнаружено!'
-        #     await bot_send_message(chat_id=hse_user_id, text=text_violations)
-        #     return
-        #
-        # if table_dataframe.empty:
-        #     logger.error(f'{hse_user_id = } {Messages.Error.dataframe_is_empty}  \n{query = }')
-        #     return
-
         if 'title' not in table_dataframe.columns.values.tolist():
             return
 
-        title_list: list = table_dataframe['title'].tolist()
+        title_list: list = table_dataframe['id'].tolist()
+        title_list: list = [f"item_{item}" for item in title_list if item is not None]
 
         menu_level = board_config.menu_level = 1
         count_col = board_config.count_col = 1
@@ -90,33 +83,64 @@ async def call_correct_character_answer(call: types.CallbackQuery, user_id: str 
         reply_markup = await build_inlinekeyboard(
             some_list=title_list, num_col=count_col, level=menu_level, calld_prefix=f"corr_{character_table_name}_"
         )
+
+        character_text: str = await text_processor_character_text(table_dataframe, character, item_number_text)
+
         await bot_send_message(
-            chat_id=hse_user_id,
-            text=f'Выберите значение для показателя {character} для записи item_number_{item_number_text}',
-            reply_markup=reply_markup
+            chat_id=hse_user_id, text=character_text, reply_markup=reply_markup
         )
+
         spotter_data['calld_prefix'] = f"corr_{character_table_name}_"
         spotter_data['character_table_name'] = f"{character_table_name}"
         spotter_data['hse_user_id'] = f"{hse_user_id}"
         spotter_data['item_number_text'] = f"{item_number_text}"
         spotter_data['character'] = f"{character}"
 
-    await bot_send_message(chat_id=hse_user_id, text=Messages.Error.error_action)
+    # await bot_send_message(chat_id=hse_user_id, text=Messages.Error.error_action)
 
     msg_id = call.message.message_id
     await bot_delete_message(chat_id=hse_user_id, message_id=msg_id, sleep_sec=15)
+
+
+async def text_processor_character_text(table_dataframe: DataFrame, character: str,
+                                        item_number_text: str | int) -> str:
+    """Формирование текста для отправки пользователю
+
+    """
+
+    unique_items_ids: list = table_dataframe.id.unique().tolist()
+    unique_items_titles: list = table_dataframe.title.unique().tolist()
+
+    items_text_list: list = []
+    for i, (item_id, item_title) in enumerate(zip(unique_items_ids, unique_items_titles), 1):
+        item_info: str = f'item_{item_id} : {item_title}'
+        items_text_list.append(item_info)
+        logger.debug(f'{i} :: {item_info}')
+
+    items_text: str = '\n'.join(items_text_list)
+
+    character_title: str = COLUMNS_DICT.get(character, None)
+
+    header_text: str = f'Выберите значение для показателя Изменить "{character_title}" для ' \
+                       f'записи item_number_{item_number_text}'
+    footer_text: str = 'Нажмите на кнопку с номером выбранного значения'
+
+    final_text: str = f'{header_text} \n\n{items_text}  \n\n{footer_text}'
+
+    return final_text
 
 
 @MyBot.dp.callback_query_handler(lambda call: 'characteristic_' in call.data)
 async def call_characteristic_answer(call: types.CallbackQuery, user_id: str = None) -> None:
     """Обработка ответов
     """
-    act_number = call.data
+    characteristic_text = call.data
 
     hse_user_id = call.message.chat.id if call else user_id
     logger.info(f'{hse_user_id = } {call.data = }')
 
-    text_violations = f'Выбрано {act_number}'
+    text_violations = f'Выбрано {characteristic_text}'
+
     reply_markup = await add_act_inline_keyboard_with_action()
 
     await bot_send_message(chat_id=hse_user_id, text=text_violations, reply_markup=reply_markup)
@@ -126,7 +150,7 @@ async def call_characteristic_answer(call: types.CallbackQuery, user_id: str = N
 
 
 @MyBot.dp.callback_query_handler(lambda call: 'corr_' in call.data)
-async def call_correct_item_answer(call: types.CallbackQuery, user_id: str = None) -> None:
+async def call_correct_item_answer(call: types.CallbackQuery, user_id: str | int = None):
     """Обработка ответов
     """
     hse_user_id = call.message.chat.id if call else user_id
@@ -137,56 +161,14 @@ async def call_correct_item_answer(call: types.CallbackQuery, user_id: str = Non
         logger.error(f'access fail {hse_user_id = }')
         return
 
-    # prefix: str = spotter_data.get('calld_prefix', None)
-    # if prefix is None:
-    #     logger.error(f'{prefix}')
-    #     return
-    #
-    # table_name: str = spotter_data.get('character_table_name', None)
-    # if table_name is None:
-    #     logger.error(f'Item {table_name} is None. return')
-    #     return
-    #
-    # user_id: str = spotter_data.get('hse_user_id', None)
-    # if user_id is None:
-    #     logger.error(f'{user_id}')
-    #     return
-    #
-    # item_number: str = spotter_data.get('item_number_text', None)
-    # if item_number is None:
-    #     logger.error(f'{item_number}')
-    #     return
-    #
-    # character: str = spotter_data.get('character', None)
-    # if character is None:
-    #     logger.error(f'{character}')
-    #     return
-
     if not await check_spotter_data():
         return
 
     item_number: str = spotter_data.get('item_number_text', None)
     character: str = spotter_data.get('character', None)
+    character_id: str = call.data.split('_')[-1]
 
-    # query_kwargs: dict = {
-    #     "action": 'SELECT', "subject": '*',
-    #     "conditions": {
-    #         "id": item_number,
-    #     },
-    # }
-    # query: str = await QueryConstructor(None, 'core_violations', **query_kwargs).prepare_data()
-    #
-    # violations_dataframe: DataFrame = await create_lite_dataframe_from_query(query=query, table_name='core_violations')
-    # if violations_dataframe is None:
-    #     text_violations: str = 'Незакрытых записей вне актов не обнаружено!'
-    #     await bot_send_message(chat_id=hse_user_id, text=text_violations)
-    #     return
-    #
-    # if violations_dataframe.empty:
-    #     logger.error(f'{hse_user_id = } {Messages.Error.dataframe_is_empty}  \n{query = }')
-    #     return
-
-    violations_dataframe = await get_violations_df(item_number)
+    violations_dataframe = await get_violations_df(item_number, hse_user_id)
 
     if not await check_dataframe(violations_dataframe, hse_user_id):
         return
@@ -196,43 +178,19 @@ async def call_correct_item_answer(call: types.CallbackQuery, user_id: str = Non
     if type_character == 'other_meaning':
         await bot_send_message(chat_id=hse_user_id, text=Messages.Error.error_action)
 
-    if type_character == 'complex_meaning':
+    elif type_character == 'complex_meaning':
         result = await complex_meaning_handler(hse_user_id, character, item_number, violations_dataframe)
 
-    if type_character == 'simple_meaning':
-        result = await simple_meaning_handler(hse_user_id, character, item_number, violations_dataframe)
+    elif type_character == 'simple_meaning':
+        result = await simple_meaning_handler(hse_user_id, character, character_id, item_number, violations_dataframe)
 
-    if type_character == 'text_meaning':
+    elif type_character == 'text_meaning':
         result = await text_meaning_handler(hse_user_id, character, item_number, violations_dataframe)
+
+    await call_correct_acts(user_id=hse_user_id)
 
     msg_id = call.message.message_id
     await bot_delete_message(chat_id=hse_user_id, message_id=msg_id, sleep_sec=15)
-
-
-async def get_violations_df(item_number: str | int):
-    """
-
-    :return:
-    """
-    query_kwargs: dict = {
-        "action": 'SELECT', "subject": '*',
-        "conditions": {
-            "id": str(item_number),
-        },
-    }
-    query: str = await QueryConstructor(None, 'core_violations', **query_kwargs).prepare_data()
-
-    violations_dataframe: DataFrame = await create_lite_dataframe_from_query(query=query, table_name='core_violations')
-    # if violations_dataframe is None:
-    #     text_violations: str = 'Незакрытых записей вне актов не обнаружено!'
-    #     await bot_send_message(chat_id=hse_user_id, text=text_violations)
-    #     return
-    #
-    # if violations_dataframe.empty:
-    #     logger.error(f'{hse_user_id = } {Messages.Error.dataframe_is_empty}  \n{query = }')
-    #     return
-
-    return violations_dataframe
 
 
 async def determine_type_characteristic(characteristic) -> str:
@@ -295,7 +253,7 @@ async def complex_meaning_handler(hse_user_id, character, item_number, violation
     return True
 
 
-async def simple_meaning_handler(hse_user_id, character, item_number, violations_dataframe):
+async def simple_meaning_handler(hse_user_id, character, character_id, item_number, violations_dataframe):
     """
 
     :return:
@@ -304,17 +262,17 @@ async def simple_meaning_handler(hse_user_id, character, item_number, violations
     if character not in violations_dataframe.columns.values.tolist():
         return
 
-    item_value = 1
     result_update_db: bool = await update_column_value_in_db(
-        item_number=item_number, column_name=character, item_value=item_value, hse_user_id=hse_user_id
+        item_number=item_number, column_name=character, item_value=character_id, hse_user_id=hse_user_id
     )
 
     result_update_local: bool = await update_column_value_in_local(
-        item_number=item_number, column_name=character, item_value=item_value, hse_user_id=hse_user_id
+        item_number=item_number, column_name=character, item_value=character_id,
+        hse_user_id=hse_user_id, v_df=violations_dataframe
     )
 
     result_update_google: bool = await update_column_value_in_google_disk(
-        item_number=item_number, column_name=character, item_value=item_value, hse_user_id=hse_user_id
+        item_number=item_number, column_name=character, item_value=character_id, hse_user_id=hse_user_id
     )
 
     spotter_data.clear()
@@ -324,12 +282,14 @@ async def simple_meaning_handler(hse_user_id, character, item_number, violations
     if not all(result_list):
         await bot_send_message(
             chat_id=hse_user_id,
-            text=f'{hse_user_id = } Ошибка обновления данных {item_number} {character = }!')
+            text=f'{hse_user_id = } Ошибка обновления данных {item_number} {character = }!'
+        )
         return False
 
     await bot_send_message(
         chat_id=hse_user_id,
-        text=f'{hse_user_id = } Данные записи {item_number} {character = } успешно обновлены')
+        text=f'{hse_user_id = } Данные записи {item_number} {character = } успешно обновлены'
+    )
     return True
 
 
@@ -340,3 +300,16 @@ async def text_meaning_handler(hse_user_id, character, item_number, violations_d
     """
 
     return True
+
+
+async def add_act_inline_keyboard_with_action():
+    """Формирование сообщения с текстом и кнопками действий в зависимости от параметров
+
+    :return:
+    """
+    markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton('Изменить значение',
+                                          callback_data=posts_cb.new(id='-', action='correct_character')))
+    markup.add(types.InlineKeyboardButton('Отмена',
+                                          callback_data=posts_cb.new(id='-', action='correct_characteristic_not')))
+    return markup

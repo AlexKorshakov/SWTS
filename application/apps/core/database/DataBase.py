@@ -301,10 +301,15 @@ class DataBase:
         with self.connection:
             return self.cursor.execute("DELETE FROM `core_violations` WHERE `file_id` = ?", (file_id,))
 
+    def delete_item_from_table(self, *, table_name: str, table_column_name: str, file_id: int):
+        """Удаление записи"""
+        with self.connection:
+            return self.cursor.execute(f"DELETE FROM {table_name} WHERE {table_column_name} = ?", (file_id,))
+
     def get_info_violations(self, file_id: int):
         """Получение информации"""
         with self.connection:
-            return self.cursor.execute("SELECT * FROM `core_violations` WHERE `file_id` = ?",
+            return self.cursor.execute("SELECT * FROM {} WHERE `file_id` = ?",
                                        (file_id,)).fetchone()
 
     def count_violations(self):
@@ -341,7 +346,7 @@ class DataBase:
 
         headers: list = [item[1] for item in self.get_table_headers(table_name)]
         values: list = self.get_data_list(query=query)
-        clean_values: list = values[0]
+        clean_values: list = values[0] if values else []
 
         return dict((header, item_value) for header, item_value in zip(headers, clean_values))
 
@@ -356,8 +361,33 @@ class DataBase:
         query: str = f"UPDATE `core_violations` SET {column_name} = ? WHERE `id` = ?"
         logger.debug(f'{column_name = } {value = }')
         with self.connection:
-            self.cursor.execute(query, (value, id,))
+            result = self.cursor.execute(query, (value, id,))
         self.connection.commit()
+        return result
+
+    def get_all_tables_names(self):
+        """Получение всех имен таблиц в БД
+
+        :return:
+        """
+        with self.connection:
+            result = self.cursor.execute("SELECT name FROM sqlite_master WHERE type='table';").fetchall()
+
+            return result
+
+    def update_table_column_value(self, query: str, item_name: str, item_value: str):
+        """Обновление записи id в database
+
+        :param table_name: имя таблицы в базе
+        :param id: id записи
+        :param value:  значение для записи в столбец
+        :param column_name: столбец
+        """
+
+        with self.connection:
+            result = self.cursor.execute(query, (item_value, item_name,))
+        self.connection.commit()
+        return result
 
     def set_act_value(self, act_data_dict: DataFrame, act_number: int, act_date: str):
         """Добавление записи в database core_actsprescriptions
@@ -582,3 +612,13 @@ async def create_file_path(path: str):
             makedirs(path)
         except Exception as err:
             logger.info(f"makedirs err {repr(err)}")
+
+
+def test():
+    result = DataBase().get_all_tables_names()
+    for item in result:
+        print(f"'{item}'")
+
+
+if __name__ == '__main__':
+    test()

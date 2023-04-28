@@ -114,6 +114,9 @@ async def item_number_answer(call: types.CallbackQuery, user_id: str = None) -> 
 
     await bot_send_message(chat_id=hse_user_id, text=text_violations, reply_markup=reply_markup)
 
+    msg_id = call.message.message_id
+    await bot_delete_message(chat_id=hse_user_id, message_id=msg_id, sleep_sec=15)
+
 
 async def add_act_inline_keyboard_with_action():
     """Формирование сообщения с текстом и кнопками действий в зависимости от параметров

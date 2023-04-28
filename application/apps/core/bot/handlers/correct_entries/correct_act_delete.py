@@ -1,7 +1,6 @@
 from __future__ import annotations
-import asyncio
 
-from datetime import datetime
+import asyncio
 
 from aiogram import types
 from pandas import DataFrame
@@ -9,14 +8,14 @@ from pandas import DataFrame
 from apps.MyBot import MyBot, bot_send_message
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.bot.handlers.correct_entries.correct_entries_handler import correct_entries_handler, del_file
+from apps.core.bot.handlers.correct_entries.correct_support import create_lite_dataframe_from_query
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
-from apps.core.bot.messages.messages import Messages, LogMessage
-from apps.core.database.db_utils import db_get_data_list, db_get_table_headers, db_del_item_from_table
+from apps.core.bot.messages.messages import Messages
+from apps.core.database.db_utils import db_del_item_from_table
 from apps.core.database.query_constructor import QueryConstructor
 from apps.core.utils.generate_report.generate_act_prescription.create_and_send_act_prescription import \
     get_full_act_prescription_path
 from apps.core.utils.secondary_functions.get_filepath import BOT_MEDIA_PATH
-# from apps.core.web.utils import delete_violation_files_from_gdrive
 from loader import logger
 
 
@@ -311,12 +310,6 @@ async def del_act_photo(*, hse_user_id: int | str, id_numbers: int | str,
         logger.error(f'{hse_user_id = } Не удалось удалить запись {id_numbers} в формате .jpeg с сервера ')
         return False
     return True
-
-
-
-
-
-
 
 
 async def test():

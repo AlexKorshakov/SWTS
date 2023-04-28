@@ -1,4 +1,9 @@
+from __future__ import annotations
+
+import asyncio
+from asyncio import FIRST_COMPLETED
 import traceback
+from typing import Union
 from sqlite3 import OperationalError
 
 from loader import logger
@@ -106,6 +111,36 @@ async def db_del_violations(violation: dict) -> list:
     return result
 
 
+async def db_del_item_from_table(*, table_name: str, table_column_name: str, file_id: str | int) -> bool:
+    """Удаление данных violation из Database
+
+    :param table_name: имя таблицы
+    :param table_column_name: имя столбца в таблице
+    :param file_id: id записи
+    :return: list
+    """
+
+    result = DataBase().delete_item_from_table(
+        table_name=table_name,
+        table_column_name=table_column_name,
+        file_id=file_id
+    )
+    if result:
+        return True
+
+    return False
+
+
+async def db_get_all_tables_names() -> list:
+    """Получение всех имен таблиц в БД
+
+    :return:
+    """
+    result = DataBase().get_all_tables_names()
+    clean_result: list = [item[0] for item in result]
+    return clean_result
+
+
 async def db_get_data_list(query: str) -> list:
     """Получение list с данными по запросу query
 
@@ -163,7 +198,7 @@ async def db_get_id(table, entry, file_id, name) -> int:
     return value
 
 
-async def db_update_column_value(column_name, value, violation_id) -> bool:
+async def db_update_column_value(column_name: str, value: Union[None, int, str], violation_id: Union[int, str]) -> bool:
     """
 
     :return:
@@ -174,7 +209,35 @@ async def db_update_column_value(column_name, value, violation_id) -> bool:
         value=value,
         id=str(violation_id)
     )
-    return result
+    if result:
+        return True
+
+    return False
+
+
+async def db_update_table_column_value(*, table_name: str, table_column_name_for_update: str, table_column_name: str,
+                                       item_value: str, item_name: str) -> bool:
+    """
+    :param item_name:
+    :param table_column_name_for_update:
+    :param table_name: str  - имя таблицы для изменений
+    :param table_column_name: str  - имя столбца таблицы table_name для изменений
+    :param item_value: str  - значение для внесения изменений
+
+    :return: bool true если удачно or false если не удачно
+    """
+
+    query: str = f"UPDATE {table_name} SET {table_column_name_for_update} = ? WHERE {table_column_name} = ?"
+    logger.debug(f'{table_name = } {table_column_name = } {item_name = } {item_value = }')
+
+    result: bool = DataBase().update_table_column_value(
+        query=query,
+        item_name=item_name,
+        item_value=str(item_value)
+    )
+    if result:
+        return True
+    return False
 
 
 async def db_get_full_title(table_name: str, short_title: str) -> list:
@@ -363,3 +426,14 @@ def db_get_id_no_async(table, entry, file_id: str = None, name=None, condition=N
 def say_fanc_name():
     stack = traceback.extract_stack()
     return str(stack[-2][2])
+
+
+async def test():
+    res: list = await db_get_all_tables_names()
+
+    for item in res:
+        print(f'{item}')
+
+
+if __name__ == '__main__':
+    asyncio.run(test())

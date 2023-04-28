@@ -5,31 +5,28 @@ import apps.xxx
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
-from aiogram.types import (CallbackQuery, ReplyKeyboardMarkup,
-                           ReplyKeyboardRemove)
+from aiogram.types import (CallbackQuery, ReplyKeyboardMarkup, ReplyKeyboardRemove)
 from apps.core.bot.data import board_config
 from apps.core.bot.data.category import REGISTRATION_DATA_LIST, get_data_list
 from apps.core.bot.filters.custom_filters import is_private
-from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import \
-    build_inlinekeyboard
+from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.states import CorrectRegisterState
-from apps.core.utils.data_recording_processor.set_user_registration_data import \
-    set_user_registration_data
-from apps.core.utils.generate_report.get_file_list import \
-    get_registration_json_file_list
+from apps.core.utils.data_recording_processor.set_user_registration_data import set_user_registration_data
+from apps.core.utils.generate_report.get_file_list import get_registration_json_file_list
 from apps.core.utils.json_worker.read_json_file import read_json_file
 from apps.MyBot import MyBot, bot_send_message
 from config.config import ADMIN_ID
 
 logger.debug(f"{__name__} finish import")
 
+
 @MyBot.dp.callback_query_handler(lambda call: call.data in REGISTRATION_DATA_LIST)
 async def correct_registration_data_answer(call: types.CallbackQuery):
     """Обработка ответов содержащихся в REGISTRATION_DATA_LIST
 
     """
-    chat_id = call.from_user.id
+    hse_chat_id = call.from_user.id
     await call.message.edit_reply_markup()
 
     reply_markup = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
@@ -51,7 +48,7 @@ async def correct_registration_data_answer(call: types.CallbackQuery):
         logger.debug(f"Выбрано: {call.data}")
 
         menu_level = board_config.menu_level = 2
-        menu_list = board_config.menu_list = [item for item in get_data_list("WORK_SHIFT")]
+        menu_list = board_config.menu_list = [item for item in get_data_list("WORK_SHIFT") if item]
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
         await bot_send_message(chat_id=hse_chat_id, text=Messages.Ask.work_shift, reply_markup=reply_markup)
@@ -106,7 +103,8 @@ async def correct_registration_data_name_location_answer(call: types.CallbackQue
 
 
 @MyBot.dp.callback_query_handler(is_private, lambda call: call.data in [item for item in
-                                                                        get_data_list("WORK_SHIFT")],
+                                                                        get_data_list("WORK_SHIFT") if
+                                                                        item is not None],
                                  state=CorrectRegisterState.work_shift)
 async def correct_registration_data_work_shift_answer(call: types.CallbackQuery, state: FSMContext):
     """Обработка ответов содержащихся в WORK_SHIFT
@@ -123,11 +121,11 @@ async def correct_registration_data_work_shift_answer(call: types.CallbackQuery,
 
 
 @MyBot.dp.message_handler(is_private, state=CorrectRegisterState.all_states)
-async def correct_registration_data_all_states_answer(message: types.Message, state: FSMContext):
+async def correct_registration_data_all_states_answer(message: types.Message, state: FSMContext) -> None:
     """Отмена регистрации
-    :param message:
-    :param state:
-    :return:
+    :param message types.Message
+    :param state FSMContext
+    :return None
     """
     chat_id = message.chat.id
     state_name = await get_state_storage_name(state, chat_id)
@@ -152,7 +150,7 @@ async def all_states(*, chat_id, correct_data, state_name):
     :param state_name:
     :return:
     """
-    registration_file_list = await get_registration_json_file_list(chat_id=chat_id)
+    registration_file_list: list = await get_registration_json_file_list(chat_id=chat_id)
     if not registration_file_list:
         logger.warning(Messages.Error.registration_file_list_not_found)
         await bot_send_message(chat_id=chat_id, text=Messages.Error.file_list_not_found)
@@ -160,7 +158,7 @@ async def all_states(*, chat_id, correct_data, state_name):
 
     registration_data = await read_json_file(registration_file_list)
     if not registration_data:
-        logger.error(f"registration_data is empty")
+        logger.error("registration_data is empty")
         return
 
     registration_data[f'{state_name}'] = correct_data
@@ -216,10 +214,10 @@ async def get_correct_data(*, chat_id: int, call: CallbackQuery, json_file_name:
     return correct_data
 
 
-async def get_registration_text(registration_data) -> str:
+async def get_registration_text(registration_data: dict) -> str:
     """
 
-    :param registration_data:
+    :param registration_data: dict
     :return:
     """
     if registration_data:

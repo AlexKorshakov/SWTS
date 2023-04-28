@@ -9,6 +9,7 @@ from pandas import DataFrame
 from apps.MyBot import bot_send_message
 from apps.core.bot.messages.messages import Messages, LogMessage
 from apps.core.database.db_utils import db_get_table_headers, db_get_data_list
+from apps.core.database.query_constructor import QueryConstructor
 from loader import logger
 
 
@@ -58,19 +59,11 @@ async def create_user_dataframe(hse_user_id: str, violations_dataframe: DataFram
 
     logger.debug(f'{hse_user_id = }')
 
-    # if violations_dataframe.empty:
-    #     logger.error(f'{Messages.Error.dataframe_is_empty}')
-    #     return None
-
     if not await check_dataframe(violations_dataframe, hse_user_id):
         return None
 
     user_violations_dataframe = violations_dataframe.copy(deep=True)
     user_violations: DataFrame = user_violations_dataframe.loc[user_violations_dataframe['user_id'] == str(hse_user_id)]
-
-    # if user_violations.empty:
-    #     logger.error(f'{Messages.Error.dataframe_is_empty}  \n{user_violations = }')
-    #     return None
 
     if not await check_dataframe(user_violations, hse_user_id):
         return None
@@ -167,27 +160,48 @@ async def check_spotter_data() -> bool:
 
     prefix: str = spotter_data.get('calld_prefix', None)
     if prefix is None:
-        logger.error(f'{prefix}')
+        logger.error(f'spotter_data {prefix = }')
         return False
 
     table_name: str = spotter_data.get('character_table_name', None)
     if table_name is None:
-        logger.error(f'Item {table_name} is None. return')
+        logger.error(f'Item spotter_data {table_name = } is None. return')
         return False
 
     user_id: str = spotter_data.get('hse_user_id', None)
     if user_id is None:
-        logger.error(f'{user_id}')
+        logger.error(f'spotter_data {user_id = }')
         return False
 
     item_number: str = spotter_data.get('item_number_text', None)
     if item_number is None:
-        logger.error(f'{item_number}')
+        logger.error(f'spotter_data {item_number = }')
         return False
 
     character: str = spotter_data.get('character', None)
     if character is None:
-        logger.error(f'{character}')
+        logger.error(f'spotter_data {character = }')
         return False
 
     return True
+
+
+async def get_violations_df(item_number: str | int, hse_user_id: str | int):
+    """
+
+    :return:
+    """
+    query_kwargs: dict = {
+        "action": 'SELECT', "subject": '*',
+        "conditions": {
+            "id": str(item_number),
+        },
+    }
+    query: str = await QueryConstructor(None, 'core_violations', **query_kwargs).prepare_data()
+
+    violations_dataframe: DataFrame = await create_lite_dataframe_from_query(query=query, table_name='core_violations')
+
+    if not await check_dataframe(violations_dataframe, hse_user_id):
+        return
+
+    return violations_dataframe

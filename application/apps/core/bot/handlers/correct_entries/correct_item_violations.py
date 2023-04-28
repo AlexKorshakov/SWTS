@@ -5,7 +5,7 @@ from datetime import datetime
 
 from aiogram import types
 
-from apps.MyBot import MyBot, bot_send_message
+from apps.MyBot import MyBot, bot_send_message, bot_delete_message
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.bot.handlers.correct_entries.correct_entries_handler import correct_entries_handler
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
@@ -107,6 +107,9 @@ async def call_correct_item_violations_yes(call: types.CallbackQuery, callback_d
     logger.debug(f'{hse_user_id = } {act_number_text = }')
 
     await bot_send_message(chat_id=hse_user_id, text=Messages.Error.error_action)
+
+    msg_id = call.message.message_id
+    await bot_delete_message(chat_id=hse_user_id, message_id=msg_id, sleep_sec=15)
 
 
 async def get_now() -> str:
