@@ -22,7 +22,7 @@ from apps.core.utils.generate_report.sheet_formatting.sheet_formatting import \
 from apps.core.utils.img_processor.insert_img import insert_images_to_sheet
 from apps.core.utils.reports_processor.report_worker_utils import \
     get_clean_headers
-from apps.MyBot import MyBot
+from apps.MyBot import bot_send_message
 from config.web.settings import MEDIA_ROOT
 from loader import logger
 from pandas import DataFrame
@@ -62,22 +62,19 @@ async def create_report(chat_id):
     fill_report_path = await get_full_report_name(chat_id=chat_id)
     if fill_report_path is None:
         logger.warning('error! fill_report_path not found!')
-        MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.fill_report_path_not_found)
-        await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.fill_report_path_not_found)
+        await bot_send_message(chat_id=chat_id, text=Messages.Error.fill_report_path_not_found)
         return
 
     file_list = await get_json_file_list(chat_id=chat_id)
     if file_list is None:
         logger.warning('error! file_list not found!')
-        MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.file_list_not_found)
-        await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.file_list_not_found)
+        await bot_send_message(chat_id=chat_id, text=Messages.Error.file_list_not_found)
         return
 
     dataframe = await create_dataframe(file_list=file_list)
     if dataframe is None:
         logger.warning('error! dataframe not found!')
-        MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.dataframe_not_found)
-        await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.dataframe_not_found)
+        await bot_send_message(chat_id=chat_id, text=Messages.Error.dataframe_not_found)
         return
 
     workbook, worksheet = await create_xlsx(chat_id, fill_report_path)

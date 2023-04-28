@@ -16,7 +16,7 @@ from apps.core.utils.generate_report.generate_act_prescription.set_act_values im
     set_act_photographic_materials_values, set_act_violation_values)
 from apps.core.utils.generate_report.generator_report import anchor_photo
 from apps.core.utils.img_processor.insert_img import insert_service_image
-from apps.MyBot import MyBot
+from apps.MyBot import bot_send_message
 from loader import logger
 
 
@@ -57,7 +57,7 @@ async def create_act_prescription(chat_id: int, act_number: int, dataframe: Data
     try:
         row_number = await set_act_violation_values(worksheet, dataframe, workbook, full_act_path)
     except Exception as err:
-        await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.file_not_found + str(f' {err} '))
+        await bot_send_message(chat_id=chat_id, text=Messages.Error.file_not_found + str(f' {err} '))
         logger.error(f'create_act_prescription: set_act_violation_values error: {repr(err)}')
         return False
 

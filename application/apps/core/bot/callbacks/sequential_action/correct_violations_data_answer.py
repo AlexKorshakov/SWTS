@@ -18,7 +18,7 @@ from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.set_user_violation_d
     update_user_violation_data_on_google_drive
 from apps.core.utils.json_worker.read_json_file import read_json_file
 from apps.core.utils.json_worker.writer_json_file import write_json_file
-from apps.MyBot import MyBot
+from apps.MyBot import MyBot, bot_send_message
 from config.config import ADMIN_ID, SEPARATOR
 
 logger.debug(f"{__name__} finish import")
@@ -38,14 +38,14 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
         logger.debug(f"id {chat_id} Выбрано: {call.data}")
         await CorrectViolationsState.description.set()
 
-        await MyBot.bot.send_message(chat_id, Messages.Enter.description_violation, reply_markup=reply_markup)
+        await bot_send_message(chat_id=chat_id, text=Messages.Enter.description_violation, reply_markup=reply_markup)
         return
 
     if call.data == "Комментарий к нарушению":
         logger.debug(f"id {chat_id} Выбрано: {call.data}")
         await CorrectViolationsState.comment.set()
 
-        await MyBot.bot.send_message(chat_id, Messages.Enter.comment, reply_markup=reply_markup)
+        await bot_send_message(chat_id=chat_id, text=Messages.Enter.comment, reply_markup=reply_markup)
         return
 
     if call.data == "Основное направление":
@@ -55,7 +55,7 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
         menu_list = board_config.menu_list = [item for item in get_data_list("MAIN_CATEGORY")]
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
-        await call.message.answer(text=Messages.Choose.main_category, reply_markup=reply_markup)
+        await bot_send_message(chat_id=chat_id, text=Messages.Choose.main_category, reply_markup=reply_markup)
 
         await CorrectViolationsState.main_category.set()
         return
@@ -67,7 +67,7 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
         menu_list = board_config.menu_list = [item for item in get_data_list("ELIMINATION_TIME")]
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
-        await call.message.answer(text=Messages.Choose.elimination_time, reply_markup=reply_markup)
+        await bot_send_message(chat_id=chat_id, text=Messages.Choose.elimination_time, reply_markup=reply_markup)
 
         await CorrectViolationsState.elimination_time.set()
         return
@@ -79,7 +79,7 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
         menu_list = board_config.menu_list = [item for item in get_data_list("INCIDENT_LEVEL")]
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
-        await call.message.answer(text=Messages.Choose.incident_level, reply_markup=reply_markup)
+        await bot_send_message(chat_id=chat_id, text=Messages.Choose.incident_level, reply_markup=reply_markup)
 
         await CorrectViolationsState.incident_level.set()
         return
@@ -91,7 +91,7 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
         menu_list = board_config.menu_list = [item for item in get_data_list("ACT_REQUIRED")]
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
-        await call.message.answer(text=Messages.Choose.act_required, reply_markup=reply_markup)
+        await bot_send_message(chat_id=chat_id, text=Messages.Choose.act_required, reply_markup=reply_markup)
 
         await CorrectViolationsState.act_required.set()
         return
@@ -103,7 +103,7 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
         menu_list = board_config.menu_list = [item for item in get_data_list("GENERAL_CONTRACTORS")]
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
-        await call.message.answer(text=Messages.Choose.general_constractor, reply_markup=reply_markup)
+        await bot_send_message(chat_id=chat_id, text=Messages.Choose.general_constractor, reply_markup=reply_markup)
 
         await CorrectViolationsState.general_constractor.set()
         return
@@ -115,7 +115,7 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
         menu_list = board_config.menu_list = [item for item in get_data_list("VIOLATION_CATEGORY")]
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
-        await call.message.answer(text=Messages.Choose.violation_category, reply_markup=reply_markup)
+        await bot_send_message(chat_id=chat_id, text=Messages.Choose.violation_category, reply_markup=reply_markup)
 
         await CorrectViolationsState.violation_category.set()
         return
@@ -127,7 +127,7 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
         menu_list = board_config.menu_list = [item for item in get_data_list("CATEGORY")]
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
-        await call.message.answer(text=Messages.Choose.category, reply_markup=reply_markup)
+        await bot_send_message(chat_id=chat_id, text=Messages.Choose.category, reply_markup=reply_markup)
 
         await CorrectViolationsState.category.set()
         return
@@ -139,7 +139,7 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
         menu_list = board_config.menu_list = [item for item in get_data_list("INCIDENT_LEVEL")]
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
-        await call.message.answer(text=Messages.Choose.incident_level, reply_markup=reply_markup)
+        await bot_send_message(chat_id=chat_id, text=Messages.Choose.incident_level, reply_markup=reply_markup)
 
         await CorrectViolationsState.incident_level.set()
 
@@ -293,7 +293,7 @@ async def all_states(*, chat_id: str, correct_data: str, state_name: str):
     violations_files_list: list = await get_json_file_list(chat_id)
     if not violations_files_list:
         logger.warning(Messages.Error.file_list_not_found)
-        await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.file_list_not_found)
+        await bot_send_message(chat_id=chat_id, text=Messages.Error.file_list_not_found)
         return
 
     violations_id = board_config.current_file.split(' ')[0]
@@ -305,8 +305,7 @@ async def all_states(*, chat_id: str, correct_data: str, state_name: str):
 
     if not violations_file_path:
         logger.warning(f'{Messages.Error.file_not_found} violations_id: {violations_id}')
-        await MyBot.bot.send_message(chat_id=chat_id,
-                                     text=f'{Messages.Error.file_not_found} violations_id: {violations_id}')
+        await bot_send_message(chat_id=chat_id, text=f'{Messages.Error.file_not_found} violations_id: {violations_id}')
         return
 
     violation_data: dict = await read_json_file(file=violations_file_path)
@@ -319,11 +318,10 @@ async def all_states(*, chat_id: str, correct_data: str, state_name: str):
 
     if violation_data:
         violation_text = await get_violations_text(violation_data)
-        await MyBot.bot.send_message(chat_id=chat_id, text=violation_text)
+        await bot_send_message(chat_id=chat_id, text=violation_text)
 
-    await MyBot.dp.bot.send_message(chat_id=chat_id,
-                                    text=Messages.Successfully.correct_violations_completed,
-                                    reply_markup=ReplyKeyboardRemove())
+    await bot_send_message(chat_id=chat_id, text=Messages.Successfully.correct_violations_completed,
+                           reply_markup=ReplyKeyboardRemove())
 
 
 async def get_correct_data(*, chat_id, call, json_file_name) -> str:
@@ -347,12 +345,12 @@ async def get_correct_data(*, chat_id, call, json_file_name) -> str:
     if not correct_data:
         text = f'get_correct_data is None or error {json_file_name = }'
         logger.error(text)
-        await MyBot.dp.bot.send_message(chat_id=ADMIN_ID, text=text)
-        await MyBot.dp.bot.send_message(chat_id=chat_id, text=text)
+        await bot_send_message(chat_id=ADMIN_ID, text=text)
+        await bot_send_message(chat_id=chat_id, text=text)
         return correct_data
 
     logger.debug(f"chat_id {chat_id} Выбрано: {correct_data}")
-    await call.message.answer(text=f"Выбрано: {correct_data}")
+    await bot_send_message(chat_id=chat_id, text=f"Выбрано: {correct_data}")
     await call.message.edit_reply_markup()
 
     return correct_data

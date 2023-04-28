@@ -9,7 +9,7 @@ from apps.core.utils.json_worker.read_json_file import read_json_files
 from apps.core.utils.secondary_functions.get_filepath import (
     create_file_path, get_json_full_filepath, get_photo_full_filepath,
     get_report_full_filepath)
-from apps.MyBot import MyBot
+from apps.MyBot import bot_send_message
 from loader import logger
 from pandas import DataFrame
 
@@ -25,7 +25,7 @@ async def get_data_report(chat_id: int, file_list: list = None):
     # await save_merged_file_on_pc(merge_file_list)
     if not file_list:
         logger.warning('error! file_list not found!')
-        await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.file_list_not_found)
+        await bot_send_message(chat_id=chat_id, text=Messages.Error.file_list_not_found)
 
         photo_full_filepath: str = await get_photo_full_filepath(user_id=str(chat_id))
         json_full_filepath: str = await get_json_full_filepath(user_id=str(chat_id))

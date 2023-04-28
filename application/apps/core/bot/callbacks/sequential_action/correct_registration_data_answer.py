@@ -19,7 +19,7 @@ from apps.core.utils.data_recording_processor.set_user_registration_data import 
 from apps.core.utils.generate_report.get_file_list import \
     get_registration_json_file_list
 from apps.core.utils.json_worker.read_json_file import read_json_file
-from apps.MyBot import MyBot
+from apps.MyBot import MyBot, bot_send_message
 from config.config import ADMIN_ID
 
 logger.debug(f"{__name__} finish import")
@@ -39,13 +39,13 @@ async def correct_registration_data_answer(call: types.CallbackQuery):
         logger.debug(f"Выбрано: {call.data}")
         await CorrectRegisterState.name.set()
 
-        await MyBot.bot.send_message(chat_id, Messages.Ask.name, reply_markup=reply_markup)
+        await bot_send_message(chat_id=hse_chat_id, text=Messages.Ask.name, reply_markup=reply_markup)
 
     if call.data == "Должность":
         logger.debug(f"Выбрано: {call.data}")
         await CorrectRegisterState.function.set()
 
-        await MyBot.bot.send_message(chat_id, Messages.Ask.function, reply_markup=reply_markup)
+        await bot_send_message(chat_id=hse_chat_id, text=Messages.Ask.function, reply_markup=reply_markup)
 
     if call.data == "Смена":
         logger.debug(f"Выбрано: {call.data}")
@@ -54,7 +54,7 @@ async def correct_registration_data_answer(call: types.CallbackQuery):
         menu_list = board_config.menu_list = [item for item in get_data_list("WORK_SHIFT")]
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
-        await call.message.answer(text=Messages.Ask.work_shift, reply_markup=reply_markup)
+        await bot_send_message(chat_id=hse_chat_id, text=Messages.Ask.work_shift, reply_markup=reply_markup)
 
         await CorrectRegisterState.work_shift.set()
 
@@ -62,7 +62,7 @@ async def correct_registration_data_answer(call: types.CallbackQuery):
         logger.debug(f"Выбрано: {call.data}")
         await CorrectRegisterState.phone_number.set()
 
-        await MyBot.bot.send_message(chat_id, Messages.Ask.phone_number, reply_markup=reply_markup)
+        await bot_send_message(chat_id=hse_chat_id, text=Messages.Ask.phone_number, reply_markup=reply_markup)
 
     if call.data == "Место работы":
         logger.debug(f"Выбрано: {call.data}")
@@ -71,7 +71,7 @@ async def correct_registration_data_answer(call: types.CallbackQuery):
         menu_list = board_config.menu_list = [list(item.keys())[0] for item in get_data_list("METRO_STATION")]
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
-        await call.message.answer(text=Messages.Ask.location, reply_markup=reply_markup)
+        await bot_send_message(chat_id=hse_chat_id, text=Messages.Ask.location, reply_markup=reply_markup)
 
         await CorrectRegisterState.name_location.set()
 
@@ -155,7 +155,7 @@ async def all_states(*, chat_id, correct_data, state_name):
     registration_file_list = await get_registration_json_file_list(chat_id=chat_id)
     if not registration_file_list:
         logger.warning(Messages.Error.registration_file_list_not_found)
-        await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.file_list_not_found)
+        await bot_send_message(chat_id=chat_id, text=Messages.Error.file_list_not_found)
         return
 
     registration_data = await read_json_file(registration_file_list)
@@ -170,18 +170,18 @@ async def all_states(*, chat_id, correct_data, state_name):
     registration_data: dict = await read_json_file(registration_file_list)
 
     if not registration_data:
-        logger.error(f"registration_data is empty")
-        await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.file_list_not_found)
+        logger.error("registration_data is empty")
+        await bot_send_message(chat_id=chat_id, text=Messages.Error.file_list_not_found)
         return
     registration_text: str = ''
     if registration_data:
         registration_text = await get_registration_text(registration_data)
 
-    await MyBot.bot.send_message(chat_id=chat_id, text=registration_text)
+    await bot_send_message(chat_id=chat_id, text=registration_text)
 
-    await MyBot.dp.bot.send_message(chat_id=chat_id,
-                                    text=Messages.Successfully.correct_registration_completed,
-                                    reply_markup=ReplyKeyboardRemove())
+    await bot_send_message(chat_id=chat_id,
+                           text=Messages.Successfully.correct_registration_completed,
+                           reply_markup=ReplyKeyboardRemove())
 
 
 async def get_correct_data(*, chat_id: int, call: CallbackQuery, json_file_name: str) -> str:
@@ -205,12 +205,12 @@ async def get_correct_data(*, chat_id: int, call: CallbackQuery, json_file_name:
     if not correct_data:
         text = f'get_correct_data is None or error {json_file_name = }'
         logger.error(text)
-        await MyBot.dp.bot.send_message(chat_id=ADMIN_ID, text=text)
-        await MyBot.dp.bot.send_message(chat_id=chat_id, text=text)
+        await bot_send_message(chat_id=ADMIN_ID, text=text)
+        await bot_send_message(chat_id=chat_id, text=text)
         return correct_data
 
     logger.debug(f"chat_id {chat_id} Выбрано: {correct_data}")
-    await call.message.answer(text=f"Выбрано: {correct_data}")
+    await bot_send_message(chat_id=chat_id, text=f"Выбрано: {correct_data}")
     await call.message.edit_reply_markup()
 
     return correct_data

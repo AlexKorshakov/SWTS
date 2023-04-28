@@ -11,7 +11,7 @@ from apps.core.database.db_utils import db_get_data_list_no_async
 from aiogram import types
 from apps.core.bot.data.category import _PREFIX_ND, get_data_with_hashtags, _PREFIX_POZ
 from apps.core.bot.reports.report_data import violation_data
-from apps.MyBot import MyBot
+from apps.MyBot import MyBot, bot_send_message
 
 logger.debug(f"{__name__} finish import")
 
@@ -21,36 +21,9 @@ async def normative_documents_answer_with_hashtags(call: types.CallbackQuery) ->
     """Обработка ответов содержащихся в NORMATIVE_DOCUMENTS
     """
 
+    hse_user_id = call.message.chat.id if call else user_id
     hashtag = call.data
     logger.info(f'{call.data = }')
-
-    # normativedocuments_hashtags:list = get_data_with_hashtags(
-    #     "core_normativedocuments", item_id=violation_data.get('category_id', None))
-    #
-    # if call.data in normativedocuments_hashtags:
-    #     previous_level = 'category'
-    #
-    #     menu_level = board_config.menu_level = 1
-    #     menu_list = board_config.menu_list = [_PREFIX_ND + str(item[0]) for item in normativedocuments_hashtags]
-    #     count_col = board_config.count_col = 2
-    #     board_config.previous_level = previous_level
-    #
-    #     short_title: list = [_PREFIX_ND + str(item[0]) for item in normativedocuments_hashtags]
-    #     data_list: list = [item[2] for item in normativedocuments_hashtags]
-    #     zipped_list: list = list(zip(short_title, data_list))
-    #
-    #     text_list: list = text_process(zipped_list)
-    #     for item_txt in text_list:
-    #         await call.message.answer(text=item_txt)
-    #
-    #     reply_markup = await build_inlinekeyboard(
-    #         some_list=menu_list, num_col=count_col, level=menu_level, previous_level=previous_level
-    #     )
-    #     await call.message.answer(text=Messages.Choose.normative_documents, reply_markup=reply_markup)
-    #     return
-    #
-    # sublocation_hashtags:list = get_data_with_hashtags(
-    #     "core_sublocation", item_id=violation_data.get('main_location_id', None))
 
     if call.data in get_data_with_hashtags("core_normativedocuments", item_id=violation_data.get('category_id', None)):
         logger.info(f'{__name__} {say_fanc_name()} NORMATIVE_DOCUMENTS')
@@ -86,12 +59,12 @@ async def normative_documents_answer_with_hashtags(call: types.CallbackQuery) ->
 
         text_list: list = text_process(zipped_list)
         for item_txt in text_list:
-            await call.message.answer(text=item_txt)
+            await bot_send_message(chat_id=hse_user_id, text=item_txt)
 
         reply_markup = await build_inlinekeyboard(
             some_list=menu_list, num_col=count_col, level=menu_level, previous_level=previous_level
         )
-        await call.message.answer(text=Messages.Choose.normative_documents, reply_markup=reply_markup)
+        await bot_send_message(chat_id=hse_user_id, text=Messages.Choose.normative_documents, reply_markup=reply_markup)
         return
 
     if call.data in get_data_with_hashtags("core_sublocation", item_id=violation_data.get('main_location_id', None)):
@@ -125,13 +98,15 @@ async def normative_documents_answer_with_hashtags(call: types.CallbackQuery) ->
 
         zipped_list: list = list(zip(short_title, data_list))
         text_list: list = text_process(zipped_list)
+
         for item_txt in text_list:
-            await call.message.answer(text=item_txt)
+            chat_id = call.message.chat.id
+            await bot_send_message(chat_id=chat_id, text=item_txt)
 
         reply_markup = await build_inlinekeyboard(
             some_list=menu_list, num_col=count_col, level=menu_level, previous_level=previous_level
         )
-        await call.message.answer(text=Messages.Choose.normative_documents, reply_markup=reply_markup)
+        await bot_send_message(chat_id=hse_user_id, text=Messages.Choose.normative_documents, reply_markup=reply_markup)
         return
 
     return None

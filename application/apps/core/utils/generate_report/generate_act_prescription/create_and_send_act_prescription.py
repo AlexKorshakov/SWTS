@@ -1,3 +1,4 @@
+from __future__ import annotations
 import asyncio
 import traceback
 from datetime import datetime
@@ -5,7 +6,7 @@ from pprint import pprint
 
 from pandas import DataFrame
 
-from apps.MyBot import MyBot
+from apps.MyBot import bot_send_message, _send_message
 from apps.core.bot.bot_utils.progress_bar import ProgressBar
 from apps.core.bot.messages.messages import Messages
 from apps.core.database.db_utils import db_get_period_for_current_week
@@ -30,13 +31,9 @@ async def create_and_send_act_prescription(chat_id: int, query_act_date_period=N
     :return:
     """
 
-    msg = await MyBot.bot.send_message(chat_id=chat_id, text='⬜' * 10)
-    p_bar = ProgressBar(msg=msg)
+    msg = await _send_message(chat_id=chat_id, text='⬜' * 10)
 
-    # # await p_bar.start()
-    # await p_bar.update_msg(3)
-    # await p_bar.update_msg(7)
-    # await p_bar.finish()
+    p_bar = ProgressBar(msg=msg)
 
     await p_bar.update_msg(1)
     act_kwargs = {**kwargs}
@@ -89,7 +86,7 @@ async def create_and_send_act_prescription(chat_id: int, query_act_date_period=N
             continue
 
         await p_bar.update_msg(7)
-        await MyBot.bot.send_message(
+        await bot_send_message(
             chat_id=chat_id, text=f'{Messages.Report.create_successfully} \n'
         )
 
@@ -104,7 +101,10 @@ async def create_and_send_act_prescription(chat_id: int, query_act_date_period=N
         await p_bar.update_msg(9)
         await send_act_prescription(chat_id, full_act_prescription_path)
 
-        await MyBot.bot.send_message(
+        act_prescription_json = await set_act_prescription_json(act_dataframe)
+        await set_act_prescription_in_registry(act_prescription_json)
+
+        await bot_send_message(
             chat_id=chat_id, text=f'{Messages.Report.done} \n'
         )
         await p_bar.update_msg(10)

@@ -1,7 +1,9 @@
+from __future__ import annotations
 import asyncio
 import sys
+import typing
 
-from aiogram import Bot, Dispatcher
+from aiogram import Bot, Dispatcher, types
 from aiogram.utils import executor
 from aiohttp import ClientConnectorError
 
@@ -45,10 +47,11 @@ class MyBot:
     async def run(cls):
         """Сборка и запуск бота"""
         try:
-            executor.start_polling(
+            await executor.start_polling(
                 dispatcher=cls.dp,
                 on_startup=cls.on_startup,
                 on_shutdown=cls.on_shutdown,
+                timeout=200,
                 skip_updates=SKIP_UPDATES,
                 allowed_updates=await cls.get_handled_updates_list(cls.dp)
             )
@@ -124,6 +127,76 @@ class MyBot:
         await dp.storage.close()
         await dp.storage.wait_closed()
         sys.exit()
+
+
+async def bot_send_message(*, chat_id: int | str, text: str,
+                           reply_markup: typing.Union[types.InlineKeyboardMarkup,
+                                                      types.ReplyKeyboardMarkup,
+                                                      types.ReplyKeyboardRemove,
+                                                      types.ForceReply, None] = None,
+                           **kvargs) -> bool:
+    """Используйте этот метод для отправки текстовых сообщений.
+    Источник: https://core.telegram.org/bots/api#sendmessage
+
+    """
+    try:
+        result = await _send_message(chat_id=chat_id, text=text, reply_markup=reply_markup, **kvargs)
+
+    except Exception as err:
+        logger.warning(f'{chat_id = } {repr(err)}')
+        return False
+
+    if result:
+        return True
+    return False
+
+
+async def _send_message(*, chat_id: int | str, text: str,
+                        reply_markup: typing.Union[types.InlineKeyboardMarkup,
+                                                   types.ReplyKeyboardMarkup,
+                                                   types.ReplyKeyboardRemove,
+                                                   types.ForceReply, None] = None,
+                        **kvargs) -> types.Message:
+    msg_result = None
+    try:
+        msg_result = await MyBot.bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup, **kvargs)
+    except Exception as err:
+        logger.error(f'{chat_id = } {repr(err)}')
+
+    return msg_result
+
+
+async def bot_delete_message(*, chat_id: int | str, message_id: int | str, sleep_sec: int = 5) -> bool:
+    """Используйте этот метод для удаления сообщения, в том числе служебного, со следующими ограничениями:
+         - Сообщение может быть удалено только в том случае, если оно было отправлено менее 48 часов назад.
+         - Боты могут удалять исходящие сообщения в приватных чатах, группах и супергруппах.
+         - Боты могут удалять входящие сообщения в приватных чатах.
+         - Боты с разрешениями can_post_messages могут удалять исходящие сообщения в каналах.
+         - Если бот является администратором группы, он может удалить там любое сообщение.
+         - Если у бота есть разрешение can_delete_messages в супергруппе или канале, он может удалить там любое сообщение.
+    Источник: https://core.telegram.org/bots/api#deletemessage
+
+        :param sleep_sec:
+        :param chat_id: Unique identifier for the target chat or username of the target channel
+        :type chat_id: :obj:`typing.Union[base.Integer, base.String]`
+        :param message_id: Identifier of the message to delete
+        :type message_id: :obj:`base.Integer`
+        :return: Returns True on success
+        :rtype: :obj:`base.Boolean`
+    :return:
+    """
+    if sleep_sec:
+        await asyncio.sleep(sleep_sec)
+
+    try:
+        result = await MyBot.bot.delete_message(chat_id=chat_id, message_id=message_id)
+    except Exception as err:
+        logger.warning(f'{chat_id = } {repr(err)}')
+        return False
+
+    if result:
+        return True
+    return False
 
 
 async def test():

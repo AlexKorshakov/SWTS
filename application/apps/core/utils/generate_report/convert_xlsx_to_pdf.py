@@ -1,7 +1,7 @@
 import time
 
 from apps.core.bot.messages.messages import Messages
-from apps.MyBot import MyBot
+from apps.MyBot import bot_send_message
 from loader import logger
 from win32com import client
 
@@ -70,8 +70,8 @@ async def convert_report_to_pdf(chat_id, path: str):
     """
 
     if not await convert_xlsx_to_pdf(path=path):
-        await MyBot.bot.send_message(chat_id=chat_id, text=f'{Messages.Report.error} \n')
-    await MyBot.bot.send_message(chat_id=chat_id, text=f'{Messages.Report.convert_successfully} \n')
+        await bot_send_message(chat_id=chat_id, text=f'{Messages.Report.error} \n')
+    await bot_send_message(chat_id=chat_id, text=f'{Messages.Report.convert_successfully} \n')
 
 
 if __name__ == '__main__':

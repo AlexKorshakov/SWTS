@@ -1,3 +1,4 @@
+from __future__ import annotations
 from loader import logger
 
 logger.debug(f"{__name__} start import")
@@ -17,7 +18,7 @@ from apps.core.bot.messages.messages import Messages
 from apps.core.utils.misc import rate_limit
 from apps.core.utils.secondary_functions.get_json_files import \
     get_registered_users
-from apps.MyBot import MyBot
+from apps.MyBot import MyBot, bot_send_message
 from config.config import ADMIN_ID, DEVELOPER_ID
 
 logger.debug(f"{__name__} finish import")
@@ -25,7 +26,7 @@ logger.debug(f"{__name__} finish import")
 
 @rate_limit(limit=10)
 @MyBot.dp.message_handler(Command('admin_func'))
-async def admin_func_handler(message: types.Message) :
+async def admin_func_handler(message: types.Message):
     """Административные функции
 
     :param message:
@@ -35,14 +36,17 @@ async def admin_func_handler(message: types.Message) :
     chat_id = message.chat.id
 
     if not await check_user_access(chat_id=chat_id, message=message):
+        await bot_send_message(chat_id=chat_id, text=Messages.Error.error_action)
         return
 
     if chat_id != int(ADMIN_ID) or chat_id != int(DEVELOPER_ID):
         await admin_notify(
+
             user_id=chat_id,
             notify_text=f'User @{message.from_user.username}:{chat_id} попытка доступа в админку!'
         )
-        await message.answer(
+        await bot_send_message(
+            chat_id=chat_id,
             text='У Вас нет прав доступа к административным функциям!\n'
                  f'По всем вопросам обращайтесь к администратору\n'
                  f'https://t.me/AlexKor_MSK',
@@ -54,17 +58,19 @@ async def admin_func_handler(message: types.Message) :
         menu_list = board_config.menu_list = ADMIN_MENU_LIST
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level)
-        await message.answer(text=Messages.Admin.answer, reply_markup=reply_markup)
+        await bot_send_message(chat_id=chat_id, text=Messages.Admin.answer, reply_markup=reply_markup)
 
         return
 
-    await message.answer('у вас нет доступа к функциям администратора')
+    await bot_send_message(chat_id=chat_id, text='у вас нет доступа к функциям администратора')
 
 
 @MyBot.dp.callback_query_handler(is_private, lambda call: call.data in ADMIN_MENU_LIST)
-async def admin_function_answer(call: types.CallbackQuery):
+async def admin_function_answer(call: types.CallbackQuery, user_id: int | str = None):
     """Обработка ответов содержащихся в ADMIN_MENU_LIST
     """
+    hse_user_id = call.message.chat.id if call else user_id
+
     users_datas, users_ids = await get_registered_users()
 
     if call.data == 'Показать всех пользователей':
@@ -72,7 +78,7 @@ async def admin_function_answer(call: types.CallbackQuery):
         menu_list = board_config.menu_list = users_datas
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level)
-        await call.message.answer(text=Messages.Admin.answer, reply_markup=reply_markup)
+        await bot_send_message(chat_id=hse_user_id, text=Messages.Admin.answer, reply_markup=reply_markup)
 
     if call.data == 'Оповещение':
 
@@ -132,10 +138,10 @@ async def admin_function_answer(call: types.CallbackQuery):
 
             try:
 
-                await MyBot.dp.bot.send_message(chat_id=user_id, text=text, reply_markup=reply_markup)
+                await bot_send_message(chat_id=user_id, text=text, reply_markup=reply_markup)
             except Exception as err:
                 logger.error(f'bot.send_message error {repr(err)}')
-                MyBot.dp.bot.send_message(chat_id=ADMIN_ID, text='bot.send_message error user_id')
+                await bot_send_message(chat_id=ADMIN_ID, text='bot.send_message error user_id')
                 continue
 
             await admin_notify(

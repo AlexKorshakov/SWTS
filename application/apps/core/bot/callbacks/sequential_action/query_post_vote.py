@@ -25,9 +25,8 @@ from apps.core.utils.generate_report.generate_daily_report.set_daily_report_valu
 from apps.core.utils.generate_report.get_file_list import (
     get_json_file_list, get_registration_json_file_list)
 from apps.core.utils.json_worker.read_json_file import read_json_file
-from apps.MyBot import MyBot
+from apps.MyBot import MyBot, bot_send_message
 from config.config import SEPARATOR
-
 
 logger.debug(f"{__name__} finish import")
 
@@ -90,6 +89,8 @@ async def call_del_current_violation(call: types.CallbackQuery, callback_data: t
 #     :return:
 #     """
 #     chat_id = call.message.chat.id
+#     if not await check_user_access(chat_id=chat_id):
+#         return
 #     action: str = callback_data['action']
 #     registration_text: str = ''
 #
@@ -115,7 +116,7 @@ async def call_del_current_violation(call: types.CallbackQuery, callback_data: t
 #         if registration_data:
 #             registration_text = await get_registration_text(registration_data)
 #
-#         await MyBot.bot.send_message(chat_id, text=registration_text)
+#         await bot_send_message(chat_id, text=registration_text)
 #
 #         menu_level = board_config.menu_level = 1
 #         menu_list = board_config.menu_list = REGISTRATION_DATA_LIST
@@ -145,7 +146,7 @@ async def call_correct_commission_composition(call: types.CallbackQuery, callbac
         if headlines_data:
             headlines_text = await get_headlines_text(headlines_data)
 
-    await MyBot.bot.send_message(chat_id=chat_id, text=headlines_text)
+    await bot_send_message(chat_id=chat_id, text=headlines_text)
 
     menu_level = board_config.menu_level = 1
     menu_list = board_config.menu_list = HEADLINES_DATA_LIST
@@ -172,7 +173,7 @@ async def call_correct_current_post(call: types.CallbackQuery, callback_data: ty
         violations_files_list = await get_json_file_list(chat_id)
         if not violations_files_list:
             logger.warning(Messages.Error.file_list_not_found)
-            await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.file_list_not_found)
+            await bot_send_message(chat_id=chat_id, text=Messages.Error.file_list_not_found)
             return
 
         violations_id = board_config.current_file.split(' ')[0]
@@ -184,7 +185,7 @@ async def call_correct_current_post(call: types.CallbackQuery, callback_data: ty
 
         if not violations_file_path:
             logger.warning(f'{Messages.Error.file_not_found} violations_id: {violations_id}')
-            await MyBot.bot.send_message(chat_id=chat_id,
+            await bot_send_message(chat_id=chat_id,
                                          text=f'{Messages.Error.file_not_found} violations_id: {violations_id}')
             return
 
@@ -192,7 +193,7 @@ async def call_correct_current_post(call: types.CallbackQuery, callback_data: ty
 
         if violations_data:
             violations_text = await get_violations_text(violations_data)
-            await MyBot.bot.send_message(chat_id=chat_id, text=violations_text)
+            await bot_send_message(chat_id=chat_id, text=violations_text)
 
         menu_level = board_config.menu_level = 1
         menu_list = board_config.menu_list = VIOLATIONS_DATA_LIST
