@@ -31,6 +31,8 @@ async def call_correct_characteristic_not(call: types.CallbackQuery, callback_da
     logger.debug(f'{hse_user_id = }')
     logger.debug(f'{callback_data = }')
 
+    await delete_markup(message=call.message)
+
     if not await check_user_access(chat_id=hse_user_id):
         logger.error(f'access fail {hse_user_id = }')
         return
@@ -46,6 +48,8 @@ async def call_correct_character_answer(call: types.CallbackQuery, user_id: str 
     hse_user_id = call.message.chat.id if call else user_id
     logger.debug(f'{hse_user_id = }')
     logger.debug(f'{call.data = }')
+
+    await delete_markup(message=call.message)
 
     if not await check_user_access(chat_id=hse_user_id):
         logger.error(f'access fail {hse_user_id = }')
@@ -87,7 +91,7 @@ async def call_correct_character_answer(call: types.CallbackQuery, user_id: str 
             some_list=title_list, num_col=count_col, level=menu_level, calld_prefix=f"corr_{character_table_name}_"
         )
 
-        character_text: str = await text_processor_character_text(table_dataframe, character, item_number_text)
+        character_text: str = await text_processor_character_text(table_dataframe, 4, item_number_text)
 
         await bot_send_message(
             chat_id=hse_user_id, text=character_text, reply_markup=reply_markup
@@ -145,6 +149,8 @@ async def call_characteristic_answer(call: types.CallbackQuery, user_id: str = N
     hse_user_id = call.message.chat.id if call else user_id
     logger.info(f'{hse_user_id = } {call.data = }')
 
+    await delete_markup(message=call.message)
+
     text_violations = f'Выбрано {characteristic_text}'
 
     reply_markup = await add_act_inline_keyboard_with_action()
@@ -164,6 +170,8 @@ async def call_correct_item_answer(call: types.CallbackQuery, user_id: str | int
     logger.debug(f'{hse_user_id = }')
     logger.debug(f'{call.data = }')
 
+    await delete_markup(message=call.message)
+
     if not await check_user_access(chat_id=hse_user_id):
         logger.error(f'access fail {hse_user_id = }')
         return
@@ -176,7 +184,6 @@ async def call_correct_item_answer(call: types.CallbackQuery, user_id: str | int
     character_id: str = call.data.split('_')[-1]
 
     violations_dataframe = await get_violations_df(item_number, hse_user_id)
-
     if not await check_dataframe(violations_dataframe, hse_user_id):
         return
 
@@ -200,7 +207,7 @@ async def call_correct_item_answer(call: types.CallbackQuery, user_id: str | int
     await bot_delete_message(chat_id=hse_user_id, message_id=msg_id, sleep_sec=15)
 
 
-async def determine_type_characteristic(characteristic) -> str:
+async def determine_type_characteristic(characteristic: str) -> str:
     """
 
     :return:
@@ -240,13 +247,17 @@ async def complex_meaning_handler(hse_user_id, character, item_number, violation
         item_number=item_number, column_name=character, item_value=item_value, hse_user_id=hse_user_id
     )
 
+    result_update_registry: bool = await update_column_value_in_registry(
+        item_number=item_number, column_name=character, item_value=item_value, hse_user_id=hse_user_id
+    )
+
     result_update_google: bool = await update_column_value_in_google_disk(
         item_number=item_number, column_name=character, item_value=item_value, hse_user_id=hse_user_id
     )
 
     spotter_data.clear()
 
-    result_list: list = [result_update_db, result_update_local, result_update_google]
+    result_list: list = [result_update_db, result_update_local, result_update_registry, result_update_google]
 
     if not all(result_list):
         await bot_send_message(
@@ -278,13 +289,18 @@ async def simple_meaning_handler(hse_user_id, character, character_id, item_numb
         hse_user_id=hse_user_id, v_df=violations_dataframe
     )
 
+    result_update_registry: bool = await update_column_value_in_registry(
+        item_number=item_number, column_name=character, item_value=character_id,
+        hse_user_id=hse_user_id, v_df=violations_dataframe
+    )
+
     result_update_google: bool = await update_column_value_in_google_disk(
         item_number=item_number, column_name=character, item_value=character_id, hse_user_id=hse_user_id
     )
 
     spotter_data.clear()
 
-    result_list: list = [result_update_db, result_update_local, result_update_google]
+    result_list: list = [result_update_db, result_update_local, result_update_registry, result_update_google]
 
     if not all(result_list):
         await bot_send_message(
@@ -320,3 +336,29 @@ async def add_act_inline_keyboard_with_action():
     markup.add(types.InlineKeyboardButton('Отмена',
                                           callback_data=posts_cb.new(id='-', action='correct_characteristic_not')))
     return markup
+
+
+async def test():
+    keys = COLUMNS_DICT.keys()
+
+    des_list: list = []
+    for key in keys:
+        if '_id' in key:
+            key_i = key.replace('_id', '')
+            if not CATEGORY_ID_TRANSFORM.get(key_i, None):
+                print(f'{key = }')
+                continue
+
+            des_list.append(CATEGORY_ID_TRANSFORM[key_i].get('description', None))
+        else:
+            if not CATEGORY_ID_TRANSFORM.get(key, None):
+                print(f'{key = }')
+                continue
+
+            des_list.append(CATEGORY_ID_TRANSFORM[key].get('description', None))
+
+    print('\n'.join(des_list))
+
+
+if __name__ == '__main__':
+    asyncio.run(test())

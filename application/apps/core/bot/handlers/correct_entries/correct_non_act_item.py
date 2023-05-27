@@ -5,7 +5,7 @@ from datetime import datetime
 from aiogram import types
 from pandas import DataFrame
 
-from apps.MyBot import MyBot, bot_send_message, bot_delete_message
+from apps.MyBot import MyBot, bot_send_message, bot_delete_message, delete_markup
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.bot.data import board_config
 from apps.core.bot.handlers.correct_entries.correct_support import create_user_dataframe
@@ -110,6 +110,8 @@ async def item_number_answer(call: types.CallbackQuery, user_id: str = None) -> 
     hse_user_id = call.message.chat.id if call else user_id
     logger.info(f'{hse_user_id = } {call.data = }')
 
+    await delete_markup(message=call.message)
+
     text_violations = f'Выбрано {non_act_item_number}'
 
     reply_markup = await add_act_inline_keyboard_with_action()
@@ -184,13 +186,13 @@ async def text_processor_user_violations(user_violations_df: DataFrame) -> str:
         normative_documents_title = await get_item_title_for_id(
             table_name='core_normativedocuments', item_id=item_df['normative_documents_id'].values[0],
         )
-
         normative_documents_desc = await get_item_title_for_id(
             table_name='core_normativedocuments', item_id=item_df['normative_documents_id'].values[0],
             item_name='normative'
         )
 
-        item_info = f'Ном пункта: {item_id} от {created_at} Статус: {item_status} \n' \
+        item_info = f'Ном пункта: {item_id} от {created_at}\n' \
+                    f'Статус: {item_status} \n' \
                     f'Устранить до: {elimination_time} ' \
                     f'Подрядчик: {item_general_contractor_id} \n' \
                     f'Территория: {item_main_location} - {item_sub_location} \n' \

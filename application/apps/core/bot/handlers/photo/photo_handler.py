@@ -33,6 +33,9 @@ async def photo_handler(message: types.Message):
     if not await check_user_access(chat_id=chat_id):
         return
 
+    if await qr_code_processing(message):
+        return
+
     logger.info("photo_handler get photo")
 
     start_violation = board_config.start_violation_mes_id = message.message_id

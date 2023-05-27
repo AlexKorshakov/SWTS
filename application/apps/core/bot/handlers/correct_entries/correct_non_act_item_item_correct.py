@@ -25,7 +25,6 @@ COLUMNS_DICT: dict = {
     # 'violation_id': 'Номер сообщения с записью' # не редактируется,
     'act_number': 'номер Акта',
     'agreed_id': 'согласование',
-    # 'violation_id': 'Номер сообщения с записью' # не редактируется,
     'main_location_id': 'основную локацию',
     'sub_location_id': 'площадку',
     # 'work_shift_id': '',
@@ -96,6 +95,8 @@ async def call_correct_non_act_item_item_correct(call: types.CallbackQuery = Non
     hse_user_id = call.message.chat.id if call else user_id
     logger.debug(f'{hse_user_id = }')
     logger.debug(f'{callback_data = }')
+
+    await delete_markup(message=call.message)
 
     if not await check_user_access(chat_id=hse_user_id):
         logger.error(f'access fail {hse_user_id = }')

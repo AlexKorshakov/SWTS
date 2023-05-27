@@ -48,7 +48,7 @@ async def correct_headlines_data_answer(call: types.CallbackQuery):
         logger.debug(f"id {chat_id} Выбрано: {call.data}")
 
         menu_level = board_config.menu_level = 2
-        menu_list = board_config.menu_list = [item for item in get_data_list("GENERAL_CONTRACTORS")]
+        menu_list = board_config.menu_list = [item for item in get_data_list("GENERAL_CONTRACTORS") if item is not None]
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
         await bot_send_message(chat_id=chat_id, text=Messages.Ask.contractor, reply_markup=reply_markup)

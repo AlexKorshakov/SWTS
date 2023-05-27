@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import math
 from datetime import datetime
 
 from aiogram import types
@@ -25,6 +26,8 @@ async def call_correct_act_item_correct(call: types.CallbackQuery = None, callba
     hse_user_id = call.message.chat.id if call else user_id
     logger.debug(f'{hse_user_id = }')
     logger.debug(f'{callback_data = }')
+
+    await delete_markup(message=call.message)
 
     if not await check_user_access(chat_id=hse_user_id):
         logger.error(f'access fail {hse_user_id = }')
@@ -65,9 +68,13 @@ async def call_correct_act_item_correct(call: types.CallbackQuery = None, callba
     reply_markup: types.InlineKeyboardMarkup = await add_correct_item_inline_keyboard_with_action(violations_dataframe)
 
     text_violations: str = await text_processor_items_act_violations(violations_dataframe, act_number_text)
+    text_v_list = await text_processor(text=text_violations)
+    for item_txt in text_v_list:
+        await bot_send_message(chat_id=hse_user_id, text=item_txt)
 
-    await bot_send_message(chat_id=hse_user_id, text=text_violations, reply_markup=reply_markup)
-
+    await bot_send_message(chat_id=hse_user_id,
+                           text='Выберите пункт акта нажав на соответствующую кнопку',
+                           reply_markup=reply_markup)
     return True
 
 
@@ -77,9 +84,10 @@ async def act_number_answer(call: types.CallbackQuery, user_id: str = None) -> N
     """
 
     act_number = call.data
-
     hse_user_id = call.message.chat.id if call else user_id
     logger.info(f'{hse_user_id = } {call.data = }')
+
+    await delete_markup(message=call.message)
 
     text_violations = f'Выбрано {act_number}'
 
@@ -174,6 +182,27 @@ async def text_processor_items_act_violations(user_violations_df: DataFrame, act
     header_text: str = f'Пункты акта {act_number} : Всего пунктов {len_unique_acts}'
     final_text: str = f'{header_text} \n\n{items_text}'
     return final_text
+
+
+async def text_processor(text: str = None) -> list:
+    """Принимает data_list_to_text[] для формирования текста ответа
+    Если len(text) <= 3500 - отправляет [сообщение]
+    Если len(text) > 3500 - формирует list_with_parts_text = []
+
+    :param text:
+    :return: list - list_with_parts_text
+    """
+    if not text:
+        return []
+
+    step = 3500
+    if len(text) <= step:
+        return [text]
+
+    len_parts = math.ceil(len(text) / step)
+    list_with_parts_text: list = [text[step * (i - 1):step * i] for i in range(1, len_parts + 1)]
+
+    return list_with_parts_text
 
 
 async def get_item_title_for_id(table_name: str, item_id: int, item_name: str = None) -> str:

@@ -28,6 +28,8 @@ async def call_correct_non_act_item_delete(call: types.CallbackQuery = None, cal
     logger.debug(f'{hse_user_id = }')
     logger.debug(f'{callback_data = }')
 
+    await delete_markup(message=call.message)
+
     if not await check_user_access(chat_id=hse_user_id):
         logger.error(f'access fail {hse_user_id = }')
         return
@@ -41,7 +43,7 @@ async def call_correct_non_act_item_delete(call: types.CallbackQuery = None, cal
         await bot_send_message(chat_id=hse_user_id, text=Messages.Error.error_call_text)
         return
 
-    item_number_text = call.message.values['text'].split('_')[-1]
+    item_number_text = call.message.values['text'].split('_')[-1].split(' ')[-1]
     logger.debug(f'{hse_user_id = } {item_number_text = }')
     try:
         item_number_text = int(item_number_text)
@@ -82,6 +84,8 @@ async def call_correct_act_delete_not(call: types.CallbackQuery = None, callback
     logger.debug(f'{hse_user_id = }')
     logger.debug(f'{callback_data = }')
 
+    await delete_markup(message=call.message)
+
     if not await check_user_access(chat_id=hse_user_id):
         logger.error(f'access fail {hse_user_id = }')
         return
@@ -98,6 +102,8 @@ async def call_correct_act_delete_yes(call: types.CallbackQuery = None, callback
     hse_user_id = call.message.chat.id if call else user_id
     logger.debug(f'{hse_user_id = }')
     logger.debug(f'{callback_data = }')
+
+    await delete_markup(message=call.message)
 
     if not await check_user_access(chat_id=hse_user_id):
         logger.error(f'access fail {hse_user_id = }')
