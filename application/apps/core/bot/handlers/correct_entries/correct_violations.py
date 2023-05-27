@@ -1,22 +1,25 @@
 from __future__ import annotations
 
+import asyncio
+
 from aiogram import types
 from pandas import DataFrame
 
-from apps.MyBot import MyBot, bot_send_message, bot_delete_message
+from loader import logger
+from apps.MyBot import MyBot, bot_send_message, bot_delete_message, delete_markup
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.bot.data import board_config
 from apps.core.bot.handlers.correct_entries.correct_acts import call_correct_acts
 from apps.core.bot.handlers.correct_entries.correct_non_act_item_item_correct import \
     RESULT_DICT, create_lite_dataframe_from_query, COLUMNS_DICT
 from apps.core.bot.handlers.correct_entries.correct_support_updater import update_column_value_in_db, \
-    update_column_value_in_local, update_column_value_in_google_disk
+    update_column_value_in_local, update_column_value_in_google_disk, update_column_value_in_registry
 from apps.core.bot.handlers.correct_entries.correct_support import spotter_data, get_item_number_from_call, \
     check_dataframe, check_spotter_data, get_violations_df
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard, posts_cb
 from apps.core.bot.messages.messages import Messages
 from apps.core.database.query_constructor import QueryConstructor
-from loader import logger
+from apps.core.database.transformation_category import CATEGORY_ID_TRANSFORM
 
 
 @MyBot.dp.callback_query_handler(posts_cb.filter(action=['correct_characteristic_not']))
@@ -119,6 +122,9 @@ async def text_processor_character_text(table_dataframe: DataFrame, character: s
 
     items_text: str = '\n'.join(items_text_list)
 
+    if '_id' in character:
+        CATEGORY_ID_TRANSFORM
+
     character_title: str = COLUMNS_DICT.get(character, None)
 
     header_text: str = f'Выберите значение для показателя Изменить "{character_title}" для ' \
@@ -153,6 +159,7 @@ async def call_characteristic_answer(call: types.CallbackQuery, user_id: str = N
 async def call_correct_item_answer(call: types.CallbackQuery, user_id: str | int = None):
     """Обработка ответов
     """
+
     hse_user_id = call.message.chat.id if call else user_id
     logger.debug(f'{hse_user_id = }')
     logger.debug(f'{call.data = }')

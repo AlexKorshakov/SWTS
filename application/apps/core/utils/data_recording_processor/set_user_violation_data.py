@@ -2,7 +2,6 @@ from loader import logger
 
 logger.debug(f"{__name__} start import")
 import asyncio
-from pprint import pprint
 
 from aiogram import types
 from aiogram.types import ReplyKeyboardRemove
@@ -15,7 +14,7 @@ from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.set_user_violation_d
 from apps.core.utils.json_worker.writer_json_file import \
     write_json_violation_user_file
 # import apps.core.bot.data.board_config
-from apps.MyBot import MyBot
+from apps.MyBot import bot_send_message
 
 logger.debug(f"{__name__} finish import")
 
@@ -25,15 +24,15 @@ async def pre_set_violation_data(message: types.Message):
 
     """
     chat_id = message.from_user.id
-    await MyBot.dp.bot.send_message(chat_id=chat_id, text=Messages.Report.begin)
+    await bot_send_message(chat_id=chat_id, text=Messages.Report.begin)
 
     # stop_violation_id = apps.core.bot.data.board_config.stop_violation_mes_id = message.message_id + 3
     # logger.info(f"start_violation message.from_user.id {stop_violation_id}")
 
     await set_violation_data(chat_id=chat_id)
 
-    await MyBot.dp.bot.send_message(chat_id=chat_id, text=Messages.Report.completed_successfully)
-    await MyBot.dp.bot.send_message(chat_id=chat_id, text=Messages.help_message, reply_markup=ReplyKeyboardRemove())
+    await bot_send_message(chat_id=chat_id, text=Messages.Report.completed_successfully)
+    await bot_send_message(chat_id=chat_id, text=Messages.help_message, reply_markup=ReplyKeyboardRemove())
 
     # TODO исправить
     # await cyclical_delete_message(chat_id=chat_id)

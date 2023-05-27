@@ -1,10 +1,11 @@
+from __future__ import annotations
 import datetime
 
 from apps.core.database.db_utils import (db_get_data_dict_from_table_with_id,
                                          db_get_dict_userdata)
 
 from apps.core.utils.secondary_functions.get_filepath import (
-    create_file_path, get_report_full_filepath)
+    create_file_path, get_report_full_filepath, get_report_full_filepath_in_registry)
 from loader import logger
 
 
@@ -82,8 +83,9 @@ async def get_and_create_full_act_prescription_name(chat_id: int, param: dict) -
     try:
         report_full_name = f'Акт-предписание № {act_number} от {act_date} {short_title} {main_location}.xlsx'
         report_path = await get_report_full_filepath(str(chat_id), actual_date=act_date)
+
         await create_file_path(report_path)
-        full_report_path: str = report_path + report_full_name
+        full_report_path: str = f'{report_path}{report_full_name}'
 
         return full_report_path
 
@@ -92,7 +94,7 @@ async def get_and_create_full_act_prescription_name(chat_id: int, param: dict) -
         return ''
 
 
-async def get_full_stat_name(chat_id:int ):
+async def get_full_stat_name(chat_id: int):
     """Получение полного пути к отчету со статистикой
 
     :param chat_id:

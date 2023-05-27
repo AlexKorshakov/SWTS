@@ -2,24 +2,25 @@ from __future__ import annotations
 import asyncio
 import traceback
 from datetime import datetime
-from pprint import pprint
 
 from pandas import DataFrame
 
 from apps.MyBot import bot_send_message, _send_message
 from apps.core.bot.bot_utils.progress_bar import ProgressBar
+from apps.core.bot.handlers.photo.AmazingQRCodeGenerator import create_qr_code, create_qr_code_with_param
 from apps.core.bot.messages.messages import Messages
-from apps.core.database.db_utils import db_get_period_for_current_week
 from apps.core.database.query_constructor import QueryConstructor
-from apps.core.utils.data_recording_processor.set_user_report_data import set_act_data_on_google_drive
+from apps.core.utils.data_recording_processor.set_user_report_data import set_act_data_on_google_drive, \
+    set_act_data_on_data_in_registry
 from apps.core.utils.generate_report.convert_xlsx_to_pdf import convert_report_to_pdf
 from apps.core.utils.generate_report.generate_act_prescription.create_act_prescription import create_act_prescription
 from apps.core.utils.generate_report.generator_report import get_act_number_on_data_base, set_act_data_on_data_base
-from apps.core.utils.generate_report.get_report_path import get_and_create_full_act_prescription_name
+from apps.core.utils.generate_report.get_report_path import get_and_create_full_act_prescription_name, \
+    get_and_create_full_act_prescription_name_in_registry, get_full_qr_report_path
 from apps.core.utils.generate_report.send_report_from_user import send_report_from_user
 from apps.core.utils.reports_processor.report_worker_utils import format_data_db, get_clean_headers, get_query, \
     get_clear_list_value, get_general_constractor_list, create_lite_dataframe_from_query, get_general_constractor_data
-from apps.core.utils.secondary_functions.get_part_date import get_week_message, get_year_message
+from apps.core.utils.secondary_functions.get_filepath import get_report_full_filepath
 from loader import logger
 
 
@@ -54,12 +55,12 @@ async def create_and_send_act_prescription(chat_id: int, query_act_date_period=N
     if not clear_list_value:
         return False
 
-    await p_bar.update_msg(4)
+    await p_bar.update_msg(3)
     general_constractor_ids_list: list = await get_general_constractor_list(clear_list_value=clear_list_value)
     if not general_constractor_ids_list:
         return False
 
-    await p_bar.update_msg(5)
+    await p_bar.update_msg(4)
     for constractor_id in general_constractor_ids_list:
 
         act_dataframe: DataFrame = await get_act_dataframe(
@@ -71,7 +72,7 @@ async def create_and_send_act_prescription(chat_id: int, query_act_date_period=N
         act_number: int = await get_act_number_on_data_base()
         if not act_number:
             act_number: str = '00000'
-        await p_bar.update_msg(6)
+
         full_act_prescription_path: str = await get_full_act_prescription_path(
             chat_id=chat_id, act_number=act_number, act_date=act_date, constractor_id=constractor_id
         )
@@ -85,15 +86,13 @@ async def create_and_send_act_prescription(chat_id: int, query_act_date_period=N
         if not act_is_created:
             continue
 
-        await p_bar.update_msg(7)
-        await bot_send_message(
-            chat_id=chat_id, text=f'{Messages.Report.create_successfully} \n'
-        )
+        await p_bar.update_msg(6)
+        await bot_send_message(chat_id=chat_id, text=f'{Messages.Report.create_successfully} \n')
 
         await set_act_data_on_data_base(
             act_data=act_dataframe, act_num=act_number, act_date=act_date
         )
-        await p_bar.update_msg(8)
+        await p_bar.update_msg(7)
         await set_act_data_on_google_drive(
             chat_id=chat_id, full_report_path=full_act_prescription_path
         )
@@ -107,7 +106,9 @@ async def create_and_send_act_prescription(chat_id: int, query_act_date_period=N
         await bot_send_message(
             chat_id=chat_id, text=f'{Messages.Report.done} \n'
         )
+
         await p_bar.update_msg(10)
+        await bot_send_message(chat_id=chat_id, text=f'{Messages.Report.done} \n')
 
     return True
 
@@ -124,7 +125,7 @@ async def get_act_dataframe(chat_id, act_period, constractor_id, headers):
         type_query='general_contractor_id', table_name=table_name, query_date=act_period,
         value_id=constractor_id, user_id=chat_id
     )
-    print(f'{__name__} {say_fanc_name()} {query}')
+    # print(f'{__name__} {say_fanc_name()} {query}')
 
     act_dataframe: DataFrame = await create_lite_dataframe_from_query(
         chat_id=chat_id, query=query, clean_headers=headers
@@ -198,6 +199,35 @@ async def send_act_prescription(chat_id: int or str, full_act_prescription_path:
         chat_id=chat_id, full_report_path=full_act_prescription_path
     )
     return True
+
+
+#
+# async def set_act_prescription_in_registry(act_prescription_json) -> bool:
+#     """Добавление акта-предписания в хранилище (реестр) актов
+#
+#     :return:
+#     """
+#
+#     # set_json
+#     #
+#     # set_xlsx
+#     #
+#     # set_pdf
+#
+#     return True
+#
+
+# async def set_json_act_prescription_in_registry(full_patch: str, json_name: str, json_data) -> bool:
+#     """
+#
+#     :param json_name:
+#     :param full_patch:
+#     :return:
+#     """
+#     with open(f'{full_patch}\\{json_name}', 'w') as json_file:
+#         json_file.write(json_data)
+#
+#     return True
 
 
 def say_fanc_name():

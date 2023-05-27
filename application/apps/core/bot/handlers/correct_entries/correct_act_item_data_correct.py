@@ -6,14 +6,11 @@ from datetime import datetime
 from aiogram import types
 from pandas import DataFrame
 
-from apps.MyBot import MyBot, bot_send_message
+from apps.MyBot import MyBot, bot_send_message, delete_markup
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.bot.handlers.correct_entries.correct_entries_handler import correct_entries_handler
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
-from apps.core.bot.messages.messages import Messages, LogMessage
-from apps.core.database.db_utils import db_get_data_list, db_get_table_headers, db_update_column_value, \
-    db_update_table_column_value
-from apps.core.database.query_constructor import QueryConstructor
+from apps.core.bot.messages.messages import Messages
 from loader import logger
 
 
@@ -38,7 +35,7 @@ async def call_correct_act_item_data_correct(call: types.CallbackQuery = None, c
         await bot_send_message(chat_id=hse_user_id, text=Messages.Error.error_call_text)
         return
 
-    item_number_text = call.message.values['text'].split('_')[-1]
+    item_number_text = call.message.values['text'].split('_')[-1].split(' ')[-1]
     logger.debug(f'{hse_user_id = } {item_number_text = }')
     await bot_send_message(chat_id=hse_user_id, text=Messages.Error.error_action)
 

@@ -41,7 +41,7 @@ async def call_correct_act_delete(call: types.CallbackQuery = None, callback_dat
         await bot_send_message(chat_id=hse_user_id, text=Messages.Error.error_call_text)
         return
 
-    act_number_text = call.message.values['text'].split('_')[-1]
+    act_number_text = call.message.values['text'].split('_')[-1].split(' ')[-1]
     logger.debug(f'{hse_user_id = } {act_number_text = }')
     try:
         act_number_text = int(act_number_text)
@@ -112,7 +112,7 @@ async def call_correct_act_delete_yes(call: types.CallbackQuery = None, callback
         await bot_send_message(chat_id=hse_user_id, text=Messages.Error.error_call_text)
         return
 
-    act_number_text = call.message.values['text'].split('_')[-1]
+    act_number_text = call.message.values['text'].split('_')[-1].split(' ')[-1]
     logger.debug(f'{hse_user_id = } {act_number_text = }')
 
     query_kwargs: dict = {

@@ -1,3 +1,5 @@
+from apps.core.utils.generate_report.generate_act_prescription.set_act_prescription_json import \
+    set_act_prescription_json
 from loader import logger
 
 logger.debug(f"{__name__} start import")
@@ -5,7 +7,7 @@ logger.debug(f"{__name__} start import")
 from apps.core.bot.messages.messages import Messages
 from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.set_user_report_data_on_google_drive import \
     set_user_report_data_on_google_drive
-from apps.MyBot import MyBot
+from apps.MyBot import bot_send_message
 from config.config import WRITE_DATA_ON_GOOGLE_DRIVE
 
 logger.debug(f"{__name__} finish import")
@@ -19,7 +21,7 @@ async def set_report_data(chat_id: int, full_report_path: str):
     """
 
     await set_user_report_data(chat_id=chat_id, full_report_path=full_report_path)
-    await MyBot.dp.bot.send_message(chat_id=chat_id, text=Messages.Successfully.registration_completed)
+    await bot_send_message(chat_id=chat_id, text=Messages.Successfully.registration_completed)
 
 
 async def set_user_report_data(chat_id: int, full_report_path: str):
@@ -29,7 +31,7 @@ async def set_user_report_data(chat_id: int, full_report_path: str):
     :param full_report_path: полный путь до файла с данными
     """
     if not full_report_path:
-        await MyBot.dp.bot.send_message(chat_id=chat_id, text=Messages.Error.fill_report_path_not_found)
+        await bot_send_message(chat_id=chat_id, text=Messages.Error.fill_report_path_not_found)
         logger.info(Messages.Error.fill_report_path_not_found)
         return
 
@@ -53,7 +55,7 @@ async def set_act_data_on_google_drive(chat_id: int, full_report_path: str):
         return False
 
     if not full_report_path:
-        await MyBot.dp.bot.send_message(chat_id=chat_id, text=Messages.Error.fill_report_path_not_found)
+        await bot_send_message(chat_id=chat_id, text=Messages.Error.fill_report_path_not_found)
         logger.info(Messages.Error.fill_report_path_not_found)
         return
 

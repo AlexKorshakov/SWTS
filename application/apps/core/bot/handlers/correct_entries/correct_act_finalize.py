@@ -6,7 +6,7 @@ from datetime import datetime
 from aiogram import types
 from pandas import DataFrame
 
-from apps.MyBot import MyBot, bot_send_message
+from apps.MyBot import MyBot, bot_send_message, delete_markup
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.bot.handlers.correct_entries.correct_entries_handler import correct_entries_handler
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
@@ -38,7 +38,7 @@ async def call_correct_act_finalize(call: types.CallbackQuery = None, callback_d
         await bot_send_message(chat_id=hse_user_id, text=Messages.Error.error_call_text)
         return
 
-    act_number_text = call.message.values['text'].split('_')[-1]
+    act_number_text = call.message.values['text'].split('_')[-1].split(' ')[-1]
     logger.debug(f'{hse_user_id = } {act_number_text = }')
     try:
         act_number_text = int(act_number_text)
@@ -96,6 +96,8 @@ async def call_correct_act_finalize_yes(call: types.CallbackQuery = None, callba
     logger.debug(f'{hse_user_id = }')
     logger.debug(f'{callback_data = }')
 
+    # await delete_markup(message=call.message)
+
     if not await check_user_access(chat_id=hse_user_id):
         logger.error(f'access fail {hse_user_id = }')
         return
@@ -108,7 +110,7 @@ async def call_correct_act_finalize_yes(call: types.CallbackQuery = None, callba
         await bot_send_message(chat_id=hse_user_id, text=Messages.Error.error_call_text)
         return
 
-    act_number_text = call.message.values['text'].split('_')[-1]
+    act_number_text = call.message.values['text'].split('_')[-1].split(' ')[-1]
     logger.debug(f'{hse_user_id = } {act_number_text = }')
 
     query_kwargs: dict = {

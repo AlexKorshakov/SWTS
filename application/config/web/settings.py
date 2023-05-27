@@ -30,7 +30,7 @@ BASE_DIR = Path(__file__).resolve().parent  # BASE_DIR = \\application\\config\\
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-w4tg(gh+92o1a@@6=vri+zkj&^drxq^#b+vp5&k-%sn*cdxye+"
 
-# SECURITY WARNING: don't run with debug turned on in production!
+# SECURITY WARNING: don't create_qr_code with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = []

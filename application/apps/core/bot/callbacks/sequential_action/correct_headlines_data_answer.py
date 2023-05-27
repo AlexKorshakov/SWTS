@@ -143,7 +143,7 @@ async def all_states(*, chat_id, correct_data, state_name):
     :param chat_id:
     :param correct_data:
     :param state_name:
-    :return:
+    :return: None
     """
     # await bot.send_message(chat_id=chat_id, text="Раздел находится в разработке")
     headlines_text = ''

@@ -5,11 +5,12 @@ import asyncio
 from aiogram import types
 from pandas import DataFrame
 
-from apps.MyBot import MyBot, bot_send_message, bot_delete_message
+from apps.MyBot import MyBot, bot_send_message, bot_delete_message, delete_markup
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.bot.handlers.correct_entries.correct_support import create_user_dataframe, \
     create_lite_dataframe_from_query, get_item_number_from_call, check_dataframe
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
+
 from apps.core.database.db_utils import db_get_data_dict_from_table_with_id
 from apps.core.database.query_constructor import QueryConstructor
 from loader import logger
@@ -21,6 +22,7 @@ COLUMNS_DICT: dict = {
     # 'user_id': '',
     # 'hse_id': '',
     # 'location_id': '' # не редактируется,
+    # 'violation_id': 'Номер сообщения с записью' # не редактируется,
     'act_number': 'номер Акта',
     'agreed_id': 'согласование',
     # 'violation_id': 'Номер сообщения с записью' # не редактируется,
@@ -29,10 +31,10 @@ COLUMNS_DICT: dict = {
     # 'work_shift_id': '',
     # 'created_at': '',
     # 'updated_at': '',
+    # 'is_published': '',
     'main_category_id': 'основную категорию',
     'status_id': 'статус',
     'finished_id': 'статус процесса устранения',
-    # 'is_published': '',
     'comment': 'комментарий к нарушению',
     'description': 'описание нарушения',
     'general_contractor_id': 'подрядную организацию',
@@ -43,8 +45,8 @@ COLUMNS_DICT: dict = {
     'act_required_id': 'требуется ли оформление',
     'elimination_time_id': 'кол-во дней на устранение',
     # 'file_id': '',
-    'photo': 'photo-файл',
     # 'title': '', == comment
+    'photo': 'photo-файл',
     'json': 'json-файл',
 }
 

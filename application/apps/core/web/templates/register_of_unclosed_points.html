@@ -17,6 +17,8 @@
             <th style="text-align: center; vertical-align: top; "> Статус </th>
             <th style="text-align: center; vertical-align: top; "> Описание </th>
             <th style="text-align: center; vertical-align: top; "> Комментарий </th>
+            <th style="text-align: center; vertical-align: top; "> Устранение </th>
+            <th style="text-align: center; vertical-align: top; "> НД </th>
             <th style="text-align: center; vertical-align: top; "> Организация </th>
             <th style="text-align: center; vertical-align: top; "> Дата фиксации </th>
             <th style="text-align: center; vertical-align: top; "> Дней на устранение </th>
@@ -36,9 +38,12 @@
             <td style="text-align: left; vertical-align: top; ">{{ point.finished.title }}</td>
             <td style="text-align: left; vertical-align: top; ">{{ point.description }}</td>
             <td style="text-align: left; vertical-align: top; ">{{ point.comment }}</td>
+            <td style="text-align: left; vertical-align: top; ">{{ point.normative_documents.procedure }}</td>
+            <td style="text-align: left; vertical-align: top; ">{{ point.normative_documents.normative }}</td>
             <td style="text-align: left; vertical-align: top; ">{{ point.general_contractor.title }}</td>
             <td style="text-align: left; vertical-align: top; ">{{ point.created_at }}</td>
             <td style="text-align: left; vertical-align: top; ">{{ point.elimination_time.title }}</td>
+            <td style="text-align: left; vertical-align: top; ">{{ point.final_date }}</td>
 
         </tr>
         {% endfor %}

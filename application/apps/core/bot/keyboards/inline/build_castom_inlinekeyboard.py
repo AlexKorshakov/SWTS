@@ -29,7 +29,7 @@ async def build_inlinekeyboard(*, some_list, num_col=1, level=1, step=None, call
     some_list = check_list_bytes_len(some_list)
 
     if addition:
-        button_list = [item for item in addition if item]
+        button_list = [item for item in addition if item is not None]
 
     if step:
         button_list = button_list + [
@@ -176,7 +176,7 @@ async def add_previous_paragraph_button(reply_markup, previous_level: str) -> In
     return reply_markup
 
 
-async def _build_menu(buttons, n_cols: int = 1, header_buttons: list = None, footer_buttons: list = None) -> list:
+async def _build_menu(buttons: list, n_cols: int = 1, header_buttons: list = None, footer_buttons: list = None) -> list:
     """Создание меню кнопок
     """
     menu = [buttons[i:i + n_cols] for i in range(0, len(buttons), n_cols)]

@@ -93,6 +93,7 @@ async def get_act_headlines_data_values(chat_id, dataframe=None, act_date=None, 
     # TODO  update general_contractor table in DB
     # Ответственное лицо подрядчика
     headlines_data['contractor_representative'] = ' '
+
     # Проект
     main_location_id_list: list = list(set(list(dataframe.main_location_id)))
     item_dict: dict = {}
@@ -214,9 +215,6 @@ async def set_act_footer_values(worksheet, row_number):
      :return:
      """
     row_value = 28 + row_number
-
-    general_contractor: str = headlines_data.get('general_contractor_full_name', None)
-    legal_address: str = headlines_data.get('general_contractor_legal_address', None)
 
     values = [
         {'coordinate': 'B30',

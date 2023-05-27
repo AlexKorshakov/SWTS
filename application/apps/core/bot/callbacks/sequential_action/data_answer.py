@@ -1,27 +1,29 @@
-import asyncio
-
+from __future__ import annotations
 from loader import logger
 
 logger.debug(f"{__name__} start import")
+import asyncio
 from aiogram import types
+from apps.MyBot import bot_send_message
 from apps.core.bot.data import board_config
 from apps.core.bot.data.category import get_data_list
-from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import \
-    build_inlinekeyboard
+from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.reports.report_data import violation_data
 from apps.core.bot.states import AnswerUserState
-
 logger.debug(f"{__name__} finish import")
 
 
-async def get_and_send_start_main_locations_data(call: types.CallbackQuery, callback_data: dict = None):
+async def get_and_send_start_main_locations_data(call: types.CallbackQuery, callback_data: dict = None,
+                                                 user_id: int | str = None) -> bool:
     """Получение данных main_locations
 
+    :param user_id:
     :param callback_data:
     :param call:
-    :return:
+    :return: bool
     """
+    hse_user_id = call.message.chat.id if call else user_id
     this_level = 'main_locations'.upper()
 
     await notify_user_for_choice(call, callback_data, level=this_level)
@@ -33,16 +35,21 @@ async def get_and_send_start_main_locations_data(call: types.CallbackQuery, call
 
     reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=count_col, level=menu_level)
 
-    await call.message.answer(text=Messages.Choose.main_category, reply_markup=reply_markup)
+    await bot_send_message(chat_id=hse_user_id,
+                           text=Messages.Choose.main_category, reply_markup=reply_markup)
+    return True
 
 
-async def get_and_send_main_locations_data(call: types.CallbackQuery, callback_data: dict = None):
+async def get_and_send_main_locations_data(call: types.CallbackQuery, callback_data: dict = None,
+                                           user_id: int | str = None) -> bool:
     """Получение данных main_locations
 
+    :param user_id:
     :param callback_data:
     :param call:
-    :return:
+    :return: bool
     """
+    hse_user_id = call.message.chat.id if call else user_id
     previous_level = 'main_locations'
     this_level = 'main_locations'
     next_level = 'sub_locations'.upper()
@@ -78,12 +85,43 @@ async def get_and_send_main_locations_data(call: types.CallbackQuery, callback_d
     await call.message.answer(text=Messages.Choose.sub_location, reply_markup=reply_markup)
 
 
-async def get_and_send_null_sub_locations_data(call: types.CallbackQuery, callback_data: dict = None):
+async def get_and_send_null_sub_locations_data(call: types.CallbackQuery, callback_data: dict = None,
+                                               user_id: int | str = None) -> bool:
     """Получение данных sub_location
 
+    :param user_id:
     :param callback_data:
     :param call:
-    :return:
+    :return: bool
+    """
+    hse_user_id = call.message.chat.id if call else user_id
+    previous_level: str = 'main_locations'
+    this_level: str = 'sub_locations'
+    next_level: str = 'main_category'.upper()
+
+    await notify_user_for_choice(call, callback_data, level=this_level)
+
+    menu_level = board_config.menu_level = 1
+    menu_list = board_config.menu_list = get_data_list(next_level)
+    count_col = board_config.count_col = 2
+    board_config.previous_level = previous_level
+
+    reply_markup = await build_inlinekeyboard(
+        some_list=menu_list, num_col=count_col, level=menu_level, previous_level=previous_level
+    )
+    await bot_send_message(chat_id=hse_user_id,
+                           text=Messages.Choose.main_category, reply_markup=reply_markup)
+    return True
+
+
+async def get_and_send_sub_locations_data(call: types.CallbackQuery, callback_data: dict = None,
+                                          user_id: int | str = None) -> bool:
+    """Получение данных sub_location
+
+    :param user_id:
+    :param callback_data:
+    :param call:
+    :return: bool
     """
     previous_level = 'main_locations'
     this_level = 'sub_locations'
@@ -96,44 +134,27 @@ async def get_and_send_null_sub_locations_data(call: types.CallbackQuery, callba
     count_col = board_config.count_col = 2
     board_config.previous_level = previous_level
 
-    reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=count_col, level=menu_level,
-                                              previous_level=previous_level)
-    await call.message.answer(text=Messages.Choose.main_category, reply_markup=reply_markup)
+    reply_markup = await build_inlinekeyboard(
+        some_list=menu_list, num_col=count_col, level=menu_level, previous_level=previous_level
+    )
+    await bot_send_message(chat_id=hse_user_id,
+                           text=Messages.Choose.main_category, reply_markup=reply_markup)
+    return True
 
 
-async def get_and_send_sub_locations_data(call: types.CallbackQuery, callback_data: dict = None):
+async def get_and_send_main_category_data(call: types.CallbackQuery, callback_data: dict = None,
+                                          user_id: int | str = None) -> bool:
     """Получение данных sub_location
 
+    :param user_id:
     :param callback_data:
     :param call:
-    :return:
+    :return: bool
     """
-    previous_level = 'main_locations'
-    this_level = 'sub_locations'
-    next_level = 'main_category'.upper()
-
-    await notify_user_for_choice(call, callback_data, level=this_level)
-
-    menu_level = board_config.menu_level = 1
-    menu_list = board_config.menu_list = get_data_list(next_level)
-    count_col = board_config.count_col = 2
-    board_config.previous_level = previous_level
-
-    reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=count_col, level=menu_level,
-                                              previous_level=previous_level)
-    await call.message.answer(text=Messages.Choose.main_category, reply_markup=reply_markup)
-
-
-async def get_and_send_main_category_data(call: types.CallbackQuery, callback_data: dict = None):
-    """Получение данных sub_location
-
-    :param callback_data:
-    :param call:
-    :return:
-    """
-    previous_level = 'main_locations'
-    this_level = 'main_category'
-    next_level = 'category'.upper()
+    hse_user_id = call.message.chat.id if call else user_id
+    previous_level: str = 'main_locations'
+    this_level: str = 'main_category'
+    next_level: str = 'category'.upper()
 
     await notify_user_for_choice(call, callback_data, level=this_level)
 
@@ -147,12 +168,14 @@ async def get_and_send_main_category_data(call: types.CallbackQuery, callback_da
     await call.message.answer(text=Messages.Choose.category, reply_markup=reply_markup)
 
 
-async def get_and_send_category_data(call: types.CallbackQuery, callback_data: dict = None):
+async def get_and_send_category_data(call: types.CallbackQuery, callback_data: dict = None,
+                                     user_id: int | str = None) -> bool:
     """ Получение данных category
 
+    :param user_id:
     :param call:
     :param callback_data:
-    :return:
+    :return: bool
     """
     previous_level = 'main_category'
     this_level = 'category'
@@ -185,12 +208,14 @@ async def get_and_send_category_data(call: types.CallbackQuery, callback_data: d
     await call.message.answer(text=Messages.Choose.normative_documents, reply_markup=reply_markup)
 
 
-async def get_and_send_null_normative_documents_data(call: types.CallbackQuery, callback_data: dict = None):
+async def get_and_send_null_normative_documents_data(call: types.CallbackQuery, callback_data: dict = None,
+                                                     user_id: int | str = None) -> bool:
     """ Получение данных normative_documents
 
+    :param user_id:
     :param call:
     :param callback_data:
-    :return:
+    :return: bool
     """
     previous_level = 'category'
     this_level = 'normative_documents'
@@ -208,12 +233,14 @@ async def get_and_send_null_normative_documents_data(call: types.CallbackQuery, 
     await call.message.answer(text=Messages.Choose.violation_category, reply_markup=reply_markup)
 
 
-async def get_and_send_normative_documents_data(call: types.CallbackQuery, callback_data: dict = None):
+async def get_and_send_normative_documents_data(call: types.CallbackQuery, callback_data: dict = None,
+                                                user_id: int | str = None) -> bool:
     """ Получение данных normative_documents
 
+    :param user_id:
     :param call:
     :param callback_data:
-    :return:
+    :return: bool
     """
     previous_level = 'category'
     this_level = 'normative_documents'
@@ -231,12 +258,14 @@ async def get_and_send_normative_documents_data(call: types.CallbackQuery, callb
     await call.message.answer(text=Messages.Choose.category, reply_markup=reply_markup)
 
 
-async def get_and_send_violation_category_data(call: types.CallbackQuery, callback_data: dict = None):
+async def get_and_send_violation_category_data(call: types.CallbackQuery, callback_data: dict = None,
+                                               user_id: int | str = None) -> bool:
     """Получение данных violation_category
 
+    :param user_id:
     :param call:
     :param callback_data:
-    :return:
+    :return: bool
     """
     previous_level = 'category'
     this_level = 'violation_category'
@@ -254,12 +283,14 @@ async def get_and_send_violation_category_data(call: types.CallbackQuery, callba
     await call.message.answer(text=Messages.Choose.general_constractor, reply_markup=reply_markup)
 
 
-async def get_and_send_general_contractors_data(call: types.CallbackQuery, callback_data: dict = None):
+async def get_and_send_general_contractors_data(call: types.CallbackQuery, callback_data: dict = None,
+                                                user_id: int | str = None) -> bool:
     """Получение данных general_contractors
 
+    :param user_id:
     :param call:
     :param callback_data:
-    :return:
+    :return: bool
     """
     previous_level = 'violation_category'
     this_level = 'general_contractors'
@@ -277,12 +308,14 @@ async def get_and_send_general_contractors_data(call: types.CallbackQuery, callb
     await call.message.answer(text=Messages.Choose.incident_level, reply_markup=reply_markup)
 
 
-async def get_and_send_incident_level_data(call: types.CallbackQuery, callback_data: dict = None):
+async def get_and_send_incident_level_data(call: types.CallbackQuery, callback_data: dict = None,
+                                           user_id: int | str = None) -> bool:
     """Получение данных incident_level
 
+    :param user_id:
     :param call:
     :param callback_data:
-    :return:
+    :return: bool
     """
     previous_level = 'general_contractors'
     this_level = 'incident_level'
@@ -300,16 +333,19 @@ async def get_and_send_incident_level_data(call: types.CallbackQuery, callback_d
     await call.message.answer(text=Messages.Choose.act_required, reply_markup=reply_markup)
 
 
-async def get_and_send_act_required_data(call: types.CallbackQuery, callback_data: dict = None):
+async def get_and_send_act_required_data(call: types.CallbackQuery, callback_data: dict = None,
+                                         user_id: int | str = None) -> bool:
     """Получение данных act_required
 
+    :param user_id:
     :param call:
     :param callback_data:
-    :return:
+    :return: bool
     """
-    previous_level = 'incident_level'
-    this_level = 'act_required'
-    next_level = 'elimination_time'.upper()
+    hse_user_id = call.message.chat.id if call else user_id
+    previous_level: str = 'incident_level'
+    this_level: str = 'act_required'
+    next_level: str = 'elimination_time'.upper()
 
     await notify_user_for_choice(call, callback_data, level=this_level)
 
@@ -323,29 +359,39 @@ async def get_and_send_act_required_data(call: types.CallbackQuery, callback_dat
     await call.message.answer(text=Messages.Choose.elimination_time, reply_markup=reply_markup)
 
 
-async def get_and_send_elimination_time_data(call: types.CallbackQuery, callback_data: dict = None):
+async def get_and_send_elimination_time_data(call: types.CallbackQuery, callback_data: dict = None,
+                                             user_id: int | str = None) -> bool:
     """Получение данных act_required
 
+    :param user_id:
     :param call:
     :param callback_data:
-    :return:
+    :return: bool
     """
+    hse_user_id = call.message.chat.id if call else user_id
     board_config.previous_level = ''
 
     await notify_user_for_choice(call, callback_data, level='act_required')
 
-    await call.message.answer(Messages.Enter.description_violation)
+    await bot_send_message(chat_id=hse_user_id,
+                           text=Messages.Enter.description_violation)
 
     # Вызов состояния ожидания текстового ответа от пользователя
     await AnswerUserState.description.set()
+    return True
 
 
-async def notify_user_for_choice(call, callback_data, level):
+async def notify_user_for_choice(call: types.CallbackQuery, callback_data: dict, level: str,
+                                 user_id: int | str = None) -> bool:
     """Уведомление пользователя о выборе + логирование
 
-    :return:
+    :param level: str
+    :param user_id: int | str
+    :param call:
+    :param callback_data:
+    :return None :
     """
-
+    hse_user_id = call.message.chat.id if call else user_id
     await call.message.edit_reply_markup()
     await call.message.answer(text=f"Выбрано: {call.data}")
     logger.debug(f"Выбрано: {call.data}")
@@ -353,13 +399,14 @@ async def notify_user_for_choice(call, callback_data, level):
     if callback_data:
         logger.debug(f"Выбрано: {callback_data.get('action', None)}")
         logger.debug(f"User {call.message.chat.id} choices {callback_data.get('action', None)} {level}")
+    return True
 
 
 async def text_process(zipped_list: list) -> list:
     """Формирование тела сообщения
 
     :param zipped_list:
-    :return:
+    :return: bool
     """
 
     text = '\n\n'.join(str(item[0]) + " : " + str(item[1]) for item in zipped_list)
@@ -405,7 +452,7 @@ async def test():
 
     for txt in text_list:
         print(txt)
-        # await call.message.answer(text=txt)
+        # await bot_send_message(text=txt)
 
     reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=count_col, level=menu_level,
                                               previous_level=previous_level)

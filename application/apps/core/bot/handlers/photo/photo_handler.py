@@ -1,3 +1,4 @@
+from apps.core.bot.handlers.photo.qr_photo_processing import qr_code_processing
 from loader import logger
 
 logger.debug(f"{__name__} start import")
@@ -27,8 +28,6 @@ logger.debug("message_handler 'photo'")
 async def photo_handler(message: types.Message):
     """Обработчик сообщений с фото
     """
-    # if await photo_processing(message):
-    #     return
 
     chat_id = message.chat.id
     if not await check_user_access(chat_id=chat_id):
@@ -50,5 +49,3 @@ async def photo_handler(message: types.Message):
     #     await preparing_violations_paths_on_pc(message)
 
     await select_start_category(message)
-
-

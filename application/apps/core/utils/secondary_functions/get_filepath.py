@@ -4,6 +4,8 @@ import os
 from os import makedirs
 from pprint import pprint
 
+from apps.core.database.db_utils import db_get_dict_userdata, db_get_data_dict_from_table_with_id
+from apps.core.utils.secondary_functions.get_part_date import get_year_message, get_month_message
 from config.config import REPORT_NAME
 from config.web.settings import BASE_DIR
 from loader import logger
@@ -133,22 +135,25 @@ async def test():
 
 
 async def test2():
-    violation_data = {
-        'user_id': '373084462',
-        'file_id': "01.10.2021___373084462___9493"
-    }
+    # violation_data = {
+    #     'user_id': '373084462',
+    #     'file_id': "01.10.2021___373084462___9493"
+    # }
+    #
+    # violation_data["photo_file_path"] = await get_photo_full_filepath(user_id=violation_data["user_id"])
+    # violation_data["photo_full_name"] = await get_photo_full_filename(user_id=violation_data["user_id"],
+    #                                                                   name=violation_data["file_id"])
+    # await create_file_path(violation_data["photo_file_path"])
+    #
+    # violation_data["json_file_path"] = await get_json_full_filepath(user_id=violation_data["user_id"])
+    # violation_data["json_full_name"] = await get_json_full_filename(user_id=violation_data["user_id"],
+    #                                                                 file_name=violation_data["file_id"])
+    # await create_file_path(violation_data["json_file_path"])
+    #
+    # pprint(violation_data)
 
-    violation_data["photo_file_path"] = await get_photo_full_filepath(user_id=violation_data["user_id"])
-    violation_data["photo_full_name"] = await get_photo_full_filename(user_id=violation_data["user_id"],
-                                                                      name=violation_data["file_id"])
-    await create_file_path(violation_data["photo_file_path"])
-
-    violation_data["json_file_path"] = await get_json_full_filepath(user_id=violation_data["user_id"])
-    violation_data["json_full_name"] = await get_json_full_filename(user_id=violation_data["user_id"],
-                                                                    file_name=violation_data["file_id"])
-    await create_file_path(violation_data["json_file_path"])
-
-    pprint(violation_data)
+    filepath = await get_report_full_filepath_in_registry(373084462)
+    pprint(filepath)
 
 
 if __name__ == "__main__":

@@ -56,6 +56,7 @@ async def call_correct_acts(call: types.CallbackQuery = None, callback_data: typ
         text_violations: str = 'Незакрытых актов не обнаружено!'
         await bot_send_message(chat_id=hse_user_id, text=text_violations)
         return True
+
     if user_violations.empty:
         return False
 

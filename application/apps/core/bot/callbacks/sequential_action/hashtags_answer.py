@@ -17,7 +17,7 @@ logger.debug(f"{__name__} finish import")
 
 
 @MyBot.dp.callback_query_handler(lambda call: call.data[0] == '#')
-async def normative_documents_answer_with_hashtags(call: types.CallbackQuery) -> None:
+async def normative_documents_answer_with_hashtags(call: types.CallbackQuery, user_id: str = None) -> None:
     """Обработка ответов содержащихся в NORMATIVE_DOCUMENTS
     """
 
@@ -30,9 +30,6 @@ async def normative_documents_answer_with_hashtags(call: types.CallbackQuery) ->
 
         db_table_name = 'core_normativedocuments'
         category_id = violation_data.get('category_id', None)
-
-        # TODO заменить на вызов конструктора QueryConstructor
-        query: str = f"SELECT * FROM {db_table_name} WHERE `category_id` == {category_id} AND `hashtags` LIKE '%{hashtag}%'"
 
         kwargs: dict = {
             "action": 'SELECT', "subject": '*',
@@ -55,9 +52,10 @@ async def normative_documents_answer_with_hashtags(call: types.CallbackQuery) ->
 
         short_title: list = [_PREFIX_ND + str(item[0]) for item in datas_query]
         data_list: list = [item[2] for item in datas_query]
-        zipped_list: list = list(zip(short_title, data_list))
 
-        text_list: list = text_process(zipped_list)
+        zipped_list: list = list(zip(short_title, data_list))
+        text_list: list = text_processor(zipped_list)
+
         for item_txt in text_list:
             await bot_send_message(chat_id=hse_user_id, text=item_txt)
 
@@ -70,7 +68,7 @@ async def normative_documents_answer_with_hashtags(call: types.CallbackQuery) ->
     if call.data in get_data_with_hashtags("core_sublocation", item_id=violation_data.get('main_location_id', None)):
         logger.info(f'{__name__} {say_fanc_name()} SUB_LOCATIONS')
 
-        db_table_name = 'core_sublocation'
+        db_table_name:str = 'core_sublocation'
         main_location_id = violation_data.get('main_location_id', None)
 
         kwargs: dict = {
@@ -97,7 +95,7 @@ async def normative_documents_answer_with_hashtags(call: types.CallbackQuery) ->
         data_list: list = [item[2] for item in datas_query]
 
         zipped_list: list = list(zip(short_title, data_list))
-        text_list: list = text_process(zipped_list)
+        text_list: list = text_processor(zipped_list)
 
         for item_txt in text_list:
             chat_id = call.message.chat.id
@@ -112,7 +110,7 @@ async def normative_documents_answer_with_hashtags(call: types.CallbackQuery) ->
     return None
 
 
-def text_process(data_list_to_text: list) -> list:
+def text_processor(data_list_to_text: list) -> list:
     """Принимает data_list_to_text[] для формирования текста ответа
     Если len(text) <= 3500 - отправляет [сообщение]
     Если len(text) > 3500 - формирует list_with_parts_text = []
@@ -152,12 +150,12 @@ if __name__ == '__main__':
 
     datas_query_test: list = db_get_data_list_no_async(query=query_test)
     clean_datas_query_test: list = [item[1] for item in datas_query_test]
-
     short_title = [_PREFIX_ND + str(item[0]) for item in datas_query_test]
+
     data_list = [item[2] for item in datas_query_test]
     zipped_list: list = list(zip(short_title, data_list))
 
-    text_list = text_process(zipped_list)
+    text_list: list = text_processor(zipped_list)
 
     for txt in text_list:
         print(txt)

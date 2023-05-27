@@ -1,27 +1,31 @@
+from __future__ import annotations
 import io
 import json
 
+# from apps.core.utils.secondary_functions.get_filepath import BOT_MEDIA_PATH
 from loader import logger
 
 SUFFIX: str = ".json"
 
 
-async def write_json_file(*, data: dict = None, name: str = None) -> None:
+async def write_json_file(*, data: dict | str = None, name: str = None) -> bool:
     """Запись данных в json
 
     :param name: полный путь к файлу
     :param data: dict  с данными для записи
     """
-    await write_json(name=name, data=data)
+
+    result: bool = await write_json(name=name, data=data)
+    return result
 
 
 async def write_user_registration_data_on_json_on_local_storage(*, user_data: dict = None) -> bool:
     """Запись данных в json
     """
-    name = user_data['reg_json_full_name']
+    name: str = user_data['reg_json_full_name']
 
-    await write_json(name=name, data=user_data)
-    return True
+    result: bool = await write_json(name=name, data=user_data)
+    return result
 
 
 async def write_json_violation_user_file(*, data: dict = None, json_full_name: str = None) -> bool:

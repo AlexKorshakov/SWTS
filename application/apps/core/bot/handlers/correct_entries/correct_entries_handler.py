@@ -10,7 +10,7 @@ from pprint import pprint
 from aiogram import types
 from aiogram.dispatcher.filters import Command
 
-from apps.MyBot import MyBot, bot_send_message
+from apps.MyBot import MyBot, bot_send_message, delete_markup
 from config.config import WRITE_DATA_ON_GOOGLE_DRIVE
 
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
@@ -27,8 +27,7 @@ from apps.core.bot.data.category import CORRECT_COMMANDS_LIST
 # from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard
 # from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import drive_account_credentials
 from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.find_folder import q_request_constructor, \
-    params_constructor, \
-    find_files_by_params
+    params_constructor, find_files_by_params
 from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.folders_deleter import delete_folder
 from apps.core.utils.misc import rate_limit
 
@@ -47,6 +46,7 @@ async def correct_entries_handler(message: types.Message = None, *, hse_user_id=
     """
 
     chat_id = message.chat.id if message else hse_user_id
+
     if not await check_user_access(chat_id=chat_id):
         logger.error(f'access fail {chat_id = }')
         return

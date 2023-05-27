@@ -35,4 +35,4 @@ async def write_data_in_database(*, violation_data: dict) -> bool:
 #
 #
 # if __name__ == "__main__":
-#     asyncio.run(test())
+#     asyncio.create_qr_code(test())

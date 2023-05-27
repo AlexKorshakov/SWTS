@@ -1,17 +1,13 @@
 from loader import logger
-
 logger.debug(f"{__name__} start import")
 import os
+import io
+import json
 import sqlite3
 from os import makedirs
 from pprint import pprint
-
-from apps.core.utils.json_worker.read_json_file import read_json_file
-from apps.core.utils.json_worker.writer_json_file import write_json_file
-from apps.core.utils.secondary_functions.get_json_files import get_files
 from config.config import DATA_BASE_DIR
 from pandas import DataFrame
-
 logger.debug(f"{__name__} finish import")
 
 
@@ -32,7 +28,7 @@ class DataBase:
         file_id = violation.get('file_id', None)
 
         if not file_id:
-            logger.error(f'not found file_id!!!')
+            logger.error('not found file_id!!!')
             return False
 
         location_id = self.get_id(
@@ -377,11 +373,10 @@ class DataBase:
 
     def update_table_column_value(self, query: str, item_name: str, item_value: str):
         """Обновление записи id в database
+        :param query: str
+        :param item_name: str
+        :param item_value: str
 
-        :param table_name: имя таблицы в базе
-        :param id: id записи
-        :param value:  значение для записи в столбец
-        :param column_name: столбец
         """
 
         with self.connection:

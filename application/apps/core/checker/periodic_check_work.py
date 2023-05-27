@@ -6,7 +6,7 @@ from loader import logger
 
 async def periodic_check_work():
     """Периодическое напоминание о работе"""
-    # print(f'run periodic_check_work')
+    # print(f'create_qr_code periodic_check_work')
     while True:
         await asyncio.sleep(1)
         logger.info(f"i'm work ::: {await get_now()}")

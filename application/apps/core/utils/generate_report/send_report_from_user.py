@@ -24,7 +24,7 @@ async def send_report_from_user(chat_id, full_report_path=None):
     try:
         with open(full_report_path, 'rb') as doc:
             await MyBot.bot.send_document(chat_id=chat_id, document=doc,
-                                          caption='Отчет собран для тебя с помощью бота!')
+                                          caption='Отчет собран с помощью бота!')
 
     except Exception as err:
         logger.error(f"send_report_from_user {repr(err)}")

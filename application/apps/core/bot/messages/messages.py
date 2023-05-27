@@ -77,6 +77,7 @@ class Messages:
         bot_start: str = f"Бот успешно запущен..."
         save_data_on_g_drive: str = "Данные сохранены в Google Drive"
         registration_completed: str = "Регистрация прошла успешно"
+        registration_completed_in_registry: str = "Регистрация в хранилище прошла успешно"
         correct_registration_completed: str = "Изменение данных регистрации прошло успешно"
         correct_headlines_completed: str = "Изменение данных шапки отчета прошло успешно"
         correct_violations_completed: str = "Изменение данных нарушения прошло успешно"

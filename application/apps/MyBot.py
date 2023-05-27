@@ -5,6 +5,7 @@ import typing
 
 from aiogram import Bot, Dispatcher, types
 from aiogram.utils import executor
+from aiogram.utils.exceptions import MessageNotModified
 from aiohttp import ClientConnectorError
 
 from apps.core.bot.bot_utils.notify_admins import on_startup_notify
@@ -17,7 +18,6 @@ from config.config import SKIP_UPDATES
 from loader import logger
 
 import nest_asyncio
-
 nest_asyncio.apply()
 
 

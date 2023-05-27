@@ -2,17 +2,14 @@ from loader import logger
 
 logger.debug(f"{__name__} start import")
 import asyncio
-import typing
 from datetime import datetime, timedelta
-from pprint import pprint
 
 from aiogram import types
 from aiogram.dispatcher.filters import Command
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
 from apps.core.bot.messages.messages import Messages
-from apps.core.database.db_utils import (db_get_period_for_current_week,
-                                         db_get_username)
+from apps.core.database.db_utils import (db_get_period_for_current_week, db_get_username)
 from apps.core.utils.generate_report.generate_act_prescription.create_and_send_act_prescription import \
     create_and_send_act_prescription
 from apps.core.utils.misc import rate_limit
@@ -58,7 +55,7 @@ async def add_period_inline_keyboard_with_action():
 
 
 @MyBot.dp.callback_query_handler(posts_cb.filter(action=['gen_act_today']))
-async def call_correct_abort_current_post(call: types.CallbackQuery, callback_data: typing.Dict[str, str]):
+async def call_gen_act_today(call: types.CallbackQuery, callback_data: dict[str, str]):
     """Обработка ответов содержащихся в ADMIN_MENU_LIST
 
     :return:
@@ -76,7 +73,7 @@ async def call_correct_abort_current_post(call: types.CallbackQuery, callback_da
 
         now = datetime.now()
         act_date_period: list = [now.strftime("%d.%m.%Y"), now.strftime("%d.%m.%Y"), ]
-        pprint(f'{act_date_period = }')
+        logger.info(f"{chat_id = } {act_date_period = }")
 
         logger.info(f'User @{username}:{chat_id} generate act prescription')
         if await create_and_send_act_prescription(chat_id=chat_id, query_act_date_period=act_date_period):
@@ -84,7 +81,7 @@ async def call_correct_abort_current_post(call: types.CallbackQuery, callback_da
 
 
 @MyBot.dp.callback_query_handler(posts_cb.filter(action=['gen_act_today_and_previous']))
-async def call_correct_abort_current_post(call: types.CallbackQuery, callback_data: typing.Dict[str, str]):
+async def call_gen_act_today_and_previous(call: types.CallbackQuery, callback_data: dict[str, str]):
     """Обработка ответов содержащихся в ADMIN_MENU_LIST
 
     :return:
@@ -103,7 +100,7 @@ async def call_correct_abort_current_post(call: types.CallbackQuery, callback_da
         now = datetime.now()
         previous = now - timedelta(days=1)
         act_date_period: list = [previous.strftime("%d.%m.%Y"), now.strftime("%d.%m.%Y"), ]
-        pprint(f'{act_date_period = }')
+        logger.info(f"{chat_id = } {act_date_period = }")
 
         logger.info(f'User @{username}:{chat_id} generate act prescription')
         if await create_and_send_act_prescription(chat_id=chat_id, query_act_date_period=act_date_period):
@@ -111,7 +108,7 @@ async def call_correct_abort_current_post(call: types.CallbackQuery, callback_da
 
 
 @MyBot.dp.callback_query_handler(posts_cb.filter(action=['gen_act_current_week']))
-async def call_correct_abort_current_post(call: types.CallbackQuery, callback_data: typing.Dict[str, str]):
+async def call_gen_act_current_week(call: types.CallbackQuery, callback_data: dict[str, str]):
     """Обработка ответов содержащихся в ADMIN_MENU_LIST
 
     :return:
@@ -132,7 +129,7 @@ async def call_correct_abort_current_post(call: types.CallbackQuery, callback_da
         current_year: str = await get_year_message(current_date=now)
 
         act_date_period = await db_get_period_for_current_week(current_week, current_year)
-        pprint(f"{act_date_period = }")
+        logger.info(f"{chat_id = } {act_date_period = }")
 
         logger.info(f'User @{username}:{chat_id} generate act prescription')
         if await create_and_send_act_prescription(chat_id=chat_id, query_act_date_period=act_date_period):
@@ -140,16 +137,16 @@ async def call_correct_abort_current_post(call: types.CallbackQuery, callback_da
 
 
 async def test():
-    user_id = 579531613
+    chat_id = 579531613
     now = datetime.now()
     # previous = now - timedelta(days=1)
     # act_date_period: list = [previous.strftime("%d.%m.%Y"), now.strftime("%d.%m.%Y"), ]
-    # pprint(f'{act_date_period = }')
+    # logger.info(f"{chat_id = } {act_date_period = }")
 
     act_date_period: list = [now.strftime("%d.%m.%Y"), now.strftime("%d.%m.%Y"), ]
-    pprint(f'{act_date_period = }')
+    logger.info(f"{chat_id = } {act_date_period = }")
 
-    if await create_and_send_act_prescription(chat_id=user_id, query_act_date_period=act_date_period):
+    if await create_and_send_act_prescription(chat_id=chat_id, query_act_date_period=act_date_period):
         logger.info(Messages.Report.acts_generated_successfully)
 
 

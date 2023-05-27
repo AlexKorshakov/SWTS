@@ -1,4 +1,4 @@
-from apps.core.database.db_utils import db_get_id, db_get_data_list
+from apps.core.database.db_utils import db_get_data_list
 from apps.core.database.query_constructor import QueryConstructor
 from loader import logger
 

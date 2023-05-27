@@ -1,19 +1,13 @@
 from __future__ import annotations
-
-import asyncio
-from asyncio import FIRST_COMPLETED
-import traceback
-from typing import Union
-from sqlite3 import OperationalError
-
 from loader import logger
 
 logger.debug(f"{__name__} start import")
-from datetime import datetime, timedelta
-
+import asyncio
+from datetime import date, datetime, timedelta
+import traceback
+from typing import Union
+from sqlite3 import OperationalError
 from apps.core.database.DataBase import DataBase
-from apps.core.utils.secondary_functions.get_part_date import (
-    get_month_message, get_year_message)
 from pandas import DataFrame
 
 logger.debug(f"{__name__} finish import")
@@ -198,7 +192,7 @@ async def db_get_id(table, entry, file_id, name) -> int:
     return value
 
 
-async def db_update_column_value(column_name: str, value: Union[None, int, str], violation_id: Union[int, str]) -> bool:
+async def db_update_column_value(column_name: str, value: None | int | str, violation_id: int | str) -> bool:
     """
 
     :return:
@@ -275,7 +269,7 @@ async def db_get_username(user_id: int) -> str:
     :return:
     """
     if not user_id:
-        print(f'ERROR: No user_id foe db_get_username ')
+        logger.error('ERROR: No user_id for db_get_username')
 
     query: str = f'SELECT * FROM `core_hseuser` WHERE `hse_telegram_id` = {user_id}'
     datas_query: list = DataBase().get_data_list(query=query)
@@ -290,7 +284,7 @@ async def db_get_dict_userdata(user_id: int) -> dict:
     :return: dict
     """
     if not user_id:
-        print(f'ERROR: No user_id foe db_get_username ')
+        logger.error('ERROR: No user_id foe db_get_username ')
         return {}
     table_name: str = 'core_hseuser'
 
@@ -304,21 +298,21 @@ async def db_get_dict_userdata(user_id: int) -> dict:
     return dict((header, item_value) for header, item_value in zip(clean_headers, clean_values))
 
 
-async def db_get_period_for_current_week(
-        current_week: str, current_year: str = None) -> list:
+async def db_get_period_for_current_week(current_week: str, current_year: str = None) -> list:
     """Получение данных из core_week по week_number
 
     :return:
     """
     if not current_week:
-        print(f'ERROR: No user_id foe db_get_username ')
+        logger.error('ERROR: No user_id foe db_get_username ')
 
     if not current_year:
         current_year = await get_year_message(current_date=datetime.now())
 
     # TODO заменить на вызов конструктора QueryConstructor
     query: str = f'SELECT * FROM `core_week` WHERE `week_number` = {current_week}'
-    print(f'{__name__} {say_fanc_name()} {query}')
+    logger.debug(f'{__name__} {say_fanc_name()} {query}')
+    # print(f'{__name__} {say_fanc_name()} {query}')
     datas_query: list = DataBase().get_data_list(query=query)
     period_data = datas_query[0]
 
@@ -331,11 +325,8 @@ async def db_get_period_for_current_week(
         period_dict.get(f'end_{current_year}', None)
     ]
 
-    return period
 
-
-async def db_get_period_for_current_month(
-        current_month: str = None, current_year: str = None) -> list:
+async def db_get_period_for_current_month(current_month: str = None, current_year: str = None) -> list:
     """Получение данных из core_week по week_number
 
     :return:
@@ -400,13 +391,13 @@ def db_get_id_no_async(table, entry, file_id: str = None, name=None, condition=N
     #     #         'short_title': True
     #     #     }
     #     # }
-    #     # query: str = asyncio.run( await QueryConstructor(chat_id=None, table_name=table, **kwargs).prepare_data())
+    #     # query: str = asyncio.create_qr_code( await QueryConstructor(chat_id=None, table_name=table, **kwargs).prepare_data())
     #
     #     query = f"SELECT `id` " \
     #             f"FROM `{table}` " \
     #             f"WHERE `short_title` = '{entry}' "
     #
-    #     print(f'get_stat_dataframe {query = }')
+    #     logger.info(f'get_stat_dataframe {query = }')
     #
     #     datas_query: list = DataBase().get_data_list(query=query)
     #
@@ -432,7 +423,7 @@ async def test():
     res: list = await db_get_all_tables_names()
 
     for item in res:
-        print(f'{item}')
+        logger.info(f'{item}')
 
 
 if __name__ == '__main__':

@@ -1,5 +1,4 @@
 import asyncio
-# import traceback
 from datetime import datetime
 
 from pandas import DataFrame
@@ -7,19 +6,20 @@ from pandas import DataFrame
 from loader import logger
 from apps.MyBot import MyBot
 from apps.core.bot.messages.messages import LogMessage, Messages
-from apps.core.database.DataBase import DataBase
-from apps.core.database.db_utils import db_get_table_headers, db_get_data_list
+from apps.core.database.db_utils import db_get_table_headers, db_get_data_list, db_get_data_dict_from_table_with_id
 from apps.core.database.query_constructor import QueryConstructor
 
 
 async def periodic_check_unclosed_points():
     """Периодическая проверка незакрытых пунктов и актов"""
 
+    offset: int = -7
+
     while True:
         await asyncio.sleep(1)
 
         now = datetime.now()
-        if 18 > now.hour > 9:
+        if 18 + offset > now.hour + 1 > 9 + offset:
 
             result_check_list: bool = await check_acts_prescriptions_status()
 
@@ -52,7 +52,7 @@ async def check_acts_prescriptions_status() -> bool:
     }
     query: str = await QueryConstructor(None, 'core_violations', **query_kwargs).prepare_data()
 
-    violations_dataframe: DataFrame = await create_lite_dataframe_from_query(query=query)
+    violations_dataframe: DataFrame = await create_lite_dataframe_from_query(query=query, table_name='core_violations')
     if violations_dataframe.empty:
         logger.error(f'{Messages.Error.dataframe_is_empty}  \n{query = }')
         return False
@@ -81,32 +81,14 @@ async def check_acts_prescriptions_status() -> bool:
         unique_acts_numbers: list = user_violations.act_number.unique().tolist()
         len_unique_acts_numbers: int = len(unique_acts_numbers)
         logger.debug(
-            # f'{__name__} {await say_fanc_name()} {hse_user_id = } len {len_unique_acts_numbers} {unique_acts_numbers = }'
             f'{hse_user_id = } len {len_unique_acts_numbers} {unique_acts_numbers = }'
         )
 
         text_violations = await text_processor_user_violations(user_violations)
 
-        # reply_markup = await add_correct_inline_keyboard_with_action()
-        # await MyBot.bot.send_message(chat_id=hse_user_id, text=text_violations, reply_markup=reply_markup)
         await MyBot.bot.send_message(chat_id=hse_user_id, text=text_violations)
 
     return True
-
-
-# async def add_correct_inline_keyboard_with_action():
-#     """Формирование сообщения с текстом и кнопками действий в зависимости от параметров
-#
-#     :return:
-#     """
-#
-#     markup = types.InlineKeyboardMarkup()
-#
-#     markup.add(types.InlineKeyboardButton('Править акты',
-#                                           callback_data=posts_cb.new(id='-', action='correct_acts')))
-#     markup.add(types.InlineKeyboardButton('Править пункты',
-#                                           callback_data=posts_cb.new(id='-', action='correct_item_violations')))
-#     return markup
 
 
 async def get_hse_role_receive_notifications_list() -> list:
@@ -156,7 +138,6 @@ async def text_processor_user_violations(user_violations: DataFrame) -> str:
 
         act_violations_df = user_violations.copy(deep=True)
         current_act_violations: DataFrame = act_violations_df.loc[act_violations_df['act_number'] == act_number]
-        len_act_violations: int = len(current_act_violations)
 
         unclosed_points_df = current_act_violations.loc[current_act_violations['status_id'] != 1]
         unclosed_points: int = len(unclosed_points_df)
@@ -170,7 +151,8 @@ async def text_processor_user_violations(user_violations: DataFrame) -> str:
     non_acts_text: str = f'Записей вне актов всего: {non_acts_items}'
 
     header_text: str = f'У вас есть незакрытые акты: Всего актов {len_unique_acts}'
-    footer_text: str = 'Для действий выберите в меню соответствующую команду(/correct_entries, /others_commands)'
+    footer_text: str = 'Для действий выберите в меню соответствующую команду(/correct_entries)'
+
     acts_text: str = '\n'.join(act_description)
 
     final_text: str = f'{header_text} \n\n{acts_text} \n\n{non_acts_text} \n\n{footer_text}'
@@ -194,7 +176,25 @@ async def create_user_dataframe(hse_user_id: int, violations_dataframe: DataFram
     return user_violations
 
 
-async def create_lite_dataframe_from_query(query: str) -> DataFrame or None:
+async def get_item_title_for_id(table_name: str, item_id: int, item_name: str = None) -> str:
+    """
+
+    :param item_name:
+    :param table_name:
+    :param item_id:
+    :return:
+    """
+    item_dict: dict = await db_get_data_dict_from_table_with_id(
+        table_name=table_name,
+        post_id=item_id
+    )
+
+    item_name = item_name if item_name else 'title'
+    item_text: str = item_dict.get(item_name, '')
+    return item_text
+
+
+async def create_lite_dataframe_from_query(query: str, table_name: str) -> DataFrame or None:
     """Возвращает list с нарушениями
 
     :return: DataFrame or None
@@ -204,13 +204,12 @@ async def create_lite_dataframe_from_query(query: str) -> DataFrame or None:
         logger.error(f"{LogMessage.Check.no_query} ::: {await get_now()}")
         return None
 
-    violations_data: list = DataBase().get_data_list(query=query)
+    violations_data: list = await db_get_data_list(query=query)
 
     if not violations_data:
         logger.debug(f"{LogMessage.Check.no_violations} ::: {await get_now()}")
         return None
 
-    table_name = 'core_violations'
     headers = await db_get_table_headers(table_name=table_name)
     clean_headers: list = [item[1] for item in headers]
 
@@ -218,7 +217,7 @@ async def create_lite_dataframe_from_query(query: str) -> DataFrame or None:
         dataframe = DataFrame(violations_data, columns=clean_headers)
         return dataframe
     except Exception as err:
-        logger.error(F"create_dataframe {repr(err)}")
+        logger.error(f"create_dataframe {repr(err)}")
         return None
 
 

@@ -66,8 +66,8 @@ if __name__ == '__main__':
     # if '2022-10-30' == datetime.now().strftime("%Y-%m-%d"):
     #     print(f'data is true')
     #
-    # asyncio.run(create_and_send_act_prescription(
+    # asyncio.create_qr_code(create_and_send_act_prescription(
     #     chat_id=chat_id,
     #     query_act_date_period='2022-12-01'
     # ))
-    # asyncio.run(test())
+    # asyncio.create_qr_code(test())

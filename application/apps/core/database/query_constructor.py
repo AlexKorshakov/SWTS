@@ -1,6 +1,5 @@
 """Модуль класса QueryConstructor для формирования запроса по условиям """
 from loader import logger
-
 logger.debug(f"{__name__} start import")
 import asyncio
 from abc import ABCMeta
@@ -107,6 +106,7 @@ class QueryStorageMethods(QueryStorageFields):
 
     async def get_part_finished(self) -> str:
         """Обработка параметра finished и формирование части запроса и part_finished """
+
         if not self.finished_id: return ''
         if self.finished_id: return f'`finished_id` = {self.finished_id} '
 
@@ -147,6 +147,10 @@ class QueryStorageMethods(QueryStorageFields):
     async def get_part_title(self):
         if not self.title: return ''
         return f"`title` = '{self.title}' "
+
+    async def get_part_id(self):
+        if not self.id: return ''
+        return f"`id` = '{self.id}' "
 
     async def get_part_lazy_query(self) -> str:
         """Обработка параметра status_id и формирование части запроса и part_status """
@@ -242,7 +246,9 @@ class QueryConstructor(QueryStorageMethods):
         self.action = kwargs.get('action', None)
         self.subject = kwargs.get('subject', None)
 
-        self.conditions = kwargs.get('conditions', None)
+        self.conditions: dict = kwargs.get('conditions', None)
+        if not self.conditions:
+            return
 
         self.period = self.conditions.get('period', None)
         self.is_admin = self.conditions.get('is_admin', None)
@@ -283,7 +289,7 @@ class QueryConstructor(QueryStorageMethods):
         self.__part_lazy_query = await self.get_part_lazy_query()
 
         self.query = await self.get_query()
-        logger.info(f'\nQueryConstructor: {self.query = }')
+        logger.debug(f'\nQueryConstructor: {self.query = }')
         return self.query
 
     async def get_action_part(self) -> str:
@@ -292,7 +298,7 @@ class QueryConstructor(QueryStorageMethods):
         if self.action in self.main_actions:
             self.action = self.action.upper()
             return self.action
-        raise f"{self.action = } not in self.main_actions"
+        logger.error(f"{self.action = } not in self.main_actions")
 
     async def get_subject_part(self):
         """Формирование части запроса """
@@ -312,11 +318,9 @@ class QueryConstructor(QueryStorageMethods):
         """Формирование запроса
         атрибуты не равные '' или None
         нужные self._part_* не равные '' или None
+
         :return: str query
         """
-
-        # attrs: list = [item for item in self.__dict__ if self.__dict__[item]]
-        # logger.debug(f'{attrs = }')
 
         parts: list = [part.split('__')[-1] for part in self.__dict__ if (self.__dict__[part] and '__' in part)]
         logger.debug(f'{parts = }')
@@ -344,7 +348,7 @@ async def test():
     #     }
     # }
     # query = await QueryConstructor(None, 'core_violations', **kwargs).prepare_data()
-
+    #
     # db_table_name = 'core_normativedocuments'
     # hashtag_test = '#Документация'
     # query_test: str = f"SELECT * FROM {db_table_name} WHERE `category_id` == {16} AND `hashtags` LIKE '%{hashtag_test}%'"
@@ -360,7 +364,6 @@ async def test():
     # query_test = await QueryConstructor(None, db_table_name, **kwargs).prepare_data()
 
     query_test = "SELECT hashtags  FROM `core_sublocation` WHERE `main_location_id` = '1' "
-
     datas_query: list = await db_get_data_list(query=query_test)
     print(f'{len(datas_query) = }')
 
@@ -375,7 +378,7 @@ async def test():
     # data_unpac = [item for sublist in list_of_lists for item in sublist]
     # print(f'{len(data_unpac) = }')
     # print(f'{data_unpac = }')
-
+    #
     # data = [item[0] for item in datas_query if item[0]]
     list_of_lists = [item[0].split(';') for item in datas_query if isinstance(item[0], str)]
     data_unpac = [item for sublist in list_of_lists for item in sublist]

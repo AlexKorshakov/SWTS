@@ -1,10 +1,9 @@
 import asyncio
 
 from aiogram import Dispatcher
+from pandas import DataFrame
 
-from apps.core.database.DataBase import DataBase
-from apps.core.database.query_constructor import QueryConstructor
-from config.config import ADMIN_ID
+from apps.core.database.db_utils import db_get_data_list, db_get_table_headers
 from loader import logger
 
 
@@ -35,7 +34,10 @@ async def on_startup_notify(dp: Dispatcher) -> bool:
     for num, hse_telegram_id in enumerate(admins_datas, start=1):
 
         if not hse_telegram_id:
-            logger.debug(f"Значение не найдено {num = } for {len(admins_datas)} {hse_telegram_id = }")
+            logger.debug(f"Значение не найдено {num = } for {len(hse_role_is_admins_list)} {hse_telegram_id = }")
+            continue
+        if hse_telegram_id not in hse_role_receive_notifications_list:
+            logger.debug(f"Значение не найдено {num = } for {len(hse_role_is_admins_list)} {hse_telegram_id = }")
             continue
 
         try:

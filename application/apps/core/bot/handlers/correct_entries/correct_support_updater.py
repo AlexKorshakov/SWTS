@@ -1,13 +1,16 @@
 from __future__ import annotations
 
+import os
+
 from pandas import DataFrame
 
 from apps.core.bot.handlers.correct_entries.correct_support import create_lite_dataframe_from_query, check_dataframe
-from apps.core.database.db_utils import db_update_column_value
+from apps.core.database.db_utils import db_update_column_value, db_get_dict_userdata, \
+    db_get_data_dict_from_table_with_id
 from apps.core.database.query_constructor import QueryConstructor
 from apps.core.utils.json_worker.read_json_file import read_json_file
 from apps.core.utils.json_worker.writer_json_file import write_json_file
-from apps.core.utils.secondary_functions.get_filepath import BOT_MEDIA_PATH
+from apps.core.utils.secondary_functions.get_filepath import BOT_MEDIA_PATH, REGISTRY_NAME
 from config.config import WRITE_DATA_ON_GOOGLE_DRIVE
 from loader import logger
 
@@ -52,6 +55,7 @@ async def update_column_value_in_local(*, item_number: str | int, column_name: s
             },
         }
         query: str = await QueryConstructor(None, 'core_violations', **query_kwargs).prepare_data()
+
         v_df: DataFrame = await create_lite_dataframe_from_query(query=query, table_name='core_violations')
 
         if not await check_dataframe(v_df, hse_user_id):

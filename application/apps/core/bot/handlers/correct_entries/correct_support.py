@@ -138,7 +138,7 @@ async def get_item_number_from_call(call: types.CallbackQuery, hse_user_id: str 
         await bot_send_message(chat_id=hse_user_id, text=Messages.Error.error_call_text)
         return 0
 
-    item_number_text = call.message.values['text'].split('_')[-1]
+    item_number_text = call.message.values['text'].split('_')[-1].split(' ')[-1]
     logger.debug(f'{hse_user_id = } {item_number_text = }')
 
     try:

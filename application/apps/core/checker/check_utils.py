@@ -265,4 +265,4 @@ def say_fanc_name():
 
 
 # if __name__ == '__main__':
-#     asyncio.run(periodic_check_data_base())
+#     asyncio.create_qr_code(periodic_check_data_base())

@@ -137,7 +137,7 @@ class ListAsQuerySet(list):
 # qs = ListAsQuerySet(custom_list, model=Post)
 
 
-async def delete_violation_files_from_gdrive(violation: dict):
+async def delete_violation_files_from_gdrive(violation: dict) -> bool:
     """Удаление данных violation из Google Drive
 
     :param violation dict данные записи для удаления
@@ -169,6 +169,7 @@ async def delete_violation_files_from_gdrive(violation: dict):
                                       parent_id=violation_photo_parent_id):
         logger.error(Messages.Error.file_not_found)
     logger.info(Messages.Removed.violation_photo_gdrive)
+    return True
 
 
 async def delete_violation_files_from_pc(violation: dict):
