@@ -17,7 +17,7 @@ from apps.core.utils.img_processor.insert_img import (
     insert_service_image, insert_signalline_to_report_body)
 from apps.core.utils.reports_processor.report_worker_utils import \
     get_clean_headers
-from apps.MyBot import MyBot
+from apps.MyBot import bot_send_message
 from loader import logger
 from pandas import DataFrame
 
@@ -66,7 +66,7 @@ async def create_daily_report(chat_id: int, dataframe: DataFrame = None, full_da
             worksheet, dataframe, num, body_val_list, workbook, full_daily_report_report_path
         )
     except Exception as err:
-        await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.file_not_found + str(f' {err} '))
+        await bot_send_message(chat_id=chat_id, text=f'Messages.Error.file_not_found {err} ')
         logger.error(f'create_act_prescription: set_report_violation_values error: {repr(err)}')
         return False
 

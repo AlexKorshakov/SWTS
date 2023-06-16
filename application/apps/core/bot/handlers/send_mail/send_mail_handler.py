@@ -1,7 +1,7 @@
+from __future__ import print_function
 from loader import logger
 
 logger.debug(f"{__name__} start import")
-# from __future__ import print_function
 
 import mimetypes
 import os
@@ -19,7 +19,6 @@ from apps.core.bot.data.category import get_data_list
 from apps.core.bot.messages.messages import Messages
 from apps.core.utils.generate_report.get_file_list import (
     get_registration_json_file_list, get_report_file_list)
-# from apps.core.utils.reports_processor.get_file_list import get_registration_json_file_list, get_report_file_list
 from apps.core.utils.json_worker.read_json_file import read_json_file
 from apps.core.utils.misc import rate_limit
 from apps.MyBot import MyBot, bot_send_message

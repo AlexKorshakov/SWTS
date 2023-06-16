@@ -13,8 +13,6 @@ from config.config import DATA_BASE_DIR
 
 logger.debug(f"{__name__} finish import")
 
-PERIOD = 60 * 30
-
 
 class DataBaseForCheck:
     """Основной класс работы с базой данных для класса PeriodicCheck

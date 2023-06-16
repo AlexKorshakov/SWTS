@@ -160,7 +160,7 @@ async def call_correct_act_finalize_yes(call: types.CallbackQuery = None, callba
 
     if errors_count:
         text: str = f'Акт-предписание не закрыт. Количество ошибок: {errors_count}.'
-        # await MyBot.bot.send_message(chat_id=hse_user_id, text=text)
+        # await bot_send_message(chat_id=hse_user_id, text=text)
         await bot_send_message(chat_id=hse_user_id, text=text)
         return
 
@@ -199,6 +199,7 @@ async def create_lite_dataframe_from_query(query: str, table_name: str) -> DataF
     try:
         dataframe = DataFrame(violations_data, columns=clean_headers)
         return dataframe
+
     except Exception as err:
         logger.error(f"create_dataframe {repr(err)}")
         return None

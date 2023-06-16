@@ -7,7 +7,7 @@ from pprint import pprint
 
 from pandas import DataFrame
 
-from apps.MyBot import MyBot
+from apps.MyBot import bot_send_message
 from apps.core.bot.messages.messages import Messages
 from apps.core.database.db_utils import db_get_period_for_current_week
 from apps.core.database.query_constructor import QueryConstructor
@@ -67,7 +67,7 @@ async def create_and_send_daily_report(chat_id, query_period: list = None, **dai
 
     if daily_report_dataframe.empty:
         logger.error(Messages.Error.dataframe_not_found)
-        await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.dataframe_not_found)
+        await bot_send_message(chat_id=chat_id, text=Messages.Error.dataframe_not_found)
         return False
 
     act_is_created: bool = await create_daily_report(
@@ -80,7 +80,7 @@ async def create_and_send_daily_report(chat_id, query_period: list = None, **dai
         return False
 
     # try:
-    #     await MyBot.bot.send_message(chat_id=chat_id, text=f'{Messages.Report.done} \n')
+    #     await bot_send_message(chat_id=chat_id, text=f'{Messages.Report.done} \n')
     # except Exception as err:
     #     logger.error(f'create_and_send_daily_report Exception {repr(err)}')
 

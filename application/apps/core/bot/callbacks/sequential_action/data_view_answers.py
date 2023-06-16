@@ -15,8 +15,7 @@ from apps.core.utils.generate_report.get_file_list import (
 from apps.core.utils.json_worker.read_json_file import read_json_file
 from apps.core.utils.secondary_functions.get_filepath import \
     get_file_path_user_data
-from apps.MyBot import MyBot
-
+from apps.MyBot import MyBot, bot_send_message
 
 logger.debug(f"{__name__} finish import")
 
@@ -70,8 +69,8 @@ async def view_user_data(*, chat_id: int, view_data, state_name: str):
     :param state_name:
     :return:
     """
-    user_chat_id = ''
-    registration_file_list = []
+    user_chat_id: str = ''
+    registration_file_list: list = []
     params: dict = {}
 
     try:
@@ -85,7 +84,7 @@ async def view_user_data(*, chat_id: int, view_data, state_name: str):
 
     if not registration_file_list:
         logger.warning(Messages.Error.registration_file_list_not_found)
-        await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.file_list_not_found)
+        await bot_send_message(chat_id=chat_id, text=Messages.Error.file_list_not_found)
 
     registration_data = await read_json_file(registration_file_list)
     if not registration_data:
@@ -110,11 +109,11 @@ async def view_user_data(*, chat_id: int, view_data, state_name: str):
     reply_markup = InlineKeyboardMarkup()
     reply_markup.add(InlineKeyboardButton(text='Url', url=f"tg://user?id={registration_data.get('user_id')}"))
 
-    await MyBot.bot.send_message(chat_id=chat_id, text=registration_text, reply_markup=reply_markup)
+    await bot_send_message(chat_id=chat_id, text=registration_text, reply_markup=reply_markup)
 
-    await MyBot.dp.bot.send_message(chat_id=chat_id,
-                                    text=Messages.Successfully.registration_data_received,
-                                    reply_markup=ReplyKeyboardRemove())
+    await bot_send_message(chat_id=chat_id,
+                           text=Messages.Successfully.registration_data_received,
+                           reply_markup=ReplyKeyboardRemove())
 
 
 async def get_registration_text(registration_data) -> str:

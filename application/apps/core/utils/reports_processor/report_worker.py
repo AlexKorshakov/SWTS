@@ -16,7 +16,7 @@ from apps.core.utils.generate_report.get_report_path import \
     get_full_report_name
 from apps.core.utils.generate_report.send_report_from_user import \
     send_report_from_user
-from apps.MyBot import MyBot
+from apps.MyBot import bot_send_message
 from loader import logger
 
 
@@ -30,19 +30,19 @@ async def create_and_send_report(chat_id:int):
     file_list = await get_json_file_list(chat_id=chat_id)
     if not file_list:
         logger.warning(Messages.Error.file_list_not_found)
-        await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.file_list_not_found)
+        await bot_send_message(chat_id=chat_id, text=Messages.Error.file_list_not_found)
 
     report_dataframe = await get_data_report(chat_id=chat_id, file_list=file_list)
     if report_dataframe.empty:
         logger.warning(Messages.Error.dataframe_not_found)
-        await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.dataframe_not_found)
+        await bot_send_message(chat_id=chat_id, text=Messages.Error.dataframe_not_found)
 
     full_report_path = await get_full_report_name(chat_id=chat_id)
     await create_report_from_other_method(chat_id=chat_id,
                                           full_report_path=full_report_path,
                                           file_list=file_list)
 
-    await MyBot.bot.send_message(chat_id=chat_id, text=f'{Messages.Report.done} \n')
+    await bot_send_message(chat_id=chat_id, text=f'{Messages.Report.done} \n')
 
     await set_report_data(chat_id=chat_id, full_report_path=full_report_path)
 

@@ -1,3 +1,4 @@
+from apps.MyBot import bot_send_message
 from loader import logger
 
 logger.debug(f"{__name__} start import")
@@ -26,6 +27,8 @@ async def get_keyboard_fab() -> InlineKeyboardMarkup:
 async def select_start_category(message: types.Message) -> None:
     """Действия при начале регистрации нарушения / начале работы бота
     """
+
+    chat_id = message.chat.id
     markup = await get_keyboard_fab()
 
-    await message.answer(text="Зарегистрировать нарушение?", reply_markup=markup)
+    await bot_send_message(chat_id=chat_id, text="Зарегистрировать нарушение?", reply_markup=markup)

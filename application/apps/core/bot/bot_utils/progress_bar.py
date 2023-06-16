@@ -3,7 +3,7 @@ import asyncio
 from aiogram import types
 from aiogram.types import InlineKeyboardMarkup
 
-from apps.MyBot import MyBot, _send_message
+from apps.MyBot import _send_message, bot_send_message
 from loader import logger
 
 
@@ -29,7 +29,7 @@ class ProgressBar:
         :return:
         """
         try:
-            self.msg = await MyBot.bot.send_message(
+            self.msg = await bot_send_message(
                 chat_id=self.chat,
                 text=self.empty_character * 10,
                 reply_markup=self.reply_markup
@@ -96,7 +96,7 @@ async def test():
     # await p_bar_2.update_msg(7)
     # await p_bar_2.finish()
 
-    # msg = await MyBot.bot.send_message(chat_id=chat, text='□' * 10)
+    # msg = await bot_send_message(chat_id=chat, text='□' * 10)
     # msg = await progress_bar_start(chat)
     msg = await _send_message(chat_id=chat, text='⬜' * 10)
 

@@ -22,10 +22,11 @@ logger.debug(f"{__name__} finish import")
 
 
 @MyBot.dp.callback_query_handler(move_action.filter(action=["previous_paragraph"]))
-async def previous_paragraph_answer(call: types.CallbackQuery, callback_data: dict):
+async def previous_paragraph_answer(call: types.CallbackQuery, callback_data: dict, user_id: [int, str] = None):
     """Обработка ответов содержащихся в previous_paragraph
     """
 
+    chat_id = call.message.chat.id if call else user_id
     if callback_data['previous_value'] == 'main_locations':
         await get_and_send_main_locations_data(call, callback_data)
 
@@ -92,7 +93,7 @@ async def previous_paragraph_answer(call: types.CallbackQuery, callback_data: di
         await get_and_send_elimination_time_data(call, callback_data)
 
     else:
-        logger.debug(f"Выбрано: {callback_data['action']}")
+        logger.debug(f"{chat_id = }  Выбрано: {callback_data['action']}")
         logger.info(f"User {call.message.chat.id} choices {callback_data['action']}")
         logger.info(f"{call.data = }")
         logger.info(f"{callback_data = }")

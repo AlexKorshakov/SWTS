@@ -17,7 +17,7 @@ from apps.core.utils.reports_processor.report_worker_utils import (
     create_lite_dataframe_from_query, format_data_db, get_clean_headers)
 from apps.core.utils.secondary_functions.get_part_date import (
     get_month_message, get_week_message, get_year_message)
-from apps.MyBot import MyBot
+from apps.MyBot import bot_send_message
 from loader import logger
 from pandas import DataFrame
 
@@ -71,7 +71,7 @@ async def create_and_send_stat(chat_id, query_period: [list, str] = None, **stat
 
     if stat_dataframe.empty:
         logger.error(Messages.Error.dataframe_not_found)
-        await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.dataframe_not_found)
+        await bot_send_message(chat_id=chat_id, text=Messages.Error.dataframe_not_found)
         return False
 
     full_stat_path: str = await get_full_stat_name(chat_id=chat_id)
@@ -86,7 +86,7 @@ async def create_and_send_stat(chat_id, query_period: [list, str] = None, **stat
     if not stat_is_created:
         return False
 
-    await MyBot.bot.send_message(chat_id=chat_id, text=f'{Messages.Report.done} \n')
+    await bot_send_message(chat_id=chat_id, text=f'{Messages.Report.done} \n')
 
     await send_stat(chat_id=chat_id, full_report_path=full_stat_path)
 

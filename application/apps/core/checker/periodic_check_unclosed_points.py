@@ -1,10 +1,12 @@
+from __future__ import annotations
 import asyncio
+import traceback
 from datetime import datetime
 
 from pandas import DataFrame
 
 from loader import logger
-from apps.MyBot import MyBot
+from apps.MyBot import bot_send_message
 from apps.core.bot.messages.messages import LogMessage, Messages
 from apps.core.database.db_utils import db_get_table_headers, db_get_data_list, db_get_data_dict_from_table_with_id
 from apps.core.database.query_constructor import QueryConstructor
@@ -80,13 +82,11 @@ async def check_acts_prescriptions_status() -> bool:
 
         unique_acts_numbers: list = user_violations.act_number.unique().tolist()
         len_unique_acts_numbers: int = len(unique_acts_numbers)
-        logger.debug(
-            f'{hse_user_id = } len {len_unique_acts_numbers} {unique_acts_numbers = }'
-        )
+        logger.debug(f'{hse_user_id = } len {len_unique_acts_numbers} {unique_acts_numbers = }')
 
         text_violations = await text_processor_user_violations(user_violations)
 
-        await MyBot.bot.send_message(chat_id=hse_user_id, text=text_violations)
+        await bot_send_message(chat_id=hse_user_id, text=text_violations)
 
     return True
 
@@ -96,7 +96,11 @@ async def get_hse_role_receive_notifications_list() -> list:
     """
 
     db_table_name: str = 'core_hseuser'
-    query: str = f'SELECT * FROM {db_table_name}'
+    kwargs: dict = {
+        "action": 'SELECT',
+        "subject": '*',
+    }
+    query: str = await QueryConstructor(table_name=db_table_name, **kwargs).prepare_data()
     datas_query: list = await db_get_data_list(query=query)
 
     if not datas_query:
@@ -228,9 +232,9 @@ async def get_now() -> str:
     return datetime.now().strftime("%d.%m.%Y %H:%M:%S")
 
 
-# async def say_fanc_name():
-#     stack = traceback.extract_stack()
-#     return str(stack[-2][2])
+async def fanc_name():
+    stack = traceback.extract_stack()
+    return str(stack[-2][2])
 
 
 async def test():

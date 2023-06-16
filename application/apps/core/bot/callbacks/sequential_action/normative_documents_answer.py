@@ -29,6 +29,11 @@ async def normative_documents_answer(call: types.CallbackQuery):
         if call.data == _PREFIX_ND + "0":
             await get_and_send_null_normative_documents_data(call)
 
+            await set_violation_atr_data("normative_documents", 'Нет нужной записи')
+            await set_violation_atr_data("normative_documents_normative", 'укажите НД')
+            await set_violation_atr_data("normative_documents_procedure", 'укажите процедуру устранения по НД')
+            return
+
         nd_data: list = []
         try:
             condition: dict = {

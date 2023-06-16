@@ -10,22 +10,12 @@ from pprint import pprint
 from aiogram import types
 from aiogram.dispatcher.filters import Command
 
-from apps.MyBot import MyBot, bot_send_message, delete_markup
+from apps.MyBot import MyBot, bot_send_message
 from config.config import WRITE_DATA_ON_GOOGLE_DRIVE
 
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
 from apps.core.bot.messages.messages import Messages
-
-# from apps.core.utils.generate_report.get_file_list import get_json_file_list
-# from apps.core.bot.callbacks.sequential_action.correct_registration_data_answer import get_correct_data
-# from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb, \
-#     add_subtract_inline_keyboard_with_action
-# from apps.core.bot.data import board_config
-from apps.core.bot.data.category import CORRECT_COMMANDS_LIST
-# from apps.core.bot.messages.messages import Messages
-# from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard
-# from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import drive_account_credentials
 from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.find_folder import q_request_constructor, \
     params_constructor, find_files_by_params
 from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.folders_deleter import delete_folder
@@ -81,7 +71,7 @@ async def call_correct_db_items(call: types.CallbackQuery, callback_data: typing
         logger.error(f'access fail {hse_user_id = }')
         return
 
-    await MyBot.bot.send_message(chat_id=hse_user_id, text=Messages.Error.error_action)
+    await bot_send_message(chat_id=hse_user_id, text=Messages.Error.error_action)
     logger.error(f'{hse_user_id = } Messages.Error.error_action')
 
     # await act_generate_handler(call.message)
@@ -97,7 +87,7 @@ async def call_correct_db_items(call: types.CallbackQuery, callback_data: typing
 #
 #     if not file_list:
 #         logger.warning(Messages.Error.file_list_not_found)
-#         await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.file_list_not_found)
+#         await bot_send_message(chat_id=chat_id, text=Messages.Error.file_list_not_found)
 #
 #     for file_path in file_list:
 #         file = await read_json_file(file_path)

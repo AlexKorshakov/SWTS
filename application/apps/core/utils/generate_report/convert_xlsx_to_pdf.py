@@ -70,8 +70,8 @@ async def convert_report_to_pdf(chat_id, path: str):
     """
 
     if not await convert_xlsx_to_pdf(path=path):
-        await bot_send_message(chat_id=chat_id, text=f'{Messages.Report.error} \n')
-    await bot_send_message(chat_id=chat_id, text=f'{Messages.Report.convert_successfully} \n')
+        await bot_send_message(chat_id=chat_id, text=Messages.Report.error)
+    await bot_send_message(chat_id=chat_id, text=Messages.Report.convert_successfully)
 
 
 if __name__ == '__main__':

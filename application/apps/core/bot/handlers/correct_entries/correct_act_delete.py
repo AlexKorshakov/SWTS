@@ -121,15 +121,16 @@ async def call_correct_act_delete_yes(call: types.CallbackQuery = None, callback
     act_number_text = call.message.values['text'].split('_')[-1].split(' ')[-1]
     logger.debug(f'{hse_user_id = } {act_number_text = }')
 
+    table_name = 'core_violations'
     query_kwargs: dict = {
         "action": 'SELECT', "subject": '*',
         "conditions": {
             "act_number": act_number_text,
         },
     }
-    query: str = await QueryConstructor(None, 'core_violations', **query_kwargs).prepare_data()
+    query: str = await QueryConstructor(None, table_name, **query_kwargs).prepare_data()
 
-    violations_dataframe: DataFrame = await create_lite_dataframe_from_query(query=query, table_name='core_violations')
+    violations_dataframe: DataFrame = await create_lite_dataframe_from_query(query=query, table_name=table_name)
     if violations_dataframe.empty:
         logger.error(f'{hse_user_id = } {Messages.Error.dataframe_is_empty}  \n{query = }')
         return

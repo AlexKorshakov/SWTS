@@ -1,12 +1,15 @@
 from loader import logger
 
 logger.debug(f"{__name__} start import")
+
 import asyncio
 import os
 import re
 from pprint import pprint
 from aiogram import types
 
+from apps.MyBot import bot_send_message
+from apps.core.bot.messages.messages_test import msg
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.bot_utils.bot_admin_notify import admin_notify
 from apps.core.database.db_utils import db_get_table_headers, db_get_data_list
@@ -33,6 +36,7 @@ async def get_list_table_values(chat_id: int) -> list:
     """
 
     db_table_name: str = 'core_hseuser'
+    # TODO заменить на вызов конструктора QueryConstructor
     query: str = f'SELECT * FROM {db_table_name} WHERE `hse_telegram_id` = {str(chat_id)}'
     datas_query: list = await db_get_data_list(query=query)
 
@@ -85,7 +89,6 @@ async def get_hse_user_data(*, message: types.Message = None) -> dict:
 
     :return: dict
     """
-
     chat_id = message.chat.id
 
     table_data: list = await get_list_table_values(chat_id)
@@ -107,13 +110,12 @@ async def check_user_access(*, chat_id, message: types.Message = None, notify_ad
     :return: bool
     """
 
-    if message:
-        chat_id = message.chat.id
+    chat_id = chat_id if chat_id else message.chat.id
 
     table_data: list = await get_list_table_values(chat_id)
     if not table_data:
         logger.error(f'access fail {chat_id = } {table_data =}')
-        await user_access_fail(chat_id, message)
+        await user_access_fail(chat_id, message, hse_id=chat_id)
         return False
 
     table_headers: list = await get_list_table_headers()
@@ -121,33 +123,33 @@ async def check_user_access(*, chat_id, message: types.Message = None, notify_ad
 
     if not hse_user_data_dict:
         logger.error(f'access fail {chat_id = } {hse_user_data_dict =}')
-        await user_access_fail(chat_id, message)
+        await user_access_fail(chat_id, message, hse_id=chat_id)
         return False
 
     if not hse_user_data_dict.get('hse_is_work', None):
         logger.error(
             f"access fail {chat_id = } {hse_user_data_dict =} hse_is_work {hse_user_data_dict.get('hse_is_work', None)}")
-        await user_access_fail(chat_id, message)
+        await user_access_fail(chat_id, message, hse_id=chat_id)
         return False
 
     if not hse_user_data_dict.get('hse_status', None):
         logger.error(
             f"access fail {chat_id = } {hse_user_data_dict =} hse_status {hse_user_data_dict.get('hse_status', None)}")
-        await user_access_fail(chat_id, message)
+        await user_access_fail(chat_id, message, hse_id=chat_id)
         return False
 
     hse_user_role_dict: dict = await get_dict_hse_user_role(hse_user_data_dict)
-    logger.debug(f'{chat_id} ::: {hse_user_role_dict = }')
+    logger.debug(f'{chat_id = } ::: {hse_user_role_dict = }')
 
     if not hse_user_role_dict.get('hse_role_is_user', None):
-        logger.info(f"{chat_id} ::: {hse_user_role_dict.get('hse_role_is_user', None) = }")
+        logger.info(f"{chat_id = } ::: {hse_user_role_dict.get('hse_role_is_user', None) = }")
         logger.error(
             f"access fail {chat_id = } {hse_user_role_dict =} hse_status {hse_user_role_dict.get('hse_role_is_user', None)}")
-        await user_access_fail(chat_id, message)
+        await user_access_fail(chat_id, message, hse_id=chat_id)
         return False
 
     if notify_admin:
-        logger.error(f"{notify_admin = }")
+        logger.info(f"{notify_admin = }")
         await user_access_granted(chat_id)
 
     return True
@@ -166,38 +168,37 @@ async def check_user_registration_data_file(file_path: str) -> bool:
 
     if file_dict.get('user_id'):
         return True
-
     return False
 
 
-async def user_access_fail(chat_id: int, message: types.Message, notify_text: str = None):
+async def user_access_fail(chat_id: int, message: types.Message, notify_text: str = None, hse_id: str = None):
     """Отправка сообщения о недостатке прав
     """
-
-    if not notify_text:
-        notify_text: str = f'User {chat_id} попытка доступа к функциям без регистрации'
-    logger.error(notify_text)
-
-    await admin_notify(user_id=chat_id, notify_text=notify_text)
+    hse_id = hse_id if hse_id else message.chat.id
 
     try:
+        default_answer_text: str = f'У вас нет прав доступа \n По всем вопросам обращайтесь к администратору\n' \
+                                   f'https://t.me/AlexKor_MSK \n\n'
 
-        await message.answer(
-            text=f'У вас нет прав доступа \n {Messages.help_message}!\n'
-                 f'По всем вопросам обращайтесь к администратору\n'
-                 f'https://t.me/AlexKor_MSK',
-            disable_web_page_preview=True
-        )
+        part_1 = f"{await msg(hse_id, cat='error', msge='access_fail', default=default_answer_text).get_msg_async()}"
+        part_2 = f"{await msg(hse_id, cat='help', msge='help_message', default=Messages.help_message).get_msg_async()}"
+        answer_text = f'{part_1}\n\n{part_2}'
+        print(f'{answer_text = }')
+
+        await bot_send_message(chat_id=chat_id, text=answer_text, disable_web_page_preview=True)
         return
 
     except Exception as err:
         logger.error(f'User {chat_id} ошибка уведомления пользователя {repr(err)}')
+        await admin_notify(user_id=chat_id, notify_text=notify_text)
 
-        try:
-            button = types.InlineKeyboardButton(text=f'{chat_id}', url=f"tg://user?id={chat_id}")
-            await admin_notify(user_id=chat_id, notify_text=notify_text, button=button)
-        except Exception as err:
-            logger.error(f'User {chat_id} ошибка уведомления ADMIN_ID {repr(err)}')
+    finally:
+        if not notify_text:
+            notify_text: str = f'User {chat_id} попытка доступа к функциям без регистрации'
+
+        logger.error(notify_text)
+        button = types.InlineKeyboardButton(text=f'{chat_id}', url=f"tg://user?id={chat_id}")
+        await admin_notify(user_id=chat_id, notify_text=notify_text, button=button)
 
 
 async def user_access_granted(chat_id: int):
@@ -227,9 +228,9 @@ async def get_user_data_dict(chat_id: int) -> tuple[dict, dict]:
 
 async def test2():
     chat_id = '373084462'
-    answer: bool = await check_user_access(chat_id=chat_id)
+    user_access: bool = await check_user_access(chat_id=chat_id)
 
-    pprint(answer)
+    pprint(f"{user_access = }")
 
 
 if __name__ == "__main__":

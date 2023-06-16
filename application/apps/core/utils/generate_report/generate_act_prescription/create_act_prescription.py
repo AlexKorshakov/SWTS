@@ -20,13 +20,11 @@ from apps.MyBot import bot_send_message
 from loader import logger
 
 
-# from apps.core.bot.reports.report_data import headlines_data
-
-
 async def create_act_prescription(chat_id: int, act_number: int, dataframe: DataFrame, full_act_path: str,
-                                  act_date: str = None) -> bool:
+                                  act_date: str = None, qr_img_insert: bool = False) -> bool:
     """Формирование Акта-предписания из dataframe
 
+    :param qr_img_insert:
     :param act_number: int
     :param act_date:
     :param full_act_path:
@@ -57,7 +55,7 @@ async def create_act_prescription(chat_id: int, act_number: int, dataframe: Data
     try:
         row_number = await set_act_violation_values(worksheet, dataframe, workbook, full_act_path)
     except Exception as err:
-        await bot_send_message(chat_id=chat_id, text=Messages.Error.file_not_found + str(f' {err} '))
+        await bot_send_message(chat_id=chat_id, text=f'Messages.Error.file_not_found {repr(err)} ')
         logger.error(f'create_act_prescription: set_act_violation_values error: {repr(err)}')
         return False
 

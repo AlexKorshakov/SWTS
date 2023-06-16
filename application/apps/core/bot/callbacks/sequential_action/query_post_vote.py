@@ -49,7 +49,7 @@ async def call_del_current_violation(call: types.CallbackQuery, callback_data: d
         try:
             if board_config.current_file != item:
                 continue
-            logger.debug(f"Выбрано: {item}")
+            logger.debug(f"{chat_id = }  Выбрано: {item}")
             await call.message.edit_reply_markup()  # удаление клавиатуры
             for file in board_config.violation_file:
                 if file['description'] != item:
@@ -104,14 +104,14 @@ async def call_del_current_violation(call: types.CallbackQuery, callback_data: d
 #
 #         if not registration_file_list:
 #             logger.warning(Messages.Error.registration_file_list_not_found)
-#             await MyBot.bot.send_message(chat_id, Messages.Error.file_list_not_found)
+#             await bot_send_message(chat_id, Messages.Error.file_list_not_found)
 #             return
 #
 #         registration_data: dict = await read_json_file(registration_file_list)
 #
 #         if not registration_data:
 #             logger.error(f"registration_data is empty")
-#             await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.file_list_not_found)
+#             await bot_send_message(chat_id=chat_id, text=Messages.Error.file_list_not_found)
 #             return
 #
 #         if registration_data:

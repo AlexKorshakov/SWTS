@@ -77,12 +77,16 @@ async def get_and_send_main_locations_data(call: types.CallbackQuery, callback_d
     text_list = await text_process(zipped_list)
 
     for txt in text_list:
-        await call.message.answer(text=txt)
+        await bot_send_message(chat_id=hse_user_id,
+                               text=txt)
 
-    reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=count_col, level=menu_level,
-                                              previous_level=previous_level)
+    reply_markup = await build_inlinekeyboard(
+        some_list=menu_list, num_col=count_col, level=menu_level, previous_level=previous_level
+    )
 
-    await call.message.answer(text=Messages.Choose.sub_location, reply_markup=reply_markup)
+    await bot_send_message(chat_id=hse_user_id,
+                           text=Messages.Choose.sub_location, reply_markup=reply_markup)
+    return True
 
 
 async def get_and_send_null_sub_locations_data(call: types.CallbackQuery, callback_data: dict = None,
@@ -123,9 +127,10 @@ async def get_and_send_sub_locations_data(call: types.CallbackQuery, callback_da
     :param call:
     :return: bool
     """
-    previous_level = 'main_locations'
-    this_level = 'sub_locations'
-    next_level = 'main_category'.upper()
+    hse_user_id = call.message.chat.id if call else user_id
+    previous_level: str = 'main_locations'
+    this_level: str = 'sub_locations'
+    next_level: str = 'main_category'.upper()
 
     await notify_user_for_choice(call, callback_data, level=this_level)
 
@@ -163,9 +168,12 @@ async def get_and_send_main_category_data(call: types.CallbackQuery, callback_da
     count_col = board_config.count_col = 1
     board_config.previous_level = previous_level
 
-    reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=count_col, level=menu_level,
-                                              previous_level=previous_level)
-    await call.message.answer(text=Messages.Choose.category, reply_markup=reply_markup)
+    reply_markup = await build_inlinekeyboard(
+        some_list=menu_list, num_col=count_col, level=menu_level, previous_level=previous_level
+    )
+    await bot_send_message(chat_id=hse_user_id,
+                           text=Messages.Choose.category, reply_markup=reply_markup)
+    return True
 
 
 async def get_and_send_category_data(call: types.CallbackQuery, callback_data: dict = None,
@@ -177,9 +185,10 @@ async def get_and_send_category_data(call: types.CallbackQuery, callback_data: d
     :param callback_data:
     :return: bool
     """
-    previous_level = 'main_category'
-    this_level = 'category'
-    next_level = 'normative_documents'.upper()
+    hse_user_id = call.message.chat.id if call else user_id
+    previous_level: str = 'main_category'
+    this_level: str = 'category'
+    next_level: str = 'normative_documents'.upper()
 
     await notify_user_for_choice(call, callback_data, level=this_level)
 
@@ -201,14 +210,19 @@ async def get_and_send_category_data(call: types.CallbackQuery, callback_data: d
     text_list = await text_process(zipped_list)
 
     for txt in text_list:
-        await call.message.answer(text=txt)
+        await bot_send_message(chat_id=hse_user_id,
+                               text=txt)
 
-    reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=count_col, level=menu_level,
-                                              previous_level=previous_level)
-    await call.message.answer(text=Messages.Choose.normative_documents, reply_markup=reply_markup)
+    reply_markup = await build_inlinekeyboard(
+        some_list=menu_list, num_col=count_col, level=menu_level, previous_level=previous_level
+    )
+    await bot_send_message(chat_id=hse_user_id,
+                           text=Messages.Choose.normative_documents, reply_markup=reply_markup)
+    return True
 
 
-async def get_and_send_null_normative_documents_data(call: types.CallbackQuery, callback_data: dict = None,
+async def get_and_send_null_normative_documents_data(call: types.CallbackQuery,
+                                                     callback_data: dict = None,
                                                      user_id: int | str = None) -> bool:
     """ Получение данных normative_documents
 
@@ -217,9 +231,10 @@ async def get_and_send_null_normative_documents_data(call: types.CallbackQuery, 
     :param callback_data:
     :return: bool
     """
-    previous_level = 'category'
-    this_level = 'normative_documents'
-    next_level = 'violation_category'.upper()
+    hse_user_id = call.message.chat.id if call else user_id
+    previous_level: str = 'category'
+    this_level: str = 'normative_documents'
+    next_level: str = 'violation_category'.upper()
 
     await notify_user_for_choice(call, callback_data, level=this_level)
 
@@ -228,9 +243,12 @@ async def get_and_send_null_normative_documents_data(call: types.CallbackQuery, 
     count_col = board_config.count_col = 2
     board_config.previous_level = previous_level
 
-    reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=count_col, level=menu_level,
-                                              previous_level=previous_level)
-    await call.message.answer(text=Messages.Choose.violation_category, reply_markup=reply_markup)
+    reply_markup = await build_inlinekeyboard(
+        some_list=menu_list, num_col=count_col, level=menu_level, previous_level=previous_level
+    )
+    await bot_send_message(chat_id=hse_user_id,
+                           text=Messages.Choose.violation_category, reply_markup=reply_markup)
+    return True
 
 
 async def get_and_send_normative_documents_data(call: types.CallbackQuery, callback_data: dict = None,
@@ -242,9 +260,10 @@ async def get_and_send_normative_documents_data(call: types.CallbackQuery, callb
     :param callback_data:
     :return: bool
     """
-    previous_level = 'category'
-    this_level = 'normative_documents'
-    next_level = 'violation_category'.upper()
+    hse_user_id = call.message.chat.id if call else user_id
+    previous_level: str = 'category'
+    this_level: str = 'normative_documents'
+    next_level: str = 'violation_category'.upper()
 
     await notify_user_for_choice(call, callback_data, level=this_level)
 
@@ -253,9 +272,12 @@ async def get_and_send_normative_documents_data(call: types.CallbackQuery, callb
     count_col = board_config.count_col = 2
     board_config.previous_level = previous_level
 
-    reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=count_col, level=menu_level,
-                                              previous_level=previous_level)
-    await call.message.answer(text=Messages.Choose.category, reply_markup=reply_markup)
+    reply_markup = await build_inlinekeyboard(
+        some_list=menu_list, num_col=count_col, level=menu_level, previous_level=previous_level
+    )
+    await bot_send_message(chat_id=hse_user_id,
+                           text=Messages.Choose.category, reply_markup=reply_markup)
+    return True
 
 
 async def get_and_send_violation_category_data(call: types.CallbackQuery, callback_data: dict = None,
@@ -267,9 +289,10 @@ async def get_and_send_violation_category_data(call: types.CallbackQuery, callba
     :param callback_data:
     :return: bool
     """
-    previous_level = 'category'
-    this_level = 'violation_category'
-    next_level = 'general_contractors'.upper()
+    hse_user_id = call.message.chat.id if call else user_id
+    previous_level: str = 'category'
+    this_level: str = 'violation_category'
+    next_level: str = 'general_contractors'.upper()
 
     await notify_user_for_choice(call, callback_data, level=this_level)
 
@@ -278,9 +301,12 @@ async def get_and_send_violation_category_data(call: types.CallbackQuery, callba
     count_col = board_config.count_col = 1
     board_config.previous_level = previous_level
 
-    reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=count_col, level=menu_level,
-                                              previous_level=previous_level)
-    await call.message.answer(text=Messages.Choose.general_constractor, reply_markup=reply_markup)
+    reply_markup = await build_inlinekeyboard(
+        some_list=menu_list, num_col=count_col, level=menu_level, previous_level=previous_level
+    )
+    await bot_send_message(chat_id=hse_user_id,
+                           text=Messages.Choose.general_constractor, reply_markup=reply_markup)
+    return True
 
 
 async def get_and_send_general_contractors_data(call: types.CallbackQuery, callback_data: dict = None,
@@ -292,9 +318,10 @@ async def get_and_send_general_contractors_data(call: types.CallbackQuery, callb
     :param callback_data:
     :return: bool
     """
-    previous_level = 'violation_category'
-    this_level = 'general_contractors'
-    next_level = 'incident_level'.upper()
+    hse_user_id = call.message.chat.id if call else user_id
+    previous_level: str = 'violation_category'
+    this_level: str = 'general_contractors'
+    next_level: str = 'incident_level'.upper()
 
     await notify_user_for_choice(call, callback_data, level=this_level)
 
@@ -303,9 +330,12 @@ async def get_and_send_general_contractors_data(call: types.CallbackQuery, callb
     count_col = board_config.count_col = 1
     board_config.previous_level = previous_level
 
-    reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=count_col, level=menu_level,
-                                              previous_level=previous_level)
-    await call.message.answer(text=Messages.Choose.incident_level, reply_markup=reply_markup)
+    reply_markup = await build_inlinekeyboard(
+        some_list=menu_list, num_col=count_col, level=menu_level, previous_level=previous_level
+    )
+    await bot_send_message(chat_id=hse_user_id,
+                           text=Messages.Choose.incident_level, reply_markup=reply_markup)
+    return True
 
 
 async def get_and_send_incident_level_data(call: types.CallbackQuery, callback_data: dict = None,
@@ -317,9 +347,10 @@ async def get_and_send_incident_level_data(call: types.CallbackQuery, callback_d
     :param callback_data:
     :return: bool
     """
-    previous_level = 'general_contractors'
-    this_level = 'incident_level'
-    next_level = 'act_required'.upper()
+    hse_user_id = call.message.chat.id if call else user_id
+    previous_level: str = 'general_contractors'
+    this_level: str = 'incident_level'
+    next_level: str = 'act_required'.upper()
 
     await notify_user_for_choice(call, callback_data, level=this_level)
 
@@ -328,9 +359,12 @@ async def get_and_send_incident_level_data(call: types.CallbackQuery, callback_d
     count_col = board_config.count_col = 1
     board_config.previous_level = previous_level
 
-    reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=count_col, level=menu_level,
-                                              previous_level=previous_level)
-    await call.message.answer(text=Messages.Choose.act_required, reply_markup=reply_markup)
+    reply_markup = await build_inlinekeyboard(
+        some_list=menu_list, num_col=count_col, level=menu_level, previous_level=previous_level
+    )
+    await bot_send_message(chat_id=hse_user_id,
+                           text=Messages.Choose.act_required, reply_markup=reply_markup)
+    return True
 
 
 async def get_and_send_act_required_data(call: types.CallbackQuery, callback_data: dict = None,
@@ -354,9 +388,12 @@ async def get_and_send_act_required_data(call: types.CallbackQuery, callback_dat
     count_col = board_config.count_col = 2
     board_config.previous_level = previous_level
 
-    reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=count_col, level=menu_level,
-                                              previous_level=previous_level)
-    await call.message.answer(text=Messages.Choose.elimination_time, reply_markup=reply_markup)
+    reply_markup = await build_inlinekeyboard(
+        some_list=menu_list, num_col=count_col, level=menu_level, previous_level=previous_level
+    )
+    await bot_send_message(chat_id=hse_user_id,
+                           text=Messages.Choose.elimination_time, reply_markup=reply_markup)
+    return True
 
 
 async def get_and_send_elimination_time_data(call: types.CallbackQuery, callback_data: dict = None,
@@ -393,11 +430,11 @@ async def notify_user_for_choice(call: types.CallbackQuery, callback_data: dict,
     """
     hse_user_id = call.message.chat.id if call else user_id
     await call.message.edit_reply_markup()
-    await call.message.answer(text=f"Выбрано: {call.data}")
-    logger.debug(f"Выбрано: {call.data}")
+    await bot_send_message(chat_id=hse_user_id, text=f"Выбрано: {call.data}")
+    logger.debug(f"{hse_user_id = } Выбрано: {call.data}")
 
     if callback_data:
-        logger.debug(f"Выбрано: {callback_data.get('action', None)}")
+        logger.debug(f"{hse_user_id = } Выбрано: {callback_data.get('action', None)}")
         logger.debug(f"User {call.message.chat.id} choices {callback_data.get('action', None)} {level}")
     return True
 
@@ -428,9 +465,9 @@ async def text_process(zipped_list: list) -> list:
 
 
 async def test():
-    previous_level = 'main_category'
-    this_level = 'category'
-    next_level = 'normative_documents'.upper()
+    previous_level: str = 'main_category'
+    this_level: str = 'category'
+    next_level: str = 'normative_documents'.upper()
 
     short_title = get_data_list(next_level,
                                 category='ТС/Спецтехника',
@@ -454,8 +491,9 @@ async def test():
         print(txt)
         # await bot_send_message(text=txt)
 
-    reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=count_col, level=menu_level,
-                                              previous_level=previous_level)
+    reply_markup = await build_inlinekeyboard(
+        some_list=menu_list, num_col=count_col, level=menu_level, previous_level=previous_level
+    )
     print(reply_markup)
 
 

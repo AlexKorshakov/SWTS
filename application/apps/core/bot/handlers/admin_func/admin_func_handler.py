@@ -41,7 +41,6 @@ async def admin_func_handler(message: types.Message):
 
     if chat_id != int(ADMIN_ID) or chat_id != int(DEVELOPER_ID):
         await admin_notify(
-
             user_id=chat_id,
             notify_text=f'User @{message.from_user.username}:{chat_id} попытка доступа в админку!'
         )

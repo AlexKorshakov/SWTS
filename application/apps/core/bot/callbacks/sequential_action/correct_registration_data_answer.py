@@ -33,19 +33,19 @@ async def correct_registration_data_answer(call: types.CallbackQuery):
     reply_markup.add(Messages.correct_cancel)
 
     if call.data == "ФИО":
-        logger.debug(f"Выбрано: {call.data}")
+        logger.debug(f"{hse_chat_id = } Выбрано: {call.data}")
         await CorrectRegisterState.name.set()
 
         await bot_send_message(chat_id=hse_chat_id, text=Messages.Ask.name, reply_markup=reply_markup)
 
     if call.data == "Должность":
-        logger.debug(f"Выбрано: {call.data}")
+        logger.debug(f"{hse_chat_id = } Выбрано: {call.data}")
         await CorrectRegisterState.function.set()
 
         await bot_send_message(chat_id=hse_chat_id, text=Messages.Ask.function, reply_markup=reply_markup)
 
     if call.data == "Смена":
-        logger.debug(f"Выбрано: {call.data}")
+        logger.debug(f"{hse_chat_id = } Выбрано: {call.data}")
 
         menu_level = board_config.menu_level = 2
         menu_list = board_config.menu_list = [item for item in get_data_list("WORK_SHIFT") if item]
@@ -56,13 +56,13 @@ async def correct_registration_data_answer(call: types.CallbackQuery):
         await CorrectRegisterState.work_shift.set()
 
     if call.data == "Телефон":
-        logger.debug(f"Выбрано: {call.data}")
+        logger.debug(f"{hse_chat_id = } Выбрано: {call.data}")
         await CorrectRegisterState.phone_number.set()
 
         await bot_send_message(chat_id=hse_chat_id, text=Messages.Ask.phone_number, reply_markup=reply_markup)
 
     if call.data == "Место работы":
-        logger.debug(f"Выбрано: {call.data}")
+        logger.debug(f"{hse_chat_id = } Выбрано: {call.data}")
 
         menu_level = board_config.menu_level = 2
         menu_list = board_config.menu_list = [list(item.keys())[0] for item in get_data_list("METRO_STATION")]
@@ -207,7 +207,7 @@ async def get_correct_data(*, chat_id: int, call: CallbackQuery, json_file_name:
         await bot_send_message(chat_id=chat_id, text=text)
         return correct_data
 
-    logger.debug(f"chat_id {chat_id} Выбрано: {correct_data}")
+    logger.debug(f"{chat_id = } Выбрано: {correct_data}")
     await bot_send_message(chat_id=chat_id, text=f"Выбрано: {correct_data}")
     await call.message.edit_reply_markup()
 

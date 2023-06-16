@@ -5,6 +5,7 @@ import typing
 from datetime import datetime
 
 from aiogram import types
+from aiogram.types import InlineKeyboardMarkup
 from pandas import DataFrame
 
 from apps.MyBot import MyBot, bot_send_message, bot_delete_message, delete_markup
@@ -106,7 +107,11 @@ async def act_number_answer(call: types.CallbackQuery, user_id: str = None) -> N
 
     text_violations = f'Выбрано {act_number}'
 
-    reply_markup = await add_act_inline_keyboard_with_action()
+    reply_markup: InlineKeyboardMarkup = await add_act_inline_keyboard_with_action()
+
+    reply_markup.add(types.InlineKeyboardButton(
+        text='Скачать акт',
+        callback_data=posts_cb.new(id='-', action='correct_act_download')))
 
     await bot_send_message(chat_id=hse_user_id, text=f'{text_violations}', reply_markup=reply_markup)
 
@@ -152,7 +157,11 @@ async def get_hse_role_receive_notifications_list() -> list:
     """Получение списка пользователей кому отправляются уведомления
     """
     db_table_name: str = 'core_hseuser'
-    query: str = f'SELECT * FROM {db_table_name}'
+    kwargs: dict = {
+        "action": 'SELECT',
+        "subject": '*',
+    }
+    query: str = await QueryConstructor(table_name=db_table_name, **kwargs).prepare_data()
     datas_query: list = await db_get_data_list(query=query)
 
     if not datas_query:

@@ -19,7 +19,7 @@ from apps.core.utils.generate_report.generate_stat.create_and_send_stat import \
 from apps.core.utils.misc import rate_limit
 from apps.core.utils.secondary_functions.get_part_date import (
     get_month_message, get_week_message, get_year_message)
-from apps.MyBot import MyBot
+from apps.MyBot import MyBot, bot_send_message
 
 logger.debug(f"{__name__} finish import")
 
@@ -40,7 +40,7 @@ async def stat_generate_handler(message: types.Message) -> None:
 
     reply_markup = await stat_add_period_inline_keyboard_with_action(is_admin)
 
-    await message.answer(text=Messages.Choose.period, reply_markup=reply_markup)
+    await bot_send_message(chat_id=chat_id, text=Messages.Choose.period, reply_markup=reply_markup)
 
 
 async def stat_add_period_inline_keyboard_with_action(is_admin: bool = None):
@@ -82,8 +82,7 @@ async def call_correct_abort_current_post(call: types.CallbackQuery, callback_da
         logger.info(f'User: @{username} user_id: {chat_id} choose {action} for generate stat')
         print(f'User: @{username} user_id: {chat_id} choose {action} for generate stat')
 
-        await call.message.answer(f'{Messages.Report.start_act} \n'
-                                  f'{Messages.wait}')
+        await bot_send_message(chat_id=chat_id, text=f'{Messages.Report.start_act} \n {Messages.wait}')
 
         now = datetime.now()
         stat_date_period: list = [now.strftime("%d.%m.%Y"), now.strftime("%d.%m.%Y"), ]
@@ -116,8 +115,7 @@ async def call_correct_abort_current_post(call: types.CallbackQuery, callback_da
         logger.info(f'User: @{username} user_id: {chat_id} choose {action} for generate stat')
         print(f'User: @{username} user_id: {chat_id} choose {action} for generate stat')
 
-        await call.message.answer(f'{Messages.Report.start_report} \n'
-                                  f'{Messages.wait}')
+        await bot_send_message(chat_id=chat_id, text=f'{Messages.Report.start_report} \n {Messages.wait}')
 
         now = datetime.now()
         previous = now - timedelta(days=1)
@@ -150,8 +148,7 @@ async def call_correct_abort_current_post(call: types.CallbackQuery, callback_da
         logger.info(f'User: @{username} user_id: {chat_id} choose {action} for generate stat')
         print(f'User: @{username} user_id: {chat_id} choose {action} for generate stat')
 
-        await call.message.answer(f'{Messages.Report.start_act} \n'
-                                  f'{Messages.wait}')
+        await bot_send_message(chat_id=chat_id, text=f'{Messages.Report.start_act} \n {Messages.wait}')
 
         now = datetime.now()
         current_week: str = await get_week_message(current_date=now)
@@ -186,8 +183,7 @@ async def call_correct_abort_current_post(call: types.CallbackQuery, callback_da
         logger.info(f'User: @{username} user_id: {chat_id} choose {action} for generate stat')
         print(f'User: @{username} user_id: {chat_id} choose {action} for generate stat')
 
-        await call.message.answer(f'{Messages.Report.start_act} \n'
-                                  f'{Messages.wait}')
+        await bot_send_message(chat_id=chat_id, text=f'{Messages.Report.start_act} \n {Messages.wait}')
 
         now = datetime.now()
         current_month: str = await get_month_message(current_date=now)
@@ -224,8 +220,7 @@ async def call_correct_abort_current_post(call: types.CallbackQuery, callback_da
         logger.info(f'User: @{username} user_id: {chat_id} choose {action} for generate stat')
         print(f'User: @{username} user_id: {chat_id} choose {action} for generate stat')
 
-        await call.message.answer(f'{Messages.Report.start_act} \n'
-                                  f'{Messages.wait}')
+        await bot_send_message(chat_id=chat_id, text=f'{Messages.Report.start_act} \n {Messages.wait}')
 
         now = datetime.now()
         current_week: str = await get_week_message(current_date=now)
@@ -260,8 +255,7 @@ async def call_correct_abort_current_post(call: types.CallbackQuery, callback_da
         logger.info(f'User: @{username} user_id: {chat_id} choose {action} for generate stat')
         print(f'User: @{username} user_id: {chat_id} choose {action} for generate stat')
 
-        await call.message.answer(f'{Messages.Report.start_act} \n'
-                                  f'{Messages.wait}')
+        await bot_send_message(chat_id=chat_id, text=f'{Messages.Report.start_act} \n {Messages.wait}')
 
         now = datetime.now()
         current_month: str = await get_month_message(current_date=now)
@@ -298,8 +292,7 @@ async def call_correct_abort_current_post(call: types.CallbackQuery, callback_da
         logger.info(f'User: @{username} user_id: {chat_id} choose {action} for generate stat')
         print(f'User: @{username} user_id: {chat_id} choose {action} for generate stat')
 
-        await call.message.answer(f'{Messages.Report.start_act} \n'
-                                  f'{Messages.wait}')
+        await bot_send_message(chat_id=chat_id, text=f'{Messages.Report.start_act} \n {Messages.wait}')
         now = datetime.now()
         stat_date_period: list = ['01.01.2022', now.strftime("%d.%m.%Y"), ]
         logger.info(f"{stat_date_period = }")

@@ -6,7 +6,7 @@ import typing
 from aiogram import types
 from aiogram.dispatcher.filters import Command
 
-from apps.MyBot import MyBot
+from apps.MyBot import MyBot, bot_send_message
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
 from apps.core.bot.messages.messages import Messages
@@ -24,14 +24,13 @@ async def add_entries_handler(message: types.Message):
     """
 
     chat_id = message.chat.id
-
     if not await check_user_access(chat_id=chat_id):
         logger.error(f'access fail {chat_id = }')
         return
 
     reply_markup = await add_entries_inline_keyboard_with_action()
 
-    await message.answer(text=Messages.Choose.generate_doc, reply_markup=reply_markup)
+    await bot_send_message(chat_id=chat_id, text=Messages.Choose.generate_doc, reply_markup=reply_markup)
 
 
 async def add_entries_inline_keyboard_with_action():

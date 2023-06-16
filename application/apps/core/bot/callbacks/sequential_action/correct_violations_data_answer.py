@@ -34,21 +34,21 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
     reply_markup.add(Messages.correct_cancel)
 
     if call.data == "Описание нарушения":
-        logger.debug(f"id {chat_id} Выбрано: {call.data}")
+        logger.debug(f"{chat_id = } Выбрано:: {call.data}")
         await CorrectViolationsState.description.set()
 
         await bot_send_message(chat_id=chat_id, text=Messages.Enter.description_violation, reply_markup=reply_markup)
         return
 
     if call.data == "Комментарий к нарушению":
-        logger.debug(f"id {chat_id} Выбрано: {call.data}")
+        logger.debug(f"{chat_id = } Выбрано:: {call.data}")
         await CorrectViolationsState.comment.set()
 
         await bot_send_message(chat_id=chat_id, text=Messages.Enter.comment, reply_markup=reply_markup)
         return
 
     if call.data == "Основное направление":
-        logger.debug(f"id {chat_id} Выбрано: {call.data}")
+        logger.debug(f"{chat_id = } Выбрано:: {call.data}")
 
         menu_level = board_config.menu_level = 2
         menu_list = board_config.menu_list = [item for item in get_data_list("MAIN_CATEGORY") if item is not None]
@@ -60,7 +60,7 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
         return
 
     if call.data == "Количество дней на устранение":
-        logger.debug(f"id {chat_id} Выбрано: {call.data}")
+        logger.debug(f"{chat_id = } Выбрано:: {call.data}")
 
         menu_level = board_config.menu_level = 2
         menu_list = board_config.menu_list = [item for item in get_data_list("ELIMINATION_TIME") if item is not None]
@@ -72,7 +72,7 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
         return
 
     if call.data == "Степень опасности ситуации":
-        logger.debug(f"id {chat_id} Выбрано: {call.data}")
+        logger.debug(f"{chat_id = } Выбрано:: {call.data}")
 
         menu_level = board_config.menu_level = 2
         menu_list = board_config.menu_list = [item for item in get_data_list("INCIDENT_LEVEL") if item is not None]
@@ -84,7 +84,7 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
         return
 
     if call.data == "Требуется ли оформление акта?":
-        logger.debug(f"id {chat_id} Выбрано: {call.data}")
+        logger.debug(f"{chat_id = } Выбрано:: {call.data}")
 
         menu_level = board_config.menu_level = 2
         menu_list = board_config.menu_list = [item for item in get_data_list("ACT_REQUIRED") if item is not None]
@@ -96,7 +96,7 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
         return
 
     if call.data == "Подрядная организация":
-        logger.debug(f"id {chat_id} Выбрано: {call.data}")
+        logger.debug(f"{chat_id = } Выбрано:: {call.data}")
 
         menu_level = board_config.menu_level = 1
         menu_list = board_config.menu_list = [item for item in get_data_list("GENERAL_CONTRACTORS") if item is not None]
@@ -108,7 +108,7 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
         return
 
     if call.data == "Степень опасности ситуации":
-        logger.debug(f"id {chat_id} Выбрано: {call.data}")
+        logger.debug(f"{chat_id = } Выбрано:: {call.data}")
 
         menu_level = board_config.menu_level = 2
         menu_list = board_config.menu_list = [item for item in get_data_list("VIOLATION_CATEGORY") if item is not None]
@@ -120,7 +120,7 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
         return
 
     if call.data == "Категория нарушения":
-        logger.debug(f"id {chat_id} Выбрано: {call.data}")
+        logger.debug(f"{chat_id = } Выбрано:: {call.data}")
 
         menu_level = board_config.menu_level = 2
         menu_list = board_config.menu_list = [item for item in get_data_list("CATEGORY") if item]
@@ -132,7 +132,7 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
         return
 
     if call.data == "Уровень происшествия":
-        logger.debug(f"id {chat_id} Выбрано: {call.data}")
+        logger.debug(f"{chat_id = } Выбрано:: {call.data}")
 
         menu_level = board_config.menu_level = 2
         menu_list = board_config.menu_list = [item for item in get_data_list("INCIDENT_LEVEL") if item]
@@ -353,7 +353,7 @@ async def get_correct_data(*, chat_id, call, json_file_name) -> str:
         await bot_send_message(chat_id=chat_id, text=text)
         return correct_data
 
-    logger.debug(f"chat_id {chat_id} Выбрано: {correct_data}")
+    logger.debug(f"chat_{chat_id = } Выбрано:: {correct_data}")
     await bot_send_message(chat_id=chat_id, text=f"Выбрано: {correct_data}")
     await call.message.edit_reply_markup()
 

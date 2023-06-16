@@ -1,3 +1,4 @@
+from __future__ import annotations
 from loader import logger
 
 logger.debug(f"{__name__} start import")
@@ -20,41 +21,42 @@ from apps.core.utils.data_recording_processor.set_user_registration_data import 
 from apps.core.utils.misc import rate_limit
 from apps.core.utils.secondary_functions.get_filepath import (
     create_file_path, get_user_registration_file)
-from apps.MyBot import MyBot
+from apps.MyBot import MyBot, bot_send_message
 
 logger.debug(f"{__name__} finish import")
 
+
 @rate_limit(limit=20)
 @MyBot.dp.message_handler(Command('start'), is_private)
-async def start(message: types.Message):
+async def start(message: types.Message, user_id: int | str = None):
     """Начало регистрации пользователя
 
+    :param user_id:
     :param message:
     :return:
     """
-    chat_id = message.chat.id
-    if not await check_user_access(chat_id=chat_id, message=message):
+
+    hse_user_id = message.chat.id if message else user_id
+    logger.debug(f'{hse_user_id = }')
+
+    if not await check_user_access(chat_id=hse_user_id, message=message):
         return
 
-    await MyBot.bot.send_message(
-        chat_id=chat_id, text=f'{Messages.HSEUserAnswer.user_access_success} \n'
-    )
-
-    user_id = str(message.from_user.id)
-    user_data["user_id"] = user_id
-    user_data['reg_user_file'] = await get_user_registration_file(user_id=user_id)
+    await bot_send_message(chat_id=hse_user_id, text=Messages.HSEUserAnswer.user_access_success)
+    user_data["user_id"] = hse_user_id
+    user_data['reg_user_file'] = await get_user_registration_file(user_id=str(hse_user_id))
 
     await create_file_path(path=user_data['reg_user_file'])
 
-    logger.info(f'User @{message.from_user.username}:{message.from_user.id} start work')
-    await message.answer(f'{Messages.hi}, {message.from_user.full_name}!')
-    await message.answer(f'{Messages.user_greeting} \n'
-                         f'{Messages.help_message}')
+    logger.info(f'User @{message.from_user.username}:{hse_user_id} start work')
+
+    await bot_send_message(chat_id=hse_user_id, text=f'{Messages.hi}, text ={message.from_user.full_name}!')
+    await bot_send_message(chat_id=hse_user_id, text=f'{Messages.user_greeting}\n{Messages.help_message}')
 
     # await RegisterState.name.set()
     # reply_markup = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     # reply_markup.add(Messages.Registration.cancel)
-    # await MyBot.bot.send_message(message.from_user.id, Messages.Ask.name, reply_markup=reply_markup)
+    # await MyBot(hse_user_id, Messages.Ask.name, reply_markup=reply_markup)
 
 
 @MyBot.dp.message_handler(is_private, Text(equals=Messages.cancel), state=RegisterState.all_states)
@@ -135,12 +137,13 @@ async def enter_work_shift(message: types.Message, state: FSMContext):
 async def work_shift_answer(call: types.CallbackQuery):
     """Обработка ответов содержащихся в WORK_SHIFT
     """
+    chat_id = call.message.chat.id
     for i in get_data_list("WORK_SHIFT"):
         try:
             if call.data == i:
-                logger.debug(f"Выбрано: {i}")
+                logger.debug(f"{chat_id = } Выбрано: {i}")
                 user_data["work_shift"] = i
-                await call.message.answer(text=f"Выбрано: {i}")
+                await bot_send_message(chat_id=chat_id, text=f"Выбрано: {i}")
                 # await write_json_file(data=violation_data, name=violation_data["json_full_name"])
 
                 await call.message.edit_reply_markup()
@@ -152,7 +155,7 @@ async def work_shift_answer(call: types.CallbackQuery):
 
                 reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level,
                                                           step=len(menu_list))
-                await call.message.answer(text="Выберите строительную площадку", reply_markup=reply_markup)
+                await bot_send_message(chat_id=chat_id, text="Выберите строительную площадку", reply_markup=reply_markup)
                 break
 
         except Exception as callback_err:
@@ -168,11 +171,13 @@ async def work_shift_answer(call: types.CallbackQuery):
 async def enter_location_answer(call: types.CallbackQuery, state: FSMContext):
     """Обработка ответов содержащихся в METRO_STATION
     """
+    chat_id = call.message.chat.id
+
     for i in [list(item.keys())[0] for item in get_data_list("METRO_STATION")]:
         try:
             if call.data == i:
                 user_data["name_location"] = i
-                await call.message.answer(text=f"Выбрано: {i}")
+                await bot_send_message(chat_id=chat_id, text=f"Выбрано: {i}")
                 await call.message.edit_reply_markup()
                 break
 

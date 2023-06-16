@@ -8,7 +8,7 @@ from apps.core.bot.messages.messages import Messages
 from apps.core.bot.reports.report_data_preparation import \
     set_violation_atr_data
 from apps.core.bot.states import AnswerUserState
-from apps.MyBot import MyBot
+from apps.MyBot import MyBot, bot_send_message
 
 logger.debug(f"{__name__} finish import")
 

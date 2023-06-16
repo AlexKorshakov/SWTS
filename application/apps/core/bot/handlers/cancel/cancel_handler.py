@@ -10,7 +10,7 @@ from apps.core.bot.messages.messages import Messages
 from apps.core.bot.reports.report_data import (global_reg_form, headlines_data,
                                                user_data, violation_data)
 from apps.core.utils.misc import rate_limit
-from apps.MyBot import MyBot
+from apps.MyBot import MyBot, bot_send_message
 from config.config import ADMIN_ID
 
 logger.debug(f"{__name__} finish import")
@@ -38,6 +38,7 @@ class NamedDict(dict):
 @MyBot.dp.message_handler(Text(equals='cancel', ignore_case=True), state='*')
 async def cancel_handler(call: types.CallbackQuery, state: FSMContext):
     """Корректирование уже введённых значений на локальном pc и на google drive
+
     :return:
     """
 
@@ -53,7 +54,7 @@ async def cancel_handler(call: types.CallbackQuery, state: FSMContext):
     ]
 
     for items_data in dict_list:
-        items_data_name =  list(items_data.keys())
+        items_data_name = list(items_data.keys())
         logger.debug(f"Report {str(items_data.name)} {items_data}")
         if items_data_name:
             items_data.clear()
@@ -68,8 +69,8 @@ async def cancel_handler(call: types.CallbackQuery, state: FSMContext):
 
     board_config.current_file = None
 
-    await call.answer(text=Messages.all_canceled)
-    await MyBot.bot.send_message(chat_id=ADMIN_ID, text=f'cancel_all from {chat_id}')
+    await bot_send_message(chat_id=chat_id, text=Messages.all_canceled)
+    await bot_send_message(chat_id=ADMIN_ID, text=f'cancel_all from {chat_id}')
 
     current_state = await state.get_state()
     logger.info(f'Cancelling state {current_state}')

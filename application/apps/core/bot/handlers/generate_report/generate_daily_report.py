@@ -8,7 +8,7 @@ from pprint import pprint
 from aiogram import types
 from aiogram.dispatcher.filters import Command
 
-from apps.MyBot import MyBot
+from apps.MyBot import MyBot, bot_send_message
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
 from apps.core.bot.messages.messages import Messages
@@ -37,7 +37,7 @@ async def report_generate_handler(message: types.Message) -> None:
 
     reply_markup = await add_period_inline_keyboard_with_action()
 
-    await message.answer(text=Messages.Choose.period, reply_markup=reply_markup)
+    await bot_send_message(chat_id=chat_id, text=Messages.Choose.period, reply_markup=reply_markup)
 
 
 async def add_period_inline_keyboard_with_action():
@@ -69,8 +69,7 @@ async def call_correct_abort_current_post(call: types.CallbackQuery, callback_da
         logger.info(f'User: @{username} user_id: {chat_id} choose {action} for generate report')
         print(f'User: @{username} user_id: {chat_id} choose {action} for generate report')
 
-        await call.message.answer(f'{Messages.Report.start_act} \n'
-                                  f'{Messages.wait}')
+        await bot_send_message(chat_id=chat_id, text=f'{Messages.Report.start_act} \n {Messages.wait}')
 
         now = datetime.now()
         daily_report_date_period: list = [now.strftime("%d.%m.%Y"), now.strftime("%d.%m.%Y"), ]
@@ -101,8 +100,7 @@ async def call_correct_abort_current_post(call: types.CallbackQuery, callback_da
         logger.info(f'User: @{username} user_id: {chat_id} choose {action} for generate report')
         print(f'User: @{username} user_id: {chat_id} choose {action} for generate report')
 
-        await call.message.answer(f'{Messages.Report.start_report} \n'
-                                  f'{Messages.wait}')
+        await bot_send_message(chat_id=chat_id, text=f'{Messages.Report.start_report} \n {Messages.wait}')
 
         now = datetime.now()
         previous = now - timedelta(days=1)
@@ -134,8 +132,7 @@ async def call_correct_abort_current_post(call: types.CallbackQuery, callback_da
         logger.info(f'User: @{username} user_id: {chat_id} choose {action} for generate report')
         print(f'User: @{username} user_id: {chat_id} choose {action} for generate report')
 
-        await call.message.answer(f'{Messages.Report.start_act} \n'
-                                  f'{Messages.wait}')
+        await bot_send_message(chat_id=chat_id, text='{Messages.Report.start_act} \n{Messages.wait}')
 
         now = datetime.now()
         current_week: str = await get_week_message(current_date=now)

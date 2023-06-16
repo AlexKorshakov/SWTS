@@ -1,17 +1,14 @@
-import traceback
-
-from apps.core.database.query_constructor import QueryConstructor
 from loader import logger
-
 logger.debug(f"{__name__} start import")
+import traceback
 import asyncio
 import inspect
 import os.path
 from typing import Union
-
+from apps.core.database.query_constructor import QueryConstructor
 from apps.core.database.db_utils import (db_get_data_list_no_async,
                                          db_get_id_no_async,
-                                         db_get_table_headers_no_async, db_get_data_list)
+                                         db_get_table_headers_no_async)
 
 logger.debug(f"{__name__} finish import")
 
@@ -132,10 +129,7 @@ def add_hashtags(datas_from_bd, db_table_name: str, item_id) -> list:
     :param item_id:
     :return:
     """
-    # if not db_table_name:
-    #     db_table_name = 'core_normativedocuments'
 
-    # TODO добавить хештеги для всех вариантов
     hashtags: list = get_hashtags(db_table_name, item_id=item_id)
     logger.debug(f'{__name__} {say_fanc_name()} {hashtags = }')
 

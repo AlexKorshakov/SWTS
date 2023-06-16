@@ -31,21 +31,21 @@ async def correct_headlines_data_answer(call: types.CallbackQuery):
     reply_markup.add(Messages.correct_cancel)
 
     if call.data == "Руководитель строительства":
-        logger.debug(f"id {chat_id} Выбрано: {call.data}")
+        logger.debug(f"{chat_id = } Выбрано: {call.data}")
         await CorrectHeadlinesState.construction_manager.set()
 
         await bot_send_message(chat_id=chat_id, text=Messages.Ask.construction_manager, reply_markup=reply_markup)
         return
 
     if call.data == "Инженер СК":
-        logger.debug(f"id {chat_id} Выбрано: {call.data}")
+        logger.debug(f"{chat_id = } Выбрано: {call.data}")
         await CorrectHeadlinesState.building_control_engineer.set()
 
         await bot_send_message(chat_id=chat_id, text=Messages.Ask.building_control_engineer, reply_markup=reply_markup)
         return
 
     if call.data == "Подрядчик":
-        logger.debug(f"id {chat_id} Выбрано: {call.data}")
+        logger.debug(f"{chat_id = } Выбрано: {call.data}")
 
         menu_level = board_config.menu_level = 2
         menu_list = board_config.menu_list = [item for item in get_data_list("GENERAL_CONTRACTORS") if item is not None]
@@ -57,28 +57,28 @@ async def correct_headlines_data_answer(call: types.CallbackQuery):
         return
 
     if call.data == "Субподрядчик":
-        logger.debug(f"id {chat_id} Выбрано: {call.data}")
+        logger.debug(f"{chat_id = } Выбрано: {call.data}")
         await CorrectHeadlinesState.subcontractor.set()
 
         await bot_send_message(chat_id=chat_id, text=Messages.Ask.subcontractor, reply_markup=reply_markup)
         return
 
     if call.data == "Вид обхода":
-        logger.debug(f"id {chat_id} Выбрано: {call.data}")
+        logger.debug(f"{chat_id = } Выбрано: {call.data}")
         await CorrectHeadlinesState.linear_bypass.set()
 
         await bot_send_message(chat_id=chat_id, text=Messages.Ask.linear_bypass, reply_markup=reply_markup)
         return
 
     if call.data == "Представитель подрядчика":
-        logger.debug(f"id {chat_id} Выбрано: {call.data}")
+        logger.debug(f"{chat_id = } Выбрано: {call.data}")
         await CorrectHeadlinesState.contractor_representative.set()
 
         await bot_send_message(chat_id=chat_id, text=Messages.Ask.contractor_representative, reply_markup=reply_markup)
         return
 
     if call.data == "Представитель субподрядчика":
-        logger.debug(f"id {chat_id} Выбрано: {call.data}")
+        logger.debug(f"{chat_id = } Выбрано: {call.data}")
         await CorrectHeadlinesState.subcontractor_representative.set()
 
         await bot_send_message(chat_id=chat_id, text=Messages.Ask.subcontractor_representative,
@@ -185,7 +185,7 @@ async def get_correct_data(*, chat_id, call, json_file_name) -> str:
         await bot_send_message(chat_id=chat_id, text=text)
         return correct_data
 
-    logger.debug(f"chat_id {chat_id} Выбрано: {correct_data}")
+    logger.debug(f"chat_{chat_id = } Выбрано: {correct_data}")
     await bot_send_message(chat_id=chat_id, text=f"Выбрано: {correct_data}")
     await call.message.edit_reply_markup()
 

@@ -3,6 +3,7 @@ from aiogram.types import Message
 from config.apps import INSTALLED_APPS
 
 from .. import services
+from ...MyBot import bot_send_message
 
 
 def register_handlers(dp: Dispatcher):
@@ -13,6 +14,7 @@ def register_handlers(dp: Dispatcher):
 
 
 async def start(message: Message):
+    chat_id = message.chat.id
     user, is_created = await services.add_user(
         tg_id=message.from_user.id,
         chat_id=message.chat.id,
@@ -20,24 +22,29 @@ async def start(message: Message):
     )
 
     if is_created:
-        await message.answer("You have successfully registered in the bot!")
+        await bot_send_message(chat_id=chat_id, text="You have successfully registered in the bot!")
     else:
-        await message.answer("You are already registered in the bot!")
+        await bot_send_message(chat_id=chat_id, text="You are already registered in the bot!")
 
 
 async def send_my_id(message: Message):
-    await message.answer(
-        f"User Id: <b>{message.from_user.id}</b>\n" f"Chat Id: <b>{message.chat.id}</b>"
-    )
+    chat_id = message.chat.id
+    await bot_send_message(chat_id=chat_id, text=f"User Id: <b>{message.from_user.id}</b>\n "
+                                                 f"Chat Id: <b>{message.chat.id}</b>")
 
 
 async def send_my_apps(message: Message):
-    apps_names = ""
-    for app in INSTALLED_APPS:
-        apps_names += app.Config.name + "\n"
+    chat_id = message.chat.id
 
-    await message.answer("Installed apps:\n" f"{apps_names}")
+    # apps_names = ""
+    # for app in INSTALLED_APPS:
+    #     apps_names += app.Config.name + "\n"
+
+    apps_names = ' \n'.join(app.Config.name for app in INSTALLED_APPS if app is not None)
+
+    await bot_send_message(chat_id=chat_id, text="Installed apps:\n" f"{apps_names}")
 
 
 async def simple_handler(message: Message):
-    await message.answer('Hello from "Core" app!')
+    chat_id = message.chat.id
+    await bot_send_message(chat_id=chat_id, text='Hello from "Core" app!')

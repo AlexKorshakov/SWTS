@@ -7,7 +7,7 @@ from aiogram.utils.markdown import text
 from apps.core.bot.keyboards.inline.help_inlinekeyboard import \
     help_inline_button
 from apps.core.utils.misc import rate_limit
-from apps.MyBot import MyBot
+from apps.MyBot import MyBot, bot_send_message
 
 logger.debug(f"{__name__} finish import")
 
@@ -28,5 +28,7 @@ async def process_help_command(message: types.Message):
         "\nВидео инструкция по работе бота",
         sep="\n"
     )
-    await message.answer('Меня создал https://t.me/AlexKor_MSK')
-    await message.reply(text=help_message, reply_markup=await help_inline_button())
+
+    answer_text = f"{msg(hse_id, cat='help', msge='developer', default='Меня создал').get_msg_async()} https://t.me/AlexKor_MSK"
+    await bot_send_message(chat_id=hse_id, text=answer_text)
+    await bot_send_message(chat_id=hse_id, text=help_message, reply_markup=await help_inline_button(hse_id=hse_id))

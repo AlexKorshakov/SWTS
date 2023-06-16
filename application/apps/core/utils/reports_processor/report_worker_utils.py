@@ -6,7 +6,7 @@ from apps.core.database.db_utils import (db_get_data_dict_from_table_with_id,
                                          db_get_table_headers)
 from apps.core.utils.generate_report.create_dataframe import \
     create_lite_dataframe
-from apps.MyBot import MyBot
+from apps.MyBot import bot_send_message
 from loader import logger
 from pandas import DataFrame
 
@@ -21,7 +21,7 @@ async def get_clear_list_value(chat_id: int, query: str, clean_headers: list) ->
 
     if not datas_query:
         logger.info(Messages.Error.data_not_found)
-        await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.data_not_found)
+        await bot_send_message(chat_id=chat_id, text=Messages.Error.data_not_found)
         return []
 
     clear_list_value: list = []
@@ -108,7 +108,7 @@ async def create_lite_dataframe_from_query(chat_id: int, query: str, clean_heade
 
     if report_dataframe.empty:
         logger.error(f'{Messages.Error.dataframe_is_empty}  \n{chat_id = }  \n{query = }  \n{item_datas_query = }')
-        await MyBot.bot.send_message(chat_id=chat_id, text=Messages.Error.dataframe_is_empty)
+        await bot_send_message(chat_id=chat_id, text=Messages.Error.dataframe_is_empty)
 
     return report_dataframe
 
