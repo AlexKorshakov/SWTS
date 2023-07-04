@@ -66,7 +66,7 @@ async def create_and_send_act_prescription(chat_id: int, query_act_date_period=N
         act_dataframe: DataFrame = await get_act_dataframe(
             chat_id=chat_id, act_period=query_act_date_period, constractor_id=constractor_id, headers=clean_headers
         )
-        if act_dataframe.empty:
+        if not await check_dataframe(act_dataframe, chat_id):
             continue
 
         act_number: int = await get_act_number_on_data_base()
@@ -79,6 +79,7 @@ async def create_and_send_act_prescription(chat_id: int, query_act_date_period=N
         if not full_act_prescription_path:
             continue
 
+        await p_bar.update_msg(5)
         act_is_created: bool = await create_act_prescription(
             chat_id=chat_id, act_number=act_number, dataframe=act_dataframe,
             full_act_path=full_act_prescription_path, act_date=act_date
@@ -97,14 +98,18 @@ async def create_and_send_act_prescription(chat_id: int, query_act_date_period=N
             chat_id=chat_id, full_report_path=full_act_prescription_path
         )
 
+        await p_bar.update_msg(8)
+        path_in_registry = await get_full_patch_to_act_prescription(
+            chat_id=chat_id, act_number=act_number, act_date=act_date, constractor_id=constractor_id
+        )
+        await set_act_data_on_data_in_registry(
+            hse_chat_id=chat_id, act_dataframe=act_dataframe, path_in_registry=path_in_registry,
+            act_date=act_date, act_number=act_number, constractor_id=constractor_id
+        )
+
         await p_bar.update_msg(9)
-        await send_act_prescription(chat_id, full_act_prescription_path)
-
-        act_prescription_json = await set_act_prescription_json(act_dataframe)
-        await set_act_prescription_in_registry(act_prescription_json)
-
-        await bot_send_message(
-            chat_id=chat_id, text=f'{Messages.Report.done} \n'
+        await send_act_prescription(
+            chat_id=chat_id, full_act_prescription_path=full_act_prescription_path
         )
 
         await p_bar.update_msg(10)

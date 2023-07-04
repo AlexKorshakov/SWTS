@@ -1,28 +1,30 @@
+from __future__ import annotations
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
+from apps.core.bot.messages.messages_test import msg
 
-async def help_inline_button():
+
+async def help_inline_button(hse_id: str | int = None):
     """Формирование кнопок и клавиатуры Справки по команде / help
     :return:
     """
     btn_1 = InlineKeyboardButton(
-        '1.Регистрация пользователя',
+        msg(hse_id, cat="help", msge="user_registration", default='1.Регистрация пользователя').get_msg(),
         url='https://www.youtube.com/watch?v='
             'C50_wKIN2DQ&list=PLbHi3cvK0ys4om-vad17AmtIt-y0sHOxI&index=1&ab_channel=АлексейКоршаков'
     )
     btn_2 = InlineKeyboardButton(
-        '2. Регистрация несоответствий',
+        msg(hse_id, cat="help", msge="registration_nonconformities", default='2. Регистрация несоответствий').get_msg(),
         url='https://www.youtube.com/watch?v='
             'cdPuUoV_P5g&list=PLbHi3cvK0ys4om-vad17AmtIt-y0sHOxI&index=2&ab_channel=АлексейКоршаков'
     )
-
     btn_3 = InlineKeyboardButton(
-        '3. Удаление зарегестрированных несоответствий',
+        msg(hse_id, cat="help", msge="deleting_entries", default='3. Удаление зарегистрированных несоответствий').get_msg(),
         url='https://www.youtube.com/watch?v='
             'wQyLRrPqNfI&list=PLbHi3cvK0ys4om-vad17AmtIt-y0sHOxI&index=3&ab_channel=АлексейКоршаков'
     )
     btn_4 = InlineKeyboardButton(
-        '4. Формирование отчетов',
+        msg(hse_id, cat="help", msge="formation_reports", default='4. Формирование отчетов').get_msg(),
         url='https://www.youtube.com/watch?v='
             'cdPuUoV_P5g&list=PLbHi3cvK0ys4om-vad17AmtIt-y0sHOxI&index=4&ab_channel=АлексейКоршаков'
     )

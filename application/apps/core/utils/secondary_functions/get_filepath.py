@@ -25,7 +25,7 @@ async def get_report_full_filepath(user_id: str = None, actual_date: str = None)
     Получение полного пути файла
 
     :param actual_date:
-    :param user_id:
+    :param user_id: id пользователя
     """
     if not actual_date:
         actual_date = await date_now()
@@ -110,7 +110,7 @@ async def get_user_registration_data_json_file(chat_id: str):
 
 
 async def get_user_registration_file(user_id: str) -> str:
-    return BOT_MEDIA_PATH + user_id
+    return f'{BOT_MEDIA_PATH}{str(user_id)}'
 
 
 async def get_bot_data_path():

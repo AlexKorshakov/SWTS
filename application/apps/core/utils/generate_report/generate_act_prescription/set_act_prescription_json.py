@@ -74,7 +74,6 @@ async def set_act_prescription_json(hse_chat_id: str | int, act_dataframe: DataF
 
     await write_json_file(data=act_data_dict, name=full_patch_to_act_prescription_json)
 
-    # await bot_send_message(chat_id=hse_chat_id, text=Messages.Successfully.registration_completed_in_registry)
     return act_prescription_json
 
 

@@ -12,6 +12,7 @@ from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.bot.data import board_config
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb, build_inlinekeyboard
 from apps.core.bot.messages.messages import Messages, LogMessage
+from apps.core.bot.messages.messages_test import msg
 from apps.core.database.db_utils import db_get_table_headers, db_get_data_list, db_get_data_dict_from_table_with_id
 from apps.core.database.query_constructor import QueryConstructor
 from loader import logger
@@ -24,9 +25,7 @@ async def call_correct_act_item_correct(call: types.CallbackQuery = None, callba
     """
 
     hse_user_id = call.message.chat.id if call else user_id
-    logger.debug(f'{hse_user_id = }')
-    logger.debug(f'{callback_data = }')
-
+    logger.debug(f'{hse_user_id = } {callback_data = }')
     await delete_markup(message=call.message)
 
     if not await check_user_access(chat_id=hse_user_id):
@@ -49,7 +48,11 @@ async def call_correct_act_item_correct(call: types.CallbackQuery = None, callba
     except Exception as err:
         logger.error(f'{hse_user_id = } {repr(err)} {act_number_text = }')
         await bot_send_message(chat_id=hse_user_id, text=Messages.Error.error_command)
-        await bot_send_message(chat_id=hse_user_id, text=Messages.Error.error_action)
+
+        # TODO Delete
+        logger.error(f'{hse_user_id = } Messages.Error.error_action')
+        msg_text = await msg(hse_user_id, cat='error', msge='error_action', default=Messages.Error.error_action).g_mas()
+        await bot_send_message(chat_id=hse_user_id, text=msg_text)
         return
 
     query_kwargs: dict = {

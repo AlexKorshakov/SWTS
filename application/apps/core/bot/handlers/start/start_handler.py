@@ -1,4 +1,9 @@
 from __future__ import annotations
+
+from apps.core.bot.messages.messages_test import msg
+from apps.core.database.db_utils import db_update_hse_user_language
+from apps.core.settyngs import get_sett
+from apps.core.utils.secondary_functions.get_filepath import get_user_registration_file, create_file_path
 from loader import logger
 
 logger.debug(f"{__name__} start import")
@@ -19,8 +24,6 @@ from apps.core.bot.states import RegisterState
 from apps.core.utils.data_recording_processor.set_user_registration_data import \
     registration_data
 from apps.core.utils.misc import rate_limit
-from apps.core.utils.secondary_functions.get_filepath import (
-    create_file_path, get_user_registration_file)
 from apps.MyBot import MyBot, bot_send_message
 
 logger.debug(f"{__name__} finish import")
@@ -31,24 +34,26 @@ logger.debug(f"{__name__} finish import")
 async def start(message: types.Message, user_id: int | str = None):
     """Начало регистрации пользователя
 
-    :param user_id:
+    :param user_id: id пользователя
     :param message:
     :return:
     """
 
     hse_user_id = message.chat.id if message else user_id
     logger.debug(f'{hse_user_id = }')
+    logger.info(f'User @{message.from_user.username} : {hse_user_id} start work')
 
     if not await check_user_access(chat_id=hse_user_id, message=message):
         return
 
-    await bot_send_message(chat_id=hse_user_id, text=Messages.HSEUserAnswer.user_access_success)
-    user_data["user_id"] = hse_user_id
-    user_data['reg_user_file'] = await get_user_registration_file(user_id=str(hse_user_id))
+    if not get_sett(cat='enable_features', param='choose_language').get_set():
+        await bot_send_message(chat_id=hse_user_id, text=Messages.HSEUserAnswer.user_access_success)
+        user_data["user_id"] = hse_user_id
+        user_data['reg_user_file'] = await get_user_registration_file(user_id=str(hse_user_id))
 
-    await create_file_path(path=user_data['reg_user_file'])
+        await create_file_path(path=user_data['reg_user_file'])
 
-    logger.info(f'User @{message.from_user.username}:{hse_user_id} start work')
+        logger.info(f'User @{message.from_user.username}:{hse_user_id} start work')
 
     await bot_send_message(chat_id=hse_user_id, text=f'{Messages.hi}, text ={message.from_user.full_name}!')
     await bot_send_message(chat_id=hse_user_id, text=f'{Messages.user_greeting}\n{Messages.help_message}')
@@ -155,7 +160,8 @@ async def work_shift_answer(call: types.CallbackQuery):
 
                 reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level,
                                                           step=len(menu_list))
-                await bot_send_message(chat_id=chat_id, text="Выберите строительную площадку", reply_markup=reply_markup)
+                await bot_send_message(chat_id=chat_id, text="Выберите строительную площадку",
+                                       reply_markup=reply_markup)
                 break
 
         except Exception as callback_err:

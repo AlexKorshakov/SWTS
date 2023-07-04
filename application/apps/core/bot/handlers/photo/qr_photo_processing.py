@@ -4,15 +4,24 @@ from aiogram import types
 
 from apps.MyBot import bot_send_message
 from apps.core.bot.handlers.photo.qr_worker import qr_code_reader, read_qr_code_image, generate_text
+from apps.core.bot.messages.messages import Messages
+from apps.core.bot.messages.messages_test import msg
+from apps.core.settyngs import get_sett
 from apps.core.utils.secondary_functions.get_filepath import create_file_path, BOT_MEDIA_PATH
 
 
 async def qr_code_processing(message: types.Message, context: dict = None) -> bool:
-    """
+    """Функция распознавания qr-кодов
 
     """
 
     hse_user_id = message.chat.id
+
+    if not get_sett(cat='enable_features', param='use_qr_code_processing').get_set():
+        msg_text: str = await msg(hse_user_id, cat='error', msge='features_disabled',
+                                  default=Messages.Error.features_disabled).g_mas()
+        await bot_send_message(chat_id=hse_user_id, text=msg_text, disable_web_page_preview=True)
+        return False
 
     photo_file_path = f"{BOT_MEDIA_PATH}qr_code\\{hse_user_id}\\photos\\"
 
@@ -23,7 +32,9 @@ async def qr_code_processing(message: types.Message, context: dict = None) -> bo
     data: list = qr_code_reader(img)
 
     if not data:
-        answer_text = "QR-код, не распознан или отсутствует"
+        answer_text: str = await msg(hse_user_id, cat='warning', msge='qr_not_found',
+                                     default="QR-код, не распознан или отсутствует").g_mas()
+
         await bot_send_message(chat_id=hse_user_id, text=answer_text)
         try:
             os.remove(photo_file_path)
@@ -31,14 +42,17 @@ async def qr_code_processing(message: types.Message, context: dict = None) -> bo
             pass
         return False
 
-    answer_text: str = await generate_text(qr_data=data)
+    answer_text: str = await generate_text(hse_user_id, qr_data=data)
 
     for item_txt in await text_processor(text=answer_text):
         await bot_send_message(chat_id=hse_user_id, text=item_txt)
 
     if not answer_text:
-        answer_text = "QR-код, не распознан или отсутствует"
+        answer_text: str = await msg(hse_user_id, cat='warning', msge='qr_not_found',
+                                     default="QR-код, не распознан или отсутствует").g_mas()
+
         await bot_send_message(chat_id=hse_user_id, text=answer_text)
+
         try:
             os.remove(photo_file_path)
         except PermissionError:
@@ -50,11 +64,7 @@ async def qr_code_processing(message: types.Message, context: dict = None) -> bo
     except PermissionError:
         pass
 
-    # await bot_send_message(chat_id=hse_user_id, text=answer_text)
-
     return True
-
-    # find_data_in_dataframe(update, answer_text=data)
 
 
 async def text_processor(data_list_to_text: list = None, text: str = None) -> list:

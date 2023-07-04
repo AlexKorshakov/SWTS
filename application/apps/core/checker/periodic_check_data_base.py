@@ -4,11 +4,10 @@ import traceback
 from datetime import datetime, timedelta
 
 from apps.core.bot.messages.messages import LogMessage
+from apps.core.settyngs import get_sett
 from config.config import DATA_BASE_DIR
 from apps.core.database.query_constructor import QueryConstructor
 from loader import logger
-
-PERIOD = 60 * 30
 
 
 class DataBaseForCheck:
@@ -39,7 +38,6 @@ class DataBaseForCheck:
         """
 
         if table_name:
-            # TODO заменить на вызов конструктора QueryConstructor
             query: str = f"PRAGMA table_info('{table_name}')"
             with self.connection:
                 result = self.cursor.execute(query).fetchall()
@@ -93,12 +91,19 @@ async def periodic_check_data_base() -> None:
 
     """
     while True:
+        work_period_hour: int = get_sett(cat='param', param='check_work_period_hour').get_set()
+
+        if not get_sett(cat='check', param='check_data_base').get_set():
+            logger.warning(f'{await fanc_name()} not access')
+            await asyncio.sleep(work_period_hour)
+            continue
+
         await check_violations_final_date_elimination()
         await check_violations_status()
 
         logger.info(f"{LogMessage.Check.complete_successfully} ::: {await get_now()}")
 
-        await asyncio.sleep(PERIOD)
+        await asyncio.sleep(work_period_hour)
 
 
 async def check_violations_final_date_elimination() -> bool:
@@ -256,7 +261,7 @@ async def get_now() -> str:
     return datetime.now().strftime("%d.%m.%Y %H:%M:%S")
 
 
-def say_fanc_name():
+async def fanc_name():
     stack = traceback.extract_stack()
     return str(stack[-2][2])
 

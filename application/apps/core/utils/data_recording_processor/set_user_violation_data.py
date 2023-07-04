@@ -11,9 +11,7 @@ from apps.core.database.db_utils import db_get_data_dict_from_table_with_id
 from apps.core.database.entry_in_db import write_data_in_database
 from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.set_user_violation_data_on_google_drave import \
     write_violation_data_on_google_drive
-from apps.core.utils.json_worker.writer_json_file import \
-    write_json_violation_user_file
-# import apps.core.bot.data.board_config
+from apps.core.utils.json_worker.writer_json_file import write_json_violation_user_file
 from apps.MyBot import bot_send_message
 
 logger.debug(f"{__name__} finish import")
@@ -34,7 +32,7 @@ async def pre_set_violation_data(message: types.Message):
     await bot_send_message(chat_id=chat_id, text=Messages.Report.completed_successfully)
     await bot_send_message(chat_id=chat_id, text=Messages.help_message, reply_markup=ReplyKeyboardRemove())
 
-    # TODO исправить
+    # TODO исправить cyclical_delete_message
     # await cyclical_delete_message(chat_id=chat_id)
 
 

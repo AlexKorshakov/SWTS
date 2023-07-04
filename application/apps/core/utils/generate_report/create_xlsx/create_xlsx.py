@@ -31,7 +31,7 @@ async def create_xlsx(chat_id: int, full_act_path: str):
     return workbook, worksheet
 
 
-async def create_new_xlsx(report_file):
+async def create_new_xlsx(report_file: str) -> bool:
     """Создание xlsx
     """
     try:
@@ -40,4 +40,4 @@ async def create_new_xlsx(report_file):
         return True
     except Exception as err:
         logger.error(F"set_border {repr(err)}")
-        return None
+        return False

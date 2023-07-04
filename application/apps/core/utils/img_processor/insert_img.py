@@ -99,7 +99,7 @@ async def insert_service_image(worksheet: Worksheet, *, chat_id: int = None, ser
     if not img_params:
         img_params: dict = {
             'photo_full_name': photo_full_name,
-            "height": 75,
+            "height": 90,
             "width": 230,
             "anchor": True,
             "column": 'B',

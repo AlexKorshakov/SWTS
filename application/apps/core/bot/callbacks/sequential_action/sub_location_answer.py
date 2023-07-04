@@ -28,6 +28,8 @@ async def sub_location_answer(call: types.CallbackQuery):
 
         if call.data == _PREFIX_POZ + "0":
             await get_and_send_null_sub_locations_data(call)
+            await set_violation_atr_data("sub_location", 'Площадка в целом')
+            return
 
         try:
             condition: dict = {

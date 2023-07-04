@@ -1,5 +1,6 @@
 import typing
 
+from apps.core.bot.messages.messages_test import msg
 from loader import logger
 
 logger.debug(f"{__name__} start import")
@@ -71,8 +72,10 @@ async def call_correct_db_items(call: types.CallbackQuery, callback_data: typing
         logger.error(f'access fail {hse_user_id = }')
         return
 
-    await bot_send_message(chat_id=hse_user_id, text=Messages.Error.error_action)
+    # TODO Delete
     logger.error(f'{hse_user_id = } Messages.Error.error_action')
+    msg_text = await msg(hse_user_id, cat='error', msge='error_action', default=Messages.Error.error_action).g_mas()
+    await bot_send_message(chat_id=hse_user_id, text=msg_text)
 
     # await act_generate_handler(call.message)
 

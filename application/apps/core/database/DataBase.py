@@ -1,13 +1,17 @@
+import asyncio
+
+from apps.core.database.query_constructor import QueryConstructor
 from loader import logger
+
 logger.debug(f"{__name__} start import")
 import os
 import io
 import json
 import sqlite3
 from os import makedirs
-from pprint import pprint
 from config.config import DATA_BASE_DIR
 from pandas import DataFrame
+
 logger.debug(f"{__name__} finish import")
 
 
@@ -209,14 +213,14 @@ class DataBase:
                 return False
 
         except sqlite3.IntegrityError as err:
-            pprint(f"sqlite3.IntegrityError {err}")
+            logger.error(f"sqlite3.IntegrityError {err}")
             return False
 
     def get_id(self, table: str, entry, file_id: str = None, name=None) -> int:
         """Получение id записи по значению title из соответствующий таблицы table"""
 
         if not entry:
-            print(f" def get_id: no entry {entry = } {file_id = } entry name {name}")
+            logger.info(f" def get_id: no entry {entry = } {file_id = } entry name {name}")
             return 0
 
         query = f"SELECT `id` " \
@@ -243,7 +247,7 @@ class DataBase:
                 return entry_id
 
             if entry_id == 0:
-                print(f"no matches found {entry = } in {table} because entry_id file_id: {file_id}")
+                logger.info(f"no matches found {entry = } in {table} because entry_id file_id: {file_id}")
 
     def get_id_violation(self, file_id: str = None) -> int:
         """Получение id записи по значению file_id из таблицы core_violations"""
@@ -326,7 +330,8 @@ class DataBase:
             return self.cursor.execute('SELECT * FROM `core_violations`').fetchall()
 
     def get_data_list(self, query: str = None) -> list:
-        """Получение данных из таблицы по запросу 'query'"""
+        """Получение данных из таблицы по запросу query
+        """
         if not query:
             return []
 
@@ -336,9 +341,6 @@ class DataBase:
     def get_dict_data_from_table_from_id(self, table_name: str, id: int, query: str = None) -> dict:
 
         if not query:
-            query: str = f'SELECT * ' \
-                         f'FROM {table_name} ' \
-                         f'WHERE `id` = {id} '
 
         headers: list = [item[1] for item in self.get_table_headers(table_name)]
         values: list = self.get_data_list(query=query)
@@ -353,8 +355,9 @@ class DataBase:
         :param value:  значение для записи в столбец
         :param column_name: столбец
         """
-
+        # TODO заменить на вызов конструктора QueryConstructor
         query: str = f"UPDATE `core_violations` SET {column_name} = ? WHERE `id` = ?"
+
         logger.debug(f'{column_name = } {value = }')
         with self.connection:
             result = self.cursor.execute(query, (value, id,))
@@ -477,7 +480,7 @@ async def upload_from_local(*, params: dict = None):
                 logger.debug(f"{counter} file {violation.get('file_id')} add in db")
 
             len_err += error_counter
-    print(f"errors {len_err} in {len(json_file_list)} items")
+    logger.info(f"errors {len_err} in {len(json_file_list)} items")
 
 
 async def data_violation_completion(violation_file: str, params: dict) -> tuple[int, dict]:
@@ -512,57 +515,57 @@ async def data_violation_completion(violation_file: str, params: dict) -> tuple[
         violation["location"] = user_data_json_file.get("name_location")
 
     if not violation.get("status"):
-        print(f"ERROR file: {file_id} don't get 'status' parameter")
+        logger.error(f"ERROR file: {file_id} don't get 'status' parameter")
         error_counter += 1
         violation["status"] = 'Завершено'
 
     if not violation.get("violation_id"):
-        print(f"ERROR file: {file_id} don't get 'violation_id' parameter")
+        logger.error(f"ERROR file: {file_id} don't get 'violation_id' parameter")
         error_counter += 1
         violation["violation_id"] = violation['file_id'].split('___')[-1]
 
     if not violation.get("json_folder_id"):
-        print(f"ERROR file: {file_id} don't get 'json_folder_id' parameter")
+        logger.error(f"ERROR file: {file_id} don't get 'json_folder_id' parameter")
         error_counter += 1
         violation["json_folder_id"] = '0'
 
     if not violation.get('general_contractor'):
-        print(f"ERROR file: {file_id} don't get 'general_contractor' parameter")
+        logger.error(f"ERROR file: {file_id} don't get 'general_contractor' parameter")
         error_counter += 1
 
         # general_contractor_counter += 1
         # os.remove(violation_file)
-        # print(f"file: {violation_file} is remove")
+        # logger.info(f"file: {violation_file} is remove")
 
     if not violation.get('elimination_time'):
-        print(f"ERROR file: {file_id} don't get 'elimination_time' parameter")
+        logger.error(f"ERROR file: {file_id} don't get 'elimination_time' parameter")
         error_counter += 1
         # elimination_time_counter += 1
         violation['elimination_time'] = '1 день'
 
     if not violation.get('incident_level'):
-        print(f"ERROR file: {file_id} don't get 'incident_level' parameter")
+        logger.error(f"ERROR file: {file_id} don't get 'incident_level' parameter")
         error_counter += 1
         # incident_level_counter += 1
         violation['incident_level'] = 'Без последствий'
         await write_json(violation=violation)
 
     if not violation.get('act_required'):
-        print(f"ERROR file: {file_id} don't get 'act_required' parameter")
+        logger.error(f"ERROR file: {file_id} don't get 'act_required' parameter")
         error_counter += 1
         # act_required_counter += 1
         violation['act_required'] = 'Не требуется*'
 
     if not violation.get('comment'):
-        print(f"ERROR file: {file_id} don't get 'comment' parameter")
+        logger.error(f"ERROR file: {file_id} don't get 'comment' parameter")
         error_counter += 1
         # comment_counter += 1
 
-    # print(f"general_contractor_counter {general_contractor_counter} in {error_counter} items")
-    # print(f"elimination_time_counter {elimination_time_counter} in {error_counter} items")
-    # print(f"act_required_counter {act_required_counter} in {error_counter} items")
-    # print(f"incident_level_counter {incident_level_counter} in {error_counter} items")
-    # print(f"comment_counter {comment_counter} in {error_counter} items")
+    # logger.info(f"general_contractor_counter {general_contractor_counter} in {error_counter} items")
+    # logger.info(f"elimination_time_counter {elimination_time_counter} in {error_counter} items")
+    # logger.info(f"act_required_counter {act_required_counter} in {error_counter} items")
+    # logger.info(f"incident_level_counter {incident_level_counter} in {error_counter} items")
+    # logger.info(f"comment_counter {comment_counter} in {error_counter} items")
 
     await write_json(violation=violation)
 
@@ -572,7 +575,7 @@ async def data_violation_completion(violation_file: str, params: dict) -> tuple[
 async def write_json(violation):
     """Запись в файл"""
     if not os.path.isfile(violation['json_full_name']):
-        print(f"FileNotFoundError {violation['json_full_name']} ")
+        logger.info(f"FileNotFoundError {violation['json_full_name']} ")
 
     date_violation = violation['file_id'].split('___')[0]
 

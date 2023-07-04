@@ -23,8 +23,7 @@ async def send_msg_from_developer(message: types.Message):
     chat_id = message.chat.id
     logger.info(f'User @{message.from_user.username}:{message.from_user.id} send message from developer')
 
-    answer_text: str = f"Для связи с разработчиком начните сообщение с @dev и подробно опишите проблему, " \
-                       f"пожелание и другую информацию"
+    answer_text: str = "Для связи с разработчиком напишите https://t.me/AlexKor_MSK"
     await bot_send_message(chat_id=chat_id, text=answer_text)
 
 

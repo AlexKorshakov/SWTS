@@ -341,8 +341,8 @@ async def get_correct_data(*, chat_id, call, json_file_name) -> str:
                 [list(item.keys())[0] for item in correct_data_list if list(item.keys())[0] == call.data][0]
 
         if isinstance(item_correct_data, str):
-            correct_data: str = \
-                [item for item in correct_data_list if item == call.data][0]
+            correct_data: str = [item for item in correct_data_list if item == call.data][0]
+
     except Exception as callback_err:
         logger.error(f"{chat_id= } {repr(callback_err)}")
 

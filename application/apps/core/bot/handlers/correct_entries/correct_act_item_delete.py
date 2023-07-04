@@ -9,6 +9,7 @@ from apps.MyBot import MyBot, bot_send_message, delete_markup
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
 from apps.core.bot.messages.messages import Messages
+from apps.core.bot.messages.messages_test import msg
 from loader import logger
 
 
@@ -18,8 +19,7 @@ async def call_correct_act_item_delete(call: types.CallbackQuery = None, callbac
     """Обработка ответов содержащихся в callback_data "Финализировать и записать"
     """
     hse_user_id = call.message.chat.id if call else user_id
-    logger.debug(f'{hse_user_id = }')
-    logger.debug(f'{callback_data = }')
+    logger.debug(f'{hse_user_id = } {callback_data = }')
 
     await delete_markup(message=call.message)
 
@@ -37,7 +37,10 @@ async def call_correct_act_item_delete(call: types.CallbackQuery = None, callbac
 
     item_number_text = call.message.values['text'].split('_')[-1].split(' ')[-1]
     logger.debug(f'{hse_user_id = } {item_number_text = }')
-    await bot_send_message(chat_id=hse_user_id, text=Messages.Error.error_action)
+    # TODO Delete
+    logger.error(f'{hse_user_id = } Messages.Error.error_action')
+    msg_text = await msg(hse_user_id, cat='error', msge='error_action', default=Messages.Error.error_action).g_mas()
+    await bot_send_message(chat_id=hse_user_id, text=msg_text)
 
 
 async def get_now() -> str:

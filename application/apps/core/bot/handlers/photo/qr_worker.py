@@ -2,20 +2,20 @@ from __future__ import annotations
 import os
 import cv2
 from pandas import DataFrame
-from pypika import Database
 from pyzbar import pyzbar
 from itertools import chain
 
-from apps.core.bot.handlers.correct_entries.correct_support import check_dataframe
+from apps.MyBot import bot_send_message
 from apps.core.bot.messages.messages import Messages
 from apps.core.database.db_utils import db_get_table_headers, db_get_data_list, db_get_data_dict_from_table_with_id
 from apps.core.database.query_constructor import QueryConstructor
 from loader import logger
 
 
-async def generate_text(qr_data: str | list = None) -> str:
+async def generate_text(hse_user_id: str | int, qr_data: str | list = None) -> str:
     """Получение информации из data
 
+    :param hse_user_id:
     :param qr_data:
     :return:
     """
@@ -27,18 +27,24 @@ async def generate_text(qr_data: str | list = None) -> str:
         qr_data_list: list = list(chain(*qr_data))
 
     qr_data_text: list = []
-    for qr_data in qr_data_list:
+    for qr_data_item in qr_data_list:
 
-        act_text: str = ''
-        if isinstance(qr_data, str):
-            qr_data_list: list = qr_data.split("_")
+        if isinstance(qr_data_item, str):
+            qr_data_list: list = qr_data_item.split("_")
             if qr_data_list[0] != 'qr':
+                return ''
+
+            if len(qr_data_list) < 3:
                 return ''
 
             act_number = qr_data_list[-1]
             user_id = qr_data_list[-2]
 
-            violations_df = await get_violations_df(act_number)
+            violations_df: DataFrame = await get_violations_df(act_number)
+            if not await check_dataframe(violations_df, hse_user_id=hse_user_id):
+                await bot_send_message(chat_id=hse_user_id, text='Данные не найдены dataframe')
+                continue
+
             act_text: str = await text_processor_act(act_number, violations_df)
             items_text: str = await text_processor_items(violations_df, hse_user_id=user_id)
 
@@ -47,7 +53,7 @@ async def generate_text(qr_data: str | list = None) -> str:
     return '\n\n '.join(qr_data_text)
 
 
-async def get_violations_df(act_number: str | int) -> DataFrame:
+async def get_violations_df(act_number: str | int) -> DataFrame | None:
     """
 
     :return:
@@ -68,11 +74,11 @@ async def get_violations_df(act_number: str | int) -> DataFrame:
 
     if violations_dataframe is None:
         logger.error(f'{Messages.Error.dataframe_is_empty}  \n{query = }')
-        return ''
+        return None
 
     if violations_dataframe.empty:
         logger.error(f'{Messages.Error.dataframe_is_empty}  \n{query = }')
-        return ''
+        return None
 
     return violations_dataframe
 
@@ -215,7 +221,7 @@ async def create_lite_dataframe_from_query(query: str, table_name: str) -> DataF
         dataframe = DataFrame(violations_data, columns=clean_headers)
         return dataframe
     except Exception as err:
-        # logger.error(f"create_dataframe {repr(err)}")
+        logger.error(f"create_dataframe {repr(err)}")
         return None
 
 
@@ -290,6 +296,26 @@ def qr_code_reader(image) -> list:
     #     #     cv2.line(img, point1, point2, color=(255, 0, 0), thickness=2)
     #
     #     return data
+
+
+async def check_dataframe(dataframe: DataFrame, hse_user_id: str | int) -> bool:
+    """Проверка dataframe на наличие данных
+
+    :param dataframe:
+    :param hse_user_id: id пользователя
+    :return:
+    """
+    if dataframe is None:
+        text_violations: str = 'не удалось получить данные!'
+        logger.error(f'{hse_user_id = } {text_violations}')
+        # await bot_send_message(chat_id=hse_user_id, text=text_violations)
+        return False
+
+    if dataframe.empty:
+        logger.error(f'{hse_user_id = } {Messages.Error.dataframe_is_empty}')
+        return False
+
+    return True
 
 
 def display_data(img):

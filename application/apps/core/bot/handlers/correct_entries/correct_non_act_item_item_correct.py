@@ -13,6 +13,8 @@ from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
 
 from apps.core.database.db_utils import db_get_data_dict_from_table_with_id
 from apps.core.database.query_constructor import QueryConstructor
+from apps.core.settyngs import get_sett
+from apps.notify_admins import get_hse_dataframe, get_hse_role_is_admins_list
 from loader import logger
 
 COLUMNS_DICT: dict = {
@@ -23,19 +25,18 @@ COLUMNS_DICT: dict = {
     # 'hse_id': '',
     # 'location_id': '' # не редактируется,
     # 'violation_id': 'Номер сообщения с записью' # не редактируется,
-    'act_number': 'номер Акта',
-    'agreed_id': 'согласование',
-    'main_location_id': 'основную локацию',
-    'sub_location_id': 'площадку',
     # 'work_shift_id': '',
     # 'created_at': '',
     # 'updated_at': '',
-    # 'is_published': '',
+
+    'comment': 'комментарий к нарушению',
+    'description': 'описание нарушения',
+
+    'main_location_id': 'основную локацию',
+    'sub_location_id': 'площадку',
     'main_category_id': 'основную категорию',
     'status_id': 'статус',
     'finished_id': 'статус процесса устранения',
-    'comment': 'комментарий к нарушению',
-    'description': 'описание нарушения',
     'general_contractor_id': 'подрядную организацию',
     'category_id': 'категорию нарушения',
     'normative_documents_id': 'нормативку',
@@ -45,6 +46,13 @@ COLUMNS_DICT: dict = {
     'elimination_time_id': 'кол-во дней на устранение',
     # 'file_id': '',
     # 'title': '', == comment
+
+}
+
+SPECIAL_COLUMNS_DICT: dict = {
+    'act_number': 'номер Акта',
+    'is_published': 'опубликование',
+    'agreed_id': 'согласование',
     'photo': 'photo-файл',
     'json': 'json-файл',
 }
@@ -60,10 +68,19 @@ RESULT_DICT: dict = {
     "main_location_id": 'core_mainlocation',
     "elimination_time_id": 'core_eliminationtime',
     "finished_id": 'core_finished',
-    "agreed_id": 'core_agreed',
+
     "normative_documents_id": 'core_normativedocuments',
     "sub_location_id": 'core_sublocation',
     "general_contractor_id": 'core_generalcontractor',
+
+    'description': 'core_violations',
+    'comment': 'core_violations',
+
+    'act_number': 'core_violations',
+    'is_published': 'core_violations',
+    "agreed_id": 'core_agreed',
+    'photo': 'core_violations',
+    'json': 'core_violations',
 }
 
 
@@ -93,8 +110,7 @@ async def call_correct_non_act_item_item_correct(call: types.CallbackQuery = Non
     """Обработка ответов содержащихся в callback_data "Финализировать и записать"
     """
     hse_user_id = call.message.chat.id if call else user_id
-    logger.debug(f'{hse_user_id = }')
-    logger.debug(f'{callback_data = }')
+    logger.debug(f'{hse_user_id = } {callback_data = }')
 
     await delete_markup(message=call.message)
 
@@ -114,18 +130,28 @@ async def call_correct_non_act_item_item_correct(call: types.CallbackQuery = Non
     query: str = await QueryConstructor(None, 'core_violations', **query_kwargs).prepare_data()
 
     violations_dataframe: DataFrame = await create_lite_dataframe_from_query(query=query, table_name='core_violations')
-
     if not await check_dataframe(violations_dataframe, hse_user_id):
         return False
 
     user_violations_df: DataFrame = await create_user_dataframe(hse_user_id, violations_dataframe)
-
     if not await check_dataframe(user_violations_df, hse_user_id):
         return False
 
     text_violations: str = await text_processor_user_violations(user_violations_df, hse_user_id)
 
-    reply_markup: types.InlineKeyboardMarkup = await add_correct_inline_keyboard_with_action(item_number_text)
+    markup = types.InlineKeyboardMarkup()
+    reply_markup: types.InlineKeyboardMarkup = await add_correct_inline_keyboard_with_action(
+        markup=markup, item_number_text=item_number_text, value_dict=COLUMNS_DICT
+    )
+
+    hse_dataframe = await get_hse_dataframe()
+    hse_role_is_admins_list: list = await get_hse_role_is_admins_list(hse_dataframe=hse_dataframe)
+
+    if get_sett(cat='enable_features', param='correct_special_value').get_set():
+        if hse_user_id in hse_role_is_admins_list:
+            reply_markup: types.InlineKeyboardMarkup = await add_correct_inline_keyboard_with_action(
+                markup=markup, item_number_text=item_number_text, value_dict=SPECIAL_COLUMNS_DICT
+            )
 
     await bot_send_message(chat_id=hse_user_id, text=text_violations, reply_markup=reply_markup)
 
@@ -222,14 +248,15 @@ async def get_item_title_for_id(table_name: str, item_id: int, item_name: str = 
     return item_text
 
 
-async def add_correct_inline_keyboard_with_action(item_number_text: str | int = None):
+async def add_correct_inline_keyboard_with_action(
+        markup: types.InlineKeyboardMarkup(), item_number_text: str | int, value_dict: dict
+):
     """Формирование сообщения с текстом и кнопками действий в зависимости от параметров
 
     :return:
     """
-    markup = types.InlineKeyboardMarkup()
 
-    for k, v in COLUMNS_DICT.items():
+    for k, v in value_dict.items():
         markup.add(types.InlineKeyboardButton(text=v, callback_data=f'characteristic_{k}_{item_number_text}'))
 
     return markup

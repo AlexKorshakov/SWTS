@@ -1,19 +1,17 @@
-from apps.core.bot.handlers.photo.qr_photo_processing import qr_code_processing
 from loader import logger
 
 logger.debug(f"{__name__} start import")
 from aiogram import types
-from apps.core.bot.bot_utils.check_user_registration import check_user_access
-from apps.core.bot.data import board_config
-from apps.core.bot.reports.report_data_preparation import \
-    preparing_violation_data
-from apps.core.bot.bot_utils.select_start_category import \
-    select_start_category
-from apps.core.utils.goolgedrive_processor.googledrive_worker import \
-    write_data_on_google_drive
-from apps.core.utils.misc import rate_limit
 from apps.MyBot import MyBot
 from config.config import WRITE_DATA_ON_GOOGLE_DRIVE
+
+from apps.core.bot.handlers.photo.qr_photo_processing import qr_code_processing
+from apps.core.bot.bot_utils.check_user_registration import check_user_access
+from apps.core.bot.data import board_config
+from apps.core.bot.reports.report_data_preparation import preparing_violation_data
+from apps.core.bot.bot_utils.select_start_category import select_start_category
+from apps.core.utils.goolgedrive_processor.googledrive_worker import write_data_on_google_drive
+from apps.core.utils.misc import rate_limit
 
 logger.debug(f"{__name__} finish import")
 

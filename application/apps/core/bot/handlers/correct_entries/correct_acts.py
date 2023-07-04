@@ -1,5 +1,6 @@
 from __future__ import annotations
 import asyncio
+import math
 import traceback
 import typing
 from datetime import datetime
@@ -11,7 +12,7 @@ from pandas import DataFrame
 from apps.MyBot import MyBot, bot_send_message, bot_delete_message, delete_markup
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.bot.data import board_config
-from apps.core.bot.handlers.correct_entries.correct_support import create_user_dataframe
+from apps.core.bot.handlers.correct_entries.correct_support import create_user_dataframe, check_dataframe
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb, build_inlinekeyboard
 from apps.core.bot.messages.messages import Messages, LogMessage
 from apps.core.database.db_utils import db_get_data_list, db_get_table_headers, db_get_data_dict_from_table_with_id
@@ -26,7 +27,7 @@ async def call_correct_acts(call: types.CallbackQuery = None, callback_data: typ
     """
 
     hse_user_id = call.message.chat.id if call else user_id
-    logger.debug(f'{hse_user_id = }')
+    logger.debug(f'{hse_user_id = } {callback_data = }')
 
     # await delete_markup(message=call.message)
 
@@ -45,17 +46,13 @@ async def call_correct_acts(call: types.CallbackQuery = None, callback_data: typ
     query: str = await QueryConstructor(None, 'core_violations', **query_kwargs).prepare_data()
 
     violations_dataframe: DataFrame = await create_lite_dataframe_from_query(query=query, table_name='core_violations')
-    if violations_dataframe is None:
+    if not await check_dataframe(violations_dataframe, hse_user_id):
         text_violations: str = 'Незакрытых актов не обнаружено!'
         await bot_send_message(chat_id=hse_user_id, text=text_violations)
         return True
 
-    if violations_dataframe.empty:
-        logger.error(f'{hse_user_id = } {Messages.Error.dataframe_is_empty}  \n{query = }')
-        return False
-
     user_violations: DataFrame = await create_user_dataframe(hse_user_id, violations_dataframe)
-    if user_violations is None:
+    if not await check_dataframe(user_violations, hse_user_id):
         text_violations: str = 'Незакрытых актов не обнаружено!'
         await bot_send_message(chat_id=hse_user_id, text=text_violations)
         return True
@@ -96,8 +93,7 @@ async def act_number_answer(call: types.CallbackQuery, user_id: str = None) -> N
     query: str = await QueryConstructor(None, 'core_violations', **query_kwargs).prepare_data()
 
     violations_dataframe: DataFrame = await create_lite_dataframe_from_query(query=query, table_name='core_violations')
-    if violations_dataframe.empty:
-        logger.error(f'{hse_user_id = } {Messages.Error.dataframe_is_empty}  \n{query = }')
+    if not await check_dataframe(violations_dataframe, hse_user_id):
         return
 
     text_act: str = await text_processor_items_act_violations(violations_dataframe, act_number=act_number)
@@ -232,8 +228,8 @@ async def text_processor_user_violations(user_violations: DataFrame) -> str:
         }
         query: str = await QueryConstructor(None, 'core_actsprescriptions', **query_kwargs).prepare_data()
 
-        violations_dataframe: DataFrame = await create_lite_dataframe_from_query(query=query,
-                                                                                 table_name='core_actsprescriptions')
+        violations_dataframe: DataFrame = await create_lite_dataframe_from_query(
+            query=query, table_name='core_actsprescriptions')
 
         if violations_dataframe is None:
             logger.error(f'{Messages.Error.dataframe_is_empty}  \n{query = }')
@@ -375,30 +371,23 @@ async def text_processor_items_act_violations(user_violations_df: DataFrame, act
     return final_text
 
 
-async def text_processor(data_list_to_text: list = None, text: str = None) -> list:
+async def text_processor(text: str = None) -> list:
     """Принимает data_list_to_text[] для формирования текста ответа
     Если len(text) <= 3500 - отправляет [сообщение]
     Если len(text) > 3500 - формирует list_with_parts_text = []
 
     :param text:
-    :param data_list_to_text: лист с данными для формирования текста сообщения
     :return: list - list_with_parts_text
     """
-
     if not text:
-        text = '\n\n'.join(str(item[0]) + " : " + str(item[1]) for item in data_list_to_text)
+        return []
 
-    if len(text) <= 3500:
+    step = 3500
+    if len(text) <= step:
         return [text]
 
-    text = ''
-    list_with_parts_text = []
-    for item in data_list_to_text:
-
-        text = text + f' \n\n {str(item[0])} : {str(item[1])}'
-        if len(text) > 3500:
-            list_with_parts_text.append(text)
-            text = ''
+    len_parts = math.ceil(len(text) / step)
+    list_with_parts_text: list = [text[step * (i - 1):step * i] for i in range(1, len_parts + 1)]
 
     return list_with_parts_text
 

@@ -26,8 +26,7 @@ async def call_correct_act_delete(call: types.CallbackQuery = None, callback_dat
     """
 
     hse_user_id = call.message.chat.id if call else user_id
-    logger.debug(f'{hse_user_id = }')
-    logger.debug(f'{callback_data = }')
+    logger.debug(f'{hse_user_id = } {callback_data = }')
 
     await delete_markup(message=call.message)
 
@@ -50,7 +49,6 @@ async def call_correct_act_delete(call: types.CallbackQuery = None, callback_dat
     except Exception as err:
         logger.error(f'{hse_user_id = } {repr(err)} {act_number_text = }')
         await bot_send_message(chat_id=hse_user_id, text=Messages.Error.error_command)
-        await bot_send_message(chat_id=hse_user_id, text=Messages.Error.error_action)
         return
 
     reply_markup = await add_correct_act_delete_inline_keyboard_with_action()
@@ -82,8 +80,7 @@ async def call_correct_act_delete_not(call: types.CallbackQuery = None, callback
     """Обработка ответов
     """
     hse_user_id = call.message.chat.id if call else user_id
-    logger.debug(f'{hse_user_id = }')
-    logger.debug(f'{callback_data = }')
+    logger.debug(f'{hse_user_id = } {callback_data = }')
 
     await delete_markup(message=call.message)
 
@@ -101,8 +98,7 @@ async def call_correct_act_delete_yes(call: types.CallbackQuery = None, callback
     """
 
     hse_user_id = call.message.chat.id if call else user_id
-    logger.debug(f'{hse_user_id = }')
-    logger.debug(f'{callback_data = }')
+    logger.debug(f'{hse_user_id = } {callback_data = }')
 
     await delete_markup(message=call.message)
 

@@ -22,8 +22,7 @@ async def call_correct_item_violations(call: types.CallbackQuery = None, callbac
     """Обработка ответов содержащихся в ADMIN_MENU_LIST
     """
     hse_user_id = call.message.chat.id if call else user_id
-    logger.debug(f'{hse_user_id = }')
-    logger.debug(f'{callback_data = }')
+    logger.debug(f'{hse_user_id = } {callback_data = }')
 
     # await delete_markup(message=call.message)
 
@@ -118,8 +117,7 @@ async def item_number_answer(call: types.CallbackQuery, user_id: str = None) -> 
 
     await bot_send_message(chat_id=hse_user_id, text=text_violations, reply_markup=reply_markup)
 
-    msg_id = call.message.message_id
-    await bot_delete_message(chat_id=hse_user_id, message_id=msg_id, sleep_sec=15)
+    await bot_delete_message(chat_id=hse_user_id, message_id=call.message.message_id, sleep_sec=15)
 
 
 async def add_act_inline_keyboard_with_action():
@@ -131,14 +129,16 @@ async def add_act_inline_keyboard_with_action():
     markup = types.InlineKeyboardMarkup()
 
     markup.add(types.InlineKeyboardButton(
-        'Финализировать и записать', callback_data=posts_cb.new(id='-', action='correct_non_act_item_finalize'))
+        text='Финализировать и записать',
+        callback_data=posts_cb.new(id='-', action='correct_non_act_item_finalize'))
     )
     markup.add(types.InlineKeyboardButton(
-        'Исправить отдельные параметры',
+        text='Исправить отдельные параметры',
         callback_data=posts_cb.new(id='-', action='correct_non_act_item_item_correct'))
     )
     markup.add(types.InlineKeyboardButton(
-        'Удалить пункт полностью', callback_data=posts_cb.new(id='-', action='correct_non_act_item_delete'))
+        text='Удалить пункт полностью',
+        callback_data=posts_cb.new(id='-', action='correct_non_act_item_delete'))
     )
     return markup
 

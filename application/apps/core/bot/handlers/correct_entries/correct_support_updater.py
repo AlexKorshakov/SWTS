@@ -17,7 +17,7 @@ from loader import logger
 
 async def update_column_value_in_db(*, item_number: str | int, column_name: str, item_value: str | int,
                                     hse_user_id: str | int) -> bool:
-    """
+    """Обновление данных item_value записи violation_id в колонке column_name в базе данных
 
     :return:
     """
@@ -43,7 +43,7 @@ async def update_column_value_in_local(*, item_number: str | int, column_name: s
     :param item_number: str | int
     :param column_name: str
     :param item_value: str | int
-    :param hse_user_id: str | int
+    :param hse_user_id: str | int id пользователя
     :return: bool
     """
 
@@ -73,18 +73,19 @@ async def update_column_value_in_local(*, item_number: str | int, column_name: s
     if not await write_json_file(data=violation_data, name=f"{BOT_MEDIA_PATH}{violation_data.get('json', None)}"):
         return False
 
+    logger.info(f'{hse_user_id = } Данные записи {item_number} успешно обновлены в local!')
     return True
 
 
 async def update_column_value_in_registry(*, item_number: str | int, column_name: str, item_value: str | int,
                                           hse_user_id: str | int, v_df: DataFrame = None) -> bool:
-    """Внесение изменений в файл json на сервере
+    """Внесение изменений в файл json в регистре
 
     :param v_df:
     :param item_number: str | int
     :param column_name: str
     :param item_value: str | int
-    :param hse_user_id: str | int
+    :param hse_user_id: str | int id пользователя
     :return: bool
     """
 
@@ -110,7 +111,6 @@ async def update_column_value_in_registry(*, item_number: str | int, column_name
 
     hse_user_dict: dict = await db_get_dict_userdata(hse_user_id)
     hse_organization_id: int = hse_user_dict.get('hse_organization', None)
-
     hse_organization_dict: dict = await db_get_data_dict_from_table_with_id(
         table_name='core_generalcontractor', post_id=hse_organization_id)
     hse_organization_name = hse_organization_dict.get('title', '')

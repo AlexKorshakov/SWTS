@@ -10,7 +10,7 @@ from loguru import logger as Log
 
 from dotenv import load_dotenv
 
-ALL = ['logger']
+__all__ = ['logger']
 LOGGER_DIR = Path(__file__).resolve().parent
 load_dotenv(LOGGER_DIR / "config" / ".env")
 

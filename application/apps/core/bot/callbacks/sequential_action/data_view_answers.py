@@ -21,8 +21,8 @@ logger.debug(f"{__name__} finish import")
 
 
 @MyBot.dp.callback_query_handler(is_private,
-                                 lambda call: call.data in [item for item in board_config.menu_list])
-# ,state=DataUserState.user_data)
+                                 lambda call: call.data in [item for item in board_config.menu_list]
+    , state=DataUserState.user_data)
 async def view_user_data_states_answer(call: types.CallbackQuery, state: FSMContext):
     """Отмена регистрации
 

@@ -18,7 +18,7 @@ async def get_and_send_start_main_locations_data(call: types.CallbackQuery, call
                                                  user_id: int | str = None) -> bool:
     """Получение данных main_locations
 
-    :param user_id:
+    :param user_id: id пользователя
     :param callback_data:
     :param call:
     :return: bool
@@ -44,7 +44,7 @@ async def get_and_send_main_locations_data(call: types.CallbackQuery, callback_d
                                            user_id: int | str = None) -> bool:
     """Получение данных main_locations
 
-    :param user_id:
+    :param user_id: id пользователя
     :param callback_data:
     :param call:
     :return: bool
@@ -93,7 +93,7 @@ async def get_and_send_null_sub_locations_data(call: types.CallbackQuery, callba
                                                user_id: int | str = None) -> bool:
     """Получение данных sub_location
 
-    :param user_id:
+    :param user_id: id пользователя
     :param callback_data:
     :param call:
     :return: bool
@@ -122,7 +122,7 @@ async def get_and_send_sub_locations_data(call: types.CallbackQuery, callback_da
                                           user_id: int | str = None) -> bool:
     """Получение данных sub_location
 
-    :param user_id:
+    :param user_id: id пользователя
     :param callback_data:
     :param call:
     :return: bool
@@ -151,7 +151,7 @@ async def get_and_send_main_category_data(call: types.CallbackQuery, callback_da
                                           user_id: int | str = None) -> bool:
     """Получение данных sub_location
 
-    :param user_id:
+    :param user_id: id пользователя
     :param callback_data:
     :param call:
     :return: bool
@@ -180,7 +180,7 @@ async def get_and_send_category_data(call: types.CallbackQuery, callback_data: d
                                      user_id: int | str = None) -> bool:
     """ Получение данных category
 
-    :param user_id:
+    :param user_id: id пользователя
     :param call:
     :param callback_data:
     :return: bool
@@ -226,7 +226,7 @@ async def get_and_send_null_normative_documents_data(call: types.CallbackQuery,
                                                      user_id: int | str = None) -> bool:
     """ Получение данных normative_documents
 
-    :param user_id:
+    :param user_id: id пользователя
     :param call:
     :param callback_data:
     :return: bool
@@ -255,7 +255,7 @@ async def get_and_send_normative_documents_data(call: types.CallbackQuery, callb
                                                 user_id: int | str = None) -> bool:
     """ Получение данных normative_documents
 
-    :param user_id:
+    :param user_id: id пользователя
     :param call:
     :param callback_data:
     :return: bool
@@ -284,7 +284,7 @@ async def get_and_send_violation_category_data(call: types.CallbackQuery, callba
                                                user_id: int | str = None) -> bool:
     """Получение данных violation_category
 
-    :param user_id:
+    :param user_id: id пользователя
     :param call:
     :param callback_data:
     :return: bool
@@ -313,7 +313,7 @@ async def get_and_send_general_contractors_data(call: types.CallbackQuery, callb
                                                 user_id: int | str = None) -> bool:
     """Получение данных general_contractors
 
-    :param user_id:
+    :param user_id: id пользователя
     :param call:
     :param callback_data:
     :return: bool
@@ -342,7 +342,7 @@ async def get_and_send_incident_level_data(call: types.CallbackQuery, callback_d
                                            user_id: int | str = None) -> bool:
     """Получение данных incident_level
 
-    :param user_id:
+    :param user_id: id пользователя
     :param call:
     :param callback_data:
     :return: bool
@@ -371,7 +371,7 @@ async def get_and_send_act_required_data(call: types.CallbackQuery, callback_dat
                                          user_id: int | str = None) -> bool:
     """Получение данных act_required
 
-    :param user_id:
+    :param user_id: id пользователя
     :param call:
     :param callback_data:
     :return: bool
@@ -400,7 +400,7 @@ async def get_and_send_elimination_time_data(call: types.CallbackQuery, callback
                                              user_id: int | str = None) -> bool:
     """Получение данных act_required
 
-    :param user_id:
+    :param user_id: id пользователя
     :param call:
     :param callback_data:
     :return: bool
@@ -423,7 +423,7 @@ async def notify_user_for_choice(call: types.CallbackQuery, callback_data: dict,
     """Уведомление пользователя о выборе + логирование
 
     :param level: str
-    :param user_id: int | str
+    :param user_id: int | str id пользователя
     :param call:
     :param callback_data:
     :return None :

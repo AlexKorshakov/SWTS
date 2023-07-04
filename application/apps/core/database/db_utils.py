@@ -286,7 +286,6 @@ async def db_get_dict_userdata(user_id: int) -> dict:
     if not user_id:
         logger.error('ERROR: No user_id foe db_get_username ')
         return {}
-    table_name: str = 'core_hseuser'
 
     headers: list = await db_get_table_headers(table_name=table_name)
     clean_headers: list = [item[1] for item in headers]
@@ -312,15 +311,14 @@ async def db_get_period_for_current_week(current_week: str, current_year: str = 
     # TODO заменить на вызов конструктора QueryConstructor
     query: str = f'SELECT * FROM `core_week` WHERE `week_number` = {current_week}'
     logger.debug(f'{__name__} {say_fanc_name()} {query}')
-    # print(f'{__name__} {say_fanc_name()} {query}')
+
     datas_query: list = DataBase().get_data_list(query=query)
     period_data = datas_query[0]
 
     table_headers: list = DataBase().get_table_headers('core_week')
     headers = [row[1] for row in table_headers]
     period_dict = dict(zip(headers, period_data))
-
-    period = [
+    return [
         period_dict.get(f'start_{current_year}', None),
         period_dict.get(f'end_{current_year}', None)
     ]
@@ -377,7 +375,7 @@ def db_get_table_headers_no_async(db_table_name: str) -> list:
     return result_list
 
 
-def db_get_id_no_async(table, entry, file_id: str = None, name=None, condition=None) -> int:
+def db_get_id_no_async(table, entry, file_id: str = None, name=None) -> int:
     """Получение id записи по значению title из соответствующий таблицы table
 
     :return: int
@@ -420,10 +418,37 @@ def say_fanc_name():
 
 
 async def test():
-    res: list = await db_get_all_tables_names()
+    """Test
 
+    :return:
+    """
+    res: list = await db_get_all_tables_names()
     for item in res:
         logger.info(f'{item}')
+
+    now = datetime.now()
+    current_week: str = await get_week_message(current_date=now)
+    current_month: str = await get_month_message(current_date=now)
+    current_year: str = await get_year_message(current_date=now)
+
+    stat_date_period: list = await db_get_period_for_current_week(current_week, current_year)
+    print(f"{stat_date_period = }")
+
+    user_id: int = 373084462
+    res: dict = await db_get_dict_userdata(user_id=user_id)
+    print(f"{res = }")
+
+    res: str = await db_get_username(user_id=user_id)
+    print(f"{res = }")
+
+    res: list = await db_get_elimination_time()
+    print(f"{res = }")
+
+    res: list = await db_get_categories_list()
+    print(f"{res = }")
+
+    res: list = await db_get_categories()
+    print(f"{res = }")
 
 
 if __name__ == '__main__':

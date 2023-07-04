@@ -8,6 +8,7 @@ from pandas import DataFrame
 
 from apps.MyBot import bot_send_message
 from apps.core.bot.messages.messages import Messages, LogMessage
+from apps.core.bot.messages.messages_test import msg
 from apps.core.database.db_utils import db_get_table_headers, db_get_data_list
 from apps.core.database.query_constructor import QueryConstructor
 from loader import logger
@@ -64,7 +65,6 @@ async def create_user_dataframe(hse_user_id: str, violations_dataframe: DataFram
 
     user_violations_dataframe = violations_dataframe.copy(deep=True)
     user_violations: DataFrame = user_violations_dataframe.loc[user_violations_dataframe['user_id'] == str(hse_user_id)]
-
     if not await check_dataframe(user_violations, hse_user_id):
         return None
 
@@ -101,12 +101,13 @@ async def check_dataframe(dataframe: DataFrame, hse_user_id: str | int) -> bool:
     """Проверка dataframe на наличие данных
 
     :param dataframe:
-    :param hse_user_id:
+    :param hse_user_id: id пользователя
     :return:
     """
     if dataframe is None:
-        text_violations: str = 'Незакрытых записей вне актов не обнаружено!'
-        await bot_send_message(chat_id=hse_user_id, text=text_violations)
+        text_violations: str = 'не удалось получить данные!'
+        logger.error(f'{hse_user_id = } {text_violations}')
+        # await bot_send_message(chat_id=hse_user_id, text=text_violations)
         return False
 
     if dataframe.empty:
@@ -126,7 +127,7 @@ async def get_now() -> str:
 async def get_item_number_from_call(call: types.CallbackQuery, hse_user_id: str | int) -> int:
     """Получение номера из call.message
 
-    :param hse_user_id:
+    :param hse_user_id: id пользователя
     :param call:
     :return:
     """
@@ -145,17 +146,22 @@ async def get_item_number_from_call(call: types.CallbackQuery, hse_user_id: str 
         item_number_text = int(item_number_text)
         return item_number_text
 
-    except Exception as err:
+    except ValueError as err:
         logger.error(f'{hse_user_id = } {repr(err)} {item_number_text = }')
         await bot_send_message(chat_id=hse_user_id, text=Messages.Error.error_command)
-        await bot_send_message(chat_id=hse_user_id, text=Messages.Error.error_action)
+
+        # TODO Delete
+        logger.error(f'{hse_user_id = } Messages.Error.error_action')
+        msg_text = await msg(hse_user_id, cat='error', msge='error_action', default=Messages.Error.error_action).g_mas()
+        await bot_send_message(chat_id=hse_user_id, text=msg_text)
         return 0
 
 
 async def check_spotter_data() -> bool:
-    """
+    """Проверка наличия данных в во вспомогательном словаре spotter_data
+    (calld_prefix, character_table_name, hse_user_id, item_number_text, character)
 
-    :return:
+    :return: bool
     """
 
     prefix: str = spotter_data.get('calld_prefix', None)
@@ -200,7 +206,6 @@ async def get_violations_df(item_number: str | int, hse_user_id: str | int):
     query: str = await QueryConstructor(None, 'core_violations', **query_kwargs).prepare_data()
 
     violations_dataframe: DataFrame = await create_lite_dataframe_from_query(query=query, table_name='core_violations')
-
     if not await check_dataframe(violations_dataframe, hse_user_id):
         return
 

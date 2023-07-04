@@ -1,3 +1,5 @@
+from sqlite3 import OperationalError
+
 from loader import logger
 
 logger.debug(f"{__name__} start import")
@@ -22,6 +24,10 @@ async def write_data_in_database(*, violation_data: dict) -> bool:
         if not await db_check_record_existence(file_id=violation_data.get('file_id')):
             if await db_add_violation(violation_data=violation_data):
                 return True
+
+    except OperationalError as err:
+        logger.error(f"Error add_violation in DataBase() : {repr(err)}")
+        return False
 
     except Exception as err:
         logger.error(f"Error add_violation in DataBase() : {repr(err)}")

@@ -7,6 +7,7 @@ from apps.core.database.db_utils import (db_get_categories,
                                          db_get_data_list,
                                          db_get_dict_userdata,
                                          db_get_elimination_time)
+from apps.core.database.query_constructor import QueryConstructor
 from apps.core.utils.generate_report.generate_daily_report.set_daily_report_alignment import \
     set_report_alignment
 from apps.core.utils.generate_report.set_value import (check_mark_true,
@@ -220,7 +221,11 @@ async def set_report_values_body(worksheet: Worksheet) -> tuple[bool, int, list]
     values: list = []
     num: int = 0
 
-    query: str = "SELECT `title` FROM `core_category`"
+    query_kwargs: dict = {
+        "action": 'SELECT', "subject": 'title',
+    }
+    query: str = await QueryConstructor(None, 'core_category', **query_kwargs).prepare_data()
+
     categories: list = await db_get_data_list(query=query)
     clean_title_categories = [item[0] for item in categories]
 
