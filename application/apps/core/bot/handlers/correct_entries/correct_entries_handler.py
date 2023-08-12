@@ -217,7 +217,7 @@ async def delete_violation_files_from_pc(message: types.Message, file):
 #     await message.answer(text=Messages.Removed.violation_photo_pc)
 
 
-async def del_file(path) -> bool:
+async def del_file(path: str) -> bool:
     """Удаление файла из памяти сервера
 
     :param path:

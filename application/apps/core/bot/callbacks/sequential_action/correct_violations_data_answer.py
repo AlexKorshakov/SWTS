@@ -143,136 +143,136 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
         await CorrectViolationsState.incident_level.set()
 
 
-@MyBot.dp.message_handler(is_private, Text(equals=Messages.correct_cancel), state=CorrectViolationsState.all_states)
-async def cancel(message: types.Message, state: FSMContext):
-    """Отмена регистрации
-    :param message:
-    :param state:
-    :return:
-    """
-    await state.finish()
-    return await message.reply(Messages.Violations.canceled, reply_markup=ReplyKeyboardRemove())
-
-
-@MyBot.dp.callback_query_handler(is_private,
-                                 lambda call: call.data in [item for item in get_data_list('MAIN_CATEGORY') if
-                                                            item is not None],
-                                 state=CorrectViolationsState.main_category)
-async def correct_headlines_data_work_shift_answer(call: types.CallbackQuery, state: FSMContext):
-    """Обработка ответов содержащихся в WORK_SHIFT
-    """
-    chat_id = call.from_user.id
-    correct_data = await get_correct_data(chat_id=chat_id, call=call, json_file_name="MAIN_CATEGORY")
-    if not correct_data:
-        await state.finish()
-        return
-
-    state_name = await get_state_storage_name(state, chat_id)
-    await all_states(chat_id=chat_id, correct_data=correct_data, state_name=state_name)
-    await state.finish()
-
-
-@MyBot.dp.callback_query_handler(is_private,
-                                 lambda call: call.data in [item for item in get_data_list('ACT_REQUIRED') if
-                                                            item is not None],
-                                 state=CorrectViolationsState.act_required)
-async def correct_headlines_data_work_shift_answer(call: types.CallbackQuery, state: FSMContext):
-    """Обработка ответов содержащихся в state и call
-    """
-    chat_id = call.from_user.id
-    correct_data = await get_correct_data(chat_id=chat_id, call=call, json_file_name="ACT_REQUIRED")
-    if not correct_data:
-        await state.finish()
-        return
-
-    state_name = await get_state_storage_name(state, chat_id)
-    await all_states(chat_id=chat_id, correct_data=correct_data, state_name=state_name)
-    await state.finish()
-
-
-@MyBot.dp.callback_query_handler(is_private,
-                                 lambda call: call.data in [item for item in get_data_list('CATEGORY') if
-                                                            item is not None],
-                                 state=CorrectViolationsState.category)
-async def correct_headlines_data_work_shift_answer(call: types.CallbackQuery, state: FSMContext):
-    """Обработка ответов содержащихся в WORK_SHIFT
-    """
-    chat_id = call.from_user.id
-    correct_data = await get_correct_data(chat_id=chat_id, call=call, json_file_name="CATEGORY")
-    if not correct_data:
-        await state.finish()
-        return
-
-    state_name = await get_state_storage_name(state, chat_id)
-    await all_states(chat_id=chat_id, correct_data=correct_data, state_name=state_name)
-    await state.finish()
-
-
-@MyBot.dp.callback_query_handler(is_private,
-                                 lambda call: call.data in [item for item in get_data_list('ELIMINATION_TIME') if
-                                                            item is not None],
-                                 state=CorrectViolationsState.elimination_time)
-async def correct_headlines_data_work_shift_answer(call: types.CallbackQuery, state: FSMContext):
-    """Обработка ответов содержащихся в WORK_SHIFT
-    """
-    chat_id = call.from_user.id
-    correct_data = await get_correct_data(chat_id=chat_id, call=call, json_file_name="ELIMINATION_TIME")
-    if not correct_data:
-        await state.finish()
-        return
-
-    state_name = await get_state_storage_name(state, chat_id)
-    await all_states(chat_id=chat_id, correct_data=correct_data, state_name=state_name)
-    await state.finish()
-
-
-@MyBot.dp.callback_query_handler(is_private,
-                                 lambda call: call.data in [item for item in
-                                                            get_data_list('GENERAL_CONTRACTORS') if item is not None],
-                                 state=CorrectViolationsState.general_constractor)
-async def correct_headlines_data_work_shift_answer(call: types.CallbackQuery, state: FSMContext):
-    """Обработка ответов содержащихся в WORK_SHIFT
-    """
-    chat_id = call.from_user.id
-    correct_data = await get_correct_data(chat_id=chat_id, call=call, json_file_name="GENERAL_CONTRACTORS")
-    if not correct_data:
-        await state.finish()
-        return
-
-    state_name = await get_state_storage_name(state, chat_id)
-    await all_states(chat_id=chat_id, correct_data=correct_data, state_name=state_name)
-    await state.finish()
-
-
-@MyBot.dp.callback_query_handler(is_private,
-                                 lambda call: call.data in [item for item in get_data_list('VIOLATION_CATEGORY') if
-                                                            item is not None],
-                                 state=CorrectViolationsState.violation_category)
-async def correct_headlines_data_work_shift_answer(call: types.CallbackQuery, state: FSMContext):
-    """Обработка ответов содержащихся в WORK_SHIFT
-    """
-    chat_id = call.from_user.id
-    correct_data = await get_correct_data(chat_id=chat_id, call=call, json_file_name="VIOLATION_CATEGORY")
-    if not correct_data:
-        await state.finish()
-        return
-
-    state_name = await get_state_storage_name(state, chat_id)
-    await all_states(chat_id=chat_id, correct_data=correct_data, state_name=state_name)
-    await state.finish()
-
-
-@MyBot.dp.message_handler(is_private, state=CorrectViolationsState.all_states)
-async def correct_violations_data_all_states_answer(message: types.Message, state: FSMContext):
-    """Отмена регистрации
-    :param message:
-    :param state:
-    :return:
-    """
-    chat_id = message.chat.id
-    state_name = await get_state_storage_name(state, chat_id)
-    await all_states(chat_id=chat_id, correct_data=message.text, state_name=state_name)
-    await state.finish()
+# @MyBot.dp.message_handler(is_private, Text(equals=Messages.correct_cancel), state=CorrectViolationsState.all_states)
+# async def cancel(message: types.Message, state: FSMContext):
+#     """Отмена регистрации
+#     :param message:
+#     :param state:
+#     :return:
+#     """
+#     await state.finish()
+#     return await message.reply(Messages.Violations.canceled, reply_markup=ReplyKeyboardRemove())
+#
+#
+# @MyBot.dp.callback_query_handler(is_private,
+#                                  lambda call: call.data in [item for item in get_data_list('MAIN_CATEGORY') if
+#                                                             item is not None],
+#                                  state=CorrectViolationsState.main_category)
+# async def correct_headlines_data_main_category_answer(call: types.CallbackQuery, state: FSMContext):
+#     """Обработка ответов содержащихся в WORK_SHIFT
+#     """
+#     chat_id = call.from_user.id
+#     correct_data = await get_correct_data(chat_id=chat_id, call=call, json_file_name="MAIN_CATEGORY")
+#     if not correct_data:
+#         await state.finish()
+#         return
+#
+#     state_name = await get_state_storage_name(state, chat_id)
+#     await all_states(chat_id=chat_id, correct_data=correct_data, state_name=state_name)
+#     await state.finish()
+#
+#
+# @MyBot.dp.callback_query_handler(is_private,
+#                                  lambda call: call.data in [item for item in get_data_list('ACT_REQUIRED') if
+#                                                             item is not None],
+#                                  state=CorrectViolationsState.act_required)
+# async def correct_headlines_data_act_required_answer(call: types.CallbackQuery, state: FSMContext):
+#     """Обработка ответов содержащихся в state и call
+#     """
+#     chat_id = call.from_user.id
+#     correct_data = await get_correct_data(chat_id=chat_id, call=call, json_file_name="ACT_REQUIRED")
+#     if not correct_data:
+#         await state.finish()
+#         return
+#
+#     state_name = await get_state_storage_name(state, chat_id)
+#     await all_states(chat_id=chat_id, correct_data=correct_data, state_name=state_name)
+#     await state.finish()
+#
+#
+# @MyBot.dp.callback_query_handler(is_private,
+#                                  lambda call: call.data in [item for item in get_data_list('CATEGORY') if
+#                                                             item is not None],
+#                                  state=CorrectViolationsState.category)
+# async def correct_headlines_data_category_answer(call: types.CallbackQuery, state: FSMContext):
+#     """Обработка ответов содержащихся в WORK_SHIFT
+#     """
+#     chat_id = call.from_user.id
+#     correct_data = await get_correct_data(chat_id=chat_id, call=call, json_file_name="CATEGORY")
+#     if not correct_data:
+#         await state.finish()
+#         return
+#
+#     state_name = await get_state_storage_name(state, chat_id)
+#     await all_states(chat_id=chat_id, correct_data=correct_data, state_name=state_name)
+#     await state.finish()
+#
+#
+# @MyBot.dp.callback_query_handler(is_private,
+#                                  lambda call: call.data in [item for item in get_data_list('ELIMINATION_TIME') if
+#                                                             item is not None],
+#                                  state=CorrectViolationsState.elimination_time)
+# async def correct_headlines_data_elimination_time_answer(call: types.CallbackQuery, state: FSMContext):
+#     """Обработка ответов содержащихся в WORK_SHIFT
+#     """
+#     chat_id = call.from_user.id
+#     correct_data = await get_correct_data(chat_id=chat_id, call=call, json_file_name="ELIMINATION_TIME")
+#     if not correct_data:
+#         await state.finish()
+#         return
+#
+#     state_name = await get_state_storage_name(state, chat_id)
+#     await all_states(chat_id=chat_id, correct_data=correct_data, state_name=state_name)
+#     await state.finish()
+#
+#
+# @MyBot.dp.callback_query_handler(is_private,
+#                                  lambda call: call.data in [item for item in
+#                                                             get_data_list('GENERAL_CONTRACTORS') if item is not None],
+#                                  state=CorrectViolationsState.general_constractor)
+# async def correct_headlines_data_general_constractor_answer(call: types.CallbackQuery, state: FSMContext):
+#     """Обработка ответов содержащихся в WORK_SHIFT
+#     """
+#     chat_id = call.from_user.id
+#     correct_data = await get_correct_data(chat_id=chat_id, call=call, json_file_name="GENERAL_CONTRACTORS")
+#     if not correct_data:
+#         await state.finish()
+#         return
+#
+#     state_name = await get_state_storage_name(state, chat_id)
+#     await all_states(chat_id=chat_id, correct_data=correct_data, state_name=state_name)
+#     await state.finish()
+#
+#
+# @MyBot.dp.callback_query_handler(is_private,
+#                                  lambda call: call.data in [item for item in get_data_list('VIOLATION_CATEGORY') if
+#                                                             item is not None],
+#                                  state=CorrectViolationsState.violation_category)
+# async def correct_headlines_data_violation_category_answer(call: types.CallbackQuery, state: FSMContext):
+#     """Обработка ответов содержащихся в WORK_SHIFT
+#     """
+#     chat_id = call.from_user.id
+#     correct_data = await get_correct_data(chat_id=chat_id, call=call, json_file_name="VIOLATION_CATEGORY")
+#     if not correct_data:
+#         await state.finish()
+#         return
+#
+#     state_name = await get_state_storage_name(state, chat_id)
+#     await all_states(chat_id=chat_id, correct_data=correct_data, state_name=state_name)
+#     await state.finish()
+#
+#
+# @MyBot.dp.message_handler(is_private, state=CorrectViolationsState.all_states)
+# async def correct_violations_data_all_states_answer(message: types.Message, state: FSMContext):
+#     """Отмена регистрации
+#     :param message:
+#     :param state:
+#     :return:
+#     """
+#     chat_id = message.chat.id
+#     state_name = await get_state_storage_name(state, chat_id)
+#     await all_states(chat_id=chat_id, correct_data=message.text, state_name=state_name)
+#     await state.finish()
 
 
 async def get_state_storage_name(state, chat_id):
@@ -308,8 +308,8 @@ async def all_states(*, chat_id: str, correct_data: str, state_name: str):
             break
 
     if not violations_file_path:
-        logger.warning(f'{Messages.Error.file_not_found} violations_id: {violations_id}')
-        await bot_send_message(chat_id=chat_id, text=f'{Messages.Error.file_not_found} violations_id: {violations_id}')
+        logger.warning(f'{Messages.Error.file_not_found} {violations_id = }')
+        await bot_send_message(chat_id=chat_id, text=f'{Messages.Error.file_not_found} {violations_id = }')
         return
 
     violation_data: dict = await read_json_file(file=violations_file_path)

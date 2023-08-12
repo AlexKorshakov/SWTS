@@ -6,7 +6,7 @@ from datetime import datetime
 from aiogram import types
 from pandas import DataFrame
 
-from apps.MyBot import MyBot, bot_send_message, delete_markup
+from apps.MyBot import MyBot, bot_send_message, bot_delete_markup
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.bot.handlers.correct_entries.correct_entries_handler import correct_entries_handler
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
@@ -25,7 +25,7 @@ async def call_correct_act_finalize(call: types.CallbackQuery = None, callback_d
     hse_user_id = call.message.chat.id if call else user_id
     logger.debug(f'{hse_user_id = } {callback_data = }')
 
-    await delete_markup(message=call.message)
+    await bot_delete_markup(message=call.message)
 
     if not await check_user_access(chat_id=hse_user_id):
         logger.error(f'access fail {hse_user_id = }')
@@ -79,7 +79,7 @@ async def call_correct_act_finalize_not(call: types.CallbackQuery = None, callba
     hse_user_id = call.message.chat.id if call else user_id
     logger.debug(f'{hse_user_id = } {callback_data = }')
 
-    await delete_markup(message=call.message)
+    await bot_delete_markup(message=call.message)
 
     if not await check_user_access(chat_id=hse_user_id):
         logger.error(f'access fail {hse_user_id = }')
@@ -98,7 +98,7 @@ async def call_correct_act_finalize_yes(call: types.CallbackQuery = None, callba
     logger.debug(f'{hse_user_id = }')
     logger.debug(f'{callback_data = }')
 
-    # await delete_markup(message=call.message)
+    # await bot_delete_markup(message=call.message)
 
     if not await check_user_access(chat_id=hse_user_id):
         logger.error(f'access fail {hse_user_id = }')
