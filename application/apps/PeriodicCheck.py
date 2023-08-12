@@ -2,9 +2,12 @@
 import asyncio
 import sys
 
+from apps.core.checker.periodic_check_unclosed_points_for_subcontractor import \
+    periodic_check_unclosed_points_for_subcontractor
 from apps.core.checker.periodic_check_work import periodic_check_work
 from apps.core.checker.periodic_check_data_base import periodic_check_data_base
 from apps.core.checker.periodic_check_unclosed_points import periodic_check_unclosed_points
+from apps.core.checker.periodic_check_indefinite_normative import periodic_check_indefinite_normative
 from loader import logger
 
 
@@ -35,10 +38,14 @@ class PeriodicCheck:
         check_data_base_task = asyncio.gather(periodic_check_data_base())
         check_work_task = asyncio.gather(periodic_check_work())
         check_unclosed_points_task = asyncio.gather(periodic_check_unclosed_points())
+        check_indefinite_normative = asyncio.gather(periodic_check_indefinite_normative())
+        check_unclosed_points_for_subcontractor = asyncio.gather(periodic_check_unclosed_points_for_subcontractor())
 
         await check_data_base_task
         await check_work_task
         await check_unclosed_points_task
+        await check_indefinite_normative
+        await check_unclosed_points_for_subcontractor
 
 
 async def test():

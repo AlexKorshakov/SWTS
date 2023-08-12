@@ -5,8 +5,10 @@ from datetime import datetime
 
 from pandas import DataFrame
 
+from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
 from loader import logger
-from apps.MyBot import bot_send_message
+from apps.core.settyngs import get_sett
+from apps.MyBot import bot_send_message, MyBot
 from apps.core.bot.messages.messages import LogMessage, Messages
 from apps.core.database.db_utils import db_get_table_headers, db_get_data_list, db_get_data_dict_from_table_with_id
 from apps.core.database.query_constructor import QueryConstructor
@@ -15,31 +17,35 @@ from apps.core.database.query_constructor import QueryConstructor
 async def periodic_check_unclosed_points():
     """Периодическая проверка незакрытых пунктов и актов"""
 
-    offset: int = -7
-
     while True:
+
+        offset_hour: int = get_sett(cat='param', param='offset_hour').get_set()
+        work_period: int = get_sett(cat='param', param='check_work_period').get_set()
+
         await asyncio.sleep(1)
 
+        if not get_sett(cat='check', param='check_unclosed_points').get_set():
+            logger.warning(f'{await fanc_name()} not access')
+            await asyncio.sleep(work_period)
+            continue
+
         now = datetime.now()
-        if 18 + offset > now.hour + 1 > 9 + offset:
-
-            result_check_list: bool = await check_acts_prescriptions_status()
-
-            if result_check_list:
-                logger.info(f"{LogMessage.Check.periodic_check_unclosed_points} ::: {await get_now()}")
-            else:
-                logger.error(
-                    f'{__name__} error check_acts_prescriptions_status {result_check_list = } '
-                    f'::: {await get_now()}'
-                )
-
-        else:
+        if not 18 + offset_hour > now.hour + 1 > 9 + offset_hour:
             logger.info(f"{LogMessage.Check.time_period_error} ::: {await get_now()}")
+            await asyncio.sleep(work_period)
+            continue
 
-        await asyncio.sleep(60 * 60 * 12)
+        result_check_list: bool = await check_acts_prescriptions_status()
+
+        if result_check_list:
+            logger.info(f"{LogMessage.Check.periodic_check_unclosed_points} ::: {await get_now()}")
+        else:
+            logger.error(f'Error check_acts_prescriptions_status {result_check_list = } ::: {await get_now()}')
+
+        await asyncio.sleep(work_period)
 
 
-async def check_acts_prescriptions_status() -> bool:
+async def check_acts_prescriptions_status(*args) -> bool:
     """Проверка поля status acts
 
     :return:
@@ -140,13 +146,61 @@ async def text_processor_user_violations(user_violations: DataFrame) -> str:
         if not act_number:
             continue
 
+        query_kwargs: dict = {
+            "action": 'SELECT', "subject": '*',
+            "conditions": {
+                "act_number": act_number,
+            },
+        }
+        query: str = await QueryConstructor(None, 'core_violations', **query_kwargs).prepare_data()
+
+        violations_dataframe: DataFrame = await create_lite_dataframe_from_query(
+            query=query, table_name='core_violations')
+
+        if violations_dataframe.empty:
+            logger.error(f'{Messages.Error.dataframe_is_empty}  \n{query = }')
+
+        len_act_violations: int = len(violations_dataframe) if not violations_dataframe.empty else 0
+
         act_violations_df = user_violations.copy(deep=True)
         current_act_violations: DataFrame = act_violations_df.loc[act_violations_df['act_number'] == act_number]
 
         unclosed_points_df = current_act_violations.loc[current_act_violations['status_id'] != 1]
         unclosed_points: int = len(unclosed_points_df)
 
-        item_info = f'Ном: {act_number} всего пунктов: {len_act_violations} Незакрыто: {unclosed_points}'
+        query_kwargs: dict = {
+            "action": 'SELECT',
+            "subject": '*',
+            "conditions": {
+                "act_number": act_number,
+            },
+        }
+        query: str = await QueryConstructor(None, 'core_actsprescriptions', **query_kwargs).prepare_data()
+
+        violations_dataframe: DataFrame = await create_lite_dataframe_from_query(
+            query=query,
+            table_name='core_actsprescriptions'
+        )
+
+        if violations_dataframe is None:
+            logger.error(f'{Messages.Error.dataframe_is_empty}  \n{query = }')
+            continue
+
+        if violations_dataframe.empty:
+            logger.error(f'{Messages.Error.dataframe_is_empty}  \n{query = }')
+            continue
+
+        act_date = violations_dataframe.act_date.unique().tolist()[0]
+
+        general_constractor_id = violations_dataframe.act_general_contractor_id.unique().tolist()[-1]
+
+        general_constractor: str = await get_item_title_for_id(
+            table_name='core_generalcontractor', item_id=general_constractor_id
+        )
+
+        item_info = f'Ном: {act_number} от {act_date} {general_constractor}' \
+                    f' Всего пунктов: {len_act_violations}. Незакрыто: {unclosed_points}'
+
         act_description.append(item_info)
         len_unique_acts += 1
 
