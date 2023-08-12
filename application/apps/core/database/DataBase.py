@@ -1,4 +1,6 @@
 import asyncio
+from datetime import datetime
+from sqlite3 import OperationalError
 
 from apps.core.database.query_constructor import QueryConstructor
 from loader import logger
@@ -216,6 +218,20 @@ class DataBase:
             logger.error(f"sqlite3.IntegrityError {err}")
             return False
 
+    def create_backup(self):
+        """
+
+        :return:
+        """
+        backup_file_path: str = f"C:\\backup\\{datetime.now().strftime('%d.%m.%Y')}\\"
+        if not os.path.isdir(backup_file_path):
+            os.makedirs(backup_file_path)
+
+        query: str = f"vacuum into '{backup_file_path}backup_{datetime.now().strftime('%d.%m.%Y')}.sqlite'"
+        with self.connection:
+            result = self.cursor.execute(query).fetchall()
+            return result
+
     def get_id(self, table: str, entry, file_id: str = None, name=None) -> int:
         """Получение id записи по значению title из соответствующий таблицы table"""
 
@@ -335,18 +351,42 @@ class DataBase:
         if not query:
             return []
 
-        with self.connection:
-            return self.cursor.execute(query).fetchall()
+        try:
+            with self.connection:
+                return self.cursor.execute(query).fetchall()
+        except OperationalError as err:
+            logger.error(f"sqlite3.OperationalError {err = } {query = }")
+            return []
 
     def get_dict_data_from_table_from_id(self, table_name: str, id: int, query: str = None) -> dict:
 
         if not query:
+            query_kwargs: dict = {
+                "action": 'SELECT', "subject": '*',
+                "conditions": {
+                    "id": id,
+                },
+            }
+            query: str = asyncio.run(QueryConstructor(None, table_name, **query_kwargs).prepare_data())
 
-        headers: list = [item[1] for item in self.get_table_headers(table_name)]
         values: list = self.get_data_list(query=query)
+        headers: list = [item[1] for item in self.get_table_headers(table_name)]
         clean_values: list = values[0] if values else []
 
         return dict((header, item_value) for header, item_value in zip(headers, clean_values))
+
+    def update_hse_user_language(self, *, value: str, hse_id: str):
+        """Обновление записи id в database
+
+        :param hse_id: id записи
+        :param value:  значение для записи в столбец
+        """
+        # TODO заменить на вызов конструктора QueryConstructor
+        query: str = f"UPDATE `core_hseuser` SET hse_language_code = ? WHERE `title` = ?"
+        with self.connection:
+            result = self.cursor.execute(query, (value, hse_id,))
+        self.connection.commit()
+        return result
 
     def update_column_value(self, column_name: str, value: str, id: str):
         """Обновление записи id в database
@@ -436,8 +476,10 @@ class DataBase:
         :param short_title: данные для поиска (короткое имя)
         :param table_name:имя таблицы для запроса
         """
-
-        query: str = f'SELECT * FROM {table_name}'
+        query_kwargs: dict = {
+            "action": 'SELECT', "subject": '*',
+        }
+        query: str = asyncio.run(QueryConstructor(None, table_name, **query_kwargs).prepare_data())
 
         datas_query: list = self.get_data_list(query=query)
         full_title = [item[1] for item in datas_query if item[2] == short_title][0]
@@ -447,7 +489,11 @@ class DataBase:
     def get_max_max_number(self) -> int:
         """Получение максимального номера акта из Database `core_actsprescriptions`
         """
-        query: str = 'SELECT `act_number` FROM `core_actsprescriptions`'
+        query_kwargs: dict = {
+            "action": 'SELECT', "subject": 'act_number',
+        }
+        query: str = asyncio.run(QueryConstructor(None, 'core_actsprescriptions', **query_kwargs).prepare_data())
+
         datas_query: list = self.get_data_list(query=query)
         act_max_number = max([data_item[0] for data_item in datas_query])
         return act_max_number
@@ -599,6 +645,57 @@ async def write_json(violation):
     await write_json_file(data=violation, name=violation['json_full_name'])
 
 
+async def get_files(main_path: str, endswith: str = ".json") -> list:
+    """Получение списка файлов c расширением endswith из main_path
+
+    :type main_path: str
+    :param main_path: директория для поиска файлов
+    :type endswith: str
+    :param endswith: расширение файлов для обработки и формирования списка
+    """
+    json_files = []
+    for subdir, dirs, files in os.walk(main_path):
+        for file in files:
+            filepath = subdir + os.sep + file
+            if filepath.endswith(endswith):
+                json_files.append(filepath)
+    return json_files
+
+
+async def read_json_file(file: str):
+    """Получение данных из json.
+
+    :param file: полный путь к файлу
+    """
+    try:
+        with open(file, 'r', encoding='utf8') as data_file:
+            data_loaded = json.load(data_file)
+        return data_loaded
+    except FileNotFoundError:
+        return None
+
+
+async def write_json_file(name: str, data) -> bool:
+    """Запись данных в json
+
+    :param name: полный путь для записи / сохранения файла включая расширение,
+    :param data: данные для записи / сохранения
+    :return: True or False
+    """
+    try:
+        with io.open(name, 'w', encoding='utf8') as outfile:
+            str_ = json.dumps(data,
+                              indent=4,
+                              sort_keys=True,
+                              separators=(',', ': '),
+                              ensure_ascii=False)
+            outfile.write(str_)
+            return True
+    except TypeError as err:
+        logger.error(f"TypeError: {repr(err)}")
+        return False
+
+
 async def create_file_path(path: str):
     """Проверка и создание путей папок и файлов
     :param path:
@@ -613,9 +710,28 @@ async def create_file_path(path: str):
 
 
 def test():
-    result = DataBase().get_all_tables_names()
-    for item in result:
-        print(f"'{item}'")
+    # result = DataBase().get_all_tables_names()
+    # for item in result:
+    #     logger.info(f"'{item}'")
+
+    # act_num: int = DataBase().get_max_max_number()
+    # logger.info(f"{act_num = }")
+    #
+    # table_name = 'core_generalcontractor'
+    # short_title = 'ООО УМ'
+    # full_title = DataBase().get_full_title(table_name=table_name, short_title=short_title)
+    # logger.info(f'{full_title = }')
+    #
+    # table_name = 'core_sublocation'
+    # post_id = 10
+    # data_exists: dict = DataBase().get_dict_data_from_table_from_id(
+    #     table_name=table_name,
+    #     id=post_id,
+    # )
+    # logger.info(f'{data_exists = }')
+
+    result = DataBase().create_backup()
+    logger.info(f'{result = }')
 
 
 if __name__ == '__main__':

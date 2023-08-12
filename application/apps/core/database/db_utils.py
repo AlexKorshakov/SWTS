@@ -1,14 +1,16 @@
 from __future__ import annotations
+
 from loader import logger
 
 logger.debug(f"{__name__} start import")
 import asyncio
 from datetime import date, datetime, timedelta
 import traceback
-from typing import Union
-from sqlite3 import OperationalError
-from apps.core.database.DataBase import DataBase
 from pandas import DataFrame
+from sqlite3 import OperationalError
+
+from apps.core.database.DataBase import DataBase
+from apps.core.database.query_constructor import QueryConstructor
 
 logger.debug(f"{__name__} finish import")
 
@@ -59,8 +61,11 @@ async def db_get_categories() -> list:
 
     :return:
     """
-    # TODO заменить на вызов конструктора QueryConstructor
-    query: str = "SELECT `title` FROM `core_category`"
+    query_kwargs: dict = {
+        "action": 'SELECT', "subject": 'title',
+    }
+    query: str = await QueryConstructor(None, 'core_category', **query_kwargs).prepare_data()
+
     categories: list = await db_get_data_list(query=query)
     clean_categories: list = [item[0] for item in categories]
 
@@ -72,8 +77,10 @@ async def db_get_categories_list() -> list:
 
     :return:
     """
-    # TODO заменить на вызов конструктора QueryConstructor
-    query: str = "SELECT * FROM `core_category`"
+    query_kwargs: dict = {
+        "action": 'SELECT', "subject": '*',
+    }
+    query: str = await QueryConstructor(None, 'core_category', **query_kwargs).prepare_data()
     categories: list = await db_get_data_list(query=query)
     headers = [row[1] for row in await db_get_table_headers(table_name='core_category')]
     categories_list = [dict(zip(headers, cat)) for cat in categories]
@@ -85,8 +92,10 @@ async def db_get_elimination_time() -> list:
 
     :return:
     """
-    # TODO заменить на вызов конструктора QueryConstructor
-    query: str = "SELECT `title` FROM `core_eliminationtime`"
+    query_kwargs: dict = {
+        "action": 'SELECT', "subject": 'title',
+    }
+    query: str = await QueryConstructor(None, 'core_eliminationtime', **query_kwargs).prepare_data()
     elimination_time: list = await db_get_data_list(query=query)
     clean_elimination_time: list = [item[0] for item in elimination_time]
 
@@ -177,8 +186,8 @@ async def db_get_id_violation(file_id) -> int:
 async def db_get_id(table, entry, file_id, name) -> int:
     """Получение id записи по значению title из соответствующий таблицы table
 
-    :param file_id:
     :param name:
+    :param file_id:
     :param entry:
     :param table: str - имя таблицы
     :return: int
@@ -190,6 +199,20 @@ async def db_get_id(table, entry, file_id, name) -> int:
         name=name
     )
     return value
+
+
+async def db_update_hse_user_language(*, value: str, hse_id: str) -> bool:
+    """
+
+    :return:
+    """
+
+    result: bool = DataBase().update_hse_user_language(
+        value=str(value), hse_id=str(hse_id)
+    )
+    if result:
+        return True
+    return False
 
 
 async def db_update_column_value(column_name: str, value: None | int | str, violation_id: int | str) -> bool:
@@ -205,7 +228,6 @@ async def db_update_column_value(column_name: str, value: None | int | str, viol
     )
     if result:
         return True
-
     return False
 
 
@@ -220,7 +242,7 @@ async def db_update_table_column_value(*, table_name: str, table_column_name_for
 
     :return: bool true если удачно or false если не удачно
     """
-
+    # TODO заменить на вызов конструктора QueryConstructor
     query: str = f"UPDATE {table_name} SET {table_column_name_for_update} = ? WHERE {table_column_name} = ?"
     logger.debug(f'{table_name = } {table_column_name = } {item_name = } {item_value = }')
 
@@ -271,7 +293,13 @@ async def db_get_username(user_id: int) -> str:
     if not user_id:
         logger.error('ERROR: No user_id for db_get_username')
 
-    query: str = f'SELECT * FROM `core_hseuser` WHERE `hse_telegram_id` = {user_id}'
+    query_kwargs: dict = {
+        "action": 'SELECT', "subject": '*',
+        "conditions": {
+            "hse_telegram_id": user_id,
+        },
+    }
+    query: str = await QueryConstructor(None, 'core_hseuser', **query_kwargs).prepare_data()
     datas_query: list = DataBase().get_data_list(query=query)
     username = datas_query[0][4]
 
@@ -287,12 +315,22 @@ async def db_get_dict_userdata(user_id: int) -> dict:
         logger.error('ERROR: No user_id foe db_get_username ')
         return {}
 
-    headers: list = await db_get_table_headers(table_name=table_name)
+    headers: list = await db_get_table_headers(table_name='core_hseuser')
     clean_headers: list = [item[1] for item in headers]
 
-    query: str = f'SELECT * FROM {table_name} WHERE `hse_telegram_id` = {user_id}'
+    query_kwargs: dict = {
+        "action": 'SELECT', "subject": '*',
+        "conditions": {
+            "hse_telegram_id": user_id,
+        },
+    }
+    query: str = await QueryConstructor(None, 'core_hseuser', **query_kwargs).prepare_data()
+
     datas_query: list = DataBase().get_data_list(query=query)
-    clean_values: list = datas_query[0]
+    try:
+        clean_values: list = datas_query[0]
+    except IndexError:
+        return {}
 
     return dict((header, item_value) for header, item_value in zip(clean_headers, clean_values))
 
@@ -308,8 +346,14 @@ async def db_get_period_for_current_week(current_week: str, current_year: str = 
     if not current_year:
         current_year = await get_year_message(current_date=datetime.now())
 
-    # TODO заменить на вызов конструктора QueryConstructor
-    query: str = f'SELECT * FROM `core_week` WHERE `week_number` = {current_week}'
+    query_kwargs: dict = {
+        "action": 'SELECT', "subject": '*',
+        "conditions": {
+            "week_number": current_week,
+        },
+    }
+    query: str = await QueryConstructor(None, 'core_week', **query_kwargs).prepare_data()
+
     logger.debug(f'{__name__} {say_fanc_name()} {query}')
 
     datas_query: list = DataBase().get_data_list(query=query)
@@ -381,27 +425,6 @@ def db_get_id_no_async(table, entry, file_id: str = None, name=None) -> int:
     :return: int
     """
 
-    # if condition == 'short_title':
-    #     # kwargs: dict = {
-    #     #     "action": 'SELECT',
-    #     #     "subject": 'id',
-    #     #     "conditions": {
-    #     #         'short_title': True
-    #     #     }
-    #     # }
-    #     # query: str = asyncio.create_qr_code( await QueryConstructor(chat_id=None, table_name=table, **kwargs).prepare_data())
-    #
-    #     query = f"SELECT `id` " \
-    #             f"FROM `{table}` " \
-    #             f"WHERE `short_title` = '{entry}' "
-    #
-    #     logger.info(f'get_stat_dataframe {query = }')
-    #
-    #     datas_query: list = DataBase().get_data_list(query=query)
-    #
-    #     value: int = datas_query[0][0]
-    #     return value
-
     value: int = DataBase().get_id(
         table=table,
         entry=entry,
@@ -410,6 +433,56 @@ def db_get_id_no_async(table, entry, file_id: str = None, name=None) -> int:
     )
 
     return value
+
+
+async def get_week_message(current_date: datetime | str = None) -> str:
+    """Обработчик сообщений с фото
+    Получение номер str недели из сообщения в формате dd
+    """
+    current_date: date = await str_to_datetime(current_date)
+
+    if not current_date:
+        current_date: datetime = datetime.now()
+    week = current_date.isocalendar()[1]
+    return str("0" + str(week) if week < 10 else str(week))
+
+
+async def get_month_message(current_date: datetime = None) -> str:
+    """Получение номер str месяца из сообщения в формате mm
+    """
+    current_date: date = await str_to_datetime(current_date)
+
+    if not current_date:
+        current_date: datetime = datetime.now()
+    return str("0" + str(current_date.month) if int(current_date.month) < 10 else str(current_date.month))
+
+
+async def get_year_message(current_date: datetime = None) -> str:
+    """Обработчик сообщений с фото
+    Получение полного пути файла
+    """
+    current_date: date = await str_to_datetime(current_date)
+
+    if not current_date:
+        current_date: datetime = datetime.now()
+
+    return str(current_date.year)
+
+
+async def str_to_datetime(date_str: str | datetime) -> date:
+    """Преобразование str даты в datetime
+
+    :param
+    """
+
+    current_date: date = None
+    try:
+        if isinstance(date_str, str):
+            current_date: date = datetime.strptime(date_str, "%d.%m.%Y").date()
+    except ValueError as err:
+        logger.error(f"{repr(err)}")
+
+    return current_date
 
 
 def say_fanc_name():
