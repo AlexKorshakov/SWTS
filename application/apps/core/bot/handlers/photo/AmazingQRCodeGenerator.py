@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import asyncio
 import os
 from PIL import Image
 import shutil
@@ -176,27 +178,45 @@ async def create_qr_code(words, version=1, level='H', picture=None, colorized=Fa
             shutil.rmtree(tempdir)
 
 
-def test():
-    words = 'qr_act_nom_373084462_1161'
+async def test():
+    prefix = 'qr_matrix_nom_'
+    data_list = [
+        'CM51-PU-002',
+        # 'US01-PU-101', 'US01-PU-102', 'US01-PU-103', '', '', '', '', '', '', '', '', '',
+    ]
 
-    save_name = 'qr_act_nom_373084462_1161.jpg'
+    for i in data_list:
+        if i is None: continue
+        if i == '': continue
 
-    picture = 'C:\\Users\\KDeusEx\\PycharmProjects\\SWTS\\application\\media\\373084462\\logo_company_373084462.jpg'
+        words = f'{prefix}{i}'
+        save_name = f'{prefix}{i}.jpg'
 
-    colorized = False
+        colorized = False
+        await create_qr_code(words, version=3,
+                             level='H',
+                             picture=None,
+                             colorized=colorized,
+                             contrast=2.0,
+                             brightness=2.0,
+                             save_name=save_name,
+                             save_dir='C:\\Users\\KDeusEx\\Desktop\\qr_matrix'
+                             )
 
+    # picture = 'C:\\Users\\KDeusEx\\PycharmProjects\\SWTS\\application\\media\\373084462\\logo_company_373084462.jpg'
     # create_qr_code(words, version=1, level='H', picture=None, colorized=False, contrast=1.0, brightness=1.0, save_name=None,
     #     save_dir=os.getcwd())
-
-    create_qr_code(words, version=3,
-                   level='H',
-                   picture=None,
-                   colorized=colorized,
-                   contrast=2.0,
-                   brightness=2.0,
-                   save_name=save_name,
-                   save_dir=os.getcwd())
+    #
+    # colorized = False
+    # create_qr_code(words, version=3,
+    #                level='H',
+    #                picture=None,
+    #                colorized=colorized,
+    #                contrast=2.0,
+    #                brightness=2.0,
+    #                save_name=save_name,
+    #                save_dir=os.getcwd())
 
 
 if __name__ == '__main__':
-    test()
+    asyncio.run(test())
