@@ -59,7 +59,7 @@ async def create_stat(chat_id: int, dataframe: DataFrame = None, full_stat_path:
             worksheet, dataframe, body_val_list, workbook, full_stat_path
         )
     except Exception as err:
-        await bot_send_message(chat_id=chat_id, text=Messages.Error.file_not_found + str(f' {err} '))
+        await bot_send_message(chat_id=chat_id, text=f'{Messages.Error.file_not_found} {repr(err)}')
         logger.error(f'create_act_prescription: set_stat_violation_values error: {repr(err)}')
         return False
 

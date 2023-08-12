@@ -1,11 +1,9 @@
-import asyncio
 import datetime
+import traceback
 
 from aiogram.types import ChatActions
 from apps.core.utils.secondary_functions.get_filepath import (
     create_file_path, get_report_full_filepath)
-from apps.MyBot import MyBot
-from loader import logger
 
 
 async def send_report_from_user(chat_id, full_report_path=None):
@@ -21,10 +19,7 @@ async def send_report_from_user(chat_id, full_report_path=None):
     await MyBot.bot.send_chat_action(chat_id=chat_id, action=ChatActions.UPLOAD_DOCUMENT)
     await asyncio.sleep(2)  # скачиваем файл и отправляем его пользователю
 
-    try:
-        with open(full_report_path, 'rb') as doc:
-            await MyBot.bot.send_document(chat_id=chat_id, document=doc,
-                                          caption='Отчет собран с помощью бота!')
 
-    except Exception as err:
-        logger.error(f"send_report_from_user {repr(err)}")
+async def fanc_name():
+    stack = traceback.extract_stack()
+    return str(stack[-2][2])

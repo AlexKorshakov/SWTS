@@ -53,7 +53,7 @@ async def generate_text(hse_user_id: str | int, qr_data: str | list = None) -> s
     return '\n\n '.join(qr_data_text)
 
 
-async def get_violations_df(act_number: str | int) -> DataFrame | None:
+async def get_violations_df(act_number: str | int, hse_user_id: str | int) -> DataFrame | None:
     """
 
     :return:
@@ -73,17 +73,17 @@ async def get_violations_df(act_number: str | int) -> DataFrame | None:
     )
 
     if violations_dataframe is None:
-        logger.error(f'{Messages.Error.dataframe_is_empty}  \n{query = }')
+        logger.error(f'{hse_user_id} {Messages.Error.dataframe_is_empty}  \n{query = }')
         return None
 
     if violations_dataframe.empty:
-        logger.error(f'{Messages.Error.dataframe_is_empty}  \n{query = }')
+        logger.error(f'{hse_user_id} {Messages.Error.dataframe_is_empty}  \n{query = }')
         return None
 
     return violations_dataframe
 
 
-async def text_processor_act(act_number: int | str, act_violations_df: DataFrame) -> str:
+async def text_processor_act(act_number: int | str, act_violations_df: DataFrame, hse_user_id: str | int) -> str:
     """Формирование текста для отправки пользователю"""
 
     if not act_number:
@@ -101,7 +101,7 @@ async def text_processor_act(act_number: int | str, act_violations_df: DataFrame
         query=query, table_name='core_actsprescriptions')
 
     if act_dataframe.empty:
-        logger.error(f'{Messages.Error.dataframe_is_empty}  \n{query = }')
+        logger.error(f'{hse_user_id} {Messages.Error.dataframe_is_empty}  \n{query = }')
 
     len_act_violations: int = act_dataframe.act_row_count.unique().tolist()[0]
     act_date = act_dataframe.act_date.unique().tolist()[0]
@@ -198,20 +198,20 @@ async def text_processor_items(user_violations_df: DataFrame, hse_user_id: str |
     return items_text
 
 
-async def create_lite_dataframe_from_query(query: str, table_name: str) -> DataFrame or None:
+async def create_lite_dataframe_from_query(query: str, table_name: str, hse_user_id: str | int= None) -> DataFrame or None:
     """Возвращает list с нарушениями
 
     :return: DataFrame or None
     """
 
     if not query:
-        # logger.error(f"{LogMessage.Check.no_query} ::: {await get_now()}")
+        # logger.error(f"{hse_user_id} {LogMessage.Check.no_query} ::: {await get_now()}")
         return None
 
     violations_data: list = await db_get_data_list(query=query)
 
     if not violations_data:
-        # logger.debug(f"{LogMessage.Check.no_violations} ::: {await get_now()}")
+        # logger.debug(f"{hse_user_id} {LogMessage.Check.no_violations} ::: {await get_now()}")
         return None
 
     headers = await db_get_table_headers(table_name=table_name)
@@ -221,7 +221,7 @@ async def create_lite_dataframe_from_query(query: str, table_name: str) -> DataF
         dataframe = DataFrame(violations_data, columns=clean_headers)
         return dataframe
     except Exception as err:
-        logger.error(f"create_dataframe {repr(err)}")
+        logger.error(f"{hse_user_id} create_dataframe error {repr(err)}")
         return None
 
 
@@ -251,9 +251,10 @@ def read_qr_code_image(filename: str):
     return cv2.imread(filename)
 
 
-def qr_code_reader(image) -> list:
+async def qr_code_reader(hse_user_id, image) -> list:
     """Распознавание QR-кода на изображении
 
+    :param hse_user_id:
     :param image: - объект изображения
     :return:
     """
@@ -264,6 +265,8 @@ def qr_code_reader(image) -> list:
 
     for qrcode in qrcodes:
         qrcode_data: str = qrcode.data.decode('utf-8')
+        logger.info(f'{hse_user_id} :: {qrcode.type} :: {qrcode_data}')
+
         if qrcode.type == 'QRCODE':
             all_data.append(qrcode_data.split('&'))
 
@@ -332,12 +335,13 @@ def files(path):
         if os.path.isfile(os.path.join(path, file)):
             yield file
 
-
-if __name__ == '__main__':
-
-    file_path = 'C:\\Users\\DeusEx\\Desktop\\WhatsApp\\'
-
-    for file in files(file_path):
-        img = read_qr_code_image(file_path + file)
-        data = qr_code_reader(img)
-        print("file: ", file, "data ", data)
+#
+# if __name__ == '__main__':
+#
+#     file_path = 'C:\\Users\\DeusEx\\Desktop\\WhatsApp\\'
+#     hse_user_id =
+#
+#     for file in files(file_path):
+#         img = read_qr_code_image(file_path + file)
+#         data = qr_code_reader(hse_user_id, img)
+#         print("file: ", file, "data ", data)

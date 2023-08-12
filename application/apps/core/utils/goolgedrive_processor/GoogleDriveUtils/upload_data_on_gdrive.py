@@ -5,7 +5,7 @@ from mimetypes import guess_type
 from apps.core.bot.messages.messages import Messages
 from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import \
     drive_account_auth_with_oauth2client
-from apps.MyBot import MyBot
+from apps.MyBot import bot_send_message
 from config.config import WRITE_DATA_ON_GOOGLE_DRIVE
 from loader import logger
 
@@ -65,9 +65,9 @@ async def upload_file_on_gdrave(*, chat_id: str, drive_service: object, parent: 
 
     if not file_path:
         if notify_user:
-            await MyBot.dp.bot.send_message(chat_id=chat_id,
-                                            text=Messages.Error.upload_on_web,
-                                            disable_notification=True)
+            await bot_send_message(chat_id=chat_id,
+                                   text=Messages.Error.upload_on_web,
+                                   disable_notification=True)
         logger.error(f"File {file_path} not found")
         return 'error'
 
@@ -105,7 +105,7 @@ async def upload_file_on_gdrave(*, chat_id: str, drive_service: object, parent: 
 
         logger.info(f'**Uploading...**\n**Filename:** ```{file_name}```\n**Size:** ```{filesize}```')
         if notify_user:
-            await MyBot.dp.bot.send_message(
+            await bot_send_message(
                 chat_id=chat_id,
                 text=f'**Uploading...**  **Filename:** ```{file_name}```\n**Size:** ```{filesize}```',
                 disable_notification=True
@@ -115,7 +115,7 @@ async def upload_file_on_gdrave(*, chat_id: str, drive_service: object, parent: 
 
     except Exception as uploaded_err:
         if notify_user:
-            await MyBot.dp.bot.send_message(chat_id, f'**ERROR:** ```{uploaded_err}```', disable_notification=True)
+            await bot_send_message(chat_id=chat_id, text=f'**ERROR:** ```{uploaded_err}```', disable_notification=True)
         return 'error'
 
 

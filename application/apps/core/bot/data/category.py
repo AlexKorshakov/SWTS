@@ -1,10 +1,11 @@
+from __future__ import annotations
 from loader import logger
+
 logger.debug(f"{__name__} start import")
 import traceback
 import asyncio
 import inspect
 import os.path
-from typing import Union
 from apps.core.database.query_constructor import QueryConstructor
 from apps.core.database.db_utils import (db_get_data_list_no_async,
                                          db_get_id_no_async,
@@ -226,7 +227,7 @@ def get_category_data_list_whits_dict_condition(db_table_name, dict_condition) -
         return [data_dict]
 
 
-def get_category_data_list_whits_condition(db_table_name: str, category, condition: Union[str, dict]) -> list:
+def get_category_data_list_whits_condition(db_table_name: str, category, condition: str | dict) -> list:
     """Получение
 
     :param category:
@@ -242,7 +243,7 @@ def get_category_data_list_whits_condition(db_table_name: str, category, conditi
     if db_table_name == 'core_sublocation':
         main_table_name = 'core_mainlocation'
 
-    category_id = db_get_id_no_async(table=main_table_name, entry=category, condition=condition, )
+    category_id = db_get_id_no_async(table=main_table_name, entry=category, )
 
     if category_id is None:
         return []
@@ -296,7 +297,7 @@ def get_data_from_db(db_table_name: str) -> list:
     return []
 
 
-def get_data_list(category_in_db: str = None, category: str = None, condition: Union[str, dict] = None) -> list:
+def get_data_list(category_in_db: str = None, category: str = None, condition: str | dict = None) -> list:
     """ Функция получения данных из базы данных. При отсутствии данных поиск в json.
     При наличии condition - формирование данных согласно  condition
 

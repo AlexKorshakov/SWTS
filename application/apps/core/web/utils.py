@@ -12,6 +12,7 @@ from apps.core.database.db_utils import (db_check_record_existence,
                                          db_get_single_violation,
                                          db_get_table_headers,
                                          db_update_column_value)
+from apps.core.database.query_constructor import QueryConstructor
 from apps.core.database.transformation_category import CATEGORY_ID_TRANSFORM
 from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import \
     drive_account_credentials
@@ -27,6 +28,8 @@ from loader import logger
 
 DIRECTORY = Path(__file__).resolve().parent
 LOCAL_MEDIA_STORAGE = str(DIRECTORY.parent.parent.parent) + '/media'
+
+except_list: list = ['id', 'photo', 'file', 'json', 'csrfmiddlewaretoken', 'is_published', 'is_finished', 'title', ]
 
 
 class MyMixin:
@@ -351,6 +354,7 @@ async def conversion_value(key: str, value: str) -> str:
             logger.error(f'Not found table_name {key} in ALL_CATEGORY_IN_DB')
             return value
 
+    # TODO заменить на вызов конструктора QueryConstructor
     query: str = await generation_query(key=key, id_item=int(value))
     if not query:
         return value
@@ -420,10 +424,10 @@ async def normalize_violation_data(data_from_form: dict, received_data: dict) ->
     return received_data
 
 
-async def update_violation_files_from_local(data: dict = None):
+async def update_violation_files_from_local(data_update_local: dict = None):
     """Обновление данных violation в локальном репозитории
 
-    :param data dict данные записи
+    :param data_update_local dict данные записи
     """
 
     date = data['file_id'].split('___')[0]
@@ -437,10 +441,10 @@ async def update_violation_files_from_local(data: dict = None):
     logger.info('данные обновлены в local storage!')
 
 
-async def update_violations_from_db(data: dict = None):
+async def update_violations_from_db(data_db: dict = None):
     """Обновление данных violation в Database
 
-    :param data dict данные записи для обновления
+    :param data_db dict данные записи для обновления
     """
 
     file_id = data.get('file_id')
@@ -545,17 +549,8 @@ async def delete_violations_from_all_repo(violation_file_id: str) -> bool:
     return True
 
 
-# async def test():
-#     content = await get_id_registered_users()
-#     params = await get_params(content)
-#     logger.info(content)
-#
-#     for param in params:
-#         await upload_from_local(params=param)
-#         logger.info(f'Данные загружены в БД')
-
-
-if __name__ == "__main__":
+async def test():
+    """test"""
     data = {
         'function': 'Специалист 2й категории',
         'location': '18',
@@ -582,4 +577,17 @@ if __name__ == "__main__":
 
     }
 
-    asyncio.run(update_violations_from_all_repo(data_from_form=data))
+    await update_violations_from_all_repo(data_from_form=data)
+
+
+#     content = await get_id_registered_users()
+#     params = await get_params(content)
+#     logger.info(content)
+#
+#     for param in params:
+#         await upload_from_local(params=param)
+#         logger.info(f'Данные загружены в БД')
+
+
+if __name__ == "__main__":
+    asyncio.run(test())

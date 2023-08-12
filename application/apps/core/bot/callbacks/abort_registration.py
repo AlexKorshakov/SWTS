@@ -13,5 +13,5 @@ logger.debug(f"{__name__} finish import")
 async def callbacks_num_finish_fab(call: types.CallbackQuery):
     """Действия при отмене регистрации
     """
-    logger.info(f'User @{call.message.from_user.username}:{call.message.from_user.id} регистрация отменена')
+    logger.info(f'User @{call.message.chat.username}:{call.message.chat.id} регистрация отменена')
 

@@ -24,6 +24,7 @@ from apps.core.utils.generate_report.sheet_formatting.set_row_dimensions import 
     set_row_dimensions
 from xlsxwriter.worksheet import Worksheet
 
+
 # async def format_daily_report_sheet(worksheet: Worksheet, workbook, full_daily_report_report_path) -> bool:
 #     """Пошаговое форматирование страницы
 #     """
@@ -33,8 +34,6 @@ from xlsxwriter.worksheet import Worksheet
 #     # await format_daily_report_sheet_footer(worksheet, workbook, full_daily_report_report_path)
 #
 #     return True
-
-
 
 
 async def format_daily_report_sheet_basic(worksheet: Worksheet) -> bool:

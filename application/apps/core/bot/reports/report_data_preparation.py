@@ -11,8 +11,7 @@ from apps.core.bot.reports.report_data import violation_data
 from apps.core.database.db_utils import db_get_data_dict_from_table_with_id
 from apps.core.utils.json_worker.writer_json_file import (
     write_json_file, write_json_violation_user_file)
-from apps.core.utils.secondary_functions.get_filename import \
-    get_filename_msg_with_photo
+from apps.core.utils.secondary_functions.get_filename import get_filename_msg_with_photo
 from apps.core.utils.secondary_functions.get_filepath import (
     create_file_path, get_json_full_filename, get_json_full_filepath,
     get_photo_full_filename, get_photo_full_filepath)
@@ -75,7 +74,7 @@ async def preparing_violation_data(message: types.Message, chat_id: str):
     violation_data["photo_full_name"] = await get_photo_full_filename(user_id=violation_data["user_id"],
                                                                       name=violation_data["file_id"])
     await create_file_path(violation_data["photo_file_path"])
-    await message.photo[-1].download(destination=violation_data["photo_full_name"], make_dirs=False)
+    await message.photo[-1].download(destination_file=violation_data["photo_full_name"], make_dirs=False)
 
     violation_data["json_file_path"] = await get_json_full_filepath(user_id=violation_data["user_id"])
     violation_data["json_full_name"] = await get_json_full_filename(user_id=violation_data["user_id"],
@@ -96,7 +95,7 @@ async def preparing_violations_paths_on_pc(message: types.Message):
     violation_data["photo_full_name"] = await get_photo_full_filename(user_id=violation_data["user_id"],
                                                                       name=violation_data["file_id"])
     await create_file_path(violation_data["photo_file_path"])
-    await message.photo[-1].download(destination=violation_data["photo_full_name"], make_dirs=False)
+    await message.photo[-1].download(destination_file=violation_data["photo_full_name"], make_dirs=False)
 
     violation_data["json_file_path"] = await get_json_full_filepath(user_id=violation_data["user_id"])
     violation_data["json_full_name"] = await get_json_full_filename(user_id=violation_data["user_id"],

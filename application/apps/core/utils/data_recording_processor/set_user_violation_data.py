@@ -22,7 +22,7 @@ async def pre_set_violation_data(message: types.Message):
 
     """
     chat_id = message.from_user.id
-    await bot_send_message(chat_id=chat_id, text=Messages.Report.begin)
+    # await bot_send_message(chat_id=chat_id, text=Messages.Report.begin)
 
     # stop_violation_id = apps.core.bot.data.board_config.stop_violation_mes_id = message.message_id + 3
     # logger.info(f"start_violation message.from_user.id {stop_violation_id}")
@@ -55,7 +55,10 @@ async def set_violation_data(*, chat_id: str):
 
 
 async def test():
-    """"""
+    """
+
+    :return:
+    """
     violation_data: dict = {
         "act_required": "Требуется*",
         "category": "Отходы",
@@ -104,10 +107,10 @@ async def test():
     print(f'{location = }')
 
     if not await write_data_in_database(violation_data=violation_data):
-        print(f'ERROR violation_data write in db')
+        print('ERROR violation_data write in db')
         return
 
-    print(f'violation_data written in db')
+    print('violation_data written in db')
 
 
 if __name__ == "__main__":

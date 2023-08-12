@@ -14,7 +14,7 @@ def encode(ver, ecl, str):
 
     ver, mode = analyse(ver, ecl, str)
 
-    print('line 16: mode:', mode)
+    # print('line 16: mode:', mode)
 
     code = mode_indicator[mode] + get_cci(ver, mode, str) + mode_encoding[mode](str)
 

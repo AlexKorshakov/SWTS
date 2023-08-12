@@ -8,6 +8,8 @@ from .CorrectRegisterState import CorrectRegisterState
 from .CorrectHeadlinesState import CorrectHeadlinesState
 from .CorrectViolationsState import CorrectViolationsState
 from .DataUserState import DataUserState
+from .CatalogState import CatalogState
+from .PersonalIdHunting import PersonalIdHuntingState
 from . import description
 from . import comment
 from . import location

@@ -124,6 +124,7 @@ async def get_query(type_query: str, table_name: str, query_date: str = None, va
                          f'FROM {table_name} ' \
                          f"WHERE (`act_number` = '' or `act_number` is NULL ) " \
                          f"AND `general_contractor_id` = {value_id} " \
+                         f"AND `act_required_id` = 1 " \
                          f"AND `created_at` BETWEEN date('{await format_data_db(query_date[0])}') " \
                          f"AND date('{await format_data_db(query_date[1])}') " \
                          f"AND `user_id` = {user_id}"
@@ -133,6 +134,7 @@ async def get_query(type_query: str, table_name: str, query_date: str = None, va
                          f"WHERE (`created_at` = date('{query_date}') " \
                          f"AND (`act_number` = '' or `act_number` is NULL ) " \
                          f"AND `general_contractor_id` = {value_id} " \
+                         f"AND `act_required_id` = 1 " \
                          f"AND `user_id` = {user_id}" \
                          f") "
 
@@ -140,6 +142,7 @@ async def get_query(type_query: str, table_name: str, query_date: str = None, va
         query: str = f'SELECT * ' \
                      f'FROM {table_name} ' \
                      f"WHERE (`created_at` = date('{query_date}') " \
+                     f"AND `act_required_id` = 1 " \
                      f"AND (`act_number` = '' or `act_number` is NULL ) " \
                      f"AND `sub_location_id` = {value_id})"
 
@@ -148,6 +151,7 @@ async def get_query(type_query: str, table_name: str, query_date: str = None, va
             query: str = f'SELECT * ' \
                          f'FROM {table_name} ' \
                          f"WHERE (`act_number` = '' or `act_number` is NULL ) " \
+                         f"AND `act_required_id` = 1 " \
                          f"AND `created_at` BETWEEN date('{await format_data_db(query_date[0])}') " \
                          f"AND date('{await format_data_db(query_date[1])}') " \
                          f"AND `user_id` = {user_id}"
@@ -155,6 +159,7 @@ async def get_query(type_query: str, table_name: str, query_date: str = None, va
         if isinstance(query_date, str):
             query: str = f'SELECT * ' \
                          f'FROM {table_name} ' \
+                         f"AND `act_required_id` = 1 " \
                          f"WHERE (`created_at` = date('{query_date}') " \
                          f"AND (`act_number` = '' or `act_number` is NULL ) " \
                          f"AND `user_id` = {user_id} )"

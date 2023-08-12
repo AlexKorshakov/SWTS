@@ -251,6 +251,7 @@ async def set_stat_values_body(worksheet: Worksheet) -> tuple[bool, int, list]:
     values: list = []
     num: int = 0
 
+    # TODO заменить на вызов конструктора QueryConstructor
     query: str = "SELECT `title` FROM `core_category`"
     categories: list = await db_get_data_list(query=query)
     clean_title_categories = [item[0] for item in categories]
@@ -277,6 +278,7 @@ async def set_stat_values_body(worksheet: Worksheet) -> tuple[bool, int, list]:
             logger.error(f"set_values {repr(err)}")
             return False, num + 1, values
 
+    # TODO заменить на вызов конструктора QueryConstructor
     query: str = "SELECT `title` FROM `core_maincategory`"
     main_categories: list = await db_get_data_list(query=query)
     clean_title_main_categories = [item[0] for item in main_categories]
