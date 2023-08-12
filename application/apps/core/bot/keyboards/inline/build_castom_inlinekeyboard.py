@@ -9,15 +9,15 @@ from apps.MyBot import MyBot
 
 logger.debug(f"{__name__} finish import")
 
-
 NUM_COL = 2
 STEP_MENU = 10
 move_action: CallbackData = CallbackData("description", "action", "previous_value")
 posts_cb: CallbackData = CallbackData('post', 'id', 'action')
 
 
-async def build_inlinekeyboard(*, some_list, num_col=1, level=1, step=None, calld_prefix: str = '',
-                               addition: list = None, previous_level: str = None) -> InlineKeyboardMarkup:
+async def build_inlinekeyboard(*, some_list: list, num_col: int = 1, level: int = 1, step: int = None,
+                               called_prefix: str = '', addition: list = None, previous_level: str = None,
+                               postfix: str = '') -> InlineKeyboardMarkup:
     """Создание кнопок в чате для пользователя на основе some_list.
     Количество кнопок = количество элементов в списке some_list
     Расположение в n_cols столбцов
@@ -26,28 +26,29 @@ async def build_inlinekeyboard(*, some_list, num_col=1, level=1, step=None, call
     """
     button_list: list = []
 
-    some_list = check_list_bytes_len(some_list)
+    some_list: list = check_list_bytes_len(some_list=some_list)
 
     if addition:
-        button_list = [item for item in addition if item is not None]
+        button_list: list = [item for item in addition if item is not None]
 
     if step:
-        button_list = button_list + [
-            InlineKeyboardButton(text=ss, callback_data=f'{calld_prefix}{ss}') for ss in some_list
+        button_list: list = button_list + [
+            InlineKeyboardButton(text=ss, callback_data=f'{called_prefix}{ss}{postfix}') for ss in some_list
         ]
-        menu = await _build_menu(buttons=button_list, n_cols=num_col)
+        menu: list = await _build_menu(buttons=button_list, n_cols=num_col)
 
         reply_markup = InlineKeyboardMarkup(resize_keyboard=True, inline_keyboard=menu)
         if previous_level:
-            reply_markup = await add_previous_paragraph_button(reply_markup=reply_markup,
-                                                               previous_level=previous_level)
+            reply_markup = await add_previous_paragraph_button(
+                reply_markup=reply_markup, previous_level=previous_level
+            )
         return reply_markup
 
     if len(some_list) <= STEP_MENU:
         logger.debug(f'len(some_list) <= STEP_MENU {len(some_list) <= STEP_MENU}')
 
         button_list = button_list + [
-            InlineKeyboardButton(text=ss, callback_data=f'{calld_prefix}{ss}') for ss in some_list
+            InlineKeyboardButton(text=ss, callback_data=f'{called_prefix}{ss}{postfix}') for ss in some_list
         ]
         menu = await _build_menu(buttons=button_list, n_cols=num_col)
 
@@ -59,23 +60,90 @@ async def build_inlinekeyboard(*, some_list, num_col=1, level=1, step=None, call
 
     if STEP_MENU < len(some_list):
         logger.debug(f'STEP_MENU < len(some_list) {STEP_MENU < len(some_list)}')
-        end_list = len(some_list)
+        end_list: int = len(some_list)
         start_index, stop_index = await define_indices(level, end_list)
 
-        button_list = button_list + [
-            InlineKeyboardButton(text=ss, callback_data=f'{calld_prefix}{ss}')
+        button_list: list = button_list + [
+            InlineKeyboardButton(text=ss, callback_data=f'{called_prefix}{ss}{postfix}')
             for ss in some_list[start_index:stop_index]
         ]
 
-        menu = await _build_menu(buttons=button_list, n_cols=num_col)
+        menu: list = await _build_menu(buttons=button_list, n_cols=num_col)
 
         reply_markup = InlineKeyboardMarkup(resize_keyboard=True, inline_keyboard=menu)
-        reply_markup = await add_action_button(reply_markup=reply_markup, start_index=start_index,
-                                               stop_index=stop_index, end_list=end_list)
+        reply_markup = await add_action_button(
+            reply_markup=reply_markup, start_index=start_index, stop_index=stop_index, end_list=end_list
+        )
+
         if previous_level:
-            reply_markup = await add_previous_paragraph_button(reply_markup=reply_markup,
-                                                               previous_level=previous_level)
+            reply_markup = await add_previous_paragraph_button(
+                reply_markup=reply_markup, previous_level=previous_level
+            )
         return reply_markup
+
+
+async def get_button_list(button_list: list, some_list: list, calld_prefix: str = '', postfix: str = '',
+                          **kwargs: dict) -> list:
+    """
+
+    :return:
+    """
+    if not some_list:
+        return button_list
+
+    if not isinstance(some_list, list):
+        return []
+
+    button_list: list = button_list + await get_button_list_for_list(
+        prefix=calld_prefix, postfix=postfix, some_list=some_list, **kwargs
+    )
+    return button_list
+
+
+async def get_button_list_for_list(*, some_list: list, prefix: str = '', postfix: str = '', **kwargs: dict) -> list:
+    """Функция формирования данных button_list с InlineKeyboardButton из some_list с использованием prefix и postfix
+
+
+    :param prefix: префикс, добавляемый перед основными данными
+    :param postfix: префикс, добавляемый после основных данных
+    :param some_list: list с данными для формирования button_list с InlineKeyboardButton
+    :param kwargs: Дополнительные параметры
+    :return:
+    """
+
+    logger.info(f'{kwargs}')
+
+    if not some_list:
+        return []
+
+    if not isinstance(some_list, list):
+        return []
+
+    for item in some_list:
+
+        if isinstance(item, list):
+            button_list: list = [
+                InlineKeyboardButton(
+                    text=ss,
+                    callback_data=f'{prefix}{ss}{postfix}') for ss in some_list
+            ]
+            return button_list
+
+        if isinstance(item, tuple):
+            button_list: list = [
+                InlineKeyboardButton(
+                    text=ss[0],
+                    callback_data=f'{prefix}{ss[1]}{postfix}') for ss in some_list
+            ]
+            return button_list
+
+        if isinstance(item, dict):
+            button_list: list = [
+                InlineKeyboardButton(
+                    text=key,
+                    callback_data=f'{prefix}{val}{postfix}') for key, val in item.items()
+            ]
+            return button_list
 
 
 def check_list_bytes_len(some_list: list) -> list:
@@ -199,6 +267,11 @@ async def build_inlinekeyboard_answer(call: types.CallbackQuery, callback_data: 
     menu_level = board_config.menu_level
     some_list = board_config.menu_list
     count_col = board_config.count_col
+    call_fanc_name = board_config.call_fanc_name
+    prefix = ''
+
+    if call_fanc_name == 'enable_features':
+        prefix = 'features_'
 
     chat_id = call.message.chat.id
     message_id = call.message.message_id
@@ -209,13 +282,17 @@ async def build_inlinekeyboard_answer(call: types.CallbackQuery, callback_data: 
     if callback_data['action'] == "move_up":
         board_config.menu_level = menu_level = menu_level + 1
 
-    reply_markup = await build_inlinekeyboard(some_list=some_list, num_col=count_col, level=menu_level)
+    reply_markup = await build_inlinekeyboard(
+        some_list=some_list, num_col=count_col, level=menu_level, called_prefix=prefix
+    )
 
     if board_config.previous_level:
         reply_markup = await add_previous_paragraph_button(reply_markup=reply_markup,
                                                            previous_level=board_config.previous_level)
 
     await MyBot.bot.edit_message_reply_markup(chat_id=chat_id, message_id=message_id, reply_markup=reply_markup)
+
+    board_config.call_fanc_name = ''
 
 
 async def add_subtract_inline_keyboard_with_action():
