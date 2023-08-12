@@ -1,9 +1,13 @@
 import os
+from itertools import chain
 
 from aiogram import types
 
 from apps.MyBot import bot_send_message
-from apps.core.bot.handlers.photo.qr_worker import qr_code_reader, read_qr_code_image, generate_text
+from apps.core.bot.handlers.photo.qr_act_nom_processing import qr_act_nom_processing
+from apps.core.bot.handlers.photo.qr_matrix_nom_processing import qr_matrix_nom_processing
+from apps.core.bot.handlers.photo.qr_personal_id_processing import qr_personal_id_processing
+from apps.core.bot.handlers.photo.qr_worker import qr_code_reader, read_qr_code_image
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.messages.messages_test import msg
 from apps.core.settyngs import get_sett
@@ -29,11 +33,11 @@ async def qr_code_processing(message: types.Message, context: dict = None) -> bo
     await message.photo[-1].download(make_dirs=False, destination_file=f"{photo_file_path}\\{hse_user_id}.jpg")
 
     img = read_qr_code_image(f"{photo_file_path}\\{hse_user_id}.jpg")
-    data: list = qr_code_reader(img)
+    data: list = await qr_code_reader(hse_user_id, img)
 
     if not data:
-        answer_text: str = await msg(hse_user_id, cat='warning', msge='qr_not_found',
-                                     default="QR-код, не распознан или отсутствует").g_mas()
+        answer_text: str = await msg(
+            hse_user_id, cat='warning', msge='qr_not_found', default="QR-код, не распознан или отсутствует").g_mas()
 
         await bot_send_message(chat_id=hse_user_id, text=answer_text)
         try:
@@ -42,22 +46,26 @@ async def qr_code_processing(message: types.Message, context: dict = None) -> bo
             pass
         return False
 
-    answer_text: str = await generate_text(hse_user_id, qr_data=data)
-
-    for item_txt in await text_processor(text=answer_text):
-        await bot_send_message(chat_id=hse_user_id, text=item_txt)
-
-    if not answer_text:
-        answer_text: str = await msg(hse_user_id, cat='warning', msge='qr_not_found',
-                                     default="QR-код, не распознан или отсутствует").g_mas()
-
-        await bot_send_message(chat_id=hse_user_id, text=answer_text)
-
-        try:
-            os.remove(photo_file_path)
-        except PermissionError:
-            pass
+    if not isinstance(data, list):
         return False
+
+    qr_dat = [item for item in list(chain(*data)) if 'qr_matrix_nom_' in item]
+    if qr_dat:
+        await qr_matrix_nom_processing(hse_user_id, qr_data=data)
+
+    qr_dat = [item for item in list(chain(*data)) if 'qr_act_nom_' in item]
+    if qr_dat:
+        await qr_act_nom_processing(hse_user_id, data=data)
+
+    qr_dat = [item for item in list(chain(*data)) if 'personal_id_code_' in item]
+    if qr_dat:
+        await qr_personal_id_processing(hse_user_id, data=data, message=message)
+        return True
+
+    qr_dat = [item for item in data if 'personal_id_code_' in item]
+    if qr_dat:
+        await qr_personal_id_processing(hse_user_id, data=data, message=message)
+        return True
 
     try:
         os.remove(f'{photo_file_path}\\{hse_user_id}.jpg')
@@ -65,31 +73,3 @@ async def qr_code_processing(message: types.Message, context: dict = None) -> bo
         pass
 
     return True
-
-
-async def text_processor(data_list_to_text: list = None, text: str = None) -> list:
-    """Принимает data_list_to_text[] для формирования текста ответа
-    Если len(text) <= 3500 - отправляет [сообщение]
-    Если len(text) > 3500 - формирует list_with_parts_text = []
-
-    :param text:
-    :param data_list_to_text: лист с данными для формирования текста сообщения
-    :return: list - list_with_parts_text
-    """
-
-    if not text:
-        text = '\n\n'.join(str(item[0]) + " : " + str(item[1]) for item in data_list_to_text)
-
-    if len(text) <= 3500:
-        return [text]
-
-    text = ''
-    list_with_parts_text = []
-    for item in data_list_to_text:
-
-        text = text + f' \n\n {str(item[0])} : {str(item[1])}'
-        if len(text) > 3500:
-            list_with_parts_text.append(text)
-            text = ''
-
-    return list_with_parts_text

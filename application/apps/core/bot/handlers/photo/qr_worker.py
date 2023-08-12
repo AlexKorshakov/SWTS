@@ -40,12 +40,12 @@ async def generate_text(hse_user_id: str | int, qr_data: str | list = None) -> s
             act_number = qr_data_list[-1]
             user_id = qr_data_list[-2]
 
-            violations_df: DataFrame = await get_violations_df(act_number)
+            violations_df: DataFrame = await get_violations_df(act_number, hse_user_id)
             if not await check_dataframe(violations_df, hse_user_id=hse_user_id):
                 await bot_send_message(chat_id=hse_user_id, text='Данные не найдены dataframe')
                 continue
 
-            act_text: str = await text_processor_act(act_number, violations_df)
+            act_text: str = await text_processor_act(act_number, violations_df, hse_user_id)
             items_text: str = await text_processor_items(violations_df, hse_user_id=user_id)
 
             qr_data_text.append(f'{act_text}\n\n{items_text}')
@@ -269,6 +269,9 @@ async def qr_code_reader(hse_user_id, image) -> list:
 
         if qrcode.type == 'QRCODE':
             all_data.append(qrcode_data.split('&'))
+
+        if qrcode.type == 'EAN8':
+            all_data.append(f'personal_id_code_{qrcode_data}')
 
     return all_data
 
