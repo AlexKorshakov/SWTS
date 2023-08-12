@@ -13,6 +13,7 @@ async def set_default_commands(dp: Dispatcher):
             types.BotCommand(command="/generate", description="Формирование документов"),
             types.BotCommand(command="/correct_entries", description="Изменение данных"),
             types.BotCommand(command="/catalog_func", description="Справочник"),
+            types.BotCommand(command="/bagration", description="Багратион"),
             types.BotCommand(command="/add_entries", description="Добавление данных"),
             types.BotCommand(command="/admin_func", description="Админка"),
             types.BotCommand(command="/super_user_fanc", description="Админка2"),
@@ -23,4 +24,4 @@ async def set_default_commands(dp: Dispatcher):
             # types.BotCommand(command="/generate_stat", description="Формирование статистики"),
         ]
     )
-    logger.info(Messages.bot_setting_commands)
+    logger.info(f'{dp.bot._me.first_name} {Messages.bot_setting_commands}')

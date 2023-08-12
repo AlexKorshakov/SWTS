@@ -4,31 +4,127 @@
 Тестовая страница :: {{ block.super }}
 {% endblock %}
 
+{% comment %}
 {% block sidebar %}
 {% include 'inc/_sidebar.html' %}
 {% endblock %}
+{% endcomment %}
 
 {% block content %}
 <h1>Тестовая страница</h1>
 
-    {% for name in page_obj.object_list %}
-        <p>{{ name }}</p>
-    {% endfor %}
-
+<div class="accordion" id="accordionPanelsStayOpenExample">
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="panelsStayOpen-headingOne">
+            <c-button class="accordion-button" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="true"
+                    aria-controls="panelsStayOpen-collapseOne">
+                Accordion Item #1
+            </c-button>
+        </h2>
+        <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show"
+             aria-labelledby="panelsStayOpen-headingOne">
+            <div class="accordion-body">
+                <strong>This is the first item's accordion body.</strong> It is shown by default, until the collapse
+                plugin adds the appropriate classes that we use to style each element. These classes control the overall
+                appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with
+                custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go
+                within the <code>.accordion-body</code>, though the transition does limit overflow.
+            </div>
+        </div>
+    </div>
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="panelsStayOpen-headingTwo">
+            <c-button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#panelsStayOpen-collapseTwo" aria-expanded="false"
+                    aria-controls="panelsStayOpen-collapseTwo">
+                Accordion Item #2
+            </c-button>
+        </h2>
+        <div id="panelsStayOpen-collapseTwo" class="accordion-collapse collapse"
+             aria-labelledby="panelsStayOpen-headingTwo">
+            <div class="accordion-body">
+                <strong>This is the second item's accordion body.</strong> It is hidden by default, until the collapse
+                plugin adds the appropriate classes that we use to style each element. These classes control the overall
+                appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with
+                custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go
+                within the <code>.accordion-body</code>, though the transition does limit overflow.
+            </div>
+        </div>
+    </div>
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="panelsStayOpen-headingThree">
+            <c-button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#panelsStayOpen-collapseThree" aria-expanded="false"
+                    aria-controls="panelsStayOpen-collapseThree">
+                <tr style="background : blue; color : white;">
+                    <td>п/п</td>
+                    <td>Дата</td>
+                    <td>Номер акта</td>
+                    <td>Кол-во пунктов</td>
+                    <td>ПО</td>
+                    <td>Неделя</td>
+                    <td>Месяц</td>
+                    <td>Квартал</td>
+                    <td>Год</td>
+                </tr>
+            </c-button>
+        </h2>
+        <div id="panelsStayOpen-collapseThree" class="accordion-collapse collapse"
+             aria-labelledby="panelsStayOpen-headingThree">
+            <div class="accordion-body">
+                <table class="table">
+                    <tr style="background : blue; color : white;">
+                        <td>п/п</td>
+                        <td>Дата</td>
+                        <td>Номер акта</td>
+                        <td>Кол-во пунктов</td>
+                        <td>ПО</td>
+                        <td>Неделя</td>
+                        <td>Месяц</td>
+                        <td>Квартал</td>
+                        <td>Год</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="panelsStayOpen-headingFour">
+            <c-button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#panelsStayOpen-collapseFour" aria-expanded="false"
+                    aria-controls="panelsStayOpen-collapseFour">
+                <tr style="background : blue; color : white;">
+                    <td>п/п</td>
+                    <td>Дата</td>
+                    <td>Номер акта</td>
+                    <td>Кол-во пунктов</td>
+                    <td>ПО</td>
+                    <td>Неделя</td>
+                    <td>Месяц</td>
+                    <td>Квартал</td>
+                    <td>Год</td>
+                </tr>
+            </c-button>
+        </h2>
+        <div id="panelsStayOpen-collapseFour" class="accordion-collapse collapse"
+             aria-labelledby="panelsStayOpen-headingThree">
+            <div class="accordion-body">
+                <table class="table">
+                    <tr style="background : blue; color : white;">
+                        <td>п/п</td>
+                        <td>Дата</td>
+                        <td>Номер акта</td>
+                        <td>Кол-во пунктов</td>
+                        <td>ПО</td>
+                        <td>Неделя</td>
+                        <td>Месяц</td>
+                        <td>Квартал</td>
+                        <td>Год</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+</div>
+</div>
 {% endblock %}
-
-<nav aria-label="...">
-  <ul class="pagination">
-    <li class="page-item disabled">
-      <a class="page-link">Previous</a>
-    </li>
-    <li class="page-item"><a class="page-link" href="#">1</a></li>
-    <li class="page-item active" aria-current="page">
-      <a class="page-link" href="#">2</a>
-    </li>
-    <li class="page-item"><a class="page-link" href="#">3</a></li>
-    <li class="page-item">
-      <a class="page-link" href="#">Next</a>
-    </li>
-  </ul>
-</nav>

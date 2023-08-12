@@ -1,7 +1,7 @@
 import datetime
 import traceback
 
-from aiogram.types import ChatActions
+from apps.MyBot import bot_send_document
 from apps.core.utils.secondary_functions.get_filepath import (
     create_file_path, get_report_full_filepath)
 
@@ -16,8 +16,10 @@ async def send_report_from_user(chat_id, full_report_path=None):
         await create_file_path(report_path)
         full_report_path = report_path + report_name
 
-    await MyBot.bot.send_chat_action(chat_id=chat_id, action=ChatActions.UPLOAD_DOCUMENT)
-    await asyncio.sleep(2)  # скачиваем файл и отправляем его пользователю
+    caption = 'Отчет собран с помощью бота!'
+    await bot_send_document(
+        chat_id=chat_id, doc_path=full_report_path, caption=caption, fanc_name=await fanc_name()
+    )
 
 
 async def fanc_name():

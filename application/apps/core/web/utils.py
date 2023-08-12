@@ -277,10 +277,7 @@ async def check_key(violation_data_for_check: dict, key: str) -> bool:
     :param violation_data_for_check: данные для проверки
     :return: True if key in violation_data or False
     """
-    if key in [
-        'photo', 'json', 'csrfmiddlewaretoken',
-        'is_published', 'is_finished', 'title',
-    ]:
+    if key in except_list:
         return False
 
     if not violation_data_for_check.get(key, None):
@@ -324,9 +321,13 @@ async def generation_query(key: str, id_item: int) -> str:
     db_table_name = CATEGORY_ID_TRANSFORM.get(key, None)
     table_name = db_table_name['table']
 
-    # TODO заменить на вызов конструктора QueryConstructor
-    query: str = f'SELECT `title` FROM {table_name} WHERE id = {id_item}'
-
+    query_kwargs: dict = {
+        "action": 'SELECT', "subject": 'title',
+        "conditions": {
+            "id": id_item,
+        },
+    }
+    query: str = await QueryConstructor(None, table_name, **query_kwargs).prepare_data()
     return query
 
 
@@ -430,13 +431,13 @@ async def update_violation_files_from_local(data_update_local: dict = None):
     :param data_update_local dict данные записи
     """
 
-    date = data['file_id'].split('___')[0]
-    file_name = data['file_id']
-    user_id = data['user_id']
+    date = data_update_local['file_id'].split('___')[0]
+    file_name = data_update_local['file_id']
+    user_id = data_update_local['user_id']
 
     name = await get_json_full_filename(user_id=user_id, file_name=file_name, date=date)
 
-    await write_json(name=name, data=data)
+    await write_json(name=name, data=data_update_local)
 
     logger.info('данные обновлены в local storage!')
 
@@ -447,15 +448,15 @@ async def update_violations_from_db(data_db: dict = None):
     :param data_db dict данные записи для обновления
     """
 
-    file_id = data.get('file_id')
+    file_id = data_db.get('file_id')
     if not await db_check_record_existence(file_id=file_id):
         logger.error(f"Запись {file_id} не найдена")
         return
 
     vi_id = await db_get_id_violation(file_id=file_id)
 
-    for key, value in data.items():
-        if key in ['id', 'photo', 'file', 'json', 'csrfmiddlewaretoken']:
+    for key, value in data_db.items():
+        if key in except_list:
             continue
 
         if key in [k for k, v in CATEGORY_ID_TRANSFORM.items()]:
@@ -514,9 +515,9 @@ async def update_violations_from_all_repo(data_from_form: dict = None) -> bool:
 
     # TODO проверить переключатели is_finished is_published
 
-    await update_violations_from_db(data=normalize_data)
+    await update_violations_from_db(data_db=normalize_data)
 
-    await update_violation_files_from_local(data=normalize_data)
+    await update_violation_files_from_local(data_update_local=normalize_data)
 
     await update_violation_files_from_gdrive(data_for_update=normalize_data)
 

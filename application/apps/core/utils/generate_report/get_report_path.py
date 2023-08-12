@@ -94,6 +94,58 @@ async def get_and_create_full_act_prescription_name(chat_id: int, param: dict) -
         return ''
 
 
+async def get_full_qr_report_path(qr_report_path: str, chat_id: str | int, act_number: str) -> str:
+    """
+
+    :param qr_report_path: str
+    :param chat_id:  str | int
+    :param act_number: str
+    :return:
+    """
+
+    return f'{qr_report_path}qr_act_nom_{chat_id}_{act_number}.jpg'
+
+
+async def get_and_create_full_act_prescription_name_in_registry(chat_id: int, param: dict) -> str:
+    """Формирование и получение полного имение пути к акту  в реестре (хранилище)
+
+    :param param:
+    :param chat_id:
+    :return:
+    """
+    if not param:
+        return ''
+
+    act_number = param.get('act_number', None)
+    if not act_number:
+        act_number = (datetime.datetime.now()).strftime("%d.%m.%Y")
+
+    act_date = param.get('act_date', None)
+    if not act_date:
+        act_date = (datetime.datetime.now()).strftime("%d.%m.%Y")
+
+    short_title = param.get('short_title', None)
+    if not short_title:
+        short_title = ''
+
+    main_location = param.get('main_location', None)
+    if not main_location:
+        main_location = ''
+
+    try:
+        report_full_name = f'Акт-предписание № {act_number} от {act_date} {short_title}'
+        report_path_in_registry = await get_report_full_filepath_in_registry(chat_id, actual_date=act_date)
+        await create_file_path(report_path_in_registry)
+        full_report_path_in_registry: str = f'{report_path_in_registry}{report_full_name}'
+        await create_file_path(full_report_path_in_registry)
+
+        return full_report_path_in_registry
+
+    except Exception as err:
+        logger.error(f"get_report_path {repr(err)}")
+        return ''
+
+
 async def get_full_stat_name(chat_id: int):
     """Получение полного пути к отчету со статистикой
 

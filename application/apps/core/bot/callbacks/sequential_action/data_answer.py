@@ -1,4 +1,7 @@
 from __future__ import annotations
+
+import math
+
 from loader import logger
 
 logger.debug(f"{__name__} start import")
@@ -11,6 +14,7 @@ from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inl
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.reports.report_data import violation_data
 from apps.core.bot.states import AnswerUserState
+
 logger.debug(f"{__name__} finish import")
 
 
@@ -74,11 +78,15 @@ async def get_and_send_main_locations_data(call: types.CallbackQuery, callback_d
 
     zipped_list: list = list(zip(short_title, data_list))
 
-    text_list = await text_process(zipped_list)
+    text_items: str = get_text(datas=zipped_list)
+    for item_txt in text_processor(text_items):
+        await bot_send_message(chat_id=hse_user_id, text=item_txt)
 
-    for txt in text_list:
-        await bot_send_message(chat_id=hse_user_id,
-                               text=txt)
+    # text_list = await text_process(zipped_list)
+    #
+    # for txt in text_list:
+    #     await bot_send_message(chat_id=hse_user_id,
+    #                            text=txt)
 
     reply_markup = await build_inlinekeyboard(
         some_list=menu_list, num_col=count_col, level=menu_level, previous_level=previous_level
@@ -206,12 +214,15 @@ async def get_and_send_category_data(call: types.CallbackQuery, callback_data: d
     board_config.previous_level = previous_level
 
     zipped_list: list = list(zip(short_title, data_list))
+    text_items: str = get_text(datas=zipped_list)
+    for item_txt in text_processor(text_items):
+        await bot_send_message(chat_id=hse_user_id, text=item_txt)
 
-    text_list = await text_process(zipped_list)
-
-    for txt in text_list:
-        await bot_send_message(chat_id=hse_user_id,
-                               text=txt)
+    # text_list = await text_process(zipped_list)
+    #
+    # for txt in text_list:
+    #     await bot_send_message(chat_id=hse_user_id,
+    #                            text=txt)
 
     reply_markup = await build_inlinekeyboard(
         some_list=menu_list, num_col=count_col, level=menu_level, previous_level=previous_level
@@ -439,29 +450,64 @@ async def notify_user_for_choice(call: types.CallbackQuery, callback_data: dict,
     return True
 
 
-async def text_process(zipped_list: list) -> list:
-    """Формирование тела сообщения
-
-    :param zipped_list:
-    :return: bool
+def get_text(datas: list) -> str:
     """
 
-    text = '\n\n'.join(str(item[0]) + " : " + str(item[1]) for item in zipped_list)
+    :return:
+    """
 
-    if len(text) <= 3500:
+    short_title_list: list = [str(item[0]) for item in datas]
+    title_data_list: list = [item[1] for item in datas]
+    text: str = '\n\n'.join(f'{item[0]} : {item[1]}'
+                            for item in
+                            list(zip(short_title_list, title_data_list)))
+    return text
+
+
+def text_processor(text: str = None) -> list:
+    """Принимает text для формирования list ответа
+    Если len(text) <= 3500 - отправляет [сообщение]
+    Если len(text) > 3500 - формирует list_with_parts_text = []
+
+    :param text:
+    :return: list - list_with_parts_text
+    """
+    if not text:
+        return []
+
+    step = 3500
+    if len(text) <= step:
         return [text]
 
-    text = ''
-    text_list = []
-    for item in zipped_list:
-        if item[0][0] == '#': continue
+    len_parts = math.ceil(len(text) / step)
+    list_with_parts_text: list = [text[step * (i - 1):step * i] for i in range(1, len_parts + 1)]
 
-        text = text + f' \n\n {str(item[0])} : {str(item[1])}'
-        if len(text) > 3500:
-            text_list.append(text)
-            text = ''
+    return list_with_parts_text
 
-    return text_list
+
+# async def text_process(zipped_list: list) -> list:
+#     """Формирование тела сообщения
+#
+#     :param zipped_list:
+#     :return: bool
+#     """
+#
+#     text = '\n\n'.join(str(item[0]) + " : " + str(item[1]) for item in zipped_list)
+#
+#     if len(text) <= 3500:
+#         return [text]
+#
+#     text = ''
+#     text_list = []
+#     for item in zipped_list:
+#         if item[0][0] == '#': continue
+#
+#         text = text + f' \n\n {str(item[0])} : {str(item[1])}'
+#         if len(text) > 3500:
+#             text_list.append(text)
+#             text = ''
+#
+#     return text_list
 
 
 async def test():
@@ -485,10 +531,10 @@ async def test():
 
     zipped_list: list = list(zip(short_title, data_list))
 
-    text_list = await text_process(zipped_list)
-
-    for txt in text_list:
-        print(txt)
+    # text_list = await text_process(zipped_list)
+    #
+    # for txt in text_list:
+    #     print(txt)
         # await bot_send_message(text=txt)
 
     reply_markup = await build_inlinekeyboard(

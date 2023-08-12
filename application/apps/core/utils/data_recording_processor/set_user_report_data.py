@@ -61,3 +61,16 @@ async def set_act_data_on_google_drive(chat_id: int, full_report_path: str):
 
     if await set_user_report_data_on_google_drive(chat_id=chat_id, full_report_path=full_report_path):
         logger.info(Messages.Successfully.save_data_on_g_drive)
+
+
+async def set_act_data_on_data_in_registry(
+        hse_chat_id, act_dataframe, act_date, act_number, path_in_registry, constractor_id):
+    """Сoхранение данных отчета различными методами"""
+
+    act_prescription_json = await set_act_prescription_json(
+        hse_chat_id=hse_chat_id, act_dataframe=act_dataframe, path_in_registry=path_in_registry,
+        act_date=act_date, act_number=act_number, constractor_id=constractor_id)
+
+    # await set_act_prescription_in_registry(act_prescription_json)
+
+    await bot_send_message(chat_id=hse_chat_id, text=Messages.Successfully.registration_completed_in_registry)

@@ -46,6 +46,21 @@ async def create_act_prescription(chat_id: int, act_number: int, dataframe: Data
 
     await insert_service_image(worksheet, chat_id=chat_id, service_image_name=f'company_{chat_id}')
 
+    if qr_img_insert:
+        qr_img_params: dict = {
+            "height": 150,
+            "width": 150,
+            "anchor": True,
+            "column": 'K',
+            "column_img": 11,
+            "row": 1,
+        }
+        service_image_name: str = f'{chat_id}\\data_file\\{act_date}\\reports\\qr_act_nom_{chat_id}_{act_number}'
+
+        await insert_service_image(worksheet,
+                                   service_image_name=service_image_name,
+                                   img_params=qr_img_params)
+
     headlines_data_values: dict = await get_act_headlines_data_values(
         chat_id=chat_id, dataframe=dataframe, act_date=act_date, act_number=act_number
     )

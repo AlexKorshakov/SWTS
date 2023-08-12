@@ -7,6 +7,7 @@ from pandas import DataFrame
 
 from apps.MyBot import bot_send_message, _send_message
 from apps.core.bot.bot_utils.progress_bar import ProgressBar
+from apps.core.bot.handlers.correct_entries.correct_support import check_dataframe
 from apps.core.bot.handlers.photo.AmazingQRCodeGenerator import create_qr_code, create_qr_code_with_param
 from apps.core.bot.messages.messages import Messages
 from apps.core.database.query_constructor import QueryConstructor
@@ -33,7 +34,6 @@ async def create_and_send_act_prescription(chat_id: int, query_act_date_period=N
     """
 
     msg = await _send_message(chat_id=chat_id, text='⬜' * 10)
-
     p_bar = ProgressBar(msg=msg)
 
     await p_bar.update_msg(1)
@@ -50,7 +50,6 @@ async def create_and_send_act_prescription(chat_id: int, query_act_date_period=N
 
     clean_headers: list = await get_clean_headers(table_name='core_violations')
 
-    await p_bar.update_msg(3)
     clear_list_value = await get_clean_data(chat_id, query_act_date_period, headers=clean_headers)
     if not clear_list_value:
         return False
@@ -76,13 +75,20 @@ async def create_and_send_act_prescription(chat_id: int, query_act_date_period=N
         full_act_prescription_path: str = await get_full_act_prescription_path(
             chat_id=chat_id, act_number=act_number, act_date=act_date, constractor_id=constractor_id
         )
+
+        qr_report_path = await get_report_full_filepath(str(chat_id), actual_date=act_date)
+
+        # full_qr_report_path: str = await get_full_qr_report_path(qr_report_path, chat_id, act_number)
+
+        await create_qr_code_with_param(chat_id, act_number, qr_report_path)
+
         if not full_act_prescription_path:
             continue
 
         await p_bar.update_msg(5)
         act_is_created: bool = await create_act_prescription(
             chat_id=chat_id, act_number=act_number, dataframe=act_dataframe,
-            full_act_path=full_act_prescription_path, act_date=act_date
+            full_act_path=full_act_prescription_path, act_date=act_date, qr_img_insert=True
         )
         if not act_is_created:
             continue
@@ -157,6 +163,31 @@ async def get_full_act_prescription_path(chat_id, act_number, act_date, constrac
         'short_title': contractor_data.get('short_title'),
     }
     full_act_prescription_path: str = await get_and_create_full_act_prescription_name(chat_id=chat_id, param=param)
+
+    return full_act_prescription_path
+
+
+async def get_full_patch_to_act_prescription(chat_id, act_number, act_date, constractor_id) -> str:
+    """Формирование полного пути до папки хранения файла json акта - предписания
+
+    :return:
+    """
+    contractor_data: dict = await get_general_constractor_data(
+        constractor_id=constractor_id, type_constractor='general'
+    )
+    if not contractor_data:
+        return ''
+
+    param: dict = {
+        'act_number': act_number,
+        'act_date': act_date,
+        'general_contractor': contractor_data.get('title'),
+        'short_title': contractor_data.get('short_title'),
+        'contractor_data': contractor_data,
+    }
+    full_act_prescription_path: str = await get_and_create_full_act_prescription_name_in_registry(
+        chat_id=chat_id, param=param
+    )
 
     return full_act_prescription_path
 
@@ -241,19 +272,25 @@ def say_fanc_name():
 
 
 async def test():
-    chat_id = 579531613
+    chat_id = 373084462
 
-    now = datetime.now()
-
-    current_week: str = await get_week_message(current_date=now)
-    current_year: str = await get_year_message(current_date=now)
-
-    act_date_period = await db_get_period_for_current_week(current_week, current_year)
-    pprint(f"{act_date_period = }")
-
+    # now = datetime.now()
+    #
+    # current_week: str = await get_week_message(current_date=now)
+    # current_year: str = await get_year_message(current_date=now)
+    #
+    # act_date_period = await db_get_period_for_current_week(current_week, current_year)
+    # pprint(f"{act_date_period = }")
+    #
     #  act_date_period = now
+    #
+    # await create_and_send_act_prescription(chat_id, act_date_period)
 
-    await create_and_send_act_prescription(chat_id, act_date_period)
+    act_number = 1100000
+    act_date = datetime.now().strftime("%d.%m.%Y")
+    constractor_id = 1
+
+    await get_full_patch_to_act_prescription(chat_id, act_number, act_date, constractor_id)
 
 
 if __name__ == "__main__":

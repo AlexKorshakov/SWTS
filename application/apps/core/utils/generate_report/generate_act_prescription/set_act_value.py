@@ -5,6 +5,7 @@ import traceback
 from apps.core.bot.reports.report_data import headlines_data
 from apps.core.database.db_utils import (db_get_data_dict_from_table_with_id,
                                          db_get_data_list)
+from apps.core.database.query_constructor import QueryConstructor
 from apps.core.utils.reports_processor.report_worker_utils import \
     get_clean_headers
 from loader import logger
@@ -19,7 +20,13 @@ async def get_act_headlines_data_values(chat_id, dataframe=None, act_date=None, 
     # if not headlines_data:
     table_name: str = 'core_violations'
     clean_headers: list = await get_clean_headers(table_name=table_name)
-    query: str = f'SELECT * FROM `core_hseuser` WHERE `hse_telegram_id` == {chat_id}'
+    query_kwargs: dict = {
+        "action": 'SELECT', "subject": '*',
+        "conditions": {
+            "hse_telegram_id": chat_id,
+        },
+    }
+    query: str = await QueryConstructor(None, 'core_hseuser', **query_kwargs).prepare_data()
     datas_query_list: list = await db_get_data_list(query=query)
     clean_datas_query_list = datas_query_list[0]
 
@@ -31,9 +38,15 @@ async def get_act_headlines_data_values(chat_id, dataframe=None, act_date=None, 
     if not hse_id:
         logger.error(f'hse_id is {hse_id}')
         return {}
-    # TODO заменить на вызов конструктора QueryConstructor
-    query: str = f'SELECT * FROM `core_hseuser` WHERE `hse_telegram_id` == {chat_id}'
-    print(f'{__name__} {say_fanc_name()} {query}')
+
+    query_kwargs: dict = {
+        "action": 'SELECT', "subject": '*',
+        "conditions": {
+            "hse_telegram_id": chat_id,
+        },
+    }
+    query: str = await QueryConstructor(None, 'core_hseuser', **query_kwargs).prepare_data()
+    # print(f'{__name__} {say_fanc_name()} {query}')
 
     hse_user: dict = await db_get_data_dict_from_table_with_id(
         table_name='core_hseuser',
@@ -84,11 +97,19 @@ async def get_act_headlines_data_values(chat_id, dataframe=None, act_date=None, 
 
     # Подрядчик
     general_contractor_id = list(set(list(dataframe.general_contractor_id)))[0]
-    general_contractor_full_name: dict = await db_get_data_dict_from_table_with_id(
+    general_contractor_dict: dict = await db_get_data_dict_from_table_with_id(
         table_name='core_generalcontractor',
         post_id=general_contractor_id)
-    headlines_data['general_contractor_full_name'] = general_contractor_full_name.get('title', None)
-    headlines_data['general_contractor_legal_address'] = general_contractor_full_name.get('legal_address', None)
+
+    headlines_data['general_contractor_full_name'] = general_contractor_dict.get('title', None)
+    headlines_data['general_contractor_legal_address'] = general_contractor_dict.get('legal_address', None)
+
+    hse_organization: dict = await db_get_data_dict_from_table_with_id(
+        table_name='core_generalcontractor',
+        post_id=hse_user.get('hse_organization', None))
+
+    headlines_data['hse_organization_full_name'] = hse_organization.get('title', None)
+    headlines_data['hse_organization_legal_address'] = hse_organization.get('legal_address', None)
 
     # TODO  update general_contractor table in DB
     # Ответственное лицо подрядчика
@@ -219,8 +240,8 @@ async def set_act_footer_values(worksheet, row_number):
     values = [
         {'coordinate': 'B30',
          'value': 'Информацию о выполнении пунктов настоящего предписания необходимо направить '
-                  f'в письменной форме в адрес {general_contractor} '
-                  f'по адресу: {legal_address} или ',
+                  f'в письменной форме в адрес {headlines_data.get("hse_organization_full_name", None)} '
+                  f'по адресу: {headlines_data.get("hse_organization_legal_address", None)} или ',
          'row': f'{30 - 28 + row_value}', 'column': '2'},
         {'coordinate': 'B31', 'value': 'на эл. адреса:',
          'row': f'{31 - 28 + row_value}', 'column': '2'},

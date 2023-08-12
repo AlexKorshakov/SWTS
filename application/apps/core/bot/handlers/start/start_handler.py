@@ -53,15 +53,67 @@ async def start(message: types.Message, user_id: int | str = None):
 
         await create_file_path(path=user_data['reg_user_file'])
 
-        logger.info(f'User @{message.from_user.username}:{hse_user_id} start work')
+        hi_text: str = f'{Messages.hi} {message.chat.username}! \n\n' \
+                       f'{Messages.user_greeting}\n{Messages.help_message}'
 
-    await bot_send_message(chat_id=hse_user_id, text=f'{Messages.hi}, text ={message.from_user.full_name}!')
-    await bot_send_message(chat_id=hse_user_id, text=f'{Messages.user_greeting}\n{Messages.help_message}')
+        await bot_send_message(chat_id=hse_user_id, text=hi_text)
+        return
+
+    language_list: list = await get_language_list(message, user_id=hse_user_id)
+    text_violations: str = 'Выберите язык / Choose language'
+
+    reply_markup = await build_inlinekeyboard(
+        some_list=language_list, num_col=1, level=1, called_prefix='select_lang_'
+    )
+
+    await bot_send_message(chat_id=hse_user_id, text=text_violations, reply_markup=reply_markup)
 
     # await RegisterState.name.set()
     # reply_markup = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
     # reply_markup.add(Messages.Registration.cancel)
     # await MyBot(hse_user_id, Messages.Ask.name, reply_markup=reply_markup)
+
+
+@MyBot.dp.callback_query_handler(lambda call: 'select_lang_' in call.data)
+async def call_correct_item_answer(call: types.CallbackQuery, user_id: str | int = None):
+    """Обработка ответов
+    """
+
+    hse_user_id = call.message.chat.id if call else user_id
+    logger.debug(f'{hse_user_id = } ::: {call.data = }')
+
+    # await bot_delete_markup(message=call.message)
+
+    character_language: str = call.data.split('_')[-1]
+    result: bool = await db_update_hse_user_language(value=character_language, hse_id=hse_user_id)
+
+    if result:
+        text_violations: str = await msg(hse_user_id, cat='main', msge="application_language",
+                                         default=Messages.application_language).g_mas()
+        await bot_send_message(chat_id=hse_user_id, text=f'{text_violations}')
+
+    user_data["user_id"] = hse_user_id
+    user_data['reg_user_file'] = await get_user_registration_file(user_id=str(hse_user_id))
+
+    await create_file_path(path=user_data['reg_user_file'])
+
+    hi_text: str = f'{await msg(hse_user_id, cat="main", msge="hi", default=Messages.hi).g_mas()} ' \
+                   f'{call.message.chat.username}! \n\n' \
+                   f'{await msg(hse_user_id, cat="main", msge="user_access_success", default=Messages.HSEUserAnswer.user_access_success).g_mas()} \n\n' \
+                   f'{await msg(hse_user_id, cat="main", msge="user_greeting", default=Messages.user_greeting).g_mas()} \n\n' \
+                   f'{await msg(hse_user_id, cat="help", msge="help_message", default=Messages.help_message).g_mas()}'
+
+    await bot_send_message(chat_id=hse_user_id, text=hi_text)
+
+
+async def get_language_list(message: types.Message, user_id: int | str = None):
+    """Выбор языка интерфейса бота
+
+    """
+    hse_user_id = message.chat.id if message else user_id
+
+    lang_list: list = await msg(hse_user_id).get_lang_in_main()
+    return lang_list
 
 
 @MyBot.dp.message_handler(is_private, Text(equals=Messages.cancel), state=RegisterState.all_states)

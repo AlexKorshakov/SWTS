@@ -1,15 +1,16 @@
+import math
 import traceback
 
-from apps.core.database.query_constructor import QueryConstructor
 from loader import logger
 
 logger.debug(f"{__name__} start import")
+from apps.core.database.query_constructor import QueryConstructor
 from apps.core.bot.data import board_config
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard
 from apps.core.bot.messages.messages import Messages
 from apps.core.database.db_utils import db_get_data_list_no_async
 from aiogram import types
-from apps.core.bot.data.category import _PREFIX_ND, get_data_with_hashtags, _PREFIX_POZ
+from apps.core.bot.data.category import _PREFIX_ND, _PREFIX_POZ, get_data_with_hashtags
 from apps.core.bot.reports.report_data import violation_data
 from apps.MyBot import MyBot, bot_send_message
 
@@ -22,25 +23,20 @@ async def normative_documents_answer_with_hashtags(call: types.CallbackQuery, us
     """
 
     hse_user_id = call.message.chat.id if call else user_id
-    hashtag = call.data
     logger.info(f'{call.data = }')
 
     if call.data in get_data_with_hashtags("core_normativedocuments", item_id=violation_data.get('category_id', None)):
         logger.info(f'{__name__} {say_fanc_name()} NORMATIVE_DOCUMENTS')
-
-        db_table_name = 'core_normativedocuments'
-        category_id = violation_data.get('category_id', None)
-
         kwargs: dict = {
             "action": 'SELECT', "subject": '*',
             "conditions": {
-                "category_id": category_id,
+                "category_id": violation_data.get('category_id', None),
                 "hashtag": call.data,
                 "hashtag_condition": 'like',
             }
         }
-        query: str = await QueryConstructor(table_name=db_table_name, **kwargs).prepare_data()
-        logger.info(f'{__name__} {say_fanc_name()} {query}')
+        query: str = await QueryConstructor(table_name='core_normativedocuments', **kwargs).prepare_data()
+        # logger.info(f'{__name__} {say_fanc_name()} {query}')
         datas_query: list = db_get_data_list_no_async(query=query)
 
         previous_level = 'category'
@@ -50,13 +46,8 @@ async def normative_documents_answer_with_hashtags(call: types.CallbackQuery, us
         count_col = board_config.count_col = 2
         board_config.previous_level = previous_level
 
-        short_title: list = [_PREFIX_ND + str(item[0]) for item in datas_query]
-        data_list: list = [item[2] for item in datas_query]
-
-        zipped_list: list = list(zip(short_title, data_list))
-        text_list: list = text_processor(zipped_list)
-
-        for item_txt in text_list:
+        text_items: str = get_text(prefix=_PREFIX_ND, datas=datas_query)
+        for item_txt in text_processor(text_items):
             await bot_send_message(chat_id=hse_user_id, text=item_txt)
 
         reply_markup = await build_inlinekeyboard(
@@ -67,20 +58,15 @@ async def normative_documents_answer_with_hashtags(call: types.CallbackQuery, us
 
     if call.data in get_data_with_hashtags("core_sublocation", item_id=violation_data.get('main_location_id', None)):
         logger.info(f'{__name__} {say_fanc_name()} SUB_LOCATIONS')
-
-        db_table_name:str = 'core_sublocation'
-        main_location_id = violation_data.get('main_location_id', None)
-
         kwargs: dict = {
             "action": 'SELECT', "subject": '*',
             "conditions": {
-                "main_location_id": main_location_id,
+                "main_location_id": violation_data.get('main_location_id', None),
                 "hashtag": call.data,
                 "hashtag_condition": 'like',
             }
         }
-        query: str = await QueryConstructor(table_name=db_table_name, **kwargs).prepare_data()
-
+        query: str = await QueryConstructor(table_name='core_sublocation', **kwargs).prepare_data()
         logger.info(f'{__name__} {say_fanc_name()} {query}')
         datas_query: list = db_get_data_list_no_async(query=query)
 
@@ -91,47 +77,50 @@ async def normative_documents_answer_with_hashtags(call: types.CallbackQuery, us
         count_col = board_config.count_col = 2
         board_config.previous_level = previous_level
 
-        short_title: list = [_PREFIX_POZ + str(item[0]) for item in datas_query]
-        data_list: list = [item[2] for item in datas_query]
-
-        zipped_list: list = list(zip(short_title, data_list))
-        text_list: list = text_processor(zipped_list)
-
-        for item_txt in text_list:
-            chat_id = call.message.chat.id
-            await bot_send_message(chat_id=chat_id, text=item_txt)
+        text_items: str = get_text(prefix=_PREFIX_POZ, datas=datas_query)
+        for item_txt in text_processor(text_items):
+            await bot_send_message(chat_id=hse_user_id, text=item_txt)
 
         reply_markup = await build_inlinekeyboard(
             some_list=menu_list, num_col=count_col, level=menu_level, previous_level=previous_level
         )
-        await bot_send_message(chat_id=hse_user_id, text=Messages.Choose.normative_documents, reply_markup=reply_markup)
+        await bot_send_message(chat_id=hse_user_id, text=Messages.Choose.sub_location, reply_markup=reply_markup)
         return
 
     return None
 
 
-def text_processor(data_list_to_text: list) -> list:
-    """Принимает data_list_to_text[] для формирования текста ответа
+def get_text(prefix: str, datas: list) -> str:
+    """
+
+    :return:
+    """
+
+    short_title_list: list = [prefix + str(item[0]) for item in datas]
+    title_data_list: list = [item[2] for item in datas]
+    text: str = '\n\n'.join(f'{item[0]} : {item[1]}'
+                            for item in
+                            list(zip(short_title_list, title_data_list)))
+    return text
+
+
+def text_processor(text: str = None) -> list:
+    """Принимает text для формирования list ответа
     Если len(text) <= 3500 - отправляет [сообщение]
     Если len(text) > 3500 - формирует list_with_parts_text = []
 
-    :param data_list_to_text: лист с данными для формирования текста сообщения
+    :param text:
     :return: list - list_with_parts_text
     """
+    if not text:
+        return []
 
-    text = '\n\n'.join(str(item[0]) + " : " + str(item[1]) for item in data_list_to_text)
-
-    if len(text) <= 3500:
+    step = 3500
+    if len(text) <= step:
         return [text]
 
-    text = ''
-    list_with_parts_text = []
-    for item in data_list_to_text:
-
-        text = text + f' \n\n {str(item[0])} : {str(item[1])}'
-        if len(text) > 3500:
-            list_with_parts_text.append(text)
-            text = ''
+    len_parts = math.ceil(len(text) / step)
+    list_with_parts_text: list = [text[step * (i - 1):step * i] for i in range(1, len_parts + 1)]
 
     return list_with_parts_text
 
@@ -142,8 +131,13 @@ def say_fanc_name():
 
 
 if __name__ == '__main__':
-    db_table_name = 'core_normativedocuments'
+    
+    stack = traceback.extract_stack()
+    str(stack[-2][2])
 
+    var = traceback.extract_stack()[-2][2]
+    
+    db_table_name = 'core_normativedocuments'
     hashtag_test = '#Огнетушители'
     query_test: str = f"SELECT * FROM {db_table_name} WHERE `category_id` == {16} AND `hashtags` LIKE '%{hashtag_test}%'"
     print(f'{__name__} {say_fanc_name()} {query_test}')
@@ -153,9 +147,13 @@ if __name__ == '__main__':
     short_title = [_PREFIX_ND + str(item[0]) for item in datas_query_test]
 
     data_list = [item[2] for item in datas_query_test]
-    zipped_list: list = list(zip(short_title, data_list))
+    data_text: str = '\n\n'.join(
+        f'{item[0]} : {item[1]}'
+        for item in
+        list(zip(short_title, data_list))
+    )
 
-    text_list: list = text_processor(zipped_list)
+    text_list: list = text_processor(data_text)
 
     for txt in text_list:
         print(txt)

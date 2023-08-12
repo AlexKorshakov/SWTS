@@ -1,9 +1,9 @@
 """Модуль класса QueryConstructor для формирования запроса по условиям """
 from loader import logger
+
 logger.debug(f"{__name__} start import")
 import asyncio
 from abc import ABCMeta
-from apps.core.database.db_utils import db_get_data_list
 from datetime import datetime
 
 logger.debug(f"{__name__} finish import")
@@ -36,6 +36,8 @@ class QueryStorageFields(metaclass=ABCMeta):
         self.violation_id = None
         self.hashtag = None
         self.category_id = None
+        self.normative_documents_id = None
+        self.id = None
 
         self.query = None
 
@@ -51,10 +53,14 @@ class QueryStorageFields(metaclass=ABCMeta):
         self.__part_hashtags = None
         self.__part_lazy_query = None
         self.__part_title = None
+        self.__part_id = None
         self.lazy_query = None
 
         self.date_start = None
         self.date_stop = None
+
+        self.week_number = None
+        self.hse_telegram_id = None
 
 
 class QueryStorageMethods(QueryStorageFields):
@@ -66,7 +72,7 @@ class QueryStorageMethods(QueryStorageFields):
 
     async def get_part_status(self) -> str:
         """Обработка параметра status_id и формирование части запроса и part_status """
-        if not self.status_id: return ''
+        if self.status_id is None: return ''
         if isinstance(self.status_id, str):
             if self.status_id == '': return ''
             return f'`status_id` {self.status_id}'
@@ -93,7 +99,7 @@ class QueryStorageMethods(QueryStorageFields):
     async def get_part_is_admin(self) -> str:
         """Обработка параметра is_admin и формирование части запроса и part_is_admin """
         if self.is_admin: return ''
-        if not self.user_id: return ''
+        if self.user_id is None: return ''
         return f"`user_id` = {self.user_id} "
 
     async def get_part_period(self) -> str:
@@ -107,23 +113,34 @@ class QueryStorageMethods(QueryStorageFields):
     async def get_part_finished(self) -> str:
         """Обработка параметра finished и формирование части запроса и part_finished """
 
-        if not self.finished_id: return ''
-        if self.finished_id: return f'`finished_id` = {self.finished_id} '
+        if self.finished_id is None: return ''
+
+        try:
+            self.finished_id = int(self.finished_id)
+        except ValueError as err:
+            logger.warning(f'{repr(err)}')
+
+        if isinstance(self.finished_id, str):
+            if self.finished_id == '': return ''
+            return f'`finished_id` {self.finished_id}'
+
+        if isinstance(self.finished_id, int):
+            return f'`finished_id` = {self.finished_id}'
 
     async def get_part_violation(self) -> str:
         """Обработка параметра violation и формирование части запроса и part_violation """
-        if not self.violation_id: return ''
+        if self.violation_id is None: return ''
         if self.violation_id: return f'`violation_id` = {self.violation_id} '
 
     async def get_part_location(self) -> str:
         """Обработка параметра location и формирование части запроса и part_location """
-        if not self.location: return ''
+        if self.location is None: return ''
 
         return f"`location_id` = '{self.location}' "
 
     async def get_part_main_location(self):
         """Обработка параметра main_location и формирование части запроса и part_main_location """
-        if not self.main_location_id: return ''
+        if self.main_location_id is None: return ''
 
         return f"`main_location_id` = '{self.main_location_id}' "
 
@@ -140,22 +157,41 @@ class QueryStorageMethods(QueryStorageFields):
         if isinstance(self.hashtag, list):
             return ''
 
+    async def get_normative_documents_id(self):
+        if self.normative_documents_id is None: return ''
+        if isinstance(self.normative_documents_id, str):
+            if self.normative_documents_id == '': return ''
+            return f'`normative_documents_id` {self.normative_documents_id}'
+
+        if isinstance(self.normative_documents_id, int):
+            return f'`normative_documents_id` = {self.normative_documents_id}'
+
     async def get_part_category_id(self):
-        if not self.category_id: return ''
+        if self.category_id is None: return ''
         return f"`category_id` = {self.category_id} "
 
     async def get_part_title(self):
-        if not self.title: return ''
+        if self.title is None: return ''
         return f"`title` = '{self.title}' "
 
     async def get_part_id(self):
-        if not self.id: return ''
-        return f"`id` = '{self.id}' "
+        if self.id is None: return ''
+        return f" `id` = '{self.id}' "
 
     async def get_part_lazy_query(self) -> str:
-        """Обработка параметра status_id и формирование части запроса и part_status """
-        if not self.lazy_query: return ''
+        """Обработка параметра status_id и формирование части запроса и part_lazy_query """
+        if self.lazy_query is None: return ''
         return f" {self.lazy_query} "
+
+    async def get_part_week_number(self) -> str:
+        """Обработка параметра status_id и формирование части запроса и part_week_number """
+        if self.week_number is None: return ''
+        return f" `week_number` = {self.week_number} "
+
+    async def get_part_hse_telegram_id(self) -> str:
+        """Обработка параметра status_id и формирование части запроса и hse_telegram_id """
+        if self.hse_telegram_id is None: return ''
+        return f" `hse_telegram_id` = {self.hse_telegram_id} "
 
     async def get_period(self):
         """Формирование периода"""
@@ -175,12 +211,12 @@ class QueryStorageMethods(QueryStorageFields):
             return None, None
 
     async def get_date_list(self):
-        """Обработка частей периода из list"""
+        """Обработка частей периода из list. """
         if isinstance(self.period, list):
             return await self.format_data(self.period[0]), await self.format_data(self.period[1])
 
     async def get_date_dict(self):
-        """Обработка частей периода из dict"""
+        """Обработка частей периода из dict."""
         if isinstance(self.period, dict):
             return self.period.get('date_start', None), self.period.get('date_stop', None)
 
@@ -221,6 +257,7 @@ class QueryConstructor(QueryStorageMethods):
     __part_period: str
     __part_location: str
     __part_main_location: str
+    __part_normative_documents_id: str
     __part_act_number: str
     __part_short_title: str
     __part_status: str
@@ -229,7 +266,10 @@ class QueryConstructor(QueryStorageMethods):
     __part_hashtags: str
     __part_lazy_query: str
     __part_category_id: str
-    __part_title:str
+    __part_title: str
+    __part_id: str
+    __part_week_number: str
+    __part_hse_telegram_id: str
 
     def __init__(self, chat_id: [str, int] = None, table_name: str = '', **kwargs: object):
         """ """
@@ -247,13 +287,15 @@ class QueryConstructor(QueryStorageMethods):
         self.subject = kwargs.get('subject', None)
 
         self.conditions: dict = kwargs.get('conditions', None)
-        if not self.conditions:
+        if self.conditions is None:
             return
 
         self.period = self.conditions.get('period', None)
         self.is_admin = self.conditions.get('is_admin', None)
         self.location = self.conditions.get('location', None)
         self.main_location_id = self.conditions.get('main_location_id', None)
+        self.normative_documents_id = self.conditions.get('normative_documents_id', None)
+
         self.title = self.conditions.get('title', None)
 
         self.act_number = self.conditions.get('act_number', None)
@@ -262,10 +304,13 @@ class QueryConstructor(QueryStorageMethods):
         self.finished_id = self.conditions.get('finished_id', None)
         self.violation_id = self.conditions.get("violation_id", None)
         self.category_id = self.conditions.get("category_id", None)
+        self.id = self.conditions.get("id", None)
 
         self.lazy_query = self.conditions.get("lazy_query", None)
 
         self.hashtag = self.conditions.get('hashtag', None)
+        self.week_number = self.conditions.get('week_number', None)
+        self.hse_telegram_id = self.conditions.get('hse_telegram_id', None)
 
     async def prepare_data(self) -> str:
         """Формирование частей запроса """
@@ -283,10 +328,14 @@ class QueryConstructor(QueryStorageMethods):
         self.__part_finished = await self.get_part_finished()
         self.__part_violation = await self.get_part_violation()
         self.__part_category_id = await self.get_part_category_id()
+        self.__part_normative_documents_id = await self.get_normative_documents_id()
         self.__part_title = await self.get_part_title()
+        self.__part_id = await self.get_part_id()
 
         self.__part_hashtags = await self.get_part_hashtags()
         self.__part_lazy_query = await self.get_part_lazy_query()
+        self.__part_week_number = await self.get_part_week_number()
+        self.__part_hse_telegram_id = await self.get_part_hse_telegram_id()
 
         self.query = await self.get_query()
         logger.debug(f'\nQueryConstructor: {self.query = }')
@@ -334,8 +383,17 @@ class QueryConstructor(QueryStorageMethods):
         return self.main_part + ' AND '.join(cond for cond in conditions if cond)
 
 
+# async def db_get_data_list(query: str) -> list:
+#     """Получение list с данными по запросу query
+#
+#     :return: list
+#     """
+#     datas_query: list = DataBase().get_data_list(query=query)
+#     return datas_query
+
 async def test():
     """Функция тестирования """
+    pass
     # now = datetime.now()
     # stat_date_period: list = ['01.01.2023', now.strftime("%d.%m.%Y"), ]
     # logger.info(f"{stat_date_period = }")
@@ -362,11 +420,11 @@ async def test():
     #     }
     # }
     # query_test = await QueryConstructor(None, db_table_name, **kwargs).prepare_data()
-
-    query_test = "SELECT hashtags  FROM `core_sublocation` WHERE `main_location_id` = '1' "
-    datas_query: list = await db_get_data_list(query=query_test)
-    print(f'{len(datas_query) = }')
-
+    #
+    # query_test = "SELECT hashtags  FROM `core_sublocation` WHERE `main_location_id` = '1' "
+    # datas_query: list = await db_get_data_list(query=query_test)
+    # print(f'{len(datas_query) = }')
+    #
     # data = [item[0] for item in datas_query if item[0]]
     # print(f'{len(data) = }')
     # print(f'{data = }')
@@ -380,13 +438,13 @@ async def test():
     # print(f'{data_unpac = }')
     #
     # data = [item[0] for item in datas_query if item[0]]
-    list_of_lists = [item[0].split(';') for item in datas_query if isinstance(item[0], str)]
-    data_unpac = [item for sublist in list_of_lists for item in sublist]
-    print(f'{len(data_unpac) = }')
-
-    unique_item = list(set(data_unpac))
-    print(f'{len(unique_item) = }')
-    print(f'{unique_item = }')
+    # list_of_lists = [item[0].split(';') for item in datas_query if isinstance(item[0], str)]
+    # data_unpac = [item for sublist in list_of_lists for item in sublist]
+    # print(f'{len(data_unpac) = }')
+    #
+    # unique_item = list(set(data_unpac))
+    # print(f'{len(unique_item) = }')
+    # print(f'{unique_item = }')
 
 
 if __name__ == '__main__':

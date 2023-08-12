@@ -11,6 +11,7 @@ from config.web.settings import BASE_DIR
 from loader import logger
 
 BOT_MEDIA_PATH = os.path.join(BASE_DIR.parent.parent, 'media\\')
+REGISTRY_NAME = 'registry'
 
 
 async def date_now() -> str:
@@ -31,6 +32,33 @@ async def get_report_full_filepath(user_id: str = None, actual_date: str = None)
         actual_date = await date_now()
 
     return f"{BOT_MEDIA_PATH}{user_id}\\data_file\\{actual_date}\\reports\\"
+
+
+async def get_report_full_filepath_in_registry(hse_user_id: int = None, actual_date: str = None):
+    """Обработчик сообщений с reports
+    Получение полного пути файла
+
+    :param actual_date:
+    :param hse_user_id: int id пользователя
+    """
+    if not actual_date:
+        actual_date = await date_now()
+
+    year: str = await get_year_message(current_date=actual_date)
+    month: str = await get_month_message(current_date=actual_date)
+
+    if not hse_user_id:
+        logger.error(f'hse_id is {hse_user_id}')
+        return ''
+
+    hse_user_dict: dict = await db_get_dict_userdata(hse_user_id)
+    hse_organization_id: int = hse_user_dict.get('hse_organization', None)
+
+    hse_organization_dict: dict = await db_get_data_dict_from_table_with_id(
+        table_name='core_generalcontractor', post_id=hse_organization_id)
+    hse_organization_name = hse_organization_dict.get('title', '')
+
+    return f"{BOT_MEDIA_PATH}{REGISTRY_NAME}\\{hse_organization_name}\\{year}\\{month}\\"
 
 
 async def get_registration_full_filepath(user_id: str = None):
