@@ -1,23 +1,25 @@
 from __future__ import annotations
+
 import asyncio
 import sys
-import typing
 
+import aiohttp
+import nest_asyncio
 from aiogram import Bot, Dispatcher, types
+from aiogram.types import ChatActions, InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply
 from aiogram.utils import executor
-from aiogram.utils.exceptions import MessageNotModified
-from aiohttp import ClientConnectorError
+from aiogram.utils.exceptions import MessageNotModified, MessageToEditNotFound
 
-from apps.core.bot.bot_utils.notify_admins import on_startup_notify
-from apps.core.bot.bot_utils.set_bot_commands import set_default_commands
 from apps.core.bot.messages.messages import Messages
+from apps.core.bot.messages.messages_test import msg
 from apps.core.bot.middlewares import setup_middlewares
-
+from apps.core.set_bot_commands import set_default_commands
+from apps.core.settyngs import get_sett
+from apps.notify_admins import on_startup_notify
 from apps.xxx import assistant, dp_assistant
 from config.config import SKIP_UPDATES
 from loader import logger
 
-import nest_asyncio
 nest_asyncio.apply()
 
 
@@ -34,7 +36,7 @@ class MyBot:
 
     Bot.set_current(bot)
     Dispatcher.set_current(dp)
-
+    name = 'STNGBot'
     __instance = None
 
     def __new__(cls, val):
@@ -42,6 +44,10 @@ class MyBot:
             MyBot.__instance = object.__new__(cls)
         MyBot.__instance.val = val
         return MyBot.__instance
+
+    @classmethod
+    def get_name(cls):
+        return cls.dp.bot._me.first_name
 
     @classmethod
     async def run(cls):
@@ -58,37 +64,38 @@ class MyBot:
         except RuntimeWarning as err:
             logger.error(f"Bot start RuntimeWarning {repr(err)}")
 
-        except ClientConnectorError as err:
+        except aiohttp.client_exceptions.ClientConnectorError as err:
             logger.error(f"Bot start ClientConnectorError {repr(err)}")
 
         except Exception as err:
             logger.error(f"Bot start Exception {repr(err)}")
 
-        # finally:
-        #     with suppress(RuntimeWarning, DeprecationWarning):
-        #         cls.dp.storage.close()
-        #         cls.dp.storage.wait_closed()
-        #         cls.bot.session.close()
+        finally:
+            # with suppress(RuntimeWarning, DeprecationWarning):
+            await cls.dp.storage.close()
+            await cls.dp.storage.wait_closed()
+            await cls.bot.session.close()
 
     @staticmethod
     async def on_startup(dp: Dispatcher):
-        logger.info("Установка обработчиков...")
-        print("Установка обработчиков...")
+        logger.info(f"{dp.bot._me.first_name} Установка обработчиков...")
+        print(f"{dp.bot._me.first_name} Установка обработчиков...")
         try:
             import apps.core.bot.filters
             import apps.core.bot.callbacks
             import apps.core.bot.handlers
-            logger.info("Все части зарегистрированы...")
+            logger.info(f"{dp.bot._me.first_name} Все части зарегистрированы...")
         except Exception as err:
-            logger.warning(f'Exception in app.py {err}')
+            logger.warning(f'{dp.bot._me.first_name} Exception in app.py {err}')
             sys.exit()
 
         await setup_middlewares(dp)
         await on_startup_notify(dp)
         await set_default_commands(dp)
 
-        logger.info(Messages.Successfully.bot_start)
-        print(Messages.Successfully.bot_start)
+        on_startup_text: str = f'{dp.bot._me.first_name} {Messages.Successfully.bot_start}'
+        logger.info(on_startup_text)
+        print(on_startup_text)
 
         # await register_apps(dp)
 
@@ -123,27 +130,89 @@ class MyBot:
 
     @staticmethod
     async def on_shutdown(dp: Dispatcher):
-        logger.warning('Bye! Shutting down connection')
+        logger.warning(f'{dp.bot._me.first_name} Bye! Shutting down connection')
         await dp.storage.close()
         await dp.storage.wait_closed()
         sys.exit()
 
 
+async def bot_send_document(*, chat_id: int | str, doc_path: str, caption: str = None, fanc_name: str = None,
+                            **kvargs) -> bool:
+    """Функция отправки документов
+
+    :param fanc_name:
+    :param caption:
+    :param chat_id:
+    :param doc_path:
+    :return:
+    """
+
+    await MyBot.bot.send_chat_action(chat_id=chat_id, action=ChatActions.UPLOAD_DOCUMENT)
+    await asyncio.sleep(2)  # скачиваем файл и отправляем его пользователю
+
+    try:
+        with open(file=doc_path, mode='rb') as doc:
+            result: types.Message | None = await MyBot.bot.send_document(
+                chat_id=chat_id, document=doc, caption=caption, **kvargs
+            )
+
+        logger.info(f"{MyBot.get_name()} {chat_id = } {fanc_name} {caption} отправлен отчет {doc}")
+
+    except OSError as err:
+        logger.error(f"{MyBot.get_name()} {fanc_name} {repr(err)}")
+        return False
+
+    except Exception as err:
+        logger.error(f"{MyBot.get_name()} {fanc_name} {repr(err)}")
+        return False
+
+    if result:
+        return True
+    return False
+
+
+async def bot_send_photo(*, chat_id: int | str, photo=None, caption: str = None, fanc_name: str = None) -> bool:
+    """Используйте этот метод для отправки текстовых сообщений.
+    Источник: https://core.telegram.org/bots/api#sendmessage
+
+    """
+
+    await MyBot.bot.send_chat_action(chat_id=chat_id, action=ChatActions.UPLOAD_PHOTO)
+    await asyncio.sleep(2)  # скачиваем файл и отправляем его пользователю
+
+    try:
+        result: types.Message | None = await MyBot.bot.send_photo(
+            chat_id=chat_id, photo=photo, caption=caption
+        )
+
+    except OSError as err:
+        logger.error(f"{MyBot.get_name()} {fanc_name} {repr(err)}")
+        return False
+
+    except Exception as err:
+        logger.warning(f'{MyBot.get_name()} {chat_id = } {repr(err)}')
+        return False
+
+    if result:
+        return True
+    return False
+
+
 async def bot_send_message(*, chat_id: int | str, text: str,
-                           reply_markup: typing.Union[types.InlineKeyboardMarkup,
-                                                      types.ReplyKeyboardMarkup,
-                                                      types.ReplyKeyboardRemove,
-                                                      types.ForceReply, None] = None,
+                           reply_markup: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply | None = None,
                            **kvargs) -> bool:
     """Используйте этот метод для отправки текстовых сообщений.
     Источник: https://core.telegram.org/bots/api#sendmessage
 
     """
+
     try:
-        result = await _send_message(chat_id=chat_id, text=text, reply_markup=reply_markup, **kvargs)
+        result: types.Message | None = await _send_message(
+            chat_id=chat_id, text=text, reply_markup=reply_markup, **kvargs
+        )
 
     except Exception as err:
-        logger.warning(f'{chat_id = } {repr(err)}')
+        logger.warning(f'{MyBot.get_name()} {chat_id = } {repr(err)}')
         return False
 
     if result:
@@ -152,18 +221,18 @@ async def bot_send_message(*, chat_id: int | str, text: str,
 
 
 async def _send_message(*, chat_id: int | str, text: str,
-                        reply_markup: typing.Union[types.InlineKeyboardMarkup,
-                                                   types.ReplyKeyboardMarkup,
-                                                   types.ReplyKeyboardRemove,
-                                                   types.ForceReply, None] = None,
-                        **kvargs) -> types.Message:
-    msg_result = None
+                        reply_markup: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply | None = None,
+                        **kvargs) -> types.Message | None:
+    """"""
     try:
-        msg_result = await MyBot.bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup, **kvargs)
-    except Exception as err:
-        logger.error(f'{chat_id = } {repr(err)}')
+        result: types.Message | None = await MyBot.bot.send_message(
+            chat_id=chat_id, text=text, reply_markup=reply_markup, **kvargs
+        )
+        return result
 
-    return msg_result
+    except Exception as err:
+        logger.error(f'{MyBot.get_name()} {chat_id = } {repr(err)}')
+        return None
 
 
 async def bot_delete_message(*, chat_id: int | str, message_id: int | str, sleep_sec: int = 5) -> bool:
@@ -185,13 +254,57 @@ async def bot_delete_message(*, chat_id: int | str, message_id: int | str, sleep
         :rtype: :obj:`base.Boolean`
     :return:
     """
+
+    if not get_sett(cat='enable_features', param='bot_delete_message').get_set():
+        msg_text: str = await msg(chat_id, cat='error', msge='features_disabled',
+                                  default=Messages.Error.features_disabled).g_mas()
+        logger.warning(f'{MyBot.get_name()} {chat_id = } {msg_text = }')
+        return False
+
     if sleep_sec:
         await asyncio.sleep(sleep_sec)
 
     try:
-        result = await MyBot.bot.delete_message(chat_id=chat_id, message_id=message_id)
+        result: types.Message | None = await MyBot.bot.delete_message(chat_id=chat_id, message_id=message_id)
+
     except Exception as err:
-        logger.warning(f'{chat_id = } {repr(err)}')
+        logger.warning(f'{MyBot.get_name()} {chat_id = } {repr(err)}')
+        return False
+
+    if result:
+        return True
+    return False
+
+
+async def bot_delete_markup(message: types.Message, sleep_sec: int = None):
+    """Удаление клавиатуры сообщения
+
+    :param sleep_sec:
+    :param message:
+    :return:
+    """
+    # удаляем кнопки у последнего сообщения
+    chat_id = message.chat.id
+
+    if sleep_sec:
+        await asyncio.sleep(sleep_sec)
+
+    try:
+        result = await MyBot.bot.edit_message_reply_markup(
+            chat_id=chat_id,
+            message_id=message.message_id - 1,
+            reply_markup=None
+        )
+    except MessageNotModified as err:
+        logger.warning(f'{MyBot.get_name()} {chat_id = } {repr(err)}')
+        return False
+
+    except MessageToEditNotFound as err:
+        logger.warning(f'{MyBot.get_name()} {chat_id = } {repr(err)}')
+        return False
+
+    except Exception as err:
+        logger.warning(f'{MyBot.get_name()} {chat_id = } {repr(err)}')
         return False
 
     if result:

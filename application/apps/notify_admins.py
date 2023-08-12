@@ -3,13 +3,14 @@ import asyncio
 from aiogram import Dispatcher
 from pandas import DataFrame
 
+# from apps.MyBot import MyBot
 from apps.core.database.db_utils import db_get_data_list, db_get_table_headers
 from apps.core.database.query_constructor import QueryConstructor
 from loader import logger
 
 
 async def on_startup_notify(dp: Dispatcher) -> bool:
-    logger.info("Оповещение администрации...")
+    logger.info(f"{dp.bot._me.first_name}  Оповещение администрации...")
 
     hse_dataframe = await get_hse_dataframe()
 
@@ -24,18 +25,20 @@ async def on_startup_notify(dp: Dispatcher) -> bool:
     for num, hse_telegram_id in enumerate(hse_role_is_admins_list, start=1):
 
         if not hse_telegram_id:
-            logger.debug(f"Значение не найдено {num = } for {len(hse_role_is_admins_list)} {hse_telegram_id = }")
+            logger.debug(
+                f"{dp.bot._me.first_name} Значение не найдено {num = } for {len(hse_role_is_admins_list)} {hse_telegram_id = }")
             continue
         if hse_telegram_id not in hse_role_receive_notifications_list:
-            logger.debug(f"Значение не найдено {num = } for {len(hse_role_is_admins_list)} {hse_telegram_id = }")
+            logger.debug(
+                f"{dp.bot._me.first_name} Значение не найдено {num = } for {len(hse_role_is_admins_list)} {hse_telegram_id = }")
             continue
 
         try:
-            await dp.bot.send_message(hse_telegram_id, "Бот был успешно запущен", disable_notification=True)
-            logger.info(f"Сообщение отправлено {hse_telegram_id}")
+            await dp.bot.send_message(hse_telegram_id, f"{dp.bot._me.first_name} Бот был успешно запущен", disable_notification=True)
+            logger.info(f"{dp.bot._me.first_name} Сообщение отправлено {hse_telegram_id}")
             await asyncio.sleep(0.5)
         except Exception as err:
-            logger.error(f"Чат {num = } с админом {hse_telegram_id} не найден {err = } ")
+            logger.error(f"{dp.bot._me.first_name} Чат {num = } с админом {hse_telegram_id} не найден {err = } ")
 
     return True
 
