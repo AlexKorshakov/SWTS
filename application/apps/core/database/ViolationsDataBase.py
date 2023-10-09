@@ -1,37 +1,37 @@
-import asyncio
-from datetime import datetime
-from sqlite3 import OperationalError
-
-from apps.core.database.query_constructor import QueryConstructor
 from loader import logger
 
 logger.debug(f"{__name__} start import")
+
+import asyncio
+from datetime import datetime
+
 import os
 import io
 import json
-import sqlite3
-from os import makedirs
-from config.config import DATA_BASE_DIR
 from pandas import DataFrame
+import sqlite3
+
+from apps.core.database.query_constructor import QueryConstructor
+from config.config import Udocan_HSE_Violations_DB
 
 logger.debug(f"{__name__} finish import")
 
 
-class DataBase:
+class ViolationsDataBase:
 
     def __init__(self):
 
-        self.db_file: str = DATA_BASE_DIR
+        self.db_file = Udocan_HSE_Violations_DB
         self.connection = sqlite3.connect(self.db_file)
         self.cursor = self.connection.cursor()
 
-    def add_violation(self, *, violation: dict) -> bool:
+    def add_violation(self, *, violation_dict: dict) -> bool:
         """Добавление записей в database
 
-        :param violation: dict с данными для внесения в БД
+        :param violation_dict: dict с данными для внесения в БД
         """
 
-        file_id = violation.get('file_id', None)
+        file_id = violation_dict.get('file_id', None)
 
         if not file_id:
             logger.error('not found file_id!!!')
@@ -39,142 +39,142 @@ class DataBase:
 
         location_id = self.get_id(
             table='core_location',
-            entry=violation.get("location", None),
+            entry=violation_dict.get("location", None),
             file_id=file_id,
             name='location'
         )
         main_location_id = self.get_id(
             table='core_mainlocation',
-            entry=violation.get("main_location", None),
+            entry=violation_dict.get("main_location", None),
             file_id=file_id,
             name='main_location'
         )
         sub_location_id = self.get_id(
             table='core_sublocation',
-            entry=violation.get("sub_location", None),
+            entry=violation_dict.get("sub_location", None),
             file_id=file_id,
             name='sub_location'
         )
         work_shift_id = self.get_id(
             table='core_workshift',
-            entry=violation.get("work_shift", None),
+            entry=violation_dict.get("work_shift", None),
             file_id=file_id,
             name='work_shift'
         )
         general_contractor_id = self.get_id(
             table='core_generalcontractor',
-            entry=violation.get("general_contractor", None),
+            entry=violation_dict.get("general_contractor", None),
             file_id=file_id,
             name='general_contractor'
         )
         main_category_id = self.get_id(
             table='core_maincategory',
-            entry=violation.get("main_category", None),
+            entry=violation_dict.get("main_category", None),
             file_id=file_id,
             name='main_category'
         )
         category_id = self.get_id(
             table='core_category',
-            entry=violation.get("category", None),
+            entry=violation_dict.get("category", None),
             file_id=file_id,
             name='category'
         )
         normative_documents_id = self.get_id(
             table='core_normativedocuments',
-            entry=violation.get("normative_documents", None),
+            entry=violation_dict.get("normative_documents", None),
             file_id=file_id,
             name='normative_documents'
         )
         act_required_id = self.get_id(
             table='core_actrequired',
-            entry=violation.get("act_required", None),
+            entry=violation_dict.get("act_required", None),
             file_id=file_id,
             name='act_required'
         )
         elimination_time_id = self.get_id(
             table='core_eliminationtime',
-            entry=violation.get("elimination_time", None),
+            entry=violation_dict.get("elimination_time", None),
             file_id=file_id,
             name='elimination_time'
         )
         incident_level_id = self.get_id(
             table='core_incidentlevel',
-            entry=violation.get("incident_level", None),
+            entry=violation_dict.get("incident_level", None),
             file_id=file_id,
             name='incident_level'
         )
         violation_category_id = self.get_id(
             table='core_violationcategory',
-            entry=violation.get("violation_category", None),
+            entry=violation_dict.get("violation_category", None),
             file_id=file_id,
             name='violation_category'
         )
         status_id = self.get_id(
             table='core_status',
-            entry=violation.get("status", None),
+            entry=violation_dict.get("status", None),
             file_id=file_id,
             name='status'
         )
         finished_id = self.get_id(
             table='core_finished',
-            entry=violation.get("finished", None),
+            entry=violation_dict.get("finished", None),
             file_id=file_id,
             name='finished'
         )
         agreed_id = self.get_id(
             table='core_agreed',
-            entry=violation.get("agreed", None),
+            entry=violation_dict.get("agreed", None),
             file_id=file_id,
             name='agreed'
         )
 
-        hse_id = violation.get("hse_id", None)
+        hse_id = violation_dict.get("hse_id", None)
 
         act_number = ''
 
         if status_id == 1:
             finished_id = 1
 
-        description = violation.get('description', None)
+        description = violation_dict.get('description', None)
 
         is_published = True
 
-        function = violation.get("function", None)
-        name = violation.get("name", None)
-        parent_id = violation.get("parent_id", None)
-        violation_id = violation.get('violation_id', None)
-        user_fullname = violation.get('user_fullname', None)
-        report_folder_id = violation.get('report_folder_id', None)
+        function = violation_dict.get("function", None)
+        name = violation_dict.get("name", None)
+        parent_id = violation_dict.get("parent_id", None)
+        violation_id = violation_dict.get('violation_id', None)
+        user_fullname = violation_dict.get('user_fullname', None)
+        report_folder_id = violation_dict.get('report_folder_id', None)
 
-        day = violation.get('day', None)
-        month = violation.get('month', None)
-        year = violation.get('year', None)
+        day = violation_dict.get('day', None)
+        month = violation_dict.get('month', None)
+        year = violation_dict.get('year', None)
 
-        week_id = violation.get("week", None)
-        quarter = violation.get("quarter", None)
-        day_of_year = violation.get("day_of_year", None)
+        week_id = violation_dict.get("week", None)
+        quarter = violation_dict.get("quarter", None)
+        day_of_year = violation_dict.get("day_of_year", None)
 
-        title = violation.get('comment', None)
-        comment = violation.get('comment', None)
+        title = violation_dict.get('comment', None)
+        comment = violation_dict.get('comment', None)
 
-        coordinates = violation.get('coordinates', None)
-        latitude = violation.get('latitude', None)
-        longitude = violation.get('longitude', None)
+        coordinates = violation_dict.get('coordinates', None)
+        latitude = violation_dict.get('latitude', None)
+        longitude = violation_dict.get('longitude', None)
 
-        json_folder_id = violation.get('json_folder_id', None)
-        json_file_path = violation.get('json_file_path', None)
-        json_full_name = violation.get('json_full_name', None)
+        json_folder_id = violation_dict.get('json_folder_id', None)
+        json_file_path = violation_dict.get('json_file_path', None)
+        json_full_name = violation_dict.get('json_full_name', None)
 
-        user_id = violation.get('user_id', None)
+        user_id = violation_dict.get('user_id', None)
 
         photo = f'/{user_id}/data_file/{file_id.split("___")[0]}/photo/report_data___{file_id}.jpg'
         json = f'/{user_id}/data_file/{file_id.split("___")[0]}/json/report_data___{file_id}.json'
 
-        photo_file_path = violation.get('photo_file_path', None)
-        photo_folder_id = violation.get('photo_folder_id', None)
-        photo_full_name = violation.get('photo_full_name', None)
+        photo_file_path = violation_dict.get('photo_file_path', None)
+        photo_folder_id = violation_dict.get('photo_folder_id', None)
+        photo_full_name = violation_dict.get('photo_full_name', None)
 
-        created_at = violation.get('file_id', None).split('___')[0].split('.')
+        created_at = violation_dict.get('file_id', None).split('___')[0].split('.')
         created_at = '-'.join(created_at[::-1])
 
         updated_at = created_at
@@ -354,7 +354,7 @@ class DataBase:
         try:
             with self.connection:
                 return self.cursor.execute(query).fetchall()
-        except OperationalError as err:
+        except sqlite3.OperationalError as err:
             logger.error(f"sqlite3.OperationalError {err = } {query = }")
             return []
 
@@ -411,7 +411,6 @@ class DataBase:
         """
         with self.connection:
             result = self.cursor.execute("SELECT name FROM sqlite_master WHERE type='table';").fetchall()
-
             return result
 
     def update_table_column_value(self, query: str, item_name: str, item_value: str):
@@ -520,8 +519,8 @@ async def upload_from_local(*, params: dict = None):
         # normalize_violation = await normalize_violation_data(violation=violation)
         normalize_violation = violation
 
-        if not DataBase().violation_exists(violation.get('file_id')):
-            is_add = DataBase().add_violation(violation=normalize_violation)
+        if not ViolationsDataBase().violation_exists(violation.get('file_id')):
+            is_add = ViolationsDataBase().add_violation(violation_dict=normalize_violation)
             if is_add:
                 logger.debug(f"{counter} file {violation.get('file_id')} add in db")
 
@@ -704,7 +703,7 @@ async def create_file_path(path: str):
     if not os.path.isdir(path):
         # logger.info(f"user_path{path} is directory")
         try:
-            makedirs(path)
+            os.makedirs(path)
         except Exception as err:
             logger.info(f"makedirs err {repr(err)}")
 
@@ -730,7 +729,7 @@ def test():
     # )
     # logger.info(f'{data_exists = }')
 
-    result = DataBase().create_backup()
+    result = ViolationsDataBase().create_backup()
     logger.info(f'{result = }')
 
 
