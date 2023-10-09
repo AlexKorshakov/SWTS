@@ -12,25 +12,24 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 
 from apps.MyBot import bot_send_message, MyBot
-from apps.core.bot.bot_utils.check_user_registration import get_list_table_values, get_list_table_headers, get_data_dict
-from apps.core.bot.data import board_config
+from config.config import Udocan_Bagration_subcontractor_employee_DB, Udocan_media_path
+from loader import logger
+from apps.core.bot.bot_utils.check_user_registration import get_hse_user_data
+from apps.core.bot.data.board_config import BoardConfig as board_config
 from apps.core.bot.filters.custom_filters import is_private
-from apps.core.bot.handlers.bagration.bagration_admin_get_pass_report import check_data_period
+from apps.core.bot.handlers.photo.qr_support_paths import qr_check_path, qr_get_file_path, qr_check_or_create_dir
 from apps.core.bot.states import PersonalIdHuntingState
 from apps.core.database.query_constructor import QueryConstructor
-from config.config import MEDIA_DIR, DATA_BASE_BAGRATION_EMPLOYEE_ID
-from apps.core.settyngs import BASE_DIR
-from loader import logger
 
 
 class DataBaseEmployeeID:
 
     def __init__(self):
 
-        if not os.path.exists(DATA_BASE_BAGRATION_EMPLOYEE_ID):
-            logger.error(f'Path {DATA_BASE_BAGRATION_EMPLOYEE_ID} is not exists!')
+        if not qr_check_path(Udocan_Bagration_subcontractor_employee_DB):
+            logger.error(f'Path {Udocan_Bagration_subcontractor_employee_DB} is not exists!')
 
-        self.db_file: str = DATA_BASE_BAGRATION_EMPLOYEE_ID
+        self.db_file = Udocan_Bagration_subcontractor_employee_DB
         self.connection = sqlite3.connect(self.db_file)
         self.cursor = self.connection.cursor()
 
@@ -89,7 +88,7 @@ class DataBaseEmployeeID:
             self.cursor.close()
 
 
-async def qr_personal_id_processing(hse_user_id: str | int, data: list, message):
+async def qr_personal_id_processing(hse_user_id: str | int, data: list, message, state: FSMContext = None):
     """
 
     :param message:
@@ -97,21 +96,24 @@ async def qr_personal_id_processing(hse_user_id: str | int, data: list, message)
     :param data: list
     :return:
     """
-    board_config.id_data_list = data
+    # board_config.id_data_list = data
+    await board_config(state, "id_data_list", data).set_data()
+
     await PersonalIdHuntingState.location.set()
 
     item_text: str = '_'.join([item.replace('personal_id_code_', '') for item in data])
     file_path: str = await get_directory_path()
 
-    await message.photo[-1].download(make_dirs=False, destination_file=f'{file_path}{get_today()}_{item_text}.jpg')
+    destination_file: str = await qr_get_file_path(file_path, f'{get_today()}_{item_text}.jpg')
+    await message.photo[-1].download(make_dirs=False, destination_file=destination_file)
 
     item_txt: str = 'введите литер позиции'
     await bot_send_message(chat_id=hse_user_id, text=item_txt)
 
 
 @MyBot.dp.message_handler(is_private, state=PersonalIdHuntingState.all_states)
-async def persona_id_hunting_all_states_answer(message: types.Message = None, state: FSMContext = None,
-                                               user_id: int | str = None, data: list = None):
+async def persona_id_hunting_all_states_answer(message: types.Message = None, user_id: int | str = None,
+                                               data: list = None, state: FSMContext = None):
     """Обработка изменений
 
     :param data:
@@ -121,11 +123,13 @@ async def persona_id_hunting_all_states_answer(message: types.Message = None, st
     :return:
     """
     hse_user_id = message.chat.id if message else user_id
-    logger.debug(f'{hse_user_id = } {message.text = }')
+
+    v_data: dict = await state.get_data()
+
     logger.info(f'{hse_user_id = } {message.text = }')
 
     location: str = message.text
-    data = data if data else board_config.id_data_list
+    data = data if data else v_data['id_data_list']
 
     data_to_base, data_to_notice = await check_data(data)
 
@@ -133,13 +137,14 @@ async def persona_id_hunting_all_states_answer(message: types.Message = None, st
         await notice_hse_user(hse_user_id, data_to_notice)
 
         file_path: str = await get_directory_path()
-        recorded_cases: list = await read_json_file(f'{file_path}\\{get_today()} recorded_cases.json')
+        recorded_cases_file_path: str = await qr_get_file_path(file_path, f'{get_today()} recorded_cases.json')
+        recorded_cases: list = await read_json_file(file=recorded_cases_file_path)
         if not recorded_cases: recorded_cases = []
 
         write_result: bool = await write_json(
-            name=f'{file_path}\\{get_today()} recorded_cases.json',
-            data=[f'{item} ::: {get_today()} ::: {get_time()} ::: {location}' for item in data_to_notice] +
-                 recorded_cases
+            file=recorded_cases_file_path,
+            data=[f'{item} ::: {get_today()} ::: {get_time()} ::: {location}' for item in
+                  data_to_notice] + recorded_cases
         )
         if write_result:
             await bot_send_message(chat_id=hse_user_id, text=f'Повторные данные внесены в реестр {data}')
@@ -148,30 +153,30 @@ async def persona_id_hunting_all_states_answer(message: types.Message = None, st
         personal_id_data_list: list = await prepare_data(hse_user_id, data_to_base, location)
 
         file_path: str = await get_directory_path()
-        data_list: list = await read_json_file(f'{file_path}\\{get_today()} personal_id_data.json')
+        personal_id_data_file_path: str = await qr_get_file_path(file_path, f'{get_today()} personal_id_data.json')
+        data_list: list = await read_json_file(file=personal_id_data_file_path)
         if not data_list: data_list = []
 
         write_result = await write_json(
-            name=f'{file_path}\\{get_today()} personal_id_data.json',
+            file=personal_id_data_file_path,
             data=data_list + personal_id_data_list
         )
         if write_result:
             await bot_send_message(chat_id=hse_user_id, text=f'Новые данные внесены {data}')
 
             await state.finish()
-            board_config.id_data_list = []
-            return True
+            # board_config.id_data_list = []
+            await board_config(state, "id_data_list", []).set_data()
 
     await state.finish()
-    board_config.id_data_list = []
+    # board_config.id_data_list = []
+    await board_config(state, "id_data_list", []).set_data()
     return False
 
 
 async def get_directory_path():
-    file_path: str = f'{MEDIA_DIR}\\BAGRATION\\personal_id_hunting\\{get_today()}\\'
-    if not os.path.isdir(file_path):
-        os.makedirs(file_path)
-
+    file_path: str = await qr_get_file_path(Udocan_media_path, 'BAGRATION', 'personal_id_hunting', get_today())
+    await qr_check_or_create_dir(file_path)
     return file_path
 
 
@@ -194,7 +199,7 @@ async def notice_hse_user(hse_user_id: str | int, result_list: list) -> list:
         return []
 
     file_path: str = await get_directory_path()
-    full_file_path: str = f'{file_path}\\{get_today()} personal_id_data.json'
+    full_file_path: str = await qr_get_file_path(file_path, f'{get_today()} personal_id_data.json')
 
     data_list: list = await read_json_file(full_file_path)
     if not data_list: data_list = []
@@ -216,34 +221,17 @@ async def notice_hse_user(hse_user_id: str | int, result_list: list) -> list:
             await bot_send_message(chat_id=hse_user_id, text=notice_text)
 
             file_path: str = await get_directory_path()
-            recorded_cases: list = await read_json_file(f'{file_path}\\{get_today()} full_recorded_cases.json')
+            file_full_recorded_cases_path: str = await qr_get_file_path(file_path,
+                                                                        f'{get_today()} full_recorded_cases.json')
+            recorded_cases: list = await read_json_file(file=file_full_recorded_cases_path)
             if not recorded_cases: recorded_cases = []
 
             await write_json(
-                name=f'{file_path}\\{get_today()} full_recorded_cases.json',
+                file=file_full_recorded_cases_path,
                 data=[notice_text] + recorded_cases
             )
 
     return []
-
-
-async def get_hse_user_data(*, chat_id: str | int) -> dict:
-    """Получение данных пользователя из БД на основе chat_id
-
-    :return: dict
-    """
-
-    table_data: list = await get_list_table_values(chat_id)
-    if not table_data:
-        return {}
-
-    table_headers: list = await get_list_table_headers()
-    hse_user_data_dict: dict = await get_data_dict(table_headers, table_data)
-
-    if not hse_user_data_dict:
-        return {}
-
-    return hse_user_data_dict
 
 
 async def check_data(personal_id_data_list: list) -> tuple:
@@ -253,9 +241,9 @@ async def check_data(personal_id_data_list: list) -> tuple:
     :return:
     """
     file_path: str = await get_directory_path()
-    full_file_path: str = f'{file_path}\\{get_today()} personal_id_data.json'
+    full_file_path: str = await qr_get_file_path(file_path, f'{get_today()} personal_id_data.json')
 
-    if not os.path.isfile(full_file_path):
+    if not qr_check_path(full_file_path):
         return personal_id_data_list, []
 
     result_list: list = await read_json_file(full_file_path)
@@ -382,15 +370,15 @@ async def read_json_file(file: str):
         return None
 
 
-async def write_json(name: str, data: list) -> bool:
+async def write_json(file: str, data: list) -> bool:
     """Запись данных в json
 
-    :param name: полный путь для записи / сохранения файла включая расширение,
+    :param file: полный путь для записи / сохранения файла включая расширение,
     :param data: данные для записи / сохранения
     :return: True or False
     """
     try:
-        with io.open(name, 'w', encoding='utf8') as outfile:
+        with io.open(file, 'w', encoding='utf8') as outfile:
             str_ = json.dumps(data,
                               indent=4,
                               sort_keys=True,
@@ -404,40 +392,38 @@ async def write_json(name: str, data: list) -> bool:
 
 
 async def test_fank(item_id):
-    list_1_da = 0
-    list_1_net = 0
-
-    list_3_da = 0
-    list_3_net = 0
+    # list_1_da = 0
+    # list_1_net = 0
+    # list_3_da = 0
+    # list_3_net = 0
     list_1_da_List = []
 
     emploee_id = item_id[1:-2]
     item_dict = await check_employee_id(emploee_id)
     # print(f'{len(item_dict)} item_id[1:-2] {emploee_id} {item_dict} ')
     if len(item_dict) == 1:
-        list_1_da += 1
+        # list_1_da += 1
         # print(item_dict)
         list_1_da_List.append(item_dict)
 
-    if len(item_dict) > 1:
-        list_1_net += 1
+    # if len(item_dict) > 1:
+    #     list_1_net += 1
 
     emploee_id = item_id[1:-1]
     item_dict = await check_employee_id(emploee_id)
     # print(f'{len(item_dict)} item_id[1:-1] {emploee_id}  {item_dict}')
     if len(item_dict) == 1:
-        list_3_da += 1
+        # list_3_da += 1
         # print(item_dict)
         list_1_da_List.append(item_dict)
 
-    if len(item_dict) > 1:
-        list_3_net += 1
+    # if len(item_dict) > 1:
+    #     list_3_net += 1
 
     # print(f'{list_1_da = }')
     # print(f'{list_1_net = }')
     # print(f'{list_3_da = }')
     # print(f'{list_3_net = }')
-    #
     # print(f'{len(list_1_da_List)}')
     return list_1_da_List
 
@@ -446,21 +432,21 @@ async def check_ids(item_id) -> dict:
     """"""
     list_datas = await test_fank(item_id)
     id_data_list: list = list(chain(*[list(item) for item in list_datas]))
-    fjgh = list(set([item.get('id') for item in id_data_list]))
-    if not fjgh:
+    unique_id_list: list = list(set([item.get('id') for item in id_data_list]))
+    if not unique_id_list:
         return {}
-    id_data: list = await check_employee_id_from_db(fjgh[0])
+    id_data: list = await check_employee_id_from_db(unique_id_list[0])
     return id_data[0]
 
 
 async def test():
-    media_patch: str = f'{BASE_DIR.parent.parent}\\media\\BAGRATION\\personal_id_hunting\\'
+    media_patch: str = await qr_get_file_path(Udocan_media_path, 'media', 'BAGRATION', 'personal_id_hunting')
 
     json_files_list: list = []
     for subdir, dirs, files in os.walk(media_patch):
         for file in files:
 
-            filepath = subdir + os.sep + file
+            filepath = await qr_get_file_path(subdir, file)
             if filepath.endswith('.py'): continue
             if filepath.endswith('.jpg'): continue
             if filepath.endswith('.tmp'): continue
@@ -476,7 +462,7 @@ async def test():
                 {
                     "file": file,
                     "subdir": subdir,
-                    "full_file_path": f'{subdir}\\{file}',
+                    "full_file_path": await qr_get_file_path(subdir, file),
                 }
             )
     all_data_id_list: list = [
@@ -495,15 +481,33 @@ async def test():
     all_data = []
     for item_id in uniq_employee_list_fin:
         id_data = await check_ids(item_id)
-        # list_datas = await test_fank(item_id)
-        # id_data_list: list = list(chain(*[list(item) for item in list_datas]))
-        # fjgh = list(set([item.get('id') for item in id_data_list]))
-        # if not fjgh:
-        #     continue
-        # id_data = await check_employee_id_from_db(fjgh[0])
         if id_data:
             all_data.append(id_data)
     print(f'all_data: {len(all_data)}')
+
+
+async def check_data_period(file: str, period: list | None = None) -> bool:
+    """"""
+    if not period: return True
+    if len(period) == 1: return False
+    if len(period) > 2: return False
+
+    _format: str = '%d.%m.%Y'
+    file_date_from_name = file.split(' ')[0]
+
+    try:
+        file_date = datetime.strptime(file_date_from_name, _format).date()
+    except ValueError:
+        logger.warning(f"file: {file} file_date: {file.split(' ')[0]}")
+        return False
+
+    start_period = datetime.strptime(period[0], _format).date()
+    stop_period = datetime.strptime(period[1], _format).date()
+
+    if start_period <= file_date <= stop_period:
+        return True
+
+    return False
 
 
 if __name__ == '__main__':

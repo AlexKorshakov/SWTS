@@ -3,9 +3,10 @@ from __future__ import annotations
 import asyncio
 
 from aiogram import types
+from aiogram.dispatcher import FSMContext
 
 from apps.MyBot import MyBot, bot_send_message
-from apps.core.bot.data import board_config
+from apps.core.bot.data.board_config import BoardConfig as board_config
 from apps.core.bot.handlers.catalog.catalog_support import get_dataframe, text_processor_level, text_processor, \
     get_nan_value_text, list_number, level_1_column
 from apps.core.bot.handlers.correct_entries.correct_support import check_dataframe
@@ -19,7 +20,8 @@ from loader import logger
 
 
 @MyBot.dp.callback_query_handler(lambda call: 'catalog_employee' in call.data)
-async def call_catalog_employee_answer(call: types.CallbackQuery, user_id: int | str = None) -> None:
+async def call_catalog_employee_answer(call: types.CallbackQuery, user_id: int | str = None,
+                                       state: FSMContext = None) -> None:
     """Обработка ответов
     """
 
@@ -55,7 +57,8 @@ async def add_employee_inline_keyboard_with_action():
 
 
 @MyBot.dp.callback_query_handler(lambda call: 'cat_employee_text' in call.data)
-async def call_catalog_employee_catalog_answer(call: types.CallbackQuery, user_id: int | str = None) -> None:
+async def call_catalog_employee_catalog_answer(call: types.CallbackQuery, user_id: int | str = None,
+                                               state: FSMContext = None) -> None:
     """Обработка ответов
     """
     hse_user_id = call.message.chat.id if call else user_id
@@ -72,7 +75,8 @@ async def call_catalog_employee_catalog_answer(call: types.CallbackQuery, user_i
 
 
 @MyBot.dp.callback_query_handler(lambda call: 'cat_employee_catalog' in call.data)
-async def call_catalog_normative_documents_catalog_answer(call: types.CallbackQuery, user_id: int | str = None) -> None:
+async def call_catalog_normative_documents_catalog_answer(call: types.CallbackQuery, user_id: int | str = None,
+                                                          state: FSMContext = None) -> None:
     """Обработка ответов
     """
 
@@ -96,9 +100,13 @@ async def call_catalog_normative_documents_catalog_answer(call: types.CallbackQu
 
     title_list: list = [f"level_1__{num}" for num, item in enumerate(level_1, start=1) if item is not None]
 
-    menu_level = board_config.menu_level = 1
-    menu_list = board_config.menu_list = title_list
-    count_col = board_config.count_col = 2
+    # menu_level = board_config.menu_level = 1
+    # menu_list = board_config.menu_list = title_list
+    # count_col = board_config.count_col = 2
+
+    menu_level = await board_config(state, "menu_level", 1).set_data()
+    menu_list = await board_config(state, "menu_list", title_list).set_data()
+    count_col = await board_config(state, "count_col", 2).set_data()
 
     nan_value_text: str = await get_nan_value_text(hse_user_id, dataframe, column_nom=level_1_column)
     text: str = await text_processor_level(

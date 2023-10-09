@@ -1,3 +1,5 @@
+from aiogram.dispatcher import FSMContext
+
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from loader import logger
 
@@ -8,14 +10,13 @@ from apps.core.bot.callbacks.sequential_action.correct_headlines_data_answer imp
     get_headlines_text
 from apps.core.bot.callbacks.sequential_action.correct_violations_data_answer import \
     get_violations_text
-from apps.core.bot.data import board_config
-from apps.core.bot.data.category import (HEADLINES_DATA_LIST,
-                                         REGISTRATION_DATA_LIST,
-                                         VIOLATIONS_DATA_LIST)
+from apps.core.bot.data.board_config import BoardConfig as board_config
+from apps.core.bot.callbacks.sequential_action.category import (HEADLINES_DATA_LIST,
+                                                                VIOLATIONS_DATA_LIST)
 from apps.core.bot.handlers.correct_entries.correct_entries_handler import (
     delete_violation_files_from_gdrive, delete_violation_files_from_pc)
-from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import (
-    build_inlinekeyboard, posts_cb)
+from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import (build_inlinekeyboard,
+                                                                        posts_cb)
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.reports.report_data import headlines_data
 from apps.core.utils.generate_report.generate_daily_report.set_daily_report_values import \
@@ -29,7 +30,8 @@ logger.debug(f"{__name__} finish import")
 
 
 @MyBot.dp.callback_query_handler(posts_cb.filter(action=['del_current_post']))
-async def call_del_current_violation(call: types.CallbackQuery, callback_data: dict[str, str]):
+async def call_del_current_violation(call: types.CallbackQuery, callback_data: dict[str, str],
+                                     state: FSMContext = None):
     """
 
     :param call:
@@ -40,20 +42,29 @@ async def call_del_current_violation(call: types.CallbackQuery, callback_data: d
     if not await check_user_access(chat_id=chat_id):
         return
 
+    v_data: dict = await state.get_data()
+
     action: str = callback_data['action']
 
     if action != 'del_current_post':
         return
 
-    for item in board_config.violation_menu_list:
+    # for item in board_config.violation_menu_list:
+    for item in v_data['violation_menu_list']:
+
         try:
-            if board_config.current_file != item:
+            # if board_config.current_file != item:
+            if v_data['current_file'] != item:
                 continue
+
             logger.debug(f"{chat_id = }  Выбрано: {item}")
             await call.message.edit_reply_markup()  # удаление клавиатуры
-            for file in board_config.violation_file:
+            # for file in board_config.violation_file:
+            for file in v_data['violation_file']:
+
                 if file['description'] != item:
                     continue
+
                 violation_file = await read_json_file(file['json_full_name'])
 
                 if not violation_file:
@@ -73,7 +84,8 @@ async def call_del_current_violation(call: types.CallbackQuery, callback_data: d
                 await delete_violation_files_from_pc(call.message, file=file)
                 await delete_violation_files_from_gdrive(call.message, file=file, violation_file=violation_file)
 
-                board_config.current_file = None
+                # board_config.current_file = None
+                await board_config(state, "current_file", None).set_data()
 
                 break
         except Exception as callback_err:
@@ -82,7 +94,7 @@ async def call_del_current_violation(call: types.CallbackQuery, callback_data: d
 
 
 # @MyBot.dp.callback_query_handler(posts_cb.filter(action=['correct_registration_data']))
-# async def call_correct_registration_data(call: types.CallbackQuery, callback_data: dict[str, str]):
+# async def call_correct_registration_data(call: types.CallbackQuery, callback_data: dict[str, str], state: FSMContext = None):
 #     """
 #
 #     :param call:
@@ -128,7 +140,8 @@ async def call_del_current_violation(call: types.CallbackQuery, callback_data: d
 
 
 @MyBot.dp.callback_query_handler(posts_cb.filter(action=['correct_commission_composition']))
-async def call_correct_commission_composition(call: types.CallbackQuery, callback_data: dict[str, str]):
+async def call_correct_commission_composition(call: types.CallbackQuery, callback_data: dict[str, str],
+                                              state: FSMContext = None):
     """
 
     :param call:
@@ -152,8 +165,10 @@ async def call_correct_commission_composition(call: types.CallbackQuery, callbac
 
     await bot_send_message(chat_id=chat_id, text=headlines_text)
 
-    menu_level = board_config.menu_level = 1
-    menu_list = board_config.menu_list = HEADLINES_DATA_LIST
+    # menu_level = board_config.menu_level = 1
+    # menu_list = board_config.menu_list = HEADLINES_DATA_LIST
+    menu_level = await board_config(state, "menu_level", 1).set_data()
+    menu_list = await board_config(state, "menu_list", HEADLINES_DATA_LIST).set_data()
 
     reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=menu_level, level=1)
 
@@ -161,7 +176,7 @@ async def call_correct_commission_composition(call: types.CallbackQuery, callbac
 
 
 @MyBot.dp.callback_query_handler(posts_cb.filter(action=['correct_current_post']))
-async def call_correct_current_post(call: types.CallbackQuery, callback_data: dict[str, str]):
+async def call_correct_current_post(call: types.CallbackQuery, callback_data: dict[str, str], state: FSMContext = None):
     """
 
     :param call:
@@ -171,6 +186,9 @@ async def call_correct_current_post(call: types.CallbackQuery, callback_data: di
     chat_id = call.message.chat.id
     if not await check_user_access(chat_id=chat_id):
         return
+
+    v_data: dict = await state.get_data()
+
     action: str = callback_data['action']
     violations_file_path = ''
 
@@ -182,7 +200,7 @@ async def call_correct_current_post(call: types.CallbackQuery, callback_data: di
             await bot_send_message(chat_id=chat_id, text=Messages.Error.file_list_not_found)
             return
 
-        violations_id = board_config.current_file.split(' ')[0]
+        violations_id = v_data['current_file'].split(' ')[0]
 
         for file in violations_files_list:
             if file.split('\\')[-1].split(SEPARATOR)[-1].replace('.json', '') == violations_id:
@@ -201,9 +219,13 @@ async def call_correct_current_post(call: types.CallbackQuery, callback_data: di
             violations_text = await get_violations_text(violations_data)
             await bot_send_message(chat_id=chat_id, text=violations_text)
 
-        menu_level = board_config.menu_level = 1
-        menu_list = board_config.menu_list = VIOLATIONS_DATA_LIST
-        count_col = board_config.count_col = 2
+        # menu_level = board_config.menu_level = 1
+        # menu_list = board_config.menu_list = VIOLATIONS_DATA_LIST
+        # count_col = board_config.count_col = 2
+
+        menu_level = await board_config(state, "menu_level", 1).set_data()
+        menu_list = await board_config(state, "menu_list", VIOLATIONS_DATA_LIST).set_data()
+        count_col = await board_config(state, "count_col", 2).set_data()
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=count_col, level=menu_level)
 
@@ -211,7 +233,8 @@ async def call_correct_current_post(call: types.CallbackQuery, callback_data: di
 
 
 @MyBot.dp.callback_query_handler(posts_cb.filter(action=['correct_abort_current_post']))
-async def call_correct_abort_current_post(call: types.CallbackQuery, callback_data: dict[str, str]):
+async def call_correct_abort_current_post(call: types.CallbackQuery, callback_data: dict[str, str],
+                                          state: FSMContext = None):
     """
 
     :param call:
@@ -226,7 +249,11 @@ async def call_correct_abort_current_post(call: types.CallbackQuery, callback_da
     action: str = callback_data['action']
 
     if action == 'correct_abort_current_post':
-        board_config.current_file = None
         await call.message.edit_reply_markup()  # удаление клавиатуры
-        board_config.violation_menu_list: list = []
-        board_config.violation_file: list = []
+        # board_config.current_file = None
+        # board_config.violation_menu_list: list = []
+        # board_config.violation_file: list = []
+
+        await board_config(state, "current_file", None).set_data()
+        await board_config(state, "violation_menu_list", []).set_data()
+        await board_config(state, "violation_file", []).set_data()

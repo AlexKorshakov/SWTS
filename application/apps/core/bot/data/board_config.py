@@ -1,17 +1,32 @@
-menu_level: int = 1
-menu_list: list = []
-count_col: int = 1
-previous_level: str = ''
-this_level: str = ''
-prefix: str = ''
-postfix: str = ''
-call_fanc_name: str = ''
-id_data_list: list = []
+from __future__ import annotations
 
-violation_menu_list: list = []
-violation_file: list = []
+from aiogram.dispatcher import FSMContext
 
-current_file = None
 
-start_violation_mes_id: int = 1
-stop_violation_mes_id: int = 1
+class BoardConfig:
+
+    def __init__(self, state: FSMContext = None, atr_name: str = None, art_val: int | str | list | dict | bool = None):
+        self.state = state
+        self.atr_name = atr_name
+        self.art_val = art_val
+
+    async def set_data(self, atr_name=None, art_val=None):
+        """
+
+        :return:
+        """
+
+        atr_name = atr_name if atr_name else self.atr_name
+        art_val: int | str | list | dict | None | bool = art_val if art_val else self.art_val
+
+        if art_val is not None:
+            await self.state.update_data({atr_name: art_val})
+            return art_val
+
+    async def get_data(self):
+        """
+
+        :return:
+        """
+        v_data: dict = await self.state.get_data()
+        return v_data

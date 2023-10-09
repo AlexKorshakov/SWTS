@@ -4,53 +4,51 @@ logger.debug(f"{__name__} start import")
 import asyncio
 
 from aiogram import types
+from aiogram.dispatcher import FSMContext
 from aiogram.types import ReplyKeyboardRemove
 from apps.core.bot.messages.messages import Messages
-from apps.core.bot.reports.report_data import violation_data
+# from apps.core.bot.reports.report_data import violation_data
 from apps.core.database.db_utils import db_get_data_dict_from_table_with_id
 from apps.core.database.entry_in_db import write_data_in_database
-from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.set_user_violation_data_on_google_drave import \
-    write_violation_data_on_google_drive
+# from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.set_user_violation_data_on_google_drave import \
+#     write_violation_data_on_google_drive
 from apps.core.utils.json_worker.writer_json_file import write_json_violation_user_file
 from apps.MyBot import bot_send_message
 
 logger.debug(f"{__name__} finish import")
 
 
-async def pre_set_violation_data(message: types.Message):
+async def pre_set_violation_data(message: types.Message, state: FSMContext, user_id: str = None):
     """Интерфейс записи нарушения на Google Drive
 
     """
-    chat_id = message.from_user.id
-    # await bot_send_message(chat_id=chat_id, text=Messages.Report.begin)
+    hse_user_id = message.chat.id if message else user_id
 
-    # stop_violation_id = apps.core.bot.data.board_config.stop_violation_mes_id = message.message_id + 3
-    # logger.info(f"start_violation message.from_user.id {stop_violation_id}")
+    v_data: dict = await state.get_data()
 
-    await set_violation_data(chat_id=chat_id)
+    await set_violation_data(chat_id=hse_user_id, v_data=v_data)
 
-    await bot_send_message(chat_id=chat_id, text=Messages.Report.completed_successfully)
-    await bot_send_message(chat_id=chat_id, text=Messages.help_message, reply_markup=ReplyKeyboardRemove())
+    await bot_send_message(chat_id=hse_user_id, text=Messages.Report.completed_successfully)
+    await bot_send_message(chat_id=hse_user_id, text=Messages.help_message, reply_markup=ReplyKeyboardRemove())
 
     # TODO исправить cyclical_delete_message
     # await cyclical_delete_message(chat_id=chat_id)
 
 
-async def set_violation_data(*, chat_id: str):
+async def set_violation_data(*, chat_id: str, v_data: dict):
     """Запись и сохранение данных в local storage, database, Google Drive
     """
 
-    logger.debug(f'{violation_data = }')
-    # pprint(f'{violation_data.get("json_full_name", None) = }')
+    logger.debug(f'{chat_id = } {v_data = }')
 
-    if await write_json_violation_user_file(data=violation_data):
-        logger.info(f"Данные сохранены в local storage {violation_data['json_full_name']}")
+    if await write_json_violation_user_file(data=v_data):
+        logger.info(f"Данные сохранены в local storage {v_data.get('json_full_name')}")
 
-    if await write_violation_data_on_google_drive(chat_id=chat_id, violation_data=violation_data):
-        logger.info(f"Данные сохранены в Google Drive в директорию \n"
-                    f"https://drive.google.com/drive/folders/{violation_data['json_folder_id']}")
+    # if await write_violation_data_on_google_drive(chat_id=chat_id, violation_data=v_data):
+    #     logger.info(f"Данные сохранены в Google Drive в директорию \n"
+    #                 f"https://drive.google.com/drive/folders/{v_data.get('json_folder_id')}")
 
-    if await write_data_in_database(violation_data=violation_data):
+    if await write_data_in_database(violation_data_to_db=v_data):
         logger.info(f"Данные сохранены в database")
 
 
@@ -106,7 +104,7 @@ async def test():
     location = location['title']
     print(f'{location = }')
 
-    if not await write_data_in_database(violation_data=violation_data):
+    if not await write_data_in_database(violation_data_to_db=violation_data):
         print('ERROR violation_data write in db')
         return
 

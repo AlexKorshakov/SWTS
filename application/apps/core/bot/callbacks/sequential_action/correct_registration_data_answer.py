@@ -6,8 +6,8 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from aiogram.types import (CallbackQuery, ReplyKeyboardMarkup, ReplyKeyboardRemove)
-from apps.core.bot.data import board_config
-from apps.core.bot.data.category import REGISTRATION_DATA_LIST, get_data_list
+from apps.core.bot.data.board_config import BoardConfig as board_config
+from apps.core.bot.callbacks.sequential_action.category import REGISTRATION_DATA_LIST, get_data_list
 from apps.core.bot.filters.custom_filters import is_private
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard
 from apps.core.bot.messages.messages import Messages
@@ -22,7 +22,7 @@ logger.debug(f"{__name__} finish import")
 
 
 @MyBot.dp.callback_query_handler(lambda call: call.data in REGISTRATION_DATA_LIST)
-async def correct_registration_data_answer(call: types.CallbackQuery):
+async def correct_registration_data_answer(call: types.CallbackQuery, state: FSMContext = None):
     """Обработка ответов содержащихся в REGISTRATION_DATA_LIST
 
     """
@@ -47,8 +47,11 @@ async def correct_registration_data_answer(call: types.CallbackQuery):
     if call.data == "Смена":
         logger.debug(f"{hse_chat_id = } Выбрано: {call.data}")
 
-        menu_level = board_config.menu_level = 2
-        menu_list = board_config.menu_list = [item for item in get_data_list("WORK_SHIFT") if item]
+        # menu_level = board_config.menu_level = 2
+        # menu_list = board_config.menu_list = [item for item in get_data_list("WORK_SHIFT") if item]
+        menu_level = await board_config(state, "menu_level", 2).set_data()
+        menu_list = await board_config(state, "menu_list",
+                                       [item for item in get_data_list("WORK_SHIFT") if item]).set_data()
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
         await bot_send_message(chat_id=hse_chat_id, text=Messages.Ask.work_shift, reply_markup=reply_markup)
@@ -64,11 +67,12 @@ async def correct_registration_data_answer(call: types.CallbackQuery):
     if call.data == "Место работы":
         logger.debug(f"{hse_chat_id = } Выбрано: {call.data}")
 
-        menu_level = board_config.menu_level = 2
-        menu_list = board_config.menu_list = [list(item.keys())[0] for item in get_data_list("METRO_STATION")]
+        # menu_level = board_config.menu_level = 2
+        # menu_list = board_config.menu_list = [list(item.keys())[0] for item in get_data_list("METRO_STATION")]
 
-        reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
-        await bot_send_message(chat_id=hse_chat_id, text=Messages.Ask.location, reply_markup=reply_markup)
+        menu_level = await board_config(state, "menu_level", 2).set_data()
+        menu_list = await board_config(state, "menu_list",
+                                       [list(item.keys())[0] for item in get_data_list("METRO_STATION")]).set_data()
 
         await CorrectRegisterState.name_location.set()
 

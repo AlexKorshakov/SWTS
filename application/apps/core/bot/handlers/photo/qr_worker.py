@@ -1,5 +1,5 @@
 from __future__ import annotations
-import os
+
 import cv2
 from pandas import DataFrame
 from pyzbar import pyzbar
@@ -71,13 +71,7 @@ async def get_violations_df(act_number: str | int, hse_user_id: str | int) -> Da
     violations_dataframe: DataFrame = await create_lite_dataframe_from_query(
         query=query, table_name='core_violations'
     )
-
-    if violations_dataframe is None:
-        logger.error(f'{hse_user_id} {Messages.Error.dataframe_is_empty}  \n{query = }')
-        return None
-
-    if violations_dataframe.empty:
-        logger.error(f'{hse_user_id} {Messages.Error.dataframe_is_empty}  \n{query = }')
+    if not await check_dataframe(violations_dataframe, hse_user_id):
         return None
 
     return violations_dataframe
@@ -98,28 +92,32 @@ async def text_processor_act(act_number: int | str, act_violations_df: DataFrame
     query: str = await QueryConstructor(None, 'core_actsprescriptions', **query_kwargs).prepare_data()
 
     act_dataframe: DataFrame = await create_lite_dataframe_from_query(
-        query=query, table_name='core_actsprescriptions')
+        query=query, table_name='core_actsprescriptions'
+    )
+    if not await check_dataframe(act_dataframe, hse_user_id):
+        return ''
 
-    if act_dataframe.empty:
-        logger.error(f'{hse_user_id} {Messages.Error.dataframe_is_empty}  \n{query = }')
+    len_violations: int = 0
+    if act_dataframe.act_row_count.unique().tolist():
+        len_violations = act_dataframe.act_row_count.unique().tolist()[0]
 
-    len_act_violations: int = act_dataframe.act_row_count.unique().tolist()[0]
-    act_date = act_dataframe.act_date.unique().tolist()[0]
+    act_date = ''
+    if act_dataframe.act_date.unique().tolist():
+        act_date = act_dataframe.act_date.unique().tolist()[0]
 
-    general_constractor_id = act_dataframe.act_general_contractor_id.unique().tolist()[0]
+    general_constractor: str = ''
+    if act_dataframe.act_general_contractor_id.unique().tolist()[0]:
+        item_general_constractor_id = act_dataframe.act_general_contractor_id.unique().tolist()[0]
 
-    # act_violations_df = user_violations.copy(deep=True)
-    # current_act_violations: DataFrame = act_violations_df.loc[act_violations_df['act_number'] == act_number]
+        general_constractor: str = await get_item_title_for_id(
+            table_name='core_generalcontractor', item_id=item_general_constractor_id
+        )
 
     unclosed_points_df = act_violations_df.loc[act_violations_df['status_id'] != 1]
     unclosed_points: int = len(unclosed_points_df)
 
-    general_constractor: str = await get_item_title_for_id(
-        table_name='core_generalcontractor', item_id=general_constractor_id
-    )
-
     act_description: list = []
-    item_info = f'Ном: {act_number} от {act_date} {general_constractor} всего пунктов: {len_act_violations} Незакрыто: {unclosed_points}'
+    item_info = f'Ном: {act_number} от {act_date} {general_constractor} всего пунктов: {len_violations} Незакрыто: {unclosed_points}'
     act_description.append(item_info)
 
     header_text: str = 'Акт - предписание '

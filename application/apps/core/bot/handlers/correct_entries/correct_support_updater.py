@@ -15,7 +15,7 @@ from apps.core.utils.generate_report.generate_act_prescription.create_and_send_a
 from apps.core.utils.json_worker.read_json_file import read_json_file
 from apps.core.utils.json_worker.writer_json_file import write_json_file
 from apps.core.utils.reports_processor.report_worker_utils import get_general_constractor_data
-from apps.core.utils.secondary_functions.get_filepath import BOT_MEDIA_PATH, REGISTRY_NAME
+from apps.core.utils.secondary_functions.get_filepath import Udocan_media_path, REGISTRY_NAME
 from config.config import WRITE_DATA_ON_GOOGLE_DRIVE
 from loader import logger
 
@@ -112,10 +112,10 @@ async def update_column_value_in_local(*, item_number: str | int, column_name: s
     if not violation_data.get('json', None):
         return False
 
-    violation_read_json = await read_json_file(file=f"{BOT_MEDIA_PATH}{violation_data.get('json', None)}")
+    violation_read_json = await read_json_file(file=f"{Udocan_media_path}{violation_data.get('json', None)}")
     violation_data.update(violation_read_json)
 
-    if not await write_json_file(data=violation_data, name=f"{BOT_MEDIA_PATH}{violation_data.get('json', None)}"):
+    if not await write_json_file(data=violation_data, name=f"{Udocan_media_path}{violation_data.get('json', None)}"):
         return False
 
     logger.info(f'{hse_user_id = } Данные записи {item_number} успешно обновлены в local!')
@@ -189,7 +189,7 @@ async def update_column_value_in_registry(*, item_number: str | int, column_name
     year = act_dataframe.act_year.values[0]
     month = act_dataframe.act_month.values[0]
     month = month if month > 10 else f'0{month}'
-    report_path = f"{BOT_MEDIA_PATH}{REGISTRY_NAME}\\{hse_organization_name}\\{year}\\{month}"
+    report_path = f"{Udocan_media_path}{REGISTRY_NAME}\\{hse_organization_name}\\{year}\\{month}"
     report_name = f'Акт-предписание № {act_number} от {act_date} {short_title}'
     report_full_name = f'{report_path}\\{report_name}\\{report_name}.json'
 

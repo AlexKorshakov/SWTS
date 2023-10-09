@@ -14,13 +14,14 @@ logger.debug(f"{__name__} finish import")
 
 
 # Сюда приходит ответ с description, state=состояние
-@MyBot.dp.message_handler(state=AnswerUserState.description)
+@MyBot.dp.message_handler(state=ViolationData.description)
 async def process_description(message: types.Message, state: FSMContext):
     """Обработчик состояния description
     """
     chat_id = message.chat.id
 
-    await set_violation_atr_data("description", message.text)
+    await set_violation_atr_data("description", message.text, state=state)
 
-    await AnswerUserState.next()
+    await ViolationData.comment.set()
+
     await bot_send_message(chat_id=chat_id, text=Messages.Enter.comment)

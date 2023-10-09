@@ -7,3 +7,7 @@ class CatalogState(StatesGroup):
 
 class CatalogStateEmployee(StatesGroup):
     inquiry = State()
+
+
+# class SearchState(StatesGroup):
+#     inquiry = State()

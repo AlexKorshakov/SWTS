@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from aiogram import types
+from aiogram.dispatcher import FSMContext
 from pandas import DataFrame
 
 from apps.MyBot import MyBot, bot_send_message
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
-# from apps.core.bot.data.board_config import board_config
+from apps.core.bot.data.board_config import BoardConfig as board_config
 from apps.core.bot.handlers.catalog.catalog_func_handler import catalog_spot_data
 from apps.core.bot.handlers.catalog.catalog_support import get_dataframe, get_level_2_list_dict, get_nan_value_text, \
     text_processor_level, text_processor, list_number, level_2_column, level_3_column
@@ -15,7 +16,7 @@ from loader import logger
 
 
 @MyBot.dp.callback_query_handler(lambda call: 'level_2__' in call.data)
-async def call_level_2_answer(call: types.CallbackQuery, user_id: int | str = None) -> None:
+async def call_level_2_answer(call: types.CallbackQuery, user_id: int | str = None, state: FSMContext = None) -> None:
     """Обработка ответов
     """
     hse_user_id = call.message.chat.id if call else user_id
@@ -49,9 +50,13 @@ async def call_level_2_answer(call: types.CallbackQuery, user_id: int | str = No
 
     title_list: list = [f"level_3__{num}" for num, item in enumerate(level_3, start=1) if item is not None]
 
-    menu_level = board_config.menu_level = 1
-    menu_list = board_config.menu_list = title_list
-    count_col = board_config.count_col = 2
+    # menu_level = board_config.menu_level = 1
+    # menu_list = board_config.menu_list = title_list
+    # count_col = board_config.count_col = 2
+
+    menu_level = await board_config(state, "menu_level", 1).set_data()
+    menu_list = await board_config(state, "menu_list", title_list).set_data()
+    count_col = await board_config(state, "count_col", 2).set_data()
 
     nan_value_text = await get_nan_value_text(hse_user_id, df_level_2, column_nom=level_3_column)
     text = await text_processor_level(

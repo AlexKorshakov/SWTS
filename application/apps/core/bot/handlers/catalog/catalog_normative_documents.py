@@ -11,7 +11,7 @@ from pandas import DataFrame
 from loader import logger
 from apps.MyBot import MyBot, bot_send_message
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
-from apps.core.bot.data import board_config
+from apps.core.bot.data.board_config import BoardConfig as board_config
 from apps.core.bot.filters.custom_filters import is_private
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard, posts_cb
 from apps.core.bot.messages.messages import Messages, LogMessage
@@ -24,7 +24,7 @@ from apps.core.settyngs import get_sett
 
 
 @MyBot.dp.callback_query_handler(lambda call: 'catalog_normative_documents' in call.data)
-async def call_catalog_normative_documents_answer(call: types.CallbackQuery, user_id: int | str = None) -> None:
+async def call_catalog_normative_documents_answer(call: types.CallbackQuery, user_id: int | str = None, state: FSMContext = None) -> None:
     """Обработка ответов
     """
     hse_user_id = call.message.chat.id if call else user_id
@@ -59,7 +59,7 @@ async def add_catalog_inline_keyboard_with_action():
 
 
 @MyBot.dp.callback_query_handler(lambda call: 'cat_normative_documents_text' in call.data)
-async def call_catalog_normative_documents_catalog_answer(call: types.CallbackQuery, user_id: int | str = None) -> None:
+async def call_catalog_normative_documents_catalog_answer(call: types.CallbackQuery, user_id: int | str = None, state: FSMContext = None) -> None:
     """Обработка ответов
     """
     hse_user_id = call.message.chat.id if call else user_id
@@ -139,7 +139,7 @@ async def text_processor_for_text_query(table_dataframe: DataFrame) -> str:
 
 
 @MyBot.dp.callback_query_handler(lambda call: 'cat_normative_documents_catalog' in call.data)
-async def call_catalog_normative_documents_catalog_answer(call: types.CallbackQuery, user_id: int | str = None) -> None:
+async def call_catalog_normative_documents_catalog_answer(call: types.CallbackQuery, user_id: int | str = None, state: FSMContext = None) -> None:
     """Обработка ответов
     """
     hse_user_id = call.message.chat.id if call else user_id
@@ -154,9 +154,13 @@ async def call_catalog_normative_documents_catalog_answer(call: types.CallbackQu
 
     title_list: list = [f"norm_doc__{num}" for num, item in enumerate(clean_categories, start=1)]
 
-    menu_level = board_config.menu_level = 1
-    menu_list = board_config.menu_list = title_list
-    count_col = board_config.count_col = 2
+    # menu_level = board_config.menu_level = 1
+    # menu_list = board_config.menu_list = title_list
+    # count_col = board_config.count_col = 2
+
+    menu_level = await board_config(state, "menu_level", 1).set_data()
+    menu_list = await board_config(state, "menu_list", title_list).set_data()
+    count_col = await board_config(state, "count_col", 2).set_data()
 
     categories_df: DataFrame = DataFrame.from_dict(clean_categories)
     text = await text_processor_categories(categories_df, level=1)
@@ -169,7 +173,7 @@ async def call_catalog_normative_documents_catalog_answer(call: types.CallbackQu
 
 
 @MyBot.dp.callback_query_handler(lambda call: 'norm_doc__' in call.data)
-async def call_level_1_answer(call: types.CallbackQuery, user_id: int | str = None) -> None:
+async def call_level_1_answer(call: types.CallbackQuery, user_id: int | str = None, state: FSMContext = None) -> None:
     """Обработка ответов
     """
     hse_user_id = call.message.chat.id if call else user_id

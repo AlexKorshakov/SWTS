@@ -22,7 +22,7 @@ async def incident_level(call: types.CallbackQuery, state: FSMContext = None):
 
             await set_violation_atr_data("incident_level", call.data, state=state)
 
-            await get_and_send_incident_level_data(call)
+            await get_and_send_incident_level_data(call, state=state)
 
         except Exception as callback_err:
             logger.error(f"{repr(callback_err)}")

@@ -7,12 +7,12 @@ import traceback
 from aiogram.dispatcher import FSMContext
 from aiogram import types
 from apps.core.database.query_constructor import QueryConstructor
-from apps.core.bot.data import board_config
+from apps.core.bot.data.board_config import BoardConfig as board_config
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard
 from apps.core.bot.messages.messages import Messages
 from apps.core.database.db_utils import db_get_data_list_no_async
 from apps.core.bot.callbacks.sequential_action.category import _PREFIX_ND, _PREFIX_POZ, get_data_with_hashtags
-from apps.core.bot.reports.report_data import  ViolationData
+from apps.core.bot.reports.report_data import ViolationData
 from apps.MyBot import MyBot, bot_send_message
 
 logger.debug(f"{__name__} finish import")
@@ -45,10 +45,16 @@ async def normative_documents_answer_with_hashtags(call: types.CallbackQuery, st
 
         previous_level = 'category'
 
-        menu_level = board_config.menu_level = 1
-        menu_list = board_config.menu_list = [_PREFIX_ND + str(item[0]) for item in datas_query]
-        count_col = board_config.count_col = 2
-        board_config.previous_level = previous_level
+        # menu_level = board_config.menu_level = 1
+        # menu_list = board_config.menu_list = [_PREFIX_ND + str(item[0]) for item in datas_query]
+        # count_col = board_config.count_col = 2
+        # board_config.previous_level = previous_level
+
+        menu_level = await board_config(state, "menu_level", 1).set_data()
+        menu_list = await board_config(state, "menu_list",
+                                       [_PREFIX_ND + str(item[0]) for item in datas_query]).set_data()
+        count_col = await board_config(state, "count_col", 2).set_data()
+        await board_config(state, "previous_level", previous_level).set_data()
 
         text_items: str = get_text(prefix=_PREFIX_ND, datas=datas_query)
         for item_txt in text_processor(text_items):
@@ -76,10 +82,16 @@ async def normative_documents_answer_with_hashtags(call: types.CallbackQuery, st
 
         previous_level = 'main_location'
 
-        menu_level = board_config.menu_level = 1
-        menu_list = board_config.menu_list = [_PREFIX_POZ + str(item[0]) for item in datas_query]
-        count_col = board_config.count_col = 2
-        board_config.previous_level = previous_level
+        # menu_level = board_config.menu_level = 1
+        # menu_list = board_config.menu_list = [_PREFIX_POZ + str(item[0]) for item in datas_query]
+        # count_col = board_config.count_col = 2
+        # board_config.previous_level = previous_level
+
+        menu_level = await board_config(state, "menu_level", 1).set_data()
+        menu_list = await board_config(state, "menu_list",
+                                       [_PREFIX_POZ + str(item[0]) for item in datas_query]).set_data()
+        count_col = await board_config(state, "count_col", 2).set_data()
+        await board_config(state, "previous_level", previous_level).set_data()
 
         text_items: str = get_text(prefix=_PREFIX_POZ, datas=datas_query)
         for item_txt in text_processor(text_items):

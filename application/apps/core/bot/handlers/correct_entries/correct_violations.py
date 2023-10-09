@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 
 from aiogram import types
+from aiogram.dispatcher import FSMContext
 from pandas import DataFrame
 
 from apps.core.bot.handlers.correct_entries.correct_violations_special_meaning_handler import special_meaning_handler
@@ -42,8 +43,8 @@ async def call_correct_characteristic_not(call: types.CallbackQuery, callback_da
     await bot_delete_message(chat_id=hse_user_id, message_id=call.message.message_id, sleep_sec=15)
 
 
-@MyBot.dp.callback_query_handler(lambda call: 'correct_character' in call.data)
-async def call_correct_character_answer(call: types.CallbackQuery, user_id: int | str = None) -> None:
+@MyBot.dp.callback_query_handler(lambda call: 'correct_character' in call.data, state='*')
+async def call_correct_character_answer(call: types.CallbackQuery, user_id: int | str = None, state: FSMContext = None) -> None:
     """Обработка ответов
     """
     hse_user_id = call.message.chat.id if call else user_id
@@ -86,19 +87,19 @@ async def call_correct_character_answer(call: types.CallbackQuery, user_id: int 
 
     elif type_character == 'complex_meaning':
         result = await complex_meaning_handler(
-            hse_user_id, character, item_number_text, violations_dataframe
+            hse_user_id, character, item_number_text, violations_dataframe, state=state
         )
     elif type_character == 'simple_meaning':
         result = await simple_meaning_handler(
-            hse_user_id, character, item_number_text, violations_dataframe
+            hse_user_id, character, item_number_text, violations_dataframe, state= state
         )
     elif type_character == 'text_meaning':
         result = await text_meaning_handler(
-            hse_user_id, character, item_number_text, violations_dataframe
+            hse_user_id, character, item_number_text, violations_dataframe, state= state
         )
     elif type_character == 'special_meaning':
         result = await special_meaning_handler(
-            hse_user_id, character, item_number_text, violations_dataframe
+            hse_user_id, character, item_number_text, violations_dataframe, state= state
         )
 
     # character_table_name = RESULT_DICT.get(character, None)

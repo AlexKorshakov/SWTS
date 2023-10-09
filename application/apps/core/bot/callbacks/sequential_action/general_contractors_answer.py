@@ -28,7 +28,7 @@ async def general_contractors_answer(call: types.CallbackQuery, state: FSMContex
 
             await set_violation_atr_data("general_contractor", value, state=state)
 
-            await get_and_send_general_contractors_data(call)
+            await get_and_send_general_contractors_data(call, state=state)
 
         except Exception as callback_err:
             logger.error(f"{repr(callback_err)}")

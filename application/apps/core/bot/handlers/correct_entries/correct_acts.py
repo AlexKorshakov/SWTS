@@ -5,12 +5,13 @@ import traceback
 from datetime import datetime
 
 from aiogram import types
+from aiogram.dispatcher import FSMContext
 from aiogram.types import InlineKeyboardMarkup
 from pandas import DataFrame
 
 from apps.MyBot import MyBot, bot_send_message, bot_delete_message, bot_delete_markup
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
-from apps.core.bot.data import board_config
+from apps.core.bot.data.board_config import BoardConfig as board_config
 from apps.core.bot.handlers.correct_entries.correct_support import create_user_dataframe, check_dataframe
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb, build_inlinekeyboard
 from apps.core.bot.messages.messages import Messages, LogMessage
@@ -130,7 +131,7 @@ async def add_act_inline_keyboard_with_action():
     return markup
 
 
-async def add_correct_inline_keyboard_with_action(user_violations: DataFrame):
+async def add_correct_inline_keyboard_with_action(user_violations: DataFrame,state: FSMContext = None):
     """Формирование сообщения с текстом и кнопками действий в зависимости от параметров
 
     :return:
@@ -139,9 +140,13 @@ async def add_correct_inline_keyboard_with_action(user_violations: DataFrame):
     unique_acts_numbers: list = user_violations.act_number.unique().tolist()
     unique_acts_numbers: list = [f'act_number_{item}' for item in unique_acts_numbers if item]
 
-    menu_level = board_config.menu_level = 1
-    menu_list = board_config.menu_list = unique_acts_numbers
-    count_col = board_config.count_col = 2
+    # menu_level = board_config.menu_level = 1
+    # menu_list = board_config.menu_list = unique_acts_numbers
+    # count_col = board_config.count_col = 2
+
+    menu_level = await board_config(state, "menu_level", 1).set_data()
+    menu_list = await board_config(state, "menu_list", unique_acts_numbers).set_data()
+    count_col = await board_config(state, "count_col", 2).set_data()
 
     reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=count_col, level=menu_level)
 

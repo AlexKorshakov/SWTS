@@ -5,11 +5,12 @@ import math
 from datetime import datetime
 
 from aiogram import types
+from aiogram.dispatcher import FSMContext
 from pandas import DataFrame
 
 from apps.MyBot import MyBot, bot_send_message, bot_delete_markup
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
-from apps.core.bot.data import board_config
+from apps.core.bot.data.board_config import BoardConfig as board_config
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb, build_inlinekeyboard
 from apps.core.bot.messages.messages import Messages, LogMessage
 from apps.core.bot.messages.messages_test import msg
@@ -20,7 +21,7 @@ from loader import logger
 
 @MyBot.dp.callback_query_handler(posts_cb.filter(action=['correct_act_item_correct']))
 async def call_correct_act_item_correct(call: types.CallbackQuery = None, callback_data: dict[str, str] = None,
-                                        user_id: int | str = None):
+                                        user_id: int | str = None, state: FSMContext = None):
     """Обработка ответов содержащихся в ADMIN_MENU_LIST
     """
 
@@ -68,7 +69,9 @@ async def call_correct_act_item_correct(call: types.CallbackQuery = None, callba
         logger.error(f'{hse_user_id = } {Messages.Error.dataframe_is_empty}  \n{query = }')
         return
 
-    reply_markup: types.InlineKeyboardMarkup = await add_correct_item_inline_keyboard_with_action(violations_dataframe)
+    reply_markup: types.InlineKeyboardMarkup = await add_correct_item_inline_keyboard_with_action(
+        violations_dataframe, state=state
+    )
 
     text_violations: str = await text_processor_items_act_violations(violations_dataframe, act_number_text)
     text_v_list = await text_processor(text=text_violations)
@@ -226,7 +229,7 @@ async def get_item_title_for_id(table_name: str, item_id: int, item_name: str = 
     return item_text
 
 
-async def add_correct_item_inline_keyboard_with_action(user_violations: DataFrame):
+async def add_correct_item_inline_keyboard_with_action(user_violations: DataFrame, state: FSMContext = None):
     """Формирование сообщения с текстом и кнопками действий в зависимости от параметров
 
     :return:
@@ -235,9 +238,13 @@ async def add_correct_item_inline_keyboard_with_action(user_violations: DataFram
     unique_acts_numbers: list = user_violations.id.unique().tolist()
     unique_acts_numbers: list = [f'item_number_{item}' for item in unique_acts_numbers if item]
 
-    menu_level = board_config.menu_level = 1
-    menu_list = board_config.menu_list = unique_acts_numbers
-    count_col = board_config.count_col = 2
+    # menu_level = board_config.menu_level = 1
+    # menu_list = board_config.menu_list = unique_acts_numbers
+    # count_col = board_config.count_col = 2
+
+    menu_level = await board_config(state, "menu_level", 1).set_data()
+    menu_list = await board_config(state, "menu_list", unique_acts_numbers).set_data()
+    count_col = await board_config(state, "count_col", 2).set_data()
 
     reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=count_col, level=menu_level)
 

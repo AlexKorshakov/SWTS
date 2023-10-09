@@ -1,20 +1,19 @@
+from aiogram.dispatcher import FSMContext
+
 from loader import logger
 
 logger.debug(f"{__name__} start import")
 import apps.xxx
 from aiogram import types
-from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters import Text
 from aiogram.types import ReplyKeyboardMarkup, ReplyKeyboardRemove
-from apps.core.bot.data import board_config
-from apps.core.bot.data.category import VIOLATIONS_DATA_LIST, get_data_list
-from apps.core.bot.filters.custom_filters import is_private
+from apps.core.bot.data.board_config import BoardConfig as board_config
+from apps.core.bot.callbacks.sequential_action.category import VIOLATIONS_DATA_LIST, get_data_list
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.states import CorrectViolationsState
 from apps.core.utils.generate_report.get_file_list import get_json_file_list
-from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.set_user_violation_data_on_google_drave import \
-    update_user_violation_data_on_google_drive
+# from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.set_user_violation_data_on_google_drave import \
+#     update_user_violation_data_on_google_drive
 from apps.core.utils.json_worker.read_json_file import read_json_file
 from apps.core.utils.json_worker.writer_json_file import write_json_file
 from apps.MyBot import MyBot, bot_send_message
@@ -24,7 +23,7 @@ logger.debug(f"{__name__} finish import")
 
 
 @MyBot.dp.callback_query_handler(lambda call: call.data in VIOLATIONS_DATA_LIST)
-async def correct_violations_data_answer(call: types.CallbackQuery):
+async def correct_violations_data_answer(call: types.CallbackQuery, state: FSMContext = None):
     """Обработка ответов содержащихся в VIOLATIONS_DATA_LIST
 
     """
@@ -50,8 +49,11 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
     if call.data == "Основное направление":
         logger.debug(f"{chat_id = } Выбрано:: {call.data}")
 
-        menu_level = board_config.menu_level = 2
-        menu_list = board_config.menu_list = [item for item in get_data_list("MAIN_CATEGORY") if item is not None]
+        # menu_level = board_config.menu_level = 2
+        # menu_list = board_config.menu_list = [item for item in get_data_list("MAIN_CATEGORY") if item is not None]
+        menu_level = await board_config(state, "menu_level", 2).set_data()
+        menu_list = await board_config(state, "menu_list",
+                                       [item for item in get_data_list("MAIN_CATEGORY") if item is not None]).set_data()
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
         await bot_send_message(chat_id=chat_id, text=Messages.Choose.main_category, reply_markup=reply_markup)
@@ -62,8 +64,11 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
     if call.data == "Количество дней на устранение":
         logger.debug(f"{chat_id = } Выбрано:: {call.data}")
 
-        menu_level = board_config.menu_level = 2
-        menu_list = board_config.menu_list = [item for item in get_data_list("ELIMINATION_TIME") if item is not None]
+        # menu_level = board_config.menu_level = 2
+        # menu_list = board_config.menu_list = [item for item in get_data_list("ELIMINATION_TIME") if item is not None]
+        menu_level = await board_config(state, "menu_level", 2).set_data()
+        menu_list = await board_config(state, "menu_list", [item for item in get_data_list("ELIMINATION_TIME") if
+                                                            item is not None]).set_data()
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
         await bot_send_message(chat_id=chat_id, text=Messages.Choose.elimination_time, reply_markup=reply_markup)
@@ -74,8 +79,11 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
     if call.data == "Степень опасности ситуации":
         logger.debug(f"{chat_id = } Выбрано:: {call.data}")
 
-        menu_level = board_config.menu_level = 2
-        menu_list = board_config.menu_list = [item for item in get_data_list("INCIDENT_LEVEL") if item is not None]
+        # menu_level = board_config.menu_level = 2
+        # menu_list = board_config.menu_list = [item for item in get_data_list("INCIDENT_LEVEL") if item is not None]
+        menu_level = await board_config(state, "menu_level", 2).set_data()
+        menu_list = await board_config(state, "menu_list", [item for item in get_data_list("INCIDENT_LEVEL") if
+                                                            item is not None]).set_data()
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
         await bot_send_message(chat_id=chat_id, text=Messages.Choose.incident_level, reply_markup=reply_markup)
@@ -86,8 +94,11 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
     if call.data == "Требуется ли оформление акта?":
         logger.debug(f"{chat_id = } Выбрано:: {call.data}")
 
-        menu_level = board_config.menu_level = 2
-        menu_list = board_config.menu_list = [item for item in get_data_list("ACT_REQUIRED") if item is not None]
+        # menu_level = board_config.menu_level = 2
+        # menu_list = board_config.menu_list = [item for item in get_data_list("ACT_REQUIRED") if item is not None]
+        menu_level = await board_config(state, "menu_level", 2).set_data()
+        menu_list = await board_config(state, "menu_list",
+                                       [item for item in get_data_list("ACT_REQUIRED") if item is not None]).set_data()
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
         await bot_send_message(chat_id=chat_id, text=Messages.Choose.act_required, reply_markup=reply_markup)
@@ -98,8 +109,11 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
     if call.data == "Подрядная организация":
         logger.debug(f"{chat_id = } Выбрано:: {call.data}")
 
-        menu_level = board_config.menu_level = 1
-        menu_list = board_config.menu_list = [item for item in get_data_list("GENERAL_CONTRACTORS") if item is not None]
+        # menu_level = board_config.menu_level = 1
+        # menu_list = board_config.menu_list = [item for item in get_data_list("GENERAL_CONTRACTORS") if item is not None]
+        menu_level = await board_config(state, "menu_level", 2).set_data()
+        menu_list = await board_config(state, "menu_list", [item for item in get_data_list("GENERAL_CONTRACTORS") if
+                                                            item is not None]).set_data()
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
         await bot_send_message(chat_id=chat_id, text=Messages.Choose.general_constractor, reply_markup=reply_markup)
@@ -110,8 +124,11 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
     if call.data == "Степень опасности ситуации":
         logger.debug(f"{chat_id = } Выбрано:: {call.data}")
 
-        menu_level = board_config.menu_level = 2
-        menu_list = board_config.menu_list = [item for item in get_data_list("VIOLATION_CATEGORY") if item is not None]
+        # menu_level = board_config.menu_level = 2
+        # menu_list = board_config.menu_list = [item for item in get_data_list("VIOLATION_CATEGORY") if item is not None]
+        menu_level = await board_config(state, "menu_level", 2).set_data()
+        menu_list = await board_config(state, "menu_list", [item for item in get_data_list("VIOLATION_CATEGORY") if
+                                                            item is not None]).set_data()
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
         await bot_send_message(chat_id=chat_id, text=Messages.Choose.violation_category, reply_markup=reply_markup)
@@ -122,8 +139,11 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
     if call.data == "Категория нарушения":
         logger.debug(f"{chat_id = } Выбрано:: {call.data}")
 
-        menu_level = board_config.menu_level = 2
-        menu_list = board_config.menu_list = [item for item in get_data_list("CATEGORY") if item]
+        # menu_level = board_config.menu_level = 2
+        # menu_list = board_config.menu_list = [item for item in get_data_list("CATEGORY") if item]
+        menu_level = await board_config(state, "menu_level", 2).set_data()
+        menu_list = await board_config(state, "menu_list",
+                                       [item for item in get_data_list("CATEGORY") if item]).set_data()
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
         await bot_send_message(chat_id=chat_id, text=Messages.Choose.category, reply_markup=reply_markup)
@@ -134,145 +154,16 @@ async def correct_violations_data_answer(call: types.CallbackQuery):
     if call.data == "Уровень происшествия":
         logger.debug(f"{chat_id = } Выбрано:: {call.data}")
 
-        menu_level = board_config.menu_level = 2
-        menu_list = board_config.menu_list = [item for item in get_data_list("INCIDENT_LEVEL") if item]
+        # menu_level = board_config.menu_level = 2
+        # menu_list = board_config.menu_list = [item for item in get_data_list("INCIDENT_LEVEL") if item]
+        menu_level = await board_config(state, "menu_level", 2).set_data()
+        menu_list = await board_config(state, "menu_list",
+                                       [item for item in get_data_list("INCIDENT_LEVEL") if item]).set_data()
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list))
         await bot_send_message(chat_id=chat_id, text=Messages.Choose.incident_level, reply_markup=reply_markup)
 
         await CorrectViolationsState.incident_level.set()
-
-
-# @MyBot.dp.message_handler(is_private, Text(equals=Messages.correct_cancel), state=CorrectViolationsState.all_states)
-# async def cancel(message: types.Message, state: FSMContext):
-#     """Отмена регистрации
-#     :param message:
-#     :param state:
-#     :return:
-#     """
-#     await state.finish()
-#     return await message.reply(Messages.Violations.canceled, reply_markup=ReplyKeyboardRemove())
-#
-#
-# @MyBot.dp.callback_query_handler(is_private,
-#                                  lambda call: call.data in [item for item in get_data_list('MAIN_CATEGORY') if
-#                                                             item is not None],
-#                                  state=CorrectViolationsState.main_category)
-# async def correct_headlines_data_main_category_answer(call: types.CallbackQuery, state: FSMContext):
-#     """Обработка ответов содержащихся в WORK_SHIFT
-#     """
-#     chat_id = call.from_user.id
-#     correct_data = await get_correct_data(chat_id=chat_id, call=call, json_file_name="MAIN_CATEGORY")
-#     if not correct_data:
-#         await state.finish()
-#         return
-#
-#     state_name = await get_state_storage_name(state, chat_id)
-#     await all_states(chat_id=chat_id, correct_data=correct_data, state_name=state_name)
-#     await state.finish()
-#
-#
-# @MyBot.dp.callback_query_handler(is_private,
-#                                  lambda call: call.data in [item for item in get_data_list('ACT_REQUIRED') if
-#                                                             item is not None],
-#                                  state=CorrectViolationsState.act_required)
-# async def correct_headlines_data_act_required_answer(call: types.CallbackQuery, state: FSMContext):
-#     """Обработка ответов содержащихся в state и call
-#     """
-#     chat_id = call.from_user.id
-#     correct_data = await get_correct_data(chat_id=chat_id, call=call, json_file_name="ACT_REQUIRED")
-#     if not correct_data:
-#         await state.finish()
-#         return
-#
-#     state_name = await get_state_storage_name(state, chat_id)
-#     await all_states(chat_id=chat_id, correct_data=correct_data, state_name=state_name)
-#     await state.finish()
-#
-#
-# @MyBot.dp.callback_query_handler(is_private,
-#                                  lambda call: call.data in [item for item in get_data_list('CATEGORY') if
-#                                                             item is not None],
-#                                  state=CorrectViolationsState.category)
-# async def correct_headlines_data_category_answer(call: types.CallbackQuery, state: FSMContext):
-#     """Обработка ответов содержащихся в WORK_SHIFT
-#     """
-#     chat_id = call.from_user.id
-#     correct_data = await get_correct_data(chat_id=chat_id, call=call, json_file_name="CATEGORY")
-#     if not correct_data:
-#         await state.finish()
-#         return
-#
-#     state_name = await get_state_storage_name(state, chat_id)
-#     await all_states(chat_id=chat_id, correct_data=correct_data, state_name=state_name)
-#     await state.finish()
-#
-#
-# @MyBot.dp.callback_query_handler(is_private,
-#                                  lambda call: call.data in [item for item in get_data_list('ELIMINATION_TIME') if
-#                                                             item is not None],
-#                                  state=CorrectViolationsState.elimination_time)
-# async def correct_headlines_data_elimination_time_answer(call: types.CallbackQuery, state: FSMContext):
-#     """Обработка ответов содержащихся в WORK_SHIFT
-#     """
-#     chat_id = call.from_user.id
-#     correct_data = await get_correct_data(chat_id=chat_id, call=call, json_file_name="ELIMINATION_TIME")
-#     if not correct_data:
-#         await state.finish()
-#         return
-#
-#     state_name = await get_state_storage_name(state, chat_id)
-#     await all_states(chat_id=chat_id, correct_data=correct_data, state_name=state_name)
-#     await state.finish()
-#
-#
-# @MyBot.dp.callback_query_handler(is_private,
-#                                  lambda call: call.data in [item for item in
-#                                                             get_data_list('GENERAL_CONTRACTORS') if item is not None],
-#                                  state=CorrectViolationsState.general_constractor)
-# async def correct_headlines_data_general_constractor_answer(call: types.CallbackQuery, state: FSMContext):
-#     """Обработка ответов содержащихся в WORK_SHIFT
-#     """
-#     chat_id = call.from_user.id
-#     correct_data = await get_correct_data(chat_id=chat_id, call=call, json_file_name="GENERAL_CONTRACTORS")
-#     if not correct_data:
-#         await state.finish()
-#         return
-#
-#     state_name = await get_state_storage_name(state, chat_id)
-#     await all_states(chat_id=chat_id, correct_data=correct_data, state_name=state_name)
-#     await state.finish()
-#
-#
-# @MyBot.dp.callback_query_handler(is_private,
-#                                  lambda call: call.data in [item for item in get_data_list('VIOLATION_CATEGORY') if
-#                                                             item is not None],
-#                                  state=CorrectViolationsState.violation_category)
-# async def correct_headlines_data_violation_category_answer(call: types.CallbackQuery, state: FSMContext):
-#     """Обработка ответов содержащихся в WORK_SHIFT
-#     """
-#     chat_id = call.from_user.id
-#     correct_data = await get_correct_data(chat_id=chat_id, call=call, json_file_name="VIOLATION_CATEGORY")
-#     if not correct_data:
-#         await state.finish()
-#         return
-#
-#     state_name = await get_state_storage_name(state, chat_id)
-#     await all_states(chat_id=chat_id, correct_data=correct_data, state_name=state_name)
-#     await state.finish()
-#
-#
-# @MyBot.dp.message_handler(is_private, state=CorrectViolationsState.all_states)
-# async def correct_violations_data_all_states_answer(message: types.Message, state: FSMContext):
-#     """Отмена регистрации
-#     :param message:
-#     :param state:
-#     :return:
-#     """
-#     chat_id = message.chat.id
-#     state_name = await get_state_storage_name(state, chat_id)
-#     await all_states(chat_id=chat_id, correct_data=message.text, state_name=state_name)
-#     await state.finish()
 
 
 async def get_state_storage_name(state, chat_id):
@@ -284,7 +175,7 @@ async def get_state_storage_name(state, chat_id):
     return state_name
 
 
-async def all_states(*, chat_id: str, correct_data: str, state_name: str):
+async def all_states(*, chat_id: str, correct_data: str, state_name: str, state: FSMContext = None):
     """Обработка состояний из get_state_storage_name и данных correct_data
 
     :param chat_id: id пользователя / чата
@@ -300,7 +191,9 @@ async def all_states(*, chat_id: str, correct_data: str, state_name: str):
         await bot_send_message(chat_id=chat_id, text=Messages.Error.file_list_not_found)
         return
 
-    violations_id = board_config.current_file.split(' ')[0]
+    v_data: dict = await state.get_data()
+
+    violations_id = v_data['current_file'].split(' ')[0]
 
     for file in violations_files_list:
         if file.split('\\')[-1].split(SEPARATOR)[-1].replace('.json', '') == violations_id:
@@ -318,7 +211,7 @@ async def all_states(*, chat_id: str, correct_data: str, state_name: str):
 
     await write_json_file(data=violation_data, name=violation_data["json_full_name"])
 
-    await update_user_violation_data_on_google_drive(chat_id=chat_id, violation_data=violation_data, notify_user=True)
+    # await update_user_violation_data_on_google_drive(chat_id=chat_id, violation_data=violation_data, notify_user=True)
 
     if violation_data:
         violation_text = await get_violations_text(violation_data)

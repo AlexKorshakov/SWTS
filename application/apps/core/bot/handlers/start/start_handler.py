@@ -13,7 +13,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command, Text
 from aiogram.types import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
-# from apps.core.bot.data.board_config import board_config
+from apps.core.bot.data.board_config import BoardConfig as board_config
 from apps.core.bot.callbacks.sequential_action.category import get_data_list
 from apps.core.bot.filters.custom_filters import is_private
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import \
@@ -31,7 +31,7 @@ logger.debug(f"{__name__} finish import")
 
 @rate_limit(limit=20)
 @MyBot.dp.message_handler(Command('start'), is_private)
-async def start(message: types.Message, user_id: int | str = None):
+async def start(message: types.Message, user_id: int | str = None, state: FSMContext = None):
     """Начало регистрации пользователя
 
     :param user_id: id пользователя
@@ -75,7 +75,7 @@ async def start(message: types.Message, user_id: int | str = None):
 
 
 @MyBot.dp.callback_query_handler(lambda call: 'select_lang_' in call.data)
-async def call_correct_item_answer(call: types.CallbackQuery, user_id: str | int = None):
+async def call_correct_item_answer(call: types.CallbackQuery, user_id: str | int = None, state: FSMContext = None):
     """Обработка ответов
     """
 
@@ -169,8 +169,11 @@ async def enter_phone_number(message: types.Message, state: FSMContext):
 
     user_data["phone_number"] = int(message.text.strip("+"))
 
-    menu_level = board_config.menu_level = 2
-    menu_list = board_config.menu_list = get_data_list("WORK_SHIFT")
+    # menu_level = board_config.menu_level = 2
+    # menu_list = board_config.menu_list = get_data_list("WORK_SHIFT")
+
+    menu_level = await board_config(state, "menu_level", 2).set_data()
+    menu_list = await board_config(state, "menu_list", get_data_list("WORK_SHIFT")).set_data()
 
     reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level)
     await RegisterState.next()
@@ -191,7 +194,7 @@ async def enter_work_shift(message: types.Message, state: FSMContext):
 
 @MyBot.dp.callback_query_handler(is_private, lambda call: call.data in get_data_list("WORK_SHIFT"),
                                  state=RegisterState.work_shift)
-async def work_shift_answer(call: types.CallbackQuery):
+async def work_shift_answer(call: types.CallbackQuery, state: FSMContext = None):
     """Обработка ответов содержащихся в WORK_SHIFT
     """
     chat_id = call.message.chat.id
@@ -207,8 +210,12 @@ async def work_shift_answer(call: types.CallbackQuery):
 
                 METRO = [list(item.keys())[0] for item in get_data_list("METRO_STATION")]
 
-                menu_level = board_config.menu_level = 2
-                menu_list = board_config.menu_list = METRO
+                # menu_level = board_config.menu_level = 2
+                # menu_list = board_config.menu_list = METRO
+
+                menu_level = await board_config(state, "menu_level", 2).set_data()
+                menu_list = await board_config(state, "menu_list", METRO).set_data()
+
 
                 reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level,
                                                           step=len(menu_list))

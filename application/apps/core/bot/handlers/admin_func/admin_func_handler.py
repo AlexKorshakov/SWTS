@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from aiogram.dispatcher import FSMContext
+
 from loader import logger
 
 logger.debug(f"{__name__} start import")
@@ -10,8 +12,8 @@ from aiogram.dispatcher.filters import Command
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from apps.core.bot.bot_utils.bot_admin_notify import admin_notify
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
-from apps.core.bot.data import board_config
-from apps.core.bot.data.category import ADMIN_MENU_LIST
+from apps.core.bot.data.board_config import BoardConfig as board_config
+from apps.core.bot.callbacks.sequential_action.category import ADMIN_MENU_LIST
 from apps.core.bot.filters.custom_filters import is_private
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import \
     build_inlinekeyboard, posts_cb
@@ -32,7 +34,7 @@ logger.debug(f"{__name__} finish import")
 
 @rate_limit(limit=10)
 @MyBot.dp.message_handler(Command('admin_func'))
-async def admin_func_handler(message: types.Message):
+async def admin_func_handler(message: types.Message, state: FSMContext = None):
     """Административные функции
 
     :param message:
@@ -93,7 +95,7 @@ async def add_correct_inline_keyboard_with_action():
 
 @MyBot.dp.callback_query_handler(posts_cb.filter(action=['check_acts_prescriptions_status']))
 async def check_acts_prescriptions_status_answer(
-        call: types.CallbackQuery, callback_data: dict[str, str]):
+        call: types.CallbackQuery, callback_data: dict[str, str], state: FSMContext = None):
     """
 
     :return:
@@ -110,7 +112,7 @@ async def check_acts_prescriptions_status_answer(
 
 @MyBot.dp.callback_query_handler(posts_cb.filter(action=['check_acts_prescriptions_status_for_subcontractor']))
 async def check_acts_prescriptions_status_for_subcontractor_answer(
-        call: types.CallbackQuery, callback_data: dict[str, str]):
+        call: types.CallbackQuery, callback_data: dict[str, str], state: FSMContext = None):
     """
 
     :return:
@@ -128,7 +130,7 @@ async def check_acts_prescriptions_status_for_subcontractor_answer(
 
 @MyBot.dp.callback_query_handler(posts_cb.filter(action=['check_indefinite_normative']))
 async def check_indefinite_normative_answer(
-        call: types.CallbackQuery, callback_data: dict[str, str]):
+        call: types.CallbackQuery, callback_data: dict[str, str], state: FSMContext = None):
     """
 
     :return:
@@ -144,7 +146,7 @@ async def check_indefinite_normative_answer(
 
 
 @MyBot.dp.callback_query_handler(is_private, lambda call: call.data in ADMIN_MENU_LIST)
-async def admin_function_answer(call: types.CallbackQuery, user_id: int | str = None):
+async def admin_function_answer(call: types.CallbackQuery, user_id: int | str = None, state: FSMContext = None):
     """Обработка ответов содержащихся в ADMIN_MENU_LIST
     """
     hse_user_id = call.message.chat.id if call else user_id
@@ -152,8 +154,11 @@ async def admin_function_answer(call: types.CallbackQuery, user_id: int | str = 
     users_datas, users_ids = await get_registered_users()
 
     if call.data == 'Показать всех пользователей':
-        menu_level = board_config.menu_level = 2
-        menu_list = board_config.menu_list = users_datas
+        # menu_level = board_config.menu_level = 2
+        # menu_list = board_config.menu_list = users_datas
+
+        menu_level = await board_config(state, "menu_level", 2).set_data()
+        menu_list = await board_config(state, "menu_list", users_datas).set_data()
 
         reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level)
         await bot_send_message(chat_id=hse_user_id, text=Messages.Admin.answer, reply_markup=reply_markup)

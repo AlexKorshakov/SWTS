@@ -20,7 +20,7 @@ async def main_category_answer(call: types.CallbackQuery, state: FSMContext = No
     if call.data in get_data_list("MAIN_CATEGORY"):
         try:
             await set_violation_atr_data("main_category", call.data, state=state)
-            await get_and_send_main_category_data(call)
+            await get_and_send_main_category_data(call, state=state)
 
         except Exception as callback_err:
             logger.error(f"{repr(callback_err)}")

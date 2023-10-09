@@ -21,7 +21,7 @@ async def elimination_time_answer(call: types.CallbackQuery, state: FSMContext =
         try:
             await set_violation_atr_data("elimination_time", call.data, state=state)
 
-            await get_and_send_elimination_time_data(call)
+            await get_and_send_elimination_time_data(call, state=state)
 
         except Exception as callback_err:
             logger.error(f"{repr(callback_err)}")

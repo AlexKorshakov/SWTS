@@ -53,7 +53,7 @@ async def normative_documents_answer(call: types.CallbackQuery, state: FSMContex
             await set_violation_atr_data("normative_documents_procedure", nd_data[0].get('procedure', None),
                                          state=state)
 
-            await get_and_send_normative_documents_data(call)
+            await get_and_send_normative_documents_data(call, state=state)
 
         except Exception as callback_err:
             logger.error(f"{repr(callback_err)} {nd_data = }")

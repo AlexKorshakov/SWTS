@@ -1,19 +1,15 @@
-from loader import logger
-
-logger.debug(f"{__name__} start import")
-from aiogram import types
-from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters import Command, Text
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.bot.data.board_config import BoardConfig as board_config
 from apps.core.bot.messages.messages import Messages
-from apps.core.bot.reports.report_data import (global_reg_form,
-                                               headlines_data,
-    # violation_data,
-                                               user_data)
-from apps.core.utils.misc import rate_limit
+from apps.core.bot.reports.report_data import ViolationData, user_data, global_reg_form, headlines_data
+from loader import logger
+
+logger.debug(f"{__name__} finish import")
+
+from aiogram import types
 from apps.MyBot import MyBot, bot_send_message
-from config.config import ADMIN_ID
+from apps.core.bot.callbacks.callback_action import cb_start
+from aiogram.dispatcher import FSMContext
 
 logger.debug(f"{__name__} finish import")
 
@@ -35,33 +31,32 @@ class NamedDict(dict):
         return self._name
 
 
-@rate_limit(limit=5)
-@MyBot.dp.message_handler(Command('cancel'), state='*')
-@MyBot.dp.message_handler(Text(equals='cancel', ignore_case=True), state='*')
-async def cancel_handler(call: types.CallbackQuery, state: FSMContext):
-    """Корректирование уже введённых значений на локальном pc и на google drive
-
-    :return:
+@MyBot.dp.callback_query_handler(cb_start.filter(action=['select_abort_registration']), state=ViolationData.all_states)
+async def callbacks_num_finish_fab(call: types.CallbackQuery, state: FSMContext):
+    """Действия при отмене регистрации
     """
+    logger.info(f'User @{call.message.chat.username}:{call.message.chat.id} регистрация отменена')
 
     chat_id = call.from_user.id
     if not await check_user_access(chat_id=chat_id):
         return
 
     dict_list = [
-        # NamedDict.fromkeys('violation_data', violation_data),
+        # NamedDict.fromkeys('ViolationData', ViolationData),
         NamedDict.fromkeys('user_data', user_data),
         NamedDict.fromkeys('global_reg_form', global_reg_form),
         NamedDict.fromkeys('headlines_data', headlines_data)
     ]
 
     for items_data in dict_list:
+
         items_data_name = list(items_data.keys())
         logger.debug(f"Report {str(items_data.name)} {items_data}")
+
         if items_data_name:
             items_data.clear()
             logger.info(f"Report is clear {str(items_data.name)} {items_data}")
-    #
+
     # board_config.menu_level = 1
     # board_config.menu_list = []
     # board_config.violation_menu_list = []
@@ -74,10 +69,9 @@ async def cancel_handler(call: types.CallbackQuery, state: FSMContext):
     await board_config(state, "violation_menu_list", []).set_data()
     await board_config(state, "violation_file", []).set_data()
     await board_config(state, "previous_level", '').set_data()
-    await board_config(state, "current_file", 'None').set_data()
+    await board_config(state, "current_file", None).set_data()
 
     await bot_send_message(chat_id=chat_id, text=Messages.all_canceled)
-    await bot_send_message(chat_id=ADMIN_ID, text=f'cancel_all from {chat_id}')
 
     current_state = await state.get_state()
     logger.info(f'Cancelling state {current_state}')
