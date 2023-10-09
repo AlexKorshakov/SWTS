@@ -17,6 +17,7 @@ from apps.core.utils.generate_report.generate_act_prescription.set_act_values im
 from apps.core.utils.generate_report.generator_report import anchor_photo
 from apps.core.utils.img_processor.insert_img import insert_service_image
 from apps.MyBot import bot_send_message
+from apps.core.utils.secondary_functions.get_filepath import get_image_name
 from loader import logger
 
 
@@ -55,7 +56,9 @@ async def create_act_prescription(chat_id: int, act_number: int, dataframe: Data
             "column_img": 11,
             "row": 1,
         }
-        service_image_name: str = f'{chat_id}\\data_file\\{act_date}\\reports\\qr_act_nom_{chat_id}_{act_number}'
+        service_image_name: str = await get_image_name(
+            str(chat_id), 'data_file', act_date, 'reports', f'qr_act_nom_{chat_id}_{act_number}'
+        )
 
         await insert_service_image(worksheet,
                                    service_image_name=service_image_name,

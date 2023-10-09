@@ -10,7 +10,6 @@ from loader import logger
 logger.debug(f"{__name__} start import")
 
 import asyncio
-import os
 import re
 from pprint import pprint
 from aiogram import types
@@ -20,7 +19,6 @@ from apps.core.bot.messages.messages_test import msg
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.bot_utils.bot_admin_notify import admin_notify
 from apps.core.database.db_utils import db_get_table_headers, db_get_data_list
-from apps.core.utils.json_worker.read_json_file import read_json_file
 
 logger.debug(f"{__name__} finish import")
 
@@ -95,12 +93,12 @@ async def get_dict_hse_user_role(hse_user_data_dict: dict) -> dict:
     return dict(hse_roles_dict)
 
 
-async def get_hse_user_data(*, message: types.Message = None) -> dict:
+async def get_hse_user_data(*, message: types.Message = None, chat_id: int | str = None) -> dict:
     """Получение данных пользователя из БД на основе chat_id
 
     :return: dict
     """
-    chat_id = message.chat.id
+    chat_id = chat_id if chat_id else message.chat.id
 
     table_data: list = await get_list_table_values(chat_id)
     if not table_data:
@@ -172,22 +170,6 @@ async def check_user_access(*, chat_id, message: types.Message = None, notify_ad
     return True
 
 
-async def check_user_registration_data_file(file_path: str) -> bool:
-    """Check
-
-    :return: bool
-    """
-
-    if not os.path.isfile(file_path):
-        return False
-
-    file_dict: dict = await read_json_file(file_path)
-
-    if file_dict.get('user_id'):
-        return True
-    return False
-
-
 async def user_access_fail(chat_id: int, notify_text: str = None, hse_id: str = None):
     """Отправка сообщения о недостатке прав
     """
@@ -214,8 +196,11 @@ async def user_access_fail(chat_id: int, notify_text: str = None, hse_id: str = 
             notify_text: str = f'User {chat_id} попытка доступа к функциям без регистрации'
 
         logger.error(notify_text)
-        button = types.InlineKeyboardButton(text=f'{chat_id}', url=f"tg://user?id={chat_id}")
-        await admin_notify(user_id=chat_id, notify_text=notify_text, button=button)
+        # button = types.InlineKeyboardButton(text=f'{chat_id}', url=f"tg://user?id={chat_id}")
+        await admin_notify(
+            user_id=chat_id, notify_text=notify_text,
+            # button=button
+        )
 
 
 async def user_access_granted(chat_id: int):

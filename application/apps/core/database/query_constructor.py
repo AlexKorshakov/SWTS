@@ -118,7 +118,7 @@ class QueryStorageMethods(QueryStorageFields):
         try:
             self.finished_id = int(self.finished_id)
         except ValueError as err:
-            logger.warning(f'{repr(err)}')
+            logger.debug(f'{repr(err)}')
 
         if isinstance(self.finished_id, str):
             if self.finished_id == '': return ''

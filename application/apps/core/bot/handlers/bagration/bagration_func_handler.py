@@ -179,8 +179,12 @@ async def user_access_fail(chat_id: int, notify_text: str = None, hse_id: str = 
             notify_text: str = f'User {chat_id} попытка доступа к функциям без регистрации'
 
         logger.error(notify_text)
-        button = types.InlineKeyboardButton(text=f'{chat_id}', url=f"tg://user?id={chat_id}")
-        await admin_notify(user_id=chat_id, notify_text=notify_text, button=button)
+        # button = types.InlineKeyboardButton(text=f'{chat_id}', url=f"tg://user?id={chat_id}")
+        await admin_notify(
+            user_id=chat_id,
+            notify_text=notify_text,
+            # button=button
+        )
 
 
 async def user_access_granted(chat_id: int, role: str = None, notify=False):
@@ -260,7 +264,6 @@ async def check_dataframe_role(dataframe: DataFrame, hse_user_id: str | int) -> 
     if dataframe is None:
         # text_violations: str = 'не удалось получить данные!'
         # logger.error(f'{hse_user_id = } {text_violations}')
-        # await bot_send_message(chat_id=hse_user_id, text=text_violations)
         return False
 
     if dataframe.empty:

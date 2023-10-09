@@ -7,6 +7,7 @@ from pandas import DataFrame
 from apps.core.database.db_utils import db_get_data_dict_from_table_with_id, db_get_table_headers, db_get_data_list, \
     db_get_dict_userdata
 from apps.core.utils.json_worker.writer_json_file import write_json_file
+from apps.core.utils.secondary_functions.get_filepath import get_report_full_name
 
 
 async def set_act_prescription_json(hse_chat_id: str | int, act_dataframe: DataFrame, act_number: str | int,
@@ -35,7 +36,7 @@ async def set_act_prescription_json(hse_chat_id: str | int, act_dataframe: DataF
                 value = value.values[0].item()
                 item_data_dict[key] = value
             else:
-                item_data_dict[key] = value.get(v_index-1, None)
+                item_data_dict[key] = value.get(v_index - 1, None)
 
         item_list.append(
             {item_data_dict['id']: item_data_dict}
@@ -70,7 +71,7 @@ async def set_act_prescription_json(hse_chat_id: str | int, act_dataframe: DataF
     short_title = contractor_data.get('short_title')
 
     report_full_name = f'Акт-предписание № {act_number} от {act_date} {short_title}.json'
-    full_patch_to_act_prescription_json = f"{path_in_registry}\\{report_full_name}"
+    full_patch_to_act_prescription_json = await get_report_full_name(path_in_registry, report_full_name)
 
     await write_json_file(data=act_data_dict, name=full_patch_to_act_prescription_json)
 

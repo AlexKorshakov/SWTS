@@ -2,11 +2,13 @@
 #
 # logger.debug(f"{__name__} start import")
 # from aiogram import types
-# from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher import FSMContext
+
+
 # from aiogram.dispatcher.filters import Text
 # from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup,
 #                            ReplyKeyboardRemove)
-# from apps.core.bot.data.board_config import board_config
+# from apps.core.bot.data.board_config import BoardConfig as board_config
 # from apps.core.bot.filters.custom_filters import is_private
 # from apps.core.bot.messages.messages import Messages
 # from apps.core.bot.states import DataUserState
@@ -49,18 +51,17 @@
 #     """
 #     await state.finish()
 #     return await message.reply(Messages.Viewer.canceled, reply_markup=ReplyKeyboardRemove())
-#
-#
-# async def get_state_storage_name(state: FSMContext, chat_id: int):
-#     """Получение имени состояния state[state]
-#
-#     """
-#     state_storage: dict = dict(state.storage.data)
-#     state_name: str = state_storage.get(f'{chat_id}').get(f'{chat_id}').get('state').split(':')[-1]
-#
-#     return state_name
-#
-#
+
+
+async def get_state_storage_name(state: FSMContext, chat_id: int):
+    """Получение имени состояния state[state]
+
+    """
+    state_storage: dict = dict(state.storage.data)
+    state_name: str = state_storage.get(f'{chat_id}').get(f'{chat_id}').get('state').split(':')[-1]
+
+    return state_name
+
 # async def view_user_data(*, chat_id: int, view_data, state_name: str):
 #     """Обработка состояний из get_state_storage_name и данных correct_data
 #

@@ -20,8 +20,8 @@ from apps.core.database.query_constructor import QueryConstructor
 from loader import logger
 
 
-@MyBot.dp.callback_query_handler(posts_cb.filter(action=['correct_acts']))
-async def call_correct_acts(call: types.CallbackQuery = None, callback_data: dict = None,
+@MyBot.dp.callback_query_handler(posts_cb.filter(action=['correct_acts']), state='*')
+async def call_correct_acts(call: types.CallbackQuery = None, callback_data: dict = None, state: FSMContext = None,
                             user_id: int | str = None):
     """Обработка ответов содержащихся в ADMIN_MENU_LIST
     """
@@ -62,7 +62,8 @@ async def call_correct_acts(call: types.CallbackQuery = None, callback_data: dic
 
     text_violations: str = await text_processor_user_violations(user_violations)
 
-    reply_markup: types.InlineKeyboardMarkup = await add_correct_inline_keyboard_with_action(user_violations)
+    reply_markup: types.InlineKeyboardMarkup = await add_correct_inline_keyboard_with_action(user_violations,
+                                                                                             state=state)
 
     await bot_send_message(chat_id=hse_user_id, text=text_violations, reply_markup=reply_markup)
 
@@ -131,7 +132,7 @@ async def add_act_inline_keyboard_with_action():
     return markup
 
 
-async def add_correct_inline_keyboard_with_action(user_violations: DataFrame,state: FSMContext = None):
+async def add_correct_inline_keyboard_with_action(user_violations: DataFrame, state: FSMContext = None):
     """Формирование сообщения с текстом и кнопками действий в зависимости от параметров
 
     :return:

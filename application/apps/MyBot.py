@@ -15,7 +15,7 @@ from apps.core.bot.messages.messages_test import msg
 from apps.core.bot.middlewares import setup_middlewares
 from apps.core.set_bot_commands import set_default_commands
 from apps.core.settyngs import get_sett
-from apps.notify_admins import on_startup_notify
+from apps.notify_admins import on_startup_notify_admins
 from apps.xxx import assistant, dp_assistant
 from config.config import SKIP_UPDATES
 from loader import logger
@@ -90,7 +90,7 @@ class MyBot:
             sys.exit()
 
         await setup_middlewares(dp)
-        await on_startup_notify(dp)
+        await on_startup_notify_admins(dp)
         await set_default_commands(dp)
 
         on_startup_text: str = f'{dp.bot._me.first_name} {Messages.Successfully.bot_start}'

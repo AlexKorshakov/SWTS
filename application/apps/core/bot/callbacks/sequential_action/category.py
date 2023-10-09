@@ -16,12 +16,6 @@ logger.debug(f"{__name__} finish import")
 filename = inspect.getframeinfo(inspect.currentframe()).filename
 PATH = os.path.dirname(os.path.abspath(filename))
 
-CORRECT_COMMANDS_LIST: list = [
-    'Состав комиссии',
-    'Корректировать значения',
-    'Удалить Полностью'
-]
-
 REGISTRATION_DATA_LIST: list = [
     "ФИО",
     "Должность",
@@ -323,9 +317,11 @@ def get_data_list(category_in_db: str = None, category: str = None, condition: s
 
     data_list: list = get_data_from_db(db_table_name=db_table_name)
 
-    if data_list:
-        logger.debug(f'{data_list = }')
-        return data_list
+    if not data_list:
+        return []
+
+    logger.debug(f'{data_list = }')
+    return data_list
 
 
 def get_data_with_hashtags(db_table_name: str, item_id: int) -> list:
@@ -365,22 +361,18 @@ def get_hashtags(db_table_name: str, item_id: int = None) -> list:
                 "category_id": item_id,
             }
         }
-        query = asyncio.run(QueryConstructor(None, db_table_name, **kwargs).prepare_data())
-        data_list: list = db_get_data_list_no_async(query=query)
-
     elif db_table_name == 'core_sublocation':
-
         kwargs = {
             "action": 'SELECT', "subject": 'hashtags',
             "conditions": {
                 "main_location_id": item_id
             }
         }
-        query = asyncio.run(QueryConstructor(None, db_table_name, **kwargs).prepare_data())
-        data_list: list = db_get_data_list_no_async(query=query)
-
     else:
         return []
+
+    query = asyncio.run(QueryConstructor(None, db_table_name, **kwargs).prepare_data())
+    data_list: list = db_get_data_list_no_async(query=query)
 
     if not data_list:
         logger.error(f'{__name__} {fanc_name()} {query = } {db_table_name = } {data_list = }')
