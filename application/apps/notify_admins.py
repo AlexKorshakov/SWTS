@@ -11,18 +11,96 @@ from config.config import DEVELOPER_ID, Udocan_Access_DB
 from loader import logger
 
 
-async def on_startup_notify(dp: Dispatcher) -> bool:
-    logger.info(f"{dp.bot._me.first_name}  Оповещение администрации...")
+class DataBaseAccessToAdmins:
 
-    hse_dataframe = await get_hse_dataframe()
+    def __init__(self):
+
+        self.db_file = Udocan_Access_DB
+        self.connection = sqlite3.connect(self.db_file)
+        self.cursor = self.connection.cursor()
+
+    async def get_table_headers(self, table_name: str = None) -> list[str]:
+        """Получение всех заголовков таблицы core_violations
+
+        :return: list[ ... ]
+        """
+        if not table_name:
+            return []
+        try:
+
+            with self.connection:
+                result: list = self.cursor.execute(f"PRAGMA table_info('{table_name}')").fetchall()
+                # clean_headers: list = [item[1] for item in result]
+                return result
+
+        except (ValueError, sqlite3.OperationalError) as err:
+            logger.error(f'{repr(err)}')
+            logger.error(f"Invalid query. {type(err).__name__} {err}")
+            return []
+
+        finally:
+            self.cursor.close()
+
+    async def get_data_list(self, query: str = None) -> list:
+        """Получение данных из таблицы по запросу 'query'"""
+        if not query:
+            return []
+        try:
+            with self.connection:
+                return self.cursor.execute(query).fetchall()
+        except (ValueError, sqlite3.OperationalError) as err:
+            logger.error(f'{repr(err)}')
+            logger.error(f"Invalid query. {type(err).__name__} {err}")
+            return []
+
+        finally:
+            self.cursor.close()
+
+
+async def db_get_data_list(query: str) -> list:
+    """Получение list с данными по запросу query
+
+    :return: list
+    """
+    datas_query: list = await DataBaseAccessToAdmins().get_data_list(query=query)
+    return datas_query
+
+
+async def db_get_table_headers(table_name: str = None) -> list:
+    """Получение заголовков таблицы
+
+    :return:
+    """
+    table_headers: list = await DataBaseAccessToAdmins().get_table_headers(table_name)
+    return table_headers
+
+
+async def on_startup_notify_admins(dp: Dispatcher) -> bool:
+    """
+
+    :param dp:
+    :return:
+    """
+    logger.info(f"{dp.bot._me.first_name} Оповещение администрации...")
+
+    hse_dataframe: DataFrame = await get_hse_dataframe()
+    if not await check_dataframe(hse_dataframe, hse_user_id=DEVELOPER_ID):
+        await dp.bot.send_message(chat_id=DEVELOPER_ID, text=f'{dp.bot._me.first_name} Данные не найдены hse_dataframe')
+        return False
 
     hse_role_is_admins_list: list = await get_hse_role_is_admins_list(
         hse_dataframe=hse_dataframe
     )
+    if not hse_role_is_admins_list:
+        logger.error(f"{dp.bot._me.first_name} {hse_role_is_admins_list = } ")
+        return False
 
     hse_role_receive_notifications_list: list = await get_hse_role_receive_notifications_list(
         hse_dataframe=hse_dataframe
     )
+    if not hse_role_receive_notifications_list:
+        logger.error(f"{dp.bot._me.first_name} {hse_role_receive_notifications_list = } ")
+        return False
 
     for num, hse_telegram_id in enumerate(hse_role_is_admins_list, start=1):
 
@@ -30,15 +108,18 @@ async def on_startup_notify(dp: Dispatcher) -> bool:
             logger.debug(
                 f"{dp.bot._me.first_name} Значение не найдено {num = } for {len(hse_role_is_admins_list)} {hse_telegram_id = }")
             continue
+
         if hse_telegram_id not in hse_role_receive_notifications_list:
             logger.debug(
                 f"{dp.bot._me.first_name} Значение не найдено {num = } for {len(hse_role_is_admins_list)} {hse_telegram_id = }")
             continue
 
         try:
-            await dp.bot.send_message(hse_telegram_id, f"{dp.bot._me.first_name} Бот был успешно запущен", disable_notification=True)
+            await dp.bot.send_message(hse_telegram_id, f"{dp.bot._me.first_name} Бот был успешно запущен",
+                                      disable_notification=True)
             logger.info(f"{dp.bot._me.first_name} Сообщение отправлено {hse_telegram_id}")
             await asyncio.sleep(0.5)
+
         except Exception as err:
             logger.error(f"{dp.bot._me.first_name} Чат {num = } с админом {hse_telegram_id} не найден {err = } ")
 
@@ -98,9 +179,28 @@ async def get_hse_dataframe() -> DataFrame or None:
         return None
 
 
+async def check_dataframe(dataframe: DataFrame, hse_user_id: str | int) -> bool:
+    """Проверка dataframe на наличие данных
+
+    :param dataframe:
+    :param hse_user_id: id пользователя
+    :return:
+    """
+    if dataframe is None:
+        text_violations: str = 'не удалось получить данные!'
+        logger.error(f'{hse_user_id = } {text_violations}')
+        return False
+
+    if dataframe.empty:
+        logger.error(f'{hse_user_id = } {Messages.Error.dataframe_is_empty}')
+        return False
+
+    return True
+
+
 async def test():
     dp: Dispatcher = None
-    await on_startup_notify(dp)
+    await on_startup_notify_admins(dp)
 
 
 if __name__ == '__main__':

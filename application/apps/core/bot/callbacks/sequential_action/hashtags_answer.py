@@ -18,20 +18,23 @@ from apps.MyBot import MyBot, bot_send_message
 logger.debug(f"{__name__} finish import")
 
 
-@MyBot.dp.callback_query_handler(lambda call: call.data[0] == '#')
-async def normative_documents_answer_with_hashtags(call: types.CallbackQuery, user_id: str = None) -> None:
+@MyBot.dp.callback_query_handler(lambda call: call.data[0] == '#', state=ViolationData.all_states)
+async def normative_documents_answer_with_hashtags(call: types.CallbackQuery, state: FSMContext = None,
+                                                   user_id: str = None) -> None:
     """Обработка ответов содержащихся в NORMATIVE_DOCUMENTS
     """
 
     hse_user_id = call.message.chat.id if call else user_id
     logger.info(f'{call.data = }')
 
-    if call.data in get_data_with_hashtags("core_normativedocuments", item_id=violation_data.get('category_id', None)):
+    v_data: dict = await state.get_data()
+
+    if call.data in get_data_with_hashtags("core_normativedocuments", item_id=v_data.get('category_id', None)):
         logger.info(f'{__name__} {say_fanc_name()} NORMATIVE_DOCUMENTS')
         kwargs: dict = {
             "action": 'SELECT', "subject": '*',
             "conditions": {
-                "category_id": violation_data.get('category_id', None),
+                "category_id": v_data.get('category_id', None),
                 "hashtag": call.data,
                 "hashtag_condition": 'like',
             }
@@ -57,12 +60,12 @@ async def normative_documents_answer_with_hashtags(call: types.CallbackQuery, us
         await bot_send_message(chat_id=hse_user_id, text=Messages.Choose.normative_documents, reply_markup=reply_markup)
         return
 
-    if call.data in get_data_with_hashtags("core_sublocation", item_id=violation_data.get('main_location_id', None)):
+    if call.data in get_data_with_hashtags("core_sublocation", item_id=v_data.get('main_location_id', None)):
         logger.info(f'{__name__} {say_fanc_name()} SUB_LOCATIONS')
         kwargs: dict = {
             "action": 'SELECT', "subject": '*',
             "conditions": {
-                "main_location_id": violation_data.get('main_location_id', None),
+                "main_location_id": v_data.get('main_location_id', None),
                 "hashtag": call.data,
                 "hashtag_condition": 'like',
             }

@@ -1,30 +1,24 @@
-import json
 import os
 from pathlib import Path
-from datetime import datetime,  timedelta, timezone
+from datetime import datetime, timedelta, timezone
 from time import localtime, strftime
 from sys import stderr
 from threading import current_thread
 
 from loguru import logger as Log
 
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 
 __all__ = ['logger']
+
 LOGGER_DIR = Path(__file__).resolve().parent
-load_dotenv(LOGGER_DIR / "config" / ".env")
-
-logs_path = str(os.environ.get('MAIN_DIR')) + 'logs'
-
-
-def serialize(record: dict):
-    subset = {"timestamp": record["time"].timestamp(), "message": record["message"]}
-    return json.dumps(subset, ensure_ascii=False)
+# load_dotenv(LOGGER_DIR / "config" / ".env")
+# LOGGER_DIR = Path(__file__).resolve().parent
+# load_dotenv(LOGGER_DIR / "config" / ".env")
+# from config.config import BASE_DIR
 
 
-def sink(message):
-    serialized = serialize(message.record)
-    print(serialized)
+logs_path = Path(LOGGER_DIR, 'logs')
 
 
 def aware_now():
@@ -74,14 +68,12 @@ Log.add(
     encoding="utf8"
 )
 
-# Log.add(sink)
-
 thread = current_thread()
 current_datetime = aware_now()
 
 Log.info(f"{thread.ident = } ::: {thread.name = }")
 Log.debug(f'Log. {repr(Log)}')
-Log.info(f"{current_datetime = } Логирование успешно настроено\n")
+Log.info(f"Логирование успешно настроено\n {current_datetime = } ")
 
 logger = Log
 

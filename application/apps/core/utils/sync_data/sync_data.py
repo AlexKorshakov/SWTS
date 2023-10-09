@@ -1,11 +1,10 @@
 import asyncio
 import os
-from pathlib import Path
 from pprint import pprint
 
-from apps.core.bot.reports.report_data_preparation import \
-    preparing_violation_data_for_loading_to_google_drive
-from apps.core.database.DataBase import create_file_path
+# from apps.core.bot.reports.report_data_preparation import \
+#     preparing_violation_data_for_loading_to_google_drive
+from apps.core.database.ViolationsDataBase import create_file_path
 from apps.core.utils.goolgedrive_processor.googledrive_worker import (
     ROOT_REPORT_FOLDER_NAME, get_root_folder_id)
 from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.download_file_for_google_drive import \
@@ -22,12 +21,12 @@ from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.upload_data_on_gdriv
     upload_file_on_gdrave
 from apps.core.utils.secondary_functions.get_json_files import (get_dirs_files,
                                                                 get_files)
-from config.config import WRITE_DATA_ON_GOOGLE_DRIVE
+from config.config import WRITE_DATA_ON_GOOGLE_DRIVE, Udocan_media_path
 from loader import logger
 from tqdm.asyncio import tqdm
 
-BASE_DIR: Path = Path(__file__).resolve()
-DIRECTORY: str = os.path.join(BASE_DIR.parent.parent.parent.parent.parent.parent, 'media')
+
+
 
 DEBUG: bool = False
 
@@ -110,7 +109,7 @@ async def get_file_list(directory: str, endswith: str = ".json") -> list:
         file_path: str = f'{directory}\\{f_dir}'
 
         if os.path.isdir(file_path):
-            json_file_list: list = await get_files(main_path=file_path, endswith=endswith)
+            json_file_list: list = await get_files(directory=file_path, endswith=endswith)
             file_list.extend(json_file_list)
 
     if DEBUG:
@@ -247,7 +246,7 @@ async def get_local_files_for_sync(endswith: str) -> tuple[list, list]:
     normalize_file_list - список файлов без полного пути
 
     """
-    file_list: list = await get_file_list(directory=DIRECTORY, endswith=endswith)
+    file_list: list = await get_file_list(directory=str(Udocan_media_path), endswith=endswith)
     normalize_file_list: list = await get_normalize_file_list(file_list)
 
     return file_list, normalize_file_list
@@ -276,7 +275,7 @@ async def get_list_files_to_download(google_files: list, local_files: list, fold
             download += 1
             if DEBUG: print(f'{number_file} file: {item_file} need download')
 
-            file_path = f'{DIRECTORY}\\{item_file["name"].split("___")[2]}\\' \
+            file_path = f'{str(Udocan_media_path)}\\{item_file["name"].split("___")[2]}\\' \
                         f'data_file\\{item_file["name"].split("___")[1]}\\{folder_name}\\'
             item_file['file_path'] = file_path
             item_file["full_name"] = file_path + item_file["name"]
@@ -329,9 +328,9 @@ async def sync_local_to_google_drive(drive_service: object = None, file_list: li
                 drive_service=drive_service
             )
 
-            await preparing_violation_data_for_loading_to_google_drive(
-                data=preparing_data
-            )
+            # await preparing_violation_data_for_loading_to_google_drive(
+            #     data=preparing_data
+            # )
             last_id_item = id_item
 
         if endswith == '.json':

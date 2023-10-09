@@ -1,4 +1,5 @@
 import asyncio
+import os
 
 from pandas import DataFrame
 
@@ -17,6 +18,7 @@ from apps.core.utils.generate_report.generate_act_prescription.set_act_value imp
     get_act_headlines_data_values
 from apps.core.utils.generate_report.generate_act_prescription.set_act_values import \
     set_act_photographic_materials
+from apps.core.utils.secondary_functions.get_filepath import get_photo_full_name
 from apps.core.utils.generate_report.get_file_list import get_json_file_list
 from apps.core.utils.generate_report.get_report_path import \
     get_full_report_name
@@ -115,7 +117,11 @@ async def anchor_photo(dataframe, row_number, workbook, worksheet, full_act_path
 
         violation_dict = dict(zip(clean_headers, violation_data))
 
-        img_params["photo_full_name"] = MEDIA_ROOT + violation_dict.get('photo', None)
+        # img_params["photo_full_name"] = str (Udocan_media_path) + os.sep + str(violation_dict.get('photo', None))
+        img_params["photo_full_name"] = await get_photo_full_name(
+            media_path=str(Udocan_media_path),
+            photo_path=str(violation_dict.get('photo', None))
+        )
 
         if num_data % 2 != 0:
             img_params["column"] = 'B'

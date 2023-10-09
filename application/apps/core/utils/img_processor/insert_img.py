@@ -3,9 +3,9 @@ from openpyxl.drawing.image import Image
 from xlsxwriter.worksheet import Worksheet
 
 from apps.core.utils.json_worker.read_json_file import read_json_file
+from apps.core.utils.secondary_functions.get_filepath import get_directory_name, get_image_name
 from apps.core.utils.secondary_functions.get_json_files import get_files
-from config.config import MEDIA_DIR
-from config.web.settings import MEDIA_ROOT
+from config.config import Udocan_media_path
 from loader import logger
 
 COLUMN_STR_INDEX: str = 'O'
@@ -50,12 +50,15 @@ async def insert_signalline_to_report_body(worksheet: Worksheet) -> bool:
     :param worksheet:
     :return:
     """
-    photo_full_name = ".\\signalline.jpeg"
+    photo_full_name: str = "signalline.jpeg"
 
-    files = await get_files(main_path=MEDIA_DIR + "\\!service_img", endswith=".jpg")
+    files: list = await get_files(
+        directory=await get_directory_name(Udocan_media_path, "!service_img"),
+        endswith=".jpg"
+    )
 
     for file in files:
-        photo_full_name = file if file.split('\\')[-1].split('.')[0] == "signalline" else ''
+        photo_full_name: str = file if file.split(os.sep)[-1].split('.')[0] == "signalline" else ''
 
     if not os.path.isfile(photo_full_name):
         logger.error("signalline not found")
@@ -69,7 +72,7 @@ async def insert_signalline_to_report_body(worksheet: Worksheet) -> bool:
         "row": 4
     }
 
-    img = await image_preparation(img, img_params)
+    img: Image = await image_preparation(img, img_params)
 
     await insert_images(worksheet, img=img)
 
@@ -87,14 +90,14 @@ async def insert_service_image(worksheet: Worksheet, *, chat_id: int = None, ser
     :return: bool
     """
 
-    photo_full_name = f"{MEDIA_ROOT}\\{service_image_name}.jpg"
+    photo_full_name: str = await get_image_name(Udocan_media_path, f"{service_image_name}.jpg")
 
     if chat_id:
-        photo_full_name = f"{MEDIA_ROOT}\\{chat_id}\\{service_image_name}.jpg"
+        photo_full_name: str = await get_image_name(Udocan_media_path, str(chat_id), f"{service_image_name}.jpg")
 
     if not os.path.isfile(photo_full_name):
         logger.error("service image not found")
-        photo_full_name = f"{MEDIA_ROOT}\\Logo.jpg"
+        photo_full_name: str = await get_image_name(Udocan_media_path, "Logo.jpg")
 
     if not img_params:
         img_params: dict = {

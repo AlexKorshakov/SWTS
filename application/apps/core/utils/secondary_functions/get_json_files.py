@@ -5,7 +5,7 @@ from apps.core.utils.secondary_functions.get_filepath import (get_bot_data_path,
                                                               get_file_path)
 
 
-async def get_files(main_path: str, endswith: str = ".json") -> list:
+async def get_files(directory: str, endswith: str = ".json") -> list:
     """Получение списка файлов c расширением endswith из main_path
 
     :type directory: str
@@ -13,8 +13,11 @@ async def get_files(main_path: str, endswith: str = ".json") -> list:
     :type endswith: str
     :param endswith: расширение файлов для обработки и формирования списка
     """
+    if not os.path.isdir(directory):
+        return []
+
     json_files = []
-    for subdir, dirs, files in os.walk(main_path):
+    for subdir, dirs, files in os.walk(directory):
         for file in files:
             filepath = subdir + os.sep + file
             if filepath.endswith(endswith):
@@ -28,6 +31,9 @@ async def get_dirs_files(directory: str) -> list:
     :type directory: str
     :param directory: директория для поиска файлов
     """
+    if not os.path.isdir(directory):
+        return []
+
     for subdir, dirs, files in os.walk(directory):
         return dirs
 

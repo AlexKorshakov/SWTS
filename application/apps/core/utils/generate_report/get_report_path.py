@@ -4,8 +4,10 @@ import datetime
 from apps.core.database.db_utils import (db_get_data_dict_from_table_with_id,
                                          db_get_dict_userdata)
 
-from apps.core.utils.secondary_functions.get_filepath import (
-    create_file_path, get_report_full_filepath, get_report_full_filepath_in_registry)
+from apps.core.utils.secondary_functions.get_filepath import (create_file_path,
+                                                              get_report_full_filepath,
+                                                              get_report_full_filepath_in_registry,
+                                                              get_report_full_name)
 from loader import logger
 
 
@@ -85,7 +87,7 @@ async def get_and_create_full_act_prescription_name(chat_id: int, param: dict) -
         report_path = await get_report_full_filepath(str(chat_id), actual_date=act_date)
 
         await create_file_path(report_path)
-        full_report_path: str = f'{report_path}{report_full_name}'
+        full_report_path: str = await get_report_full_name(report_path, report_full_name)
 
         return full_report_path
 
@@ -136,7 +138,7 @@ async def get_and_create_full_act_prescription_name_in_registry(chat_id: int, pa
         report_full_name = f'Акт-предписание № {act_number} от {act_date} {short_title}'
         report_path_in_registry = await get_report_full_filepath_in_registry(chat_id, actual_date=act_date)
         await create_file_path(report_path_in_registry)
-        full_report_path_in_registry: str = f'{report_path_in_registry}{report_full_name}'
+        full_report_path_in_registry: str = await get_report_full_name(report_path_in_registry, report_full_name)
         await create_file_path(full_report_path_in_registry)
 
         return full_report_path_in_registry

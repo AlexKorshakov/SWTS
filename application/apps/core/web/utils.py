@@ -1,7 +1,7 @@
 import asyncio
 import os
 from datetime import timedelta
-from pathlib import Path
+
 
 from apps.core.bot.handlers.correct_entries.correct_entries_handler import (
     del_file, del_file_from_gdrive)
@@ -23,11 +23,8 @@ from apps.core.utils.json_worker.writer_json_file import write_json
 from apps.core.utils.secondary_functions.get_filepath import \
     get_json_full_filename
 from apps.core.web.models import Violations
-from config.config import WRITE_DATA_ON_GOOGLE_DRIVE
+from config.config import WRITE_DATA_ON_GOOGLE_DRIVE, Udocan_media_path
 from loader import logger
-
-DIRECTORY = Path(__file__).resolve().parent
-LOCAL_MEDIA_STORAGE = str(DIRECTORY.parent.parent.parent) + '/media'
 
 except_list: list = ['id', 'photo', 'file', 'json', 'csrfmiddlewaretoken', 'is_published', 'is_finished', 'title', ]
 
@@ -151,7 +148,7 @@ async def delete_violation_files_from_gdrive(violation: dict) -> bool:
         return False
 
     name: str = violation.get("file_id")
-    violation_data_file = LOCAL_MEDIA_STORAGE + str(violation['json'])
+    violation_data_file = str(Udocan_media_path) + str(violation['json'])
     violation_json_parent_id = violation['json_folder_id']
 
     drive_service = await drive_account_credentials()
@@ -180,13 +177,13 @@ async def delete_violation_files_from_pc(violation: dict):
 
     :param violation dict данные записи для удаления
     """
-    json_full_path = LOCAL_MEDIA_STORAGE + str(violation['json'])
+    json_full_path = str(Udocan_media_path) + str(violation['json'])
 
     if not await del_file(path=json_full_path):
         logger.error(Messages.Error.file_not_found)
     logger.info(Messages.Removed.violation_data_pc)
 
-    photo_full_path = LOCAL_MEDIA_STORAGE + str(violation['photo'])
+    photo_full_path = str(Udocan_media_path) + str(violation['photo'])
 
     if not await del_file(path=photo_full_path):
         logger.error(Messages.Error.file_not_found)
@@ -198,7 +195,7 @@ async def get_id_registered_users() -> list[str]:
 
     :return: list[str] список директорий
     """
-    return os.listdir(LOCAL_MEDIA_STORAGE)
+    return os.listdir(str(Udocan_media_path))
 
 
 async def get_params(id_registered_users: list) -> list[dict]:
@@ -239,7 +236,7 @@ async def update_violation_files_from_gdrive(data_for_update: dict = None):
     file_id: str = str(data_for_update.get('file_id'))
     date: str = file_id.split("___")[0]
 
-    file_full_name = LOCAL_MEDIA_STORAGE + f'/{user_id}/data_file/{date}/json/report_data___{file_id}.json'
+    file_full_name = str(Udocan_media_path) + f'/{user_id}/data_file/{date}/json/report_data___{file_id}.json'
 
     await update_user_violation_data_on_google_drive(
         chat_id=user_id,
@@ -380,7 +377,7 @@ async def get_data_for_update(data: dict, get_from: str = 'local') -> dict:
         user_id: str = str(data.get('user_id'))
         file_id: str = str(data.get('file_id'))
         date: str = str(file_id).split("___")[0]
-        json_full_path: str = LOCAL_MEDIA_STORAGE + f'/{user_id}/data_file/{date}/json/report_data___{file_id}.json'
+        json_full_path: str = str(Udocan_media_path) + f'/{user_id}/data_file/{date}/json/report_data___{file_id}.json'
 
         if not os.path.isfile(json_full_path):
             logger.error(f'Not found file {file_id}')

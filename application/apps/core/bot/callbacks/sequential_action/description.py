@@ -1,3 +1,4 @@
+from apps.core.bot.reports.report_data import ViolationData
 from loader import logger
 
 logger.debug(f"{__name__} start import")

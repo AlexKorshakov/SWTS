@@ -243,4 +243,4 @@ async def enter_location_answer(call: types.CallbackQuery, state: FSMContext):
             logger.error(f"{repr(callback_err)}")
 
     await state.finish()
-    await registration_data(call.message, user_data)
+    # await registration_data(call.message, user_data)
