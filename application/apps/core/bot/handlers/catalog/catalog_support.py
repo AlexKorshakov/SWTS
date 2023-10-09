@@ -155,10 +155,6 @@ async def get_nan_value_text(hse_user_id, dataframe: DataFrame, column_nom: int 
         await bot_send_message(chat_id=hse_user_id, text='Данные не найдены dataframe')
         return ''
 
-    # if column_nom > 1:
-    #     nan_value_df: DataFrame = \
-    #         dataframe.loc[dataframe[dataframe.columns[column_nom - 1]] == catalog_spot_data[f'level_{level}_name']]
-
     items_text_list: list = []
     for index, row in nan_value_df.iterrows():
         department = row.get("Подразделение полностью", " - ")
@@ -169,23 +165,29 @@ async def get_nan_value_text(hse_user_id, dataframe: DataFrame, column_nom: int 
         phone_number = row.get("Тел")
 
         item_info: str = f'{department}\n{job_title} {employee} \nтаб.ном {personnel_number}\ne-mail {e_mail}\nтел {phone_number}'
-        # print(f'len {len(item_info)} {item_info = }')
-
         await bot_send_message(chat_id=hse_user_id, text=item_info)
-
-        # if phone_number and not math.isnan(phone_number):
-        #     await bot_send_message(
-        #         chat_id=hse_user_id, text=f'[{phone_number}](tel:{phone_number})', parse_mode='Markdown'
-        #     )
-        #     await bot_send_message(
-        #         chat_id=hse_user_id, text=f'{phone_number}'
-        #     )
-        #     await bot_send_message(
-        #         chat_id=hse_user_id, text=f'tel:{phone_number}'
-        #     )
 
         items_text_list.append(item_info)
 
     items_text: str = '\n\n'.join([item for item in items_text_list if item is not None])
 
     return items_text
+
+
+async def check_dataframe(dataframe: DataFrame, hse_user_id: str | int) -> bool:
+    """Проверка dataframe на наличие данных
+
+    :param dataframe:
+    :param hse_user_id: id пользователя
+    :return:
+    """
+    if dataframe is None:
+        text_violations: str = 'не удалось получить данные!'
+        logger.error(f'{hse_user_id = } {text_violations}')
+        return False
+
+    if dataframe.empty:
+        logger.error(f'{hse_user_id = } {Messages.Error.dataframe_is_empty}')
+        return False
+
+    return True

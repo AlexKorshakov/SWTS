@@ -1,15 +1,15 @@
 import os
 
 from apps.core.utils.json_worker.read_json_file import read_json_file
-from apps.core.utils.secondary_functions.get_filepath import (
-    get_bot_data_path, get_file_path)
+from apps.core.utils.secondary_functions.get_filepath import (get_bot_data_path,
+                                                              get_file_path)
 
 
 async def get_files(main_path: str, endswith: str = ".json") -> list:
     """Получение списка файлов c расширением endswith из main_path
 
-    :type main_path: str
-    :param main_path: директория для поиска файлов
+    :type directory: str
+    :param directory: директория для поиска файлов
     :type endswith: str
     :param endswith: расширение файлов для обработки и формирования списка
     """

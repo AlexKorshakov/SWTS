@@ -136,8 +136,8 @@ STATIC_URL = "/static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # BASE_DIR = \\application\\config\\web
-MEDIA_ROOT = os.path.join(BASE_DIR.parent.parent, 'media')
-MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR.parent.parent, '!media')
+MEDIA_URL = '/!media/'
 
 INTERNAL_IPS = [
     "127.0.0.1",
@@ -271,7 +271,6 @@ STATICFILES_FINDERS = (
 )
 
 if __name__ == '__main__':
-    from pathlib import Path
 
     BASE_DIR = Path(__file__).resolve().parent  # BASE_DIR = \\application\\config\\web
     print(f'{BASE_DIR =}')

@@ -1,5 +1,8 @@
 import asyncio
 
+from pandas import DataFrame
+
+from apps.MyBot import bot_send_message
 from apps.core.bot.messages.messages import Messages
 from apps.core.database.db_utils import (db_get_max_max_number,
                                          db_set_act_value,
@@ -22,10 +25,8 @@ from apps.core.utils.generate_report.sheet_formatting.sheet_formatting import \
 from apps.core.utils.img_processor.insert_img import insert_images_to_sheet
 from apps.core.utils.reports_processor.report_worker_utils import \
     get_clean_headers
-from apps.MyBot import bot_send_message
-from config.web.settings import MEDIA_ROOT
+from config.config import Udocan_media_path
 from loader import logger
-from pandas import DataFrame
 
 
 async def create_report_from_other_method(chat_id, full_report_path=None,

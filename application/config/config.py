@@ -8,10 +8,11 @@ from environs import Env, EnvError
 env = Env()
 env.read_env()
 
-BASE_DIR = Path(__file__).resolve().parent
-load_dotenv(BASE_DIR / "config" / ".env")
+# BASE_DIR = Path(__file__).resolve().parent
+load_dotenv(Path(__file__).resolve().parent / "config" / ".env")
 
 from loader import logger
+
 logger.info('start config load')
 
 try:

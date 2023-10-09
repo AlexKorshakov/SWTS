@@ -13,16 +13,16 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command, Text
 from aiogram.types import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
-from apps.core.bot.data import board_config
-from apps.core.bot.data.category import get_data_list
+# from apps.core.bot.data.board_config import board_config
+from apps.core.bot.callbacks.sequential_action.category import get_data_list
 from apps.core.bot.filters.custom_filters import is_private
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import \
     build_inlinekeyboard
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.reports.report_data import user_data
 from apps.core.bot.states import RegisterState
-from apps.core.utils.data_recording_processor.set_user_registration_data import \
-    registration_data
+# from apps.core.utils.data_recording_processor.set_user_registration_data import \
+#     registration_data
 from apps.core.utils.misc import rate_limit
 from apps.MyBot import MyBot, bot_send_message
 

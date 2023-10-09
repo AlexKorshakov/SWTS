@@ -3,7 +3,7 @@ from loader import logger
 logger.debug(f"{__name__} start import")
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from apps.core.bot.data.category import ADMIN_MENU_LIST
+from apps.core.bot.callbacks.sequential_action.category import ADMIN_MENU_LIST
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import \
     build_inlinekeyboard
 

@@ -2,7 +2,7 @@ import asyncio
 
 #
 # # Create your views here.
-from apps.core.database.DataBase import upload_from_local
+from apps.core.database.ViolationsDataBase import upload_from_local
 from apps.core.web.utils import (MyMixin, delete_violations_from_all_repo,
                                  get_id_registered_users, get_params,
                                  update_violations_from_all_repo)

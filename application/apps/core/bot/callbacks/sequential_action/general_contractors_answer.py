@@ -1,17 +1,15 @@
+from apps.core.bot.callbacks.sequential_action.data_answer import get_and_send_general_contractors_data
+from apps.core.bot.reports.report_data_preparation import set_violation_atr_data
 from loader import logger
 
 logger.debug(f"{__name__} start import")
 from aiogram import types
-from apps.core.bot.data import board_config
-from apps.core.bot.data.category import get_data_list
-from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import (
-    add_previous_paragraph_button, build_inlinekeyboard)
-from apps.core.bot.messages.messages import Messages
-from apps.core.bot.reports.report_data import violation_data
+from apps.core.bot.callbacks.sequential_action.category import get_data_list
+from aiogram.dispatcher import FSMContext
+from apps.core.bot.reports.report_data import ViolationData
 from apps.core.database.db_utils import db_get_full_title
 from apps.core.database.transformation_category import CATEGORY_ID_TRANSFORM
-from apps.core.utils.json_worker.writer_json_file import write_json_file
-from apps.MyBot import MyBot, bot_send_message
+from apps.MyBot import MyBot
 
 logger.debug(f"{__name__} finish import")
 

@@ -5,8 +5,8 @@ from loader import logger
 logger.debug(f"{__name__} start import")
 
 from apps.core.bot.messages.messages import Messages
-from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.set_user_report_data_on_google_drive import \
-    set_user_report_data_on_google_drive
+# from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.set_user_report_data_on_google_drive import \
+#     set_user_report_data_on_google_drive
 from apps.MyBot import bot_send_message
 from config.config import WRITE_DATA_ON_GOOGLE_DRIVE
 
@@ -39,8 +39,8 @@ async def set_user_report_data(chat_id: int, full_report_path: str):
         logger.info(f'{WRITE_DATA_ON_GOOGLE_DRIVE = } abort upload / download from Google Drive')
         return False
 
-    if await set_user_report_data_on_google_drive(chat_id=chat_id, full_report_path=full_report_path):
-        logger.info(Messages.Successfully.save_data_on_g_drive)
+    # if await set_user_report_data_on_google_drive(chat_id=chat_id, full_report_path=full_report_path):
+    #     logger.info(Messages.Successfully.save_data_on_g_drive)
 
 
 async def set_act_data_on_google_drive(chat_id: int, full_report_path: str):
@@ -59,8 +59,8 @@ async def set_act_data_on_google_drive(chat_id: int, full_report_path: str):
         logger.info(Messages.Error.fill_report_path_not_found)
         return
 
-    if await set_user_report_data_on_google_drive(chat_id=chat_id, full_report_path=full_report_path):
-        logger.info(Messages.Successfully.save_data_on_g_drive)
+    # if await set_user_report_data_on_google_drive(chat_id=chat_id, full_report_path=full_report_path):
+    #     logger.info(Messages.Successfully.save_data_on_g_drive)
 
 
 async def set_act_data_on_data_in_registry(

@@ -5,7 +5,6 @@ import math
 from datetime import datetime
 from itertools import chain
 
-import pandas
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from pandas import DataFrame, Timestamp
@@ -77,7 +76,12 @@ async def text_processor_for_text_query(hse_user_id: str | int, table_dataframe:
 
 
 async def prepare_text(hse_user_id: str | int, data: list) -> str:
-    """"""
+    """
+
+    :param hse_user_id:
+    :param data:
+    :return:
+    """
     text: str = ''
     if not isinstance(data, list):
         return ''
@@ -112,23 +116,6 @@ async def processor_search_if_int(table_dataframe: DataFrame, text_too_search: i
         df_headers: list = list(df_res.columns)[12:]
         items_text_list: list = await get_list_text(df_res, df_headers, col_item)
 
-        # items_text_list = []
-        #
-        # for _, row in df_res.iterrows():
-        #     department = row.get("Подразделение полностью", " - ")
-        #     job_title = row.get("Должность", " - ")
-        #     employee = row.get("Сотрудник", " - ")
-        #     personnel_number = row.get("Табельный номер", " - ")
-        #     e_mail = row.get("Почта", " - ")
-        #     phone_number = row.get("Тел", " - ")
-        #     supervisor = row.get("Руководитель", " - ")
-        #
-        #     item_info: str = f'{department}\n\n{job_title} {employee} \n\nтаб.ном {personnel_number}\n' \
-        #                      f'e-mail {e_mail}\nтел {phone_number}\n\nРуководитель\n{supervisor}'
-        #
-        #     items_text_list.append(
-        #         {col_item: item_info}
-        #     )
         if items_text_list:
             items_text_list_list.append(items_text_list)
 
@@ -154,32 +141,6 @@ async def processor_search_if_str(table_dataframe: DataFrame, text_too_search: s
         df_headers: list = list(df_res.columns)[12:]
         items_text_list: list = await get_list_text(df_res, df_headers, col_item)
 
-        # items_text_list = []
-        # for _, row in df_res.iterrows():
-        #     department = row.get("Подразделение полностью", " - ")
-        #     job_title = row.get("Должность", " - ")
-        #     employee = row.get("Сотрудник", " - ")
-        #     personnel_number = row.get("Табельный номер", " - ")
-        #     e_mail = row.get("Почта", " - ")
-        #     phone_number = row.get("Тел", " - ")
-        #     supervisor = row.get("Руководитель", " - ")
-        #
-        #     headers_list_str: list = []
-        #     # if admin:
-        #     for i in df_headers:
-        #         i_char = row.get(i) if row.get(i) else None
-        #         if i_char: headers_list_str.append(i_char)
-        #
-        #     headers_str = ', '.join(headers_list_str)
-        #
-        #     item_info: str = f'{department}\n\n{job_title} {employee} \n\nтаб.ном {personnel_number}\n' \
-        #                      f'e-mail {e_mail}\nтел {phone_number}\n\nРуководитель\n{supervisor}'
-        #     if headers_str:
-        #         item_info = f'{item_info}\n\n {headers_str}'
-        #
-        #     items_text_list.append(
-        #         {col_item: item_info}
-        #     )
         if items_text_list:
             items_text_list_list.append(items_text_list)
 
@@ -187,7 +148,13 @@ async def processor_search_if_str(table_dataframe: DataFrame, text_too_search: s
 
 
 async def get_list_text(df_res, df_headers, col_item) -> list:
-    """"""
+    """
+
+    :param df_res:
+    :param df_headers:
+    :param col_item:
+    :return:
+    """
     items_text_list = []
     for _, row in df_res.iterrows():
         department = row.get("Подразделение полностью", " - ")

@@ -6,7 +6,7 @@
 # from aiogram.dispatcher.filters import Text
 # from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup,
 #                            ReplyKeyboardRemove)
-# from apps.core.bot.data import board_config
+# from apps.core.bot.data.board_config import board_config
 # from apps.core.bot.filters.custom_filters import is_private
 # from apps.core.bot.messages.messages import Messages
 # from apps.core.bot.states import DataUserState

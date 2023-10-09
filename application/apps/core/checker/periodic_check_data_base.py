@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 from apps.core.bot.messages.messages import LogMessage
 from apps.core.settyngs import get_sett
-from config.config import DATA_BASE_DIR
+from config.config import Udocan_main_data_base_dir
 from apps.core.database.query_constructor import QueryConstructor
 from loader import logger
 
@@ -15,7 +15,7 @@ class DataBaseForCheck:
     """
 
     def __init__(self):
-        self.db_file: str = DATA_BASE_DIR
+        self.db_file: str = Udocan_main_data_base_dir
         self.connection = sqlite3.connect(self.db_file)
         self.cursor = self.connection.cursor()
 

@@ -93,7 +93,10 @@ class Messages:
         answer: str = "Выберите действие"
 
     class Choose:
+        file_for_download:str = 'Выберите файл для скачивания'
         choose_value: str = 'Выберите значение'
+
+        folders_value: str = "Выберите информацию для отображения"
 
         main_location: str = "Выберите основную локацию"
         main_category: str = "Выберите основную категорию"

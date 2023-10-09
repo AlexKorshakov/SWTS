@@ -10,8 +10,5 @@ from .CorrectViolationsState import CorrectViolationsState
 from .DataUserState import DataUserState
 from .CatalogState import CatalogState
 from .PersonalIdHunting import PersonalIdHuntingState
-from . import description
-from . import comment
-from . import location
 
 logger.debug(f"{__name__} finish import")

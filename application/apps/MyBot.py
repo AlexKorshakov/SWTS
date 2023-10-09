@@ -78,7 +78,7 @@ class MyBot:
 
     @staticmethod
     async def on_startup(dp: Dispatcher):
-        logger.info(f"{dp.bot._me.first_name} Установка обработчиков...")
+        logger.info(f"{dp.bot._me.first_name} started Установка обработчиков...")
         print(f"{dp.bot._me.first_name} Установка обработчиков...")
         try:
             import apps.core.bot.filters
@@ -130,6 +130,7 @@ class MyBot:
 
     @staticmethod
     async def on_shutdown(dp: Dispatcher):
+        logger.warning('Bye! Shutting down connection')
         logger.warning(f'{dp.bot._me.first_name} Bye! Shutting down connection')
         await dp.storage.close()
         await dp.storage.wait_closed()

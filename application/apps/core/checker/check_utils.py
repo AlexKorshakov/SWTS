@@ -9,7 +9,7 @@ import traceback
 
 from apps.core.bot.messages.messages import LogMessage
 from apps.core.database.query_constructor import QueryConstructor
-from config.config import DATA_BASE_DIR
+from config.config import Udocan_main_data_base_dir
 
 logger.debug(f"{__name__} finish import")
 
@@ -19,7 +19,7 @@ class DataBaseForCheck:
     """
 
     def __init__(self):
-        self.db_file: str = DATA_BASE_DIR
+        self.db_file: str = Udocan_main_data_base_dir
         self.connection = sqlite3.connect(self.db_file)
         self.cursor = self.connection.cursor()
 

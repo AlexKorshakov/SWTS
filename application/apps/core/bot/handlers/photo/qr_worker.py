@@ -134,9 +134,10 @@ async def text_processor_items(user_violations_df: DataFrame, hse_user_id: str |
 
     """
     unique_items_ids: list = user_violations_df.id.unique().tolist()
+    if not unique_items_ids:
+        return ''
 
     items_description: list = []
-
     for item_id in unique_items_ids:
 
         item_violations_dataframe = user_violations_df.copy(deep=True)
@@ -198,7 +199,8 @@ async def text_processor_items(user_violations_df: DataFrame, hse_user_id: str |
     return items_text
 
 
-async def create_lite_dataframe_from_query(query: str, table_name: str, hse_user_id: str | int= None) -> DataFrame or None:
+async def create_lite_dataframe_from_query(query: str, table_name: str,
+                                           hse_user_id: str | int = None) -> DataFrame or None:
     """Возвращает list с нарушениями
 
     :return: DataFrame or None
@@ -275,34 +277,6 @@ async def qr_code_reader(hse_user_id, image) -> list:
 
     return all_data
 
-    #     img = cv2.rectangle(img, (d.rect.left, d.rect.top),
-    #                         (d.rect.left + d.rect.width, d.rect.top + d.rect.height), (255, 0, 0), 2)
-    #     img = cv2.polylines(img, [np.array(d.polygon)], True, (0, 255, 0), 2)
-    #     img = cv2.putText(img, d.data.decode(), (d.rect.left, d.rect.top + d.rect.height),
-    #                       cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 1, cv2.LINE_AA)
-    #
-    # cv2.imwrite('data/dst/barcode_qrcode_opencv.jpg', img)
-    #
-    # detector = cv2.QRCodeDetector()
-    #
-    # # detect and decode
-    #
-    # data, bbox, straight_qrcode = detector.detectAndDecode(image)
-    #
-    # # if there is a QR code
-    # if bbox is not None:
-    #     # print(f"QRCode data: {data}")
-    #     # display the image with lines
-    #     # length of bounding box
-    #     # n_lines = len(bbox)
-    #     # for i in range(n_lines):
-    #     #     # draw all lines
-    #     #     point1 = tuple(bbox[i][0])
-    #     #     point2 = tuple(bbox[(i + 1) % n_lines][0])
-    #     #     cv2.line(img, point1, point2, color=(255, 0, 0), thickness=2)
-    #
-    #     return data
-
 
 async def check_dataframe(dataframe: DataFrame, hse_user_id: str | int) -> bool:
     """Проверка dataframe на наличие данных
@@ -314,7 +288,6 @@ async def check_dataframe(dataframe: DataFrame, hse_user_id: str | int) -> bool:
     if dataframe is None:
         text_violations: str = 'не удалось получить данные!'
         logger.error(f'{hse_user_id = } {text_violations}')
-        # await bot_send_message(chat_id=hse_user_id, text=text_violations)
         return False
 
     if dataframe.empty:
@@ -323,28 +296,3 @@ async def check_dataframe(dataframe: DataFrame, hse_user_id: str | int) -> bool:
 
     return True
 
-
-def display_data(img):
-    """display the result
-
-    """
-    cv2.imshow("img", img)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
-
-def files(path):
-    for file in os.listdir(path):
-        if os.path.isfile(os.path.join(path, file)):
-            yield file
-
-#
-# if __name__ == '__main__':
-#
-#     file_path = 'C:\\Users\\DeusEx\\Desktop\\WhatsApp\\'
-#     hse_user_id =
-#
-#     for file in files(file_path):
-#         img = read_qr_code_image(file_path + file)
-#         data = qr_code_reader(hse_user_id, img)
-#         print("file: ", file, "data ", data)

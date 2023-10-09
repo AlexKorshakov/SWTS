@@ -1,17 +1,18 @@
-import math
-import traceback
-
 from loader import logger
 
 logger.debug(f"{__name__} start import")
+import math
+import traceback
+
+from aiogram.dispatcher import FSMContext
+from aiogram import types
 from apps.core.database.query_constructor import QueryConstructor
 from apps.core.bot.data import board_config
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard
 from apps.core.bot.messages.messages import Messages
 from apps.core.database.db_utils import db_get_data_list_no_async
-from aiogram import types
-from apps.core.bot.data.category import _PREFIX_ND, _PREFIX_POZ, get_data_with_hashtags
-from apps.core.bot.reports.report_data import violation_data
+from apps.core.bot.callbacks.sequential_action.category import _PREFIX_ND, _PREFIX_POZ, get_data_with_hashtags
+from apps.core.bot.reports.report_data import  ViolationData
 from apps.MyBot import MyBot, bot_send_message
 
 logger.debug(f"{__name__} finish import")
@@ -36,7 +37,7 @@ async def normative_documents_answer_with_hashtags(call: types.CallbackQuery, us
             }
         }
         query: str = await QueryConstructor(table_name='core_normativedocuments', **kwargs).prepare_data()
-        # logger.info(f'{__name__} {say_fanc_name()} {query}')
+        # logger.info(f'{__name__} {fanc_name()} {query}')
         datas_query: list = db_get_data_list_no_async(query=query)
 
         previous_level = 'category'
@@ -131,12 +132,12 @@ def say_fanc_name():
 
 
 if __name__ == '__main__':
-    
+
     stack = traceback.extract_stack()
     str(stack[-2][2])
 
     var = traceback.extract_stack()[-2][2]
-    
+
     db_table_name = 'core_normativedocuments'
     hashtag_test = '#Огнетушители'
     query_test: str = f"SELECT * FROM {db_table_name} WHERE `category_id` == {16} AND `hashtags` LIKE '%{hashtag_test}%'"

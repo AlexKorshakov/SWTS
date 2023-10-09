@@ -16,7 +16,8 @@ async def qr_act_nom_processing(hse_user_id, data):
 
     if not answer_text:
         answer_text: str = await msg(
-            hse_user_id, cat='warning', msge='qr_not_found', default="QR-код, не распознан или отсутствует").g_mas()
+            hse_user_id, cat='warning', msge='qr_not_found', default="QR-код, не распознан или отсутствует"
+        ).g_mas()
         await bot_send_message(chat_id=hse_user_id, text=answer_text)
 
     for item_txt in await text_processor(text=answer_text):

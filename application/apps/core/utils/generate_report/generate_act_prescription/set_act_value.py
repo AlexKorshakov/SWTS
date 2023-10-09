@@ -46,7 +46,7 @@ async def get_act_headlines_data_values(chat_id, dataframe=None, act_date=None, 
         },
     }
     query: str = await QueryConstructor(None, 'core_hseuser', **query_kwargs).prepare_data()
-    # print(f'{__name__} {say_fanc_name()} {query}')
+    # print(f'{__name__} {fanc_name()} {query}')
 
     hse_user: dict = await db_get_data_dict_from_table_with_id(
         table_name='core_hseuser',

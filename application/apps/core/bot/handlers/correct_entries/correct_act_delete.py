@@ -15,7 +15,7 @@ from apps.core.database.db_utils import db_del_item_from_table
 from apps.core.database.query_constructor import QueryConstructor
 from apps.core.utils.generate_report.generate_act_prescription.create_and_send_act_prescription import \
     get_full_act_prescription_path
-from apps.core.utils.secondary_functions.get_filepath import BOT_MEDIA_PATH
+from apps.core.utils.secondary_functions.get_filepath import Udocan_media_path
 from loader import logger
 
 
@@ -283,7 +283,7 @@ async def del_act_json(*, hse_user_id: int | str, id_numbers: int | str,
     item_df = item_dataframe.loc[item_dataframe['id'] == int(id_numbers)]
 
     try:
-        json_full_name: str = f"{BOT_MEDIA_PATH}{item_df['json'].values[0]}"
+        json_full_name: str = f"{Udocan_media_path}{item_df['json'].values[0]}"
     except IndexError as err:
         logger.error(f'{hse_user_id = } Не удалось получить данные записи {id_numbers} {repr(err)}')
         return False
@@ -307,7 +307,7 @@ async def del_act_photo(*, hse_user_id: int | str, id_numbers: int | str,
         logger.error(f'{hse_user_id = } Не удалось получить данные записи {id_numbers} {repr(err)}')
         return False
 
-    photo_full_name: str = f"{BOT_MEDIA_PATH}{item_df['photo'].values[0]}"
+    photo_full_name: str = f"{Udocan_media_path}{item_df['photo'].values[0]}"
     del_file_photo_result: bool = await del_file(path=photo_full_name)
     if not del_file_photo_result:
         logger.error(f'{hse_user_id = } Не удалось удалить запись {id_numbers} в формате .jpeg с сервера ')

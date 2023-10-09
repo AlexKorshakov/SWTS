@@ -1,4 +1,4 @@
-from apps.MyBot import bot_send_message
+from __future__ import annotations
 from loader import logger
 
 logger.debug(f"{__name__} start import")
@@ -24,11 +24,16 @@ async def get_keyboard_fab() -> InlineKeyboardMarkup:
     return keyboard
 
 
-async def select_start_category(message: types.Message) -> None:
-    """Действия при начале регистрации нарушения / начале работы бота
-    """
+    markup.add(
+        types.InlineKeyboardButton(
+            text="Зарегистрировать",
+            callback_data=cb_start.new(action="select_start_registration")
+        )
+    )
+    markup.add(
+        types.InlineKeyboardButton(
+            text="Отмена",
+            callback_data=cb_start.new(action="select_abort_registration"))
+    )
 
-    chat_id = message.chat.id
-    markup = await get_keyboard_fab()
-
-    await bot_send_message(chat_id=chat_id, text="Зарегистрировать нарушение?", reply_markup=markup)
+    return markup

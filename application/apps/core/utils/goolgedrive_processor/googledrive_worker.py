@@ -2,24 +2,34 @@ import asyncio
 from pprint import pprint
 
 from aiogram import types
-from apps.core.bot.reports.report_data_preparation import \
-    set_violation_atr_data
-from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.find_folder import \
-    find_folder_with_name_on_google_drive
-from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.folders_creator import \
-    create_directory_on_google_drive
+
+from aiogram.dispatcher import FSMContext
+# from apps.core.bot.reports.report_data import violation_data
+from apps.core.bot.reports.report_data_preparation import set_violation_atr_data
 from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import (
-    drive_account_auth_with_oauth2client, drive_account_credentials, move_file)
-from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.set_permissions import \
-    gaining_access_drive
+    drive_account_auth_with_oauth2client,
+    drive_account_credentials,
+    move_file)
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.find_folder import find_folder_with_name_on_google_drive
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.folders_creator import create_directory_on_google_drive
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.set_permissions import gaining_access_drive
 from config.config import ROOT_REPORT_FOLDER_NAME
 from loader import logger
+
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import (
+    drive_account_auth_with_oauth2client,
+    drive_account_credentials)
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.get_folder_id import (get_root_folder_id,
+                                                                                  get_user_folder_id)
 
 WORK_ON_HEROKU: bool = False
 WORK_ON_PC: bool = True
 
+ROOT_REPORT_FOLDER_NAME: str = "MosIng_HSE_repots"
+ROOT_REPORT_FOLDER_ID: str = '1n4M_LHDG_QQ4EFuDYxQLe_MaK-k3wv96'
 
-async def write_data_on_google_drive(message: types.Message):
+
+async def write_data_on_google_drive(message: types.Message, state: FSMContext):
     """Сохранение данных в облако Google Drive
     """
 
@@ -42,16 +52,13 @@ async def write_data_on_google_drive(message: types.Message):
                                          root_folder_name=str(chat_id),
                                          parent_id=root_folder_id)
 
-    await set_violation_atr_data("folder_id", folder_id)
+    # violation_data["folder_id"] = folder_id
+    await set_violation_atr_data("folder_id", folder_id, state=state)
 
     top = drive_service.files().get(fileId=folder_id).execute()
     await asyncio.sleep(2)
     stack = [((top['name'],), [top])]
     pprint(stack)
-
-
-if __name__ == "__main__":
-    asyncio.run(write_data_on_google_drive("message"))
 
 
 async def get_report_folder_id(drive_service, report_folder_name: str, parent_id=None, root_report_folder_id=None):
@@ -198,3 +205,7 @@ async def get_user_folder_id(drive_service, root_folder_name: str, parent_id):
     logger.debug(f"**Find  https://drive.google.com/drive/folders/{user_folder_id} in Google Drive.**")
 
     return user_folder_id
+
+
+if __name__ == "__main__":
+    asyncio.run(write_data_on_google_drive("message"))

@@ -67,7 +67,7 @@ async def check_acts_prescriptions_status(*args) -> bool:
 
     unique_hse_user_ids: list = violations_dataframe.user_id.unique().tolist()
     logger.debug(
-        # f'{__name__} {await say_fanc_name()} {unique_hse_user_ids = }'
+        # f'{__name__} {await fanc_name()} {unique_hse_user_ids = }'
         f'{unique_hse_user_ids = }'
     )
 

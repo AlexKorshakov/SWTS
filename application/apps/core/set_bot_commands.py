@@ -12,7 +12,7 @@ async def set_default_commands(dp: Dispatcher):
             types.BotCommand(command="/cancel", description="Отмена всех действий"),
             types.BotCommand(command="/generate", description="Формирование документов"),
             types.BotCommand(command="/correct_entries", description="Изменение данных"),
-            types.BotCommand(command="/catalog_func", description="Справочник"),
+            types.BotCommand(command="/catalog", description="Справочник"),
             types.BotCommand(command="/bagration", description="Багратион"),
             types.BotCommand(command="/add_entries", description="Добавление данных"),
             types.BotCommand(command="/admin_func", description="Админка"),

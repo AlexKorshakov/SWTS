@@ -5,8 +5,8 @@ from aiogram import types
 from aiogram.types import ReplyKeyboardRemove
 from apps.core.bot.messages.messages import Messages
 from apps.core.database.entry_in_db import write_data_in_database
-from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.set_user_registration_data_on_google_drave import \
-    write_user_registration_data_on_google_drive
+# from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.set_user_registration_data_on_google_drave import \
+#     write_user_registration_data_on_google_drive
 from apps.core.utils.json_worker.writer_json_file import write_user_registration_data_on_json_on_local_storage
 from apps.core.utils.secondary_functions.get_filepath import preparation_registration_paths_on_pc
 from apps.MyBot import bot_send_message
@@ -46,9 +46,9 @@ async def set_user_registration_data(*, chat_id, user_data):
     if await write_user_registration_data_on_json_on_local_storage(user_data=user_data):
         logger.info(f"Данные сохранены в local storage в файл {user_data['reg_user_file']}")
 
-    if await write_data_in_database(violation_data=user_data):
+    if await write_data_in_database(violation_data_to_db=user_data):
         logger.info(f"Данные сохранены в database в файл {user_data['reg_user_file']}")
 
-    if await write_user_registration_data_on_google_drive(chat_id=chat_id, user_data=user_data):
-        logger.info(f"Данные сохранены в Google Drive в файл {user_data['reg_user_file']} \n"
-                    f"https://drive.google.com/drive/folders/{user_data['parent_id']}")
+    # if await write_user_registration_data_on_google_drive(chat_id=chat_id, user_data=user_data):
+    #     logger.info(f"Данные сохранены в Google Drive в файл {user_data['reg_user_file']} \n"
+    #                 f"https://drive.google.com/drive/folders/{user_data['parent_id']}")

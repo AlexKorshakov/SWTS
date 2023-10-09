@@ -9,7 +9,7 @@ import traceback
 from pandas import DataFrame
 from sqlite3 import OperationalError
 
-from apps.core.database.DataBase import DataBase
+from apps.core.database.ViolationsDataBase import ViolationsDataBase
 from apps.core.database.query_constructor import QueryConstructor
 
 logger.debug(f"{__name__} finish import")
@@ -21,7 +21,7 @@ async def db_check_record_existence(file_id: int) -> bool:
     :type file_id: int - id записи
     :return: bool is_exists
     """
-    is_exists: bool = DataBase().violation_exists(file_id=file_id)
+    is_exists: bool = ViolationsDataBase().violation_exists(file_id=file_id)
     if is_exists:
         return True
 
@@ -34,7 +34,7 @@ async def db_add_violation(violation_data: dict) -> bool:
     :param violation_data: dict -  dict с данными для записи в БД
     :return: bool violation_exists
     """
-    is_added: bool = DataBase().add_violation(violation=violation_data)
+    is_added: bool = ViolationsDataBase().add_violation(violation_dict=violation_data)
     if is_added:
         return True
 
@@ -47,7 +47,7 @@ async def db_get_data_dict_from_table_with_id(table_name: str, post_id: int, que
     :return: dict - dict с данными
     """
 
-    data_exists: dict = DataBase().get_dict_data_from_table_from_id(
+    data_exists: dict = ViolationsDataBase().get_dict_data_from_table_from_id(
         table_name=table_name,
         id=post_id,
         query=query
@@ -110,7 +110,7 @@ async def db_del_violations(violation: dict) -> list:
     """
 
     file_id = violation['file_id']
-    result = DataBase().delete_single_violation(file_id=file_id)
+    result = ViolationsDataBase().delete_single_violation(file_id=file_id)
     return result
 
 
@@ -123,7 +123,7 @@ async def db_del_item_from_table(*, table_name: str, table_column_name: str, fil
     :return: list
     """
 
-    result = DataBase().delete_item_from_table(
+    result = ViolationsDataBase().delete_item_from_table(
         table_name=table_name,
         table_column_name=table_column_name,
         file_id=file_id
@@ -139,7 +139,7 @@ async def db_get_all_tables_names() -> list:
 
     :return:
     """
-    result = DataBase().get_all_tables_names()
+    result = ViolationsDataBase().get_all_tables_names()
     clean_result: list = [item[0] for item in result]
     return clean_result
 
@@ -149,7 +149,7 @@ async def db_get_data_list(query: str) -> list:
 
     :return: list
     """
-    datas_query: list = DataBase().get_data_list(query=query)
+    datas_query: list = ViolationsDataBase().get_data_list(query=query)
     return datas_query
 
 
@@ -159,7 +159,7 @@ async def db_get_single_violation(file_id: str) -> list:
     :return: list
     """
 
-    violation_list: list = DataBase().get_single_violation(file_id=file_id)
+    violation_list: list = ViolationsDataBase().get_single_violation(file_id=file_id)
     return violation_list
 
 
@@ -169,7 +169,7 @@ async def db_get_table_headers(table_name: str = None) -> list:
     :return:
     """
 
-    table_headers: list = DataBase().get_table_headers(table_name)
+    table_headers: list = ViolationsDataBase().get_table_headers(table_name)
     return table_headers
 
 
@@ -179,7 +179,7 @@ async def db_get_id_violation(file_id) -> int:
     :return: int
     """
 
-    vi_id: int = DataBase().get_id_violation(file_id=file_id)
+    vi_id: int = ViolationsDataBase().get_id_violation(file_id=file_id)
     return vi_id
 
 
@@ -192,7 +192,7 @@ async def db_get_id(table, entry, file_id, name) -> int:
     :param table: str - имя таблицы
     :return: int
     """
-    value: int = DataBase().get_id(
+    value: int = ViolationsDataBase().get_id(
         table=table,
         entry=entry,
         file_id=file_id,
@@ -207,7 +207,7 @@ async def db_update_hse_user_language(*, value: str, hse_id: str) -> bool:
     :return:
     """
 
-    result: bool = DataBase().update_hse_user_language(
+    result: bool = ViolationsDataBase().update_hse_user_language(
         value=str(value), hse_id=str(hse_id)
     )
     if result:
@@ -221,7 +221,7 @@ async def db_update_column_value(column_name: str, value: None | int | str, viol
     :return:
     """
 
-    result: bool = DataBase().update_column_value(
+    result: bool = ViolationsDataBase().update_column_value(
         column_name=column_name,
         value=value,
         id=str(violation_id)
@@ -246,7 +246,7 @@ async def db_update_table_column_value(*, table_name: str, table_column_name_for
     query: str = f"UPDATE {table_name} SET {table_column_name_for_update} = ? WHERE {table_column_name} = ?"
     logger.debug(f'{table_name = } {table_column_name = } {item_name = } {item_value = }')
 
-    result: bool = DataBase().update_table_column_value(
+    result: bool = ViolationsDataBase().update_table_column_value(
         query=query,
         item_name=item_name,
         item_value=str(item_value)
@@ -256,12 +256,12 @@ async def db_update_table_column_value(*, table_name: str, table_column_name_for
     return False
 
 
-async def db_get_full_title(table_name: str, short_title: str) -> list:
+async def db_get_full_title(table_name: str, short_title: str) -> str:
     """
 
     :return:
     """
-    full_title = DataBase().get_full_title(table_name=table_name, short_title=short_title)
+    full_title:str = ViolationsDataBase().get_full_title(table_name=table_name, short_title=short_title)
     return full_title
 
 
@@ -270,7 +270,7 @@ async def db_get_max_max_number() -> int:
 
     :return: int act_num: номер акта - предписания
     """
-    act_num: int = DataBase().get_max_max_number()
+    act_num: int = ViolationsDataBase().get_max_max_number()
     return act_num
 
 
@@ -279,9 +279,9 @@ async def db_set_act_value(act_data_dict: DataFrame, act_number: int, act_date: 
 
     :return:
     """
-    act_is_created: bool = DataBase().set_act_value(act_data_dict=act_data_dict,
-                                                    act_number=act_number,
-                                                    act_date=act_date)
+    act_is_created: bool = ViolationsDataBase().set_act_value(act_data_dict=act_data_dict,
+                                                              act_number=act_number,
+                                                              act_date=act_date)
     return act_is_created
 
 
@@ -300,7 +300,7 @@ async def db_get_username(user_id: int) -> str:
         },
     }
     query: str = await QueryConstructor(None, 'core_hseuser', **query_kwargs).prepare_data()
-    datas_query: list = DataBase().get_data_list(query=query)
+    datas_query: list = ViolationsDataBase().get_data_list(query=query)
     username = datas_query[0][4]
 
     return username
@@ -326,7 +326,7 @@ async def db_get_dict_userdata(user_id: int) -> dict:
     }
     query: str = await QueryConstructor(None, 'core_hseuser', **query_kwargs).prepare_data()
 
-    datas_query: list = DataBase().get_data_list(query=query)
+    datas_query: list = ViolationsDataBase().get_data_list(query=query)
     try:
         clean_values: list = datas_query[0]
     except IndexError:
@@ -356,10 +356,10 @@ async def db_get_period_for_current_week(current_week: str, current_year: str = 
 
     logger.debug(f'{__name__} {say_fanc_name()} {query}')
 
-    datas_query: list = DataBase().get_data_list(query=query)
+    datas_query: list = ViolationsDataBase().get_data_list(query=query)
     period_data = datas_query[0]
 
-    table_headers: list = DataBase().get_table_headers('core_week')
+    table_headers: list = ViolationsDataBase().get_table_headers('core_week')
     headers = [row[1] for row in table_headers]
     period_dict = dict(zip(headers, period_data))
     return [
@@ -402,7 +402,7 @@ def db_get_data_list_no_async(query: str) -> list:
     :return: list
     """
     try:
-        datas_query: list = DataBase().get_data_list(query=query)
+        datas_query: list = ViolationsDataBase().get_data_list(query=query)
     except OperationalError as err:
         logger.error(f'{repr(err)} {query = }')
         return []
@@ -415,7 +415,7 @@ def db_get_table_headers_no_async(db_table_name: str) -> list:
     :return:
     """
 
-    result_list: list = DataBase().get_table_headers(table_name=db_table_name)
+    result_list: list = ViolationsDataBase().get_table_headers(table_name=db_table_name)
     return result_list
 
 
@@ -425,7 +425,7 @@ def db_get_id_no_async(table, entry, file_id: str = None, name=None) -> int:
     :return: int
     """
 
-    value: int = DataBase().get_id(
+    value: int = ViolationsDataBase().get_id(
         table=table,
         entry=entry,
         file_id=file_id,

@@ -9,14 +9,14 @@ from aiogram import types
 from pandas import DataFrame
 
 from apps.MyBot import bot_send_message, MyBot, bot_send_photo
-from apps.core.bot.data import board_config
+# from apps.core.bot.data.board_config import board_config
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard, posts_cb
 from apps.core.bot.messages.messages import LogMessage, Messages
 from apps.core.bot.messages.messages_test import msg
 from apps.core.database.db_utils import db_get_table_headers, db_get_data_list, db_get_data_dict_from_table_with_id
 from apps.core.database.query_constructor import QueryConstructor
 from apps.core.settyngs import get_sett
-from apps.core.utils.secondary_functions.get_filepath import BOT_MEDIA_PATH
+from apps.core.utils.secondary_functions.get_filepath import Udocan_media_path
 from config.config import REPORT_NAME, SEPARATOR
 from loader import logger
 
@@ -730,7 +730,7 @@ async def call_sub_con_get_photo(call: types.CallbackQuery, callback_data: dict[
     hse_id = violations_dataframe.user_id.values[0]
 
     name = f'{REPORT_NAME}{file_id}.jpg'
-    full_photo_path = f"{BOT_MEDIA_PATH}{hse_id}\\data_file\\{date}\\photo\\{name}"
+    full_photo_path = f"{Udocan_media_path}{hse_id}\\data_file\\{date}\\photo\\{name}"
 
     try:
         with open(full_photo_path, 'rb') as photo:

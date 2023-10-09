@@ -318,8 +318,7 @@ async def check_employee_id(item_id) -> list:
         datas_list: list = await DataBaseEmployeeID().db_get_data_list(table_name=table_name, query=query)
 
     except sqlite3.OperationalError as err:
-        # message = ''
-        # logger.error(f'The "{message}" {table_name = } is missing from the database! err: {repr(err)}')
+        logger.error(f'{table_name = } is missing from the database! err: {repr(err)}')
         return []
 
     if not datas_list:
@@ -354,8 +353,7 @@ async def check_employee_id_from_db(item_id) -> list:
         datas_list: list = await DataBaseEmployeeID().db_get_data_list(table_name=table_name, query=query)
 
     except sqlite3.OperationalError as err:
-        # message = ''
-        # logger.error(f'The "{message}" {table_name = } is missing from the database! err: {repr(err)}')
+        logger.error(f'{table_name = } is missing from the database! err: {repr(err)}')
         return []
 
     if not datas_list:

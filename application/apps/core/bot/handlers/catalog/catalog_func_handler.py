@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-from apps.core.bot.messages.messages import Messages
-from apps.core.bot.messages.messages_test import msg
-from apps.core.settyngs import get_sett
 from loader import logger
 
 logger.debug(f"{__name__} start import")
@@ -16,6 +13,9 @@ from aiogram.dispatcher.filters import Command
 from apps.MyBot import MyBot, bot_send_message
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
+from apps.core.bot.messages.messages import Messages
+from apps.core.bot.messages.messages_test import msg
+from apps.core.settyngs import get_sett
 from apps.core.utils.misc import rate_limit
 
 logger.debug(f"{__name__} finish import")
@@ -48,7 +48,7 @@ catalog_spot_data = CatalogSpot().catalog_spot_data
 
 
 @rate_limit(limit=10)
-@MyBot.dp.message_handler(Command('catalog_func'))
+@MyBot.dp.message_handler(Command('catalog'))
 async def catalog_func_handler(message: types.Message = None, user_id: str | int = None):
     """Обработка команд генерации документов
 

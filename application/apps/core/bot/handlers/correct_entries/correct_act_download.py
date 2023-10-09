@@ -14,7 +14,7 @@ from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
 from apps.core.bot.messages.messages import Messages, LogMessage
 from apps.core.database.db_utils import db_get_data_list, db_get_table_headers, db_get_data_dict_from_table_with_id
 from apps.core.database.query_constructor import QueryConstructor
-from apps.core.utils.secondary_functions.get_filepath import BOT_MEDIA_PATH
+from apps.core.utils.secondary_functions.get_filepath import Udocan_media_path
 from loader import logger
 
 
@@ -92,7 +92,7 @@ async def get_full_act_prescription_path(hse_user_id, act_number, act_date, shor
     """Получение и создание полного пути акта предписания
 
     """
-    act_prescription_full_name: str = f'{BOT_MEDIA_PATH}{hse_user_id}\\data_file\\{act_date}\\reports\\Акт-предписание № ' \
+    act_prescription_full_name: str = f'{Udocan_media_path}{hse_user_id}\\data_file\\{act_date}\\reports\\Акт-предписание № ' \
                                       f'{act_number} от {act_date} {short_title}'
     return act_prescription_full_name
 

@@ -15,7 +15,7 @@ from email.mime.text import MIMEText
 from aiogram import types
 from aiogram.dispatcher.filters import Command
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
-from apps.core.bot.data.category import get_data_list
+from apps.core.bot.callbacks.sequential_action.category import get_data_list
 from apps.core.bot.messages.messages import Messages
 from apps.core.utils.generate_report.get_file_list import (
     get_registration_json_file_list, get_report_file_list)

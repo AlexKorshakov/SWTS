@@ -136,7 +136,7 @@ async def get_act_dataframe(chat_id, act_period, constractor_id, headers):
         type_query='general_contractor_id', table_name=table_name, query_date=act_period,
         value_id=constractor_id, user_id=chat_id
     )
-    # print(f'{__name__} {say_fanc_name()} {query}')
+    # print(f'{__name__} {fanc_name()} {query}')
 
     act_dataframe: DataFrame = await create_lite_dataframe_from_query(
         chat_id=chat_id, query=query, clean_headers=headers
@@ -223,21 +223,21 @@ async def send_act_prescription(chat_id: int or str, full_act_prescription_path:
     :return:
     """
 
-    await convert_report_to_pdf(
-        chat_id=chat_id, path=full_act_prescription_path
-    )
+    # await convert_report_to_pdf(
+    #     chat_id=chat_id, path=full_act_prescription_path
+    # )
     await send_report_from_user(
         chat_id=chat_id, full_report_path=full_act_prescription_path
     )
-    full_act_prescription_path = full_act_prescription_path.replace(".xlsx", ".pdf")
-
-    await send_report_from_user(
-        chat_id=chat_id, full_report_path=full_act_prescription_path
-    )
+    # full_act_prescription_path = full_act_prescription_path.replace(".xlsx", ".pdf")
+    #
+    # await send_report_from_user(
+    #     chat_id=chat_id, full_report_path=full_act_prescription_path
+    # )
     return True
 
 
-#
+
 # async def set_act_prescription_in_registry(act_prescription_json) -> bool:
 #     """Добавление акта-предписания в хранилище (реестр) актов
 #
