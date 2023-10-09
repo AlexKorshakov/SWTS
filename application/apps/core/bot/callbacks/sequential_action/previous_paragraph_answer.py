@@ -24,7 +24,7 @@ from aiogram.dispatcher import FSMContext
 logger.debug(f"{__name__} finish import")
 
 
-@MyBot.dp.callback_query_handler(move_action.filter(action=["previous_paragraph"]), state=ViolationData.all_states)
+@MyBot.dp.callback_query_handler(move_action.filter(action=["pre_paragraph"]), state=ViolationData.all_states)
 async def previous_paragraph_answer(call: types.CallbackQuery, callback_data: dict,
                                     user_id: [int, str] = None, state: FSMContext = None):
     """Обработка ответов содержащихся в previous_paragraph

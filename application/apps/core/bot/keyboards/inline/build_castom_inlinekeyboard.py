@@ -19,7 +19,7 @@ logger.debug(f"{__name__} finish import")
 
 NUM_COL = 2
 STEP_MENU = 10
-move_action: CallbackData = CallbackData("description", "action", "previous_value")
+move_action: CallbackData = CallbackData("desc", "action", "pre_val")
 posts_cb: CallbackData = CallbackData('post', 'id', 'action')
 
 
@@ -172,16 +172,16 @@ async def get_button_list_for_list(*, some_list: list, prefix: str = '', postfix
             return button_list
 
 
-def check_list_bytes_len(some_list: list) -> list:
+def check_list_bytes_len(some_list: list, target_parameter: int = 60) -> list:
     """Проверка длинны записи в байтах для формирования надписей кнопок
     текст длиннее 64 байт обрезается, добавляются точки
     """
     processed_values: len = []
     for item in some_list:
-        if len(item.encode('utf-8')) > 62:
+        if len(item.encode('utf-8')) > target_parameter:
             logger.debug(f" {item} : {len(item.encode('utf-8'))}")
 
-            while int(len(item.encode('utf-8'))) > 60:
+            while int(len(item.encode('utf-8'))) > target_parameter - 1:
                 item = item[:-1]
                 logger.debug(f" {item} : {len(item.encode('utf-8'))}")
 
@@ -248,8 +248,8 @@ async def add_action_button(reply_markup, start_index: int, stop_index: int, end
     :param reply_markup:
     :return: reply_markup
     """
-    bt_down = InlineKeyboardButton(text="<--", callback_data=move_action.new(action="move_down", previous_value=''))
-    bt_up = InlineKeyboardButton(text="-->", callback_data=move_action.new(action="move_up", previous_value=''))
+    bt_down = InlineKeyboardButton(text="<--", callback_data=move_action.new(action="move_down", pre_val=''))
+    bt_up = InlineKeyboardButton(text="-->", callback_data=move_action.new(action="move_up", pre_val=''))
 
     if start_index == 0:
         reply_markup.row(bt_up)
@@ -278,13 +278,12 @@ async def add_previous_paragraph_button(reply_markup=None, previous_level: str =
     if not previous_level:
         return reply_markup
 
-    # previous_level: list = check_list_bytes_len(some_list=[previous_level])
+    previous_level: str = check_list_bytes_len(some_list=[previous_level], target_parameter=45)[0]
 
-    btn_previous = InlineKeyboardButton(text="previous",
-                                        callback_data=move_action.new(action="previous_paragraph",
-                                                                      previous_value=previous_level
-                                                                      )
-                                        )
+    btn_previous = InlineKeyboardButton(
+        text="previous",
+        callback_data=move_action.new(action="pre_paragraph", pre_val=previous_level)
+    )
     reply_markup.row(btn_previous)
 
     return reply_markup
@@ -295,7 +294,7 @@ async def add_use_search_button(reply_markup, previous_level: str = '') -> Inlin
 
     search_button = InlineKeyboardButton(text="поиск",
                                          callback_data=move_action.new(action="search",
-                                                                       previous_value=previous_level)
+                                                                       pre_val=previous_level)
                                          )
     reply_markup.inline_keyboard.insert(0, [search_button])
 

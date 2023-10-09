@@ -6,10 +6,11 @@ import traceback
 from datetime import datetime
 
 from aiogram import types
+from aiogram.dispatcher import FSMContext
 from pandas import DataFrame
 
 from apps.MyBot import bot_send_message, MyBot, bot_send_photo
-# from apps.core.bot.data.board_config import board_config
+from apps.core.bot.data.board_config import BoardConfig as board_config
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard, posts_cb
 from apps.core.bot.messages.messages import LogMessage, Messages
 from apps.core.bot.messages.messages_test import msg
@@ -21,7 +22,7 @@ from config.config import REPORT_NAME, SEPARATOR
 from loader import logger
 
 
-async def periodic_check_unclosed_points_for_subcontractor():
+async def periodic_check_unclosed_points_for_subcontractor( state: FSMContext = None):
     """Периодическая проверка незакрытых пунктов и актов"""
 
     while True:
@@ -42,7 +43,7 @@ async def periodic_check_unclosed_points_for_subcontractor():
             await asyncio.sleep(work_period)
             continue
 
-        result_check_list: bool = await check_acts_prescriptions_status_for_subcontractor()
+        result_check_list: bool = await check_acts_prescriptions_status_for_subcontractor(state = state)
         if result_check_list:
             logger.info(f"{LogMessage.Check.periodic_check_unclosed_points} ::: {await get_now()}")
         else:
@@ -52,7 +53,7 @@ async def periodic_check_unclosed_points_for_subcontractor():
         await asyncio.sleep(work_period)
 
 
-async def check_acts_prescriptions_status_for_subcontractor(*args):
+async def check_acts_prescriptions_status_for_subcontractor(*args, state: FSMContext = None):
     """
 
     :return:
@@ -100,9 +101,9 @@ async def check_acts_prescriptions_status_for_subcontractor(*args):
             unique_violations_numbers: list = [f'sub_con_vio_number_{item}' for item in unique_violations_numbers if
                                                item]
 
-            menu_level = board_config.menu_level = 1
-            menu_list = board_config.menu_list = unique_violations_numbers
-            count_col = board_config.count_col = 2
+            menu_level = await board_config(state, "menu_level", 1).set_data()
+            menu_list = await board_config(state, "menu_list", unique_violations_numbers).set_data()
+            count_col = await board_config(state, "count_col", 2).set_data()
 
             reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=count_col, level=menu_level)
             await bot_send_message(chat_id=chat_id, text=text_notification, reply_markup=reply_markup)
