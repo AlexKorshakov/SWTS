@@ -1,3 +1,5 @@
+from typing import List
+
 from loader import logger
 
 logger.debug(f"{__name__} start import")
@@ -27,8 +29,6 @@ async def photo_handler(message: types.Message, state: FSMContext, chat_id: str 
 
     if not await check_user_access(chat_id=hse_user_id):
         return
-
-    # val = await board_config(state, "start_violation_mes_id", 2).set_data()
 
     logger.info("photo_handler get photo")
     if await qr_code_processing(message, state=state):

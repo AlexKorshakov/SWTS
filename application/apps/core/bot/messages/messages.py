@@ -26,6 +26,7 @@ class Messages:
         confirm: str = "При завершении регистрации дальнейшее изменение невозможно!"
         canceled: str = "OK! если хотите зарегистрироваться, отправьте /start заново"
         cancel: str = "Отменить регистрацию"
+        successful: str = 'Все фотографии зарегистрированы'
 
     class Violations:
         canceled: str = "Изменения отменены"
@@ -93,7 +94,7 @@ class Messages:
         answer: str = "Выберите действие"
 
     class Choose:
-        file_for_download:str = 'Выберите файл для скачивания'
+        file_for_download: str = 'Выберите файл для скачивания'
         choose_value: str = 'Выберите значение'
 
         folders_value: str = "Выберите информацию для отображения"
@@ -117,7 +118,7 @@ class Messages:
         correct_entries: str = "Выберите запись для изменения"
 
     class Error:
-        features_disabled: str ='Функции отключены\nПо всем вопросам обращайтесь к разработчику\n https://t.me/AlexKor_MSK'
+        features_disabled: str = 'Функции отключены\nПо всем вопросам обращайтесь к разработчику\n https://t.me/AlexKor_MSK'
         error_command: str = 'Неверно выбрана команда'
         error_call: str = 'Нет данных сообщения'
         error_call_text: str = 'Нет текстовых данных в сообщении'

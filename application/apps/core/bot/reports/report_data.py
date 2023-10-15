@@ -55,6 +55,9 @@ class ViolationData(StatesGroup):
     equipment_folder = State()
     equipment_doc = State()
 
+    add_many_photo = State()
+    finish = State()
+
 
 class QRData(StatesGroup):
     # starting = State()

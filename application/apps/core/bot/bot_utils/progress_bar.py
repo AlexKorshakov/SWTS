@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import asyncio
 
 from aiogram import types
 from aiogram.types import InlineKeyboardMarkup
 
-from apps.MyBot import _send_message, bot_send_message
+from apps.MyBot import _send_message
 from loader import logger
 
 
@@ -17,20 +19,22 @@ class ProgressBar:
     def __init__(self, chat=None, msg=None, reply_markup=None, **kwargs: dict):
         """Инициация"""
 
-        self.chat: int = chat
         self.msg: types.Message = msg if msg else self.start()
+        self.chat: int = chat if chat else self.msg.chat.id
         self.text: str = ''
         self.reply_markup: InlineKeyboardMarkup = reply_markup
         self.kwargs: dict = kwargs
 
-    async def start(self) -> types.Message:
+    async def start(self, chat: int | str = None) -> types.Message:
         """Начало работы прогресс бара
 
         :return:
         """
+        chat_id = chat if chat else self.chat
+
         try:
-            self.msg = await bot_send_message(
-                chat_id=self.chat,
+            self.msg = await _send_message(
+                chat_id=chat_id,
                 text=self.empty_character * 10,
                 reply_markup=self.reply_markup
             )
@@ -62,10 +66,13 @@ class ProgressBar:
 
         text_green: str = self.complete_character * percent
         text_wait: str = self.empty_character * (10 - percent)
+        try:
+            self.msg = await self.message_edit_text(text=text_green + text_wait, reply_markup=self.reply_markup)
+            await asyncio.sleep(1)
+            return self.msg
 
-        self.msg = await self.message_edit_text(text=text_green + text_wait, reply_markup=self.reply_markup)
-        await asyncio.sleep(1)
-        return self.msg
+        except Exception as err:
+            logger.error(f'{__class__.__name__} {repr(err)}')
 
     async def message_edit_text(self, text: str = '', reply_markup: InlineKeyboardMarkup = None) -> types.Message:
         """Обновление сообщения
@@ -80,6 +87,7 @@ class ProgressBar:
 
         try:
             self.msg = await self.msg.edit_text(text=text, reply_markup=reply_markup)
+
         except UnicodeEncodeError as err:
             logger.debug(f'{repr(err)}')
 
@@ -108,5 +116,4 @@ async def test():
 
 
 if __name__ == "__main__":
-
     asyncio.run(test())

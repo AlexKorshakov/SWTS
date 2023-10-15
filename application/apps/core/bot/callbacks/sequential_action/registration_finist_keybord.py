@@ -1,8 +1,10 @@
 from aiogram import types
-from aiogram.types import ReplyKeyboardMarkup
+from aiogram.types import ReplyKeyboardMarkup, InlineKeyboardMarkup
+
+from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
 
 
-async def registration_finish_keyboard() -> ReplyKeyboardMarkup:
+async def registration_finish_keyboard_reply() -> ReplyKeyboardMarkup:
     """Сборка клавиатуры команд в конце ввода данных
     """
 
@@ -14,4 +16,28 @@ async def registration_finish_keyboard() -> ReplyKeyboardMarkup:
         )
     )
 
+    return markup
+
+
+async def registration_finish_keyboard_inline() -> InlineKeyboardMarkup:
+    markup = types.InlineKeyboardMarkup()
+
+    markup.add(
+        types.InlineKeyboardButton(
+            text='Добавить координаты',
+            callback_data=posts_cb.new(id='-', action='registration_finish_add_coordinate')
+        )
+    )
+    markup.add(
+        types.InlineKeyboardButton(
+            text='Добавить фотографии к нарушению',
+            callback_data=posts_cb.new(id='-', action='registration_finish_add_many_photo')
+        )
+    )
+    markup.add(
+        types.InlineKeyboardButton(
+            text='Завершить регистрацию',
+            callback_data=posts_cb.new(id='-', action='registration_finish')
+        )
+    )
     return markup
