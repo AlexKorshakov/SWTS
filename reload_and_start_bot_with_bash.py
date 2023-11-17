@@ -1,67 +1,74 @@
-import asyncio
 import os
-from pathlib import Path
-import subprocess
-from subprocess import CREATE_NEW_CONSOLE
-from psutil import Process, NoSuchProcess
+import asyncio
 
+import subprocess
+from pathlib import Path
+from psutil import Process, NoSuchProcess
 from application.loader import logger
-from shlex import quote as shlex_quote
 
 DELAY: int = 5
 
 
+async def load_bot(bot_path: str = '') -> None:
+    """Запуск бота в цикле с помощью .bat"""
+    logger.info(f'{bot_path = }')
+    prog = await start_bot()
+
+    bot_is_work: bool = True
+    try:
+        while bot_is_work:
+            await asyncio.sleep(DELAY)
+            trigger: str = await get_trigger(bot_path)
+
+            if trigger == 'reload':
+                await del_trigger(bot_path)
+                await kill_bot(prog)
+                await asyncio.sleep(DELAY)
+                prog = await start_bot()
+
+            elif trigger == 'stop':
+                await asyncio.sleep(DELAY)
+                await del_trigger(bot_path)
+                await kill_bot(prog)
+
+    except Exception as err:
+        logger.error(f'{repr(err)}')
+        await kill_bot(prog)
+        # prog = await start_bot()
+        await load_bot()
+
+    finally:
+        await del_trigger(bot_path)
+        await kill_bot(prog)
+
+
 async def start_bot() -> subprocess.Popen:
     """Запуск процесса бота из .bat"""
-
     proc_path: str = str(Path(__file__).resolve().parent)
-    proc_path_file = str(Path(proc_path, 'application', 'activate'))
-    path_to_venv = str(Path(proc_path, 'venv', 'Scripts', 'python.exe'))
+    proc_path_file: str = str(Path(proc_path, "MyBot_Run.bat"))
 
     process: subprocess.Popen = subprocess.Popen(
-        [proc_path_file],
+        [proc_path_file, '-m'],
+        # "MyBot_Run.bat",
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         shell=True,
-        creationflags=CREATE_NEW_CONSOLE
+        creationflags=subprocess.CREATE_NEW_CONSOLE
     )
-    stdout, stderr = process.communicate()
-    print(f'{stdout = }')
-    print(f'{stderr = }')
+    # stdout, stderr = process.communicate(timeout=15)
+    # print(f'{process.pid = }')
+    # try:
+    #     outs, errs = process.communicate(timeout=15)
+    # except subprocess.TimeoutExpired:
+    #     process.kill()
+    #     outs, errs = process.communicate()
+    # print(f'{outs = }')
+    # print(f'{errs = }')
+    # print(f'{stdout = }')
+    # print(f'{stderr = }')
+    # print(f'{process.pid = }')
+    logger.info(f'load_bot {process.pid = } ')
     return process
-
-    # proc_path: str = str(Path(__file__).resolve().parent)
-    # proc_path_file = f'{proc_path}\\MyBot_Run.bat'
-    #
-    # process: subprocess.Popen = subprocess.Popen(
-    #     args=[proc_path_file],
-    #     # stdout=subprocess.PIPE,
-    #     # stderr=subprocess.PIPE,
-    #     shell=True
-    #     # creationflags=CREATE_NEW_CONSOLE)
-    # )
-    # # stdout, stderr = process.communicate()
-    # # print(f'{stdout = }')
-    # # print(f'{stderr = }')
-    # return process
-
-    # files = ["activate_this.py", "app.py", ]  # файлы, которые нужно запустить "start",
-    #
-    # # запускаем процессы
-    # procs = [subprocess.Popen(args=["start", "/WAIT", "python3", f'{proc_path}\\application\\{file}'],
-    #                           shell=True,
-    #                           stdout=subprocess.PIPE)
-    #          for file in files]
-    # print(f"Запущено {len(procs)} процессов")
-    #
-    # # # ждём их завершения
-    # while procs:
-    #     procs.pop().wait()
-    #     print(f"Осталось {len(procs)} процессов")
-    #
-    # print("Конец")
-    #
-    # return procs[0] if procs else []
 
 
 async def kill_bot(proc):
@@ -84,65 +91,37 @@ async def kill_bot(proc):
         logger.info("taskkill /f /im MyBot_Run.bat")
 
 
-async def get_trigger() -> bool:
-    """
-
-    :return: bool
-    """
-
-    for file in Path('.').iterdir():
-        if 'trigger' in file.name:
-            return True
-
-    return False
+async def get_trigger(bot_path: str = '') -> str:
+    """Получение команды из имени файла-триггера"""
+    # dir_files = Path(bot_path).iterdir() if bot_path else Path('.').iterdir()
+    # trigger_files: list[str, str,] = [str(item) for item in list(dir_files) if 'trigger_' in str(item)]
+    # if not trigger_files: return ''
+    trigger_file: list = [file.split('_')[-1] for file in await get_trigger_file(bot_path) if isinstance(file, str)]
+    return trigger_file[-1] if trigger_file else ''
 
 
-async def del_trigger():
-    """
+async def del_trigger(bot_path: str = ''):
+    """Удаление файла-триггера"""
+    # dir_files = Path(bot_path).iterdir() if bot_path else Path('.').iterdir()
+    # trigger_files: list = [str(item) for item in list(dir_files) if 'trigger_' in str(item)]
+    # if not await get_trigger_file(bot_path): return ''
+    for trigger_file in await get_trigger_file(bot_path):
+        try:
+            logger.info(f'{trigger_file = }')
+            os.remove(Path(bot_path, trigger_file))
 
-    :return: bool
-    """
-    for file in Path('.').iterdir():
-        if 'trigger' in file.name:
-            try:
-                os.remove(file)
-                return True
-            except FileNotFoundError as err:
-                logger.error(f'{file.name = } {repr(err)}')
+        except FileNotFoundError as err:
+            logger.error(f'{trigger_file = } {repr(err)}')
+            continue
 
-    return False
+    return True
 
 
-async def reload_bot():
-    """
-
-    :return:
-    """
-
-    # path = os.path.abspath(os.curdir)
-    # repo = Repo(path)
-
-    prog = await start_bot()
-    try:
-        while True:
-
-            await asyncio.sleep(DELAY)
-
-            # if await get_update_from_git(repo):
-            if await get_trigger():
-                await kill_bot(prog)
-                await asyncio.sleep(DELAY)
-                prog = await start_bot()
-                await del_trigger()
-
-    except Exception as err:
-        logger.error(f'{repr(err)}')
-        await kill_bot(prog)
-        await reload_bot()
-    finally:
-
-        await kill_bot(prog)
+async def get_trigger_file(trigger_path: str) -> list:
+    """Получение триггеров"""
+    dir_files = Path(trigger_path).iterdir() if trigger_path else Path('.').iterdir()
+    return [str(item) for item in list(dir_files) if 'trigger_' in str(item)]
 
 
 if __name__ == '__main__':
-    asyncio.run(reload_bot())
+    asyncio.run(load_bot(bot_path=''))
