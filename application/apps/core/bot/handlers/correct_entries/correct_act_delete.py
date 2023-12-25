@@ -9,12 +9,11 @@ from apps.MyBot import MyBot, bot_send_message, bot_delete_markup
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.bot.handlers.correct_entries.correct_entries_handler import correct_entries_handler, del_file
 from apps.core.bot.handlers.correct_entries.correct_support import create_lite_dataframe_from_query
+from apps.core.bot.handlers.correct_entries.correct_support_path import get_full_act_prescription_path
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
 from apps.core.bot.messages.messages import Messages
 from apps.core.database.db_utils import db_del_item_from_table
 from apps.core.database.query_constructor import QueryConstructor
-from apps.core.utils.generate_report.generate_act_prescription.create_and_send_act_prescription import \
-    get_full_act_prescription_path
 from apps.core.utils.secondary_functions.get_filepath import Udocan_media_path
 from loader import logger
 
@@ -283,7 +282,7 @@ async def del_act_json(*, hse_user_id: int | str, id_numbers: int | str,
     item_df = item_dataframe.loc[item_dataframe['id'] == int(id_numbers)]
 
     try:
-        json_full_name: str = f"{Udocan_media_path}{item_df['json'].values[0]}"
+        json_full_name: str = f"{Udocan_media_path}\\HSE\\{item_df['json'].values[0]}"
     except IndexError as err:
         logger.error(f'{hse_user_id = } Не удалось получить данные записи {id_numbers} {repr(err)}')
         return False
@@ -307,7 +306,7 @@ async def del_act_photo(*, hse_user_id: int | str, id_numbers: int | str,
         logger.error(f'{hse_user_id = } Не удалось получить данные записи {id_numbers} {repr(err)}')
         return False
 
-    photo_full_name: str = f"{Udocan_media_path}{item_df['photo'].values[0]}"
+    photo_full_name: str = f"{Udocan_media_path}\\HSE\\{item_df['photo'].values[0]}"
     del_file_photo_result: bool = await del_file(path=photo_full_name)
     if not del_file_photo_result:
         logger.error(f'{hse_user_id = } Не удалось удалить запись {id_numbers} в формате .jpeg с сервера ')

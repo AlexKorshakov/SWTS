@@ -9,7 +9,7 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.types import InlineKeyboardMarkup
 
-from apps.MyBot import bot_send_document, bot_send_message, MyBot
+from apps.MyBot import bot_send_document, bot_send_message, MyBot, bot_edit_message
 from apps.core.bot.data.board_config import BoardConfig as board_config
 from apps.core.bot.handlers.photo.qr_support_paths import qr_get_file_path
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard, \
@@ -54,7 +54,8 @@ async def qr_matrix_nom_processing(hse_user_id: str, qr_data, state: FSMContext)
     count_col = await board_config(state, "count_col", 1).set_data()
 
     reply_markup: InlineKeyboardMarkup = await build_inlinekeyboard(
-        some_list=menu_list, num_col=count_col, level=menu_level, called_prefix='industrial_equipment_'
+        some_list=menu_list, num_col=count_col, level=menu_level, called_prefix='industrial_equipment_',
+        state=state
     )
 
     await bot_send_message(
@@ -111,8 +112,7 @@ async def industrial_equipment_answer(call: types.CallbackQuery, user_id: str = 
         previous_level=previous_level, use_search=False
     )
     reply_text: str = await build_text_for_inlinekeyboard(
-        some_list=menu_text_list, level=menu_level, use_search=True,
-    )
+        some_list=menu_text_list, level=menu_level, )
     text: str = f'{Messages.Choose.file_for_download}\n\n{reply_text}'
 
     await bot_send_message(chat_id=hse_user_id, text=text, reply_markup=reply_markup)
@@ -191,13 +191,20 @@ async def previous_paragraph_answer(call: types.CallbackQuery, callback_data: di
     count_col = await board_config(state, "count_col", 1).set_data()
 
     reply_markup: InlineKeyboardMarkup = await build_inlinekeyboard(
-        some_list=menu_list, num_col=count_col, level=menu_level, called_prefix='industrial_equipment_'
+        some_list=menu_list, num_col=count_col, level=menu_level, called_prefix='industrial_equipment_',
+        state=state
     )
-    await MyBot.bot.edit_message_text(
-        text=Messages.Choose.folders_value, chat_id=hse_user_id, message_id=message_id, reply_markup=reply_markup
+    # await MyBot.bot.edit_message_text(
+    #     text=Messages.Choose.folders_value, chat_id=hse_user_id, message_id=message_id, reply_markup=reply_markup
+    # )
+    result = await bot_edit_message(
+        hse_user_id=hse_user_id, message_id=message_id,
+        reply_markup=reply_markup, reply_text=Messages.Choose.folders_value, kvargs={'fanc_name': await fanc_name()}
     )
 
     await QRData.equipment_folder.set()
+
+    return result
 
 
 async def check_folder(sub_folder: str, state: FSMContext) -> bool:
@@ -266,30 +273,53 @@ async def error_messeg(hse_user_id, state):
     await bot_send_message(chat_id=hse_user_id, text=text, reply_markup=reply_markup)
 
 
-async def notify_user_for_choice(call: types.CallbackQuery, user_id: int | str = None, data_answer: str = None) -> bool:
+async def notify_user_for_choice(call_msg: types.CallbackQuery | types.Message, user_id: int | str = None,
+                                 data_answer: str = None) -> bool:
     """Уведомление пользователя о выборе + логирование
 
     :param data_answer:
     :param user_id: int | str id пользователя
-    :param call:
+    :param call_msg:
     :return None :
     """
-    for i in ['previous_paragraph', 'move_up', 'move_down']:
-        if i in call.data: return True
 
-    mesg_text: str = f"Выбрано: {data_answer}"
-    if call.data in call.message.text:
-        mesg_list: list = [item for item in call.message.text.split('\n\n') if call.data in item]
-        mesg_text = f"Выбрано: {mesg_list[0]}"
+    if isinstance(call_msg, types.CallbackQuery):
 
-    try:
-        hse_user_id = call.message.chat.id if call else user_id
-        logger.debug(f"{hse_user_id = } Выбрано: {data_answer} {call.data}")
-        await call.message.edit_text(text=mesg_text, reply_markup=None)
-        return True
+        for i in ('previous_paragraph', 'move_up', 'move_down'):
+            if i in call_msg.data: return True
 
-    except Exception as err:
-        logger.debug(f"{call.message.chat.id = } {repr(err)}")
+        mesg_text: str = f"Выбрано: {data_answer}"
+        if call_msg.data in call_msg.message.text:
+            mesg_list: list = [item for item in call_msg.message.text.split('\n\n') if call_msg.data in item]
+            mesg_text = f"Выбрано: {mesg_list[0]}"
+
+        try:
+            hse_user_id = call_msg.message.chat.id if call_msg else user_id
+            logger.debug(f"{hse_user_id = } Выбрано: {data_answer} {call_msg.data}")
+            await call_msg.message.edit_text(text=mesg_text, reply_markup=None)
+            return True
+
+        except Exception as err:
+            logger.debug(f"{call_msg.message.chat.id = } {repr(err)}")
+
+    if isinstance(call_msg, types.Message):
+
+        for i in ('previous_paragraph', 'move_up', 'move_down'):
+            if i in call_msg.text: return True
+
+        mesg_text: str = f"Выбрано: {data_answer}"
+        if call_msg.text in call_msg.text:
+            mesg_list: list = [item for item in call_msg.text.split('\n\n') if call_msg.text in item]
+            mesg_text = f"Выбрано: {mesg_list[0] if mesg_list else ''}"
+
+        try:
+            hse_user_id = call_msg.chat.id if call_msg else user_id
+            logger.debug(f"{hse_user_id = } Выбрано: {data_answer} {call_msg.text}")
+            await call_msg.edit_text(text=mesg_text, reply_markup=None)
+            return True
+
+        except Exception as err:
+            logger.debug(f"{call_msg.chat.id = } {repr(err)}")
 
 
 # async def add_employee_inline_keyboard_with_action(item: dict) -> InlineKeyboardMarkup:

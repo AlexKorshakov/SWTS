@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from aiogram.dispatcher import FSMContext
+
 from loader import logger
 
 logger.debug(f"{__name__} start import")
@@ -49,13 +51,17 @@ catalog_spot_data = CatalogSpot().catalog_spot_data
 
 @rate_limit(limit=10)
 @MyBot.dp.message_handler(Command('catalog'))
-async def catalog_func_handler(message: types.Message = None, user_id: str | int = None):
+async def catalog_func_handler(message: types.Message = None, user_id: str | int = None, state: FSMContext = None):
     """Обработка команд генерации документов
 
     :return:
     """
+    try:
+        hse_user_id = message.chat.id if message else user_id
+    except AttributeError as err:
+        logger.debug(f'{__file__} {repr(err)}')
+        hse_user_id = user_id if user_id else message.message.from_user.id
 
-    hse_user_id = message.chat.id if message else user_id
     if not await check_user_access(chat_id=hse_user_id):
         logger.error(f'access fail {hse_user_id = }')
         return
@@ -91,6 +97,13 @@ async def add_correct_inline_keyboard_with_action():
             callback_data=posts_cb.new(id='-', action='catalog_normative_documents')
         )
     )
+    markup.add(
+        types.InlineKeyboardButton(
+            text='Справочник ЛНА',
+            callback_data=posts_cb.new(id='-', action='catalog_lna')
+        )
+    )
+
     return markup
 
 

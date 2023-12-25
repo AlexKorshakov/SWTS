@@ -1,13 +1,12 @@
 from __future__ import annotations
 import asyncio
 from datetime import date, datetime
-from typing import Optional
 
 import pandas
 from loader import logger
 
 
-async def str_to_datetime(date_str: str) -> Optional[date]:
+async def str_to_datetime(date_str: str) -> date:
     """Преобразование str даты в datetime
 
     :param

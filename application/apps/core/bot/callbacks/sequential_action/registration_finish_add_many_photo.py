@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import datetime
+import os
 from pathlib import Path
 
 from aiogram import types
@@ -10,11 +11,13 @@ from aiogram.dispatcher import FSMContext
 from apps.MyBot import MyBot, bot_send_message
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.bot.bot_utils.progress_bar import ProgressBar
-from apps.core.bot.callbacks.sequential_action.registration_finist_keybord import registration_finish_keyboard_reply
+from apps.core.bot.callbacks.sequential_action.data_answer import notify_user_for_choice
+from apps.core.bot.callbacks.sequential_action.registration_finist_keybord import registration_finish_keyboard_inline
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.messages.messages_test import msg
 from apps.core.bot.reports.report_data import ViolationData
+from apps.core.bot.reports.report_data_preparation import set_violation_atr_data
 from apps.core.settyngs import get_sett
 from config.config import Udocan_media_path, REPORT_NAME, SEPARATOR
 from loader import logger
@@ -25,8 +28,8 @@ from loader import logger
 async def call_registration_finish_add_many_photo(call: types.CallbackQuery = None, callback_data: dict = None,
                                                   user_id: int | str = None, state: FSMContext = None):
     """Обработка ответов содержащихся в call_registration_finish_add_coordinate
-    """
 
+    """
     hse_user_id = call.message.chat.id if call else user_id
     logger.debug(f'{hse_user_id = } {call.data = }')
 
@@ -39,54 +42,67 @@ async def call_registration_finish_add_many_photo(call: types.CallbackQuery = No
         await bot_send_message(chat_id=hse_user_id, text=msg_text, disable_web_page_preview=True)
         return
 
-    # msg_text = await msg(hse_user_id, cat='error', msge='error_action', default=Messages.Error.error_action).g_mas()
-    # await bot_send_message(chat_id=hse_user_id, text=msg_text)
-    # return
+    await notify_user_for_choice(call, data_answer=call.data)
 
     await ViolationData.add_many_photo.set()
-    await bot_send_message(chat_id=hse_user_id, text="Загрузите фотографии из галереи",
-                           disable_web_page_preview=True)
+    await bot_send_message(
+        chat_id=hse_user_id, text="Загрузите фотографии из галереи",
+        disable_web_page_preview=True
+    )
 
     v_data: dict = await state.get_data()
     if v_data.get("comment"):
-        reply_markup = await registration_finish_keyboard_reply()
+        reply_markup = await registration_finish_keyboard_inline()
         await bot_send_message(chat_id=hse_user_id, text=Messages.Registration.confirm, reply_markup=reply_markup)
 
 
 @MyBot.dp.message_handler(content_types=types.ContentType.ANY, state=ViolationData.add_many_photo)
-async def handler_albums(message: types.Message, album: list[types.Message], callback_data: dict = None,
+async def handler_albums(message: types.Message, album: list[types.Message] = None, callback_data: dict = None,
                          user_id: int | str = None, state: FSMContext = None):
-    """This handler will receive a complete album of any type."""
+    """This handler will receive a complete album of any type
+
+    """
 
     hse_user_id = message.chat.id if message else user_id
-
     v_data: dict = await state.get_data()
-    # media_group = types.MediaGroup()
+    media_group: list = []
+    num: int = 0
+
+    if not album:
+        await state.update_data(media_group=media_group)
+        v_data.get('media_group', [])
+
+        file_id = await get_filename_msg_with_photo(message=message, main_message_id=v_data.get('violation_id', ''))
+        photo_full_name = await get_photo_full_filename(user_id=hse_user_id, name=file_id)
+
+        try:
+            await message.photo[-1].download(destination_file=photo_full_name)
+            num = +1
+            media_group.append({'media': file_id})
+
+        except asyncio.exceptions.TimeoutError as err:
+            logger.debug(f'download_photo: {hse_user_id = } {photo_full_name = } {repr(err)}')
+            return False
+
+        await state.update_data(media_group=media_group)
+        await state.finish()
+
+        reply_markup = await registration_finish_keyboard_inline()
+        await bot_send_message(
+            chat_id=hse_user_id, text=f'{Messages.Registration.successful} {num}', reply_markup=reply_markup
+        )
+        return
 
     p_bar = ProgressBar(chat=hse_user_id)
-    await p_bar.start()
-    media_group: list = []
+    await p_bar.start(chat=hse_user_id)
 
     for num, mess in enumerate(album, start=1):
         await p_bar.update_msg(num)
 
-        # if mess.photo:
-        #     file_id = mess.photo[-1].file_id
-        # else:
-        #     file_id = mess[mess.content_type].file_id
-        #
-        # try:
-        #     # We can also add a caption to each file by specifying `"caption": "text"`
-        #     media_group.attach(
-        #         {"media": file_id, "type": mess.content_type}
-        #     )
-        # except ValueError:
-        #     return await message.answer("This type of album is not supported by aiogram.")
-
         if not mess.photo:
             continue
 
-        file_id = await get_filename_msg_with_photo(message=mess)
+        file_id = await get_filename_msg_with_photo(message=mess, main_message_id=v_data.get('violation_id', ''))
         photo_full_name = await get_photo_full_filename(user_id=hse_user_id, name=file_id)
 
         try:
@@ -95,18 +111,24 @@ async def handler_albums(message: types.Message, album: list[types.Message], cal
 
         except asyncio.exceptions.TimeoutError as err:
             logger.debug(f'download_photo: {hse_user_id = } {photo_full_name = } {repr(err)}')
-            return False
+            continue
 
     await state.update_data(media_group=media_group)
-    await p_bar.finish()
-    await state.finish()
+    await set_violation_atr_data("media_group", media_group, state=state)
 
-    reply_markup = await registration_finish_keyboard_reply()
-    await bot_send_message(chat_id=hse_user_id, text=Messages.Registration.successful, reply_markup=reply_markup)
-    # await message.answer_media_group(media_group)
+    await p_bar.finish()
+    # await state.finish()
+
+    reply_markup = await registration_finish_keyboard_inline()
+    await bot_send_message(
+        chat_id=hse_user_id, text=f'{Messages.Registration.successful} {num}', reply_markup=reply_markup
+    )
 
 
 async def registration_finish_keyboard_inline_test():
+    """Формирование индентфикатора записи
+
+    """
     markup = types.InlineKeyboardMarkup()
 
     markup.add(
@@ -118,32 +140,43 @@ async def registration_finish_keyboard_inline_test():
     return markup
 
 
-async def get_filename_msg_with_photo(message):
+async def get_filename_msg_with_photo(message, main_message_id):
     """Формирование индентфикатора записи
 
     """
-    day = await get_day_message()
-    month = await get_month_message()
-    year = await get_year_message()
+    day: str = await get_day_message()
+    month: str = await get_month_message()
+    year: str = await get_year_message()
     from_id: str = str(message.values['from'].id)
     message_id: str = str(message.message_id)
 
-    filename = f'{day}.{month}.{year}{SEPARATOR}{from_id}{SEPARATOR}{message_id}'
+    filename = f'{day}.{month}.{year}{SEPARATOR}{from_id}{SEPARATOR}{main_message_id}{SEPARATOR}{message_id}'
+
     logger.info(f"filename {filename}")
     return filename
 
 
 async def get_photo_full_filename(user_id: str = None, name=None, date=None):
-    """Обработчик сообщений с photo
-    Получение полного пути файла
+    """Обработчик сообщений с photo. Получение полного пути файла
+
     """
     if not date:
         date = await date_now()
-    return str(Path(Udocan_media_path, str(user_id), 'data_file', date, 'photo', f"dop_{REPORT_NAME}{name}.jpg"))
+
+    photo_full_name = Path(Udocan_media_path, "HSE", str(user_id), 'data_file', date, 'photo')
+
+    try:
+        os.makedirs(photo_full_name)
+
+    except FileExistsError as err:
+        logger.debug(f'get_photo_full_filename: {user_id = } {photo_full_name = } {repr(err)}')
+
+    return str(Path(photo_full_name, f"dop_{REPORT_NAME}{name}.jpg"))
 
 
 async def date_now() -> str:
     """Возвращает текущую дату в формате дд.мм.гггг
+
     :return:
     """
     return str((datetime.datetime.now()).strftime("%d.%m.%Y"))
@@ -152,8 +185,8 @@ async def date_now() -> str:
 async def get_day_message(current_date: datetime | str = None) -> str:
     """Обработчик сообщений с фото
     Получение номер str дня из сообщения в формате dd
-    """
 
+    """
     current_date: datetime.date = await str_to_datetime(current_date)
 
     if not current_date:
@@ -163,6 +196,7 @@ async def get_day_message(current_date: datetime | str = None) -> str:
 
 async def get_month_message(current_date: datetime | str = None) -> str:
     """Получение номер str месяца из сообщения в формате mm
+
     """
     current_date: datetime.date = await str_to_datetime(current_date)
 
@@ -172,8 +206,8 @@ async def get_month_message(current_date: datetime | str = None) -> str:
 
 
 async def get_year_message(current_date: datetime | str = None) -> str:
-    """Обработчик сообщений с фото
-    Получение полного пути файла
+    """Обработчик сообщений с фото. Получение полного пути файла
+
     """
     current_date: datetime.date = await str_to_datetime(current_date)
 

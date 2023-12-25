@@ -1,36 +1,27 @@
 from __future__ import print_function
 from __future__ import annotations
 
-from pandas import DataFrame
-
-from apps.core.bot.bot_utils.check_access import base_check_user_access
-from apps.core.database.query_constructor import QueryConstructor
 from loader import logger
 
 logger.debug(f"{__name__} start import")
 
+from pandas import DataFrame
 import asyncio
 import re
 from pprint import pprint
 from aiogram import types
 
+from apps.core.bot.bot_utils.check_access import base_check_user_access
+from apps.core.database.query_constructor import QueryConstructor
 from apps.MyBot import bot_send_message
 from apps.core.bot.messages.messages_test import msg
 from apps.core.bot.messages.messages import Messages
+from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
 from apps.core.bot.bot_utils.bot_admin_notify import admin_notify
-from apps.core.database.db_utils import db_get_table_headers, db_get_data_list
+from apps.core.database.db_utils import ( db_get_data_list,
+                                          db_get_clean_headers)
 
 logger.debug(f"{__name__} finish import")
-
-
-async def get_list_table_headers() -> list:
-    """Получение заголовков таблицы db_table_name
-
-    :return:
-    """
-    db_table_name: str = 'core_hseuser'
-    table_headers: list = [item[1] for item in await db_get_table_headers(table_name=db_table_name)]
-    return table_headers
 
 
 async def get_list_table_values(chat_id: int) -> list:
@@ -51,6 +42,7 @@ async def get_list_table_values(chat_id: int) -> list:
 
     if not datas_query:
         return []
+
     if not isinstance(datas_query, list):
         return []
 
@@ -98,14 +90,18 @@ async def get_hse_user_data(*, message: types.Message = None, chat_id: int | str
 
     :return: dict
     """
-    chat_id = chat_id if chat_id else message.chat.id
+    try:
+        chat_id = chat_id if chat_id else message.chat.id
+    except AttributeError as err:
+        logger.debug(f'{__file__} {repr(err)}')
+        chat_id = chat_id if chat_id else message.from_user.id
 
     table_data: list = await get_list_table_values(chat_id)
     if not table_data:
         return {}
 
-    table_headers: list = await get_list_table_headers()
-    hse_user_data_dict: dict = await get_data_dict(table_headers, table_data)
+    clean_headers: list = await db_get_clean_headers(table_name='core_hseuser')
+    hse_user_data_dict: dict = await get_data_dict(clean_headers, table_data)
 
     if not hse_user_data_dict:
         return {}
@@ -133,8 +129,8 @@ async def check_user_access(*, chat_id, message: types.Message = None, notify_ad
         await user_access_fail(chat_id, hse_id=chat_id)
         return False
 
-    table_headers: list = await get_list_table_headers()
-    hse_user_data_dict: dict = await get_data_dict(table_headers, table_data)
+    clean_headers: list = await db_get_clean_headers(table_name='core_hseuser')
+    hse_user_data_dict: dict = await get_data_dict(clean_headers, table_data)
 
     if not hse_user_data_dict:
         logger.error(f'access fail {chat_id = } {hse_user_data_dict =}')
@@ -170,7 +166,7 @@ async def check_user_access(*, chat_id, message: types.Message = None, notify_ad
     return True
 
 
-async def user_access_fail(chat_id: int, notify_text: str = None, hse_id: str = None):
+async def user_access_fail(chat_id: int, notify_text: str = None, hse_id: str = None) -> object:
     """Отправка сообщения о недостатке прав
     """
     hse_id = hse_id if hse_id else chat_id
@@ -196,10 +192,12 @@ async def user_access_fail(chat_id: int, notify_text: str = None, hse_id: str = 
             notify_text: str = f'User {chat_id} попытка доступа к функциям без регистрации'
 
         logger.error(notify_text)
-        # button = types.InlineKeyboardButton(text=f'{chat_id}', url=f"tg://user?id={chat_id}")
+        button = types.InlineKeyboardButton('user_actions',
+                                            callback_data=posts_cb.new(id='-', action='admin_user_actions'))
         await admin_notify(
-            user_id=chat_id, notify_text=notify_text,
-            # button=button
+            user_id=chat_id,
+            notify_text=notify_text,
+            button=button
         )
 
 
@@ -221,8 +219,8 @@ async def get_user_data_dict(chat_id: int) -> tuple[dict, dict]:
     """
 
     table_data: list = await get_list_table_values(chat_id)
-    table_headers: list = await get_list_table_headers()
-    hse_user_data_dict: dict = await get_data_dict(table_headers, table_data)
+    clean_headers: list = await db_get_clean_headers(table_name='core_hseuser')
+    hse_user_data_dict: dict = await get_data_dict(clean_headers, table_data)
     hse_user_role_dict: dict = await get_dict_hse_user_role(hse_user_data_dict)
 
     return hse_user_data_dict, hse_user_role_dict

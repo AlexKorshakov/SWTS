@@ -5,13 +5,14 @@ import os
 from pandas import DataFrame
 
 from apps.MyBot import bot_send_message
-from apps.core.bot.handlers.correct_entries.correct_support import \
-    create_lite_dataframe_from_query, check_dataframe, spotter_data
-from apps.core.database.db_utils import \
-    db_update_column_value, db_get_dict_userdata, db_get_data_dict_from_table_with_id
+from apps.core.bot.handlers.correct_entries.correct_support import (create_lite_dataframe_from_query,
+                                                                    check_dataframe,
+                                                                    spotter_data)
+from apps.core.bot.handlers.generate.generate_act_prescription_and_send import get_full_patch_to_act_prescription
+from apps.core.database.db_utils import (db_update_column_value,
+                                         db_get_dict_userdata,
+                                         db_get_data_dict_from_table_with_id)
 from apps.core.database.query_constructor import QueryConstructor
-from apps.core.utils.generate_report.generate_act_prescription.create_and_send_act_prescription import \
-    get_full_patch_to_act_prescription
 from apps.core.utils.json_worker.read_json_file import read_json_file
 from apps.core.utils.json_worker.writer_json_file import write_json_file
 from apps.core.utils.reports_processor.report_worker_utils import get_general_constractor_data
@@ -53,10 +54,12 @@ async def update_column_value(hse_user_id: int | str, character: str, character_
     result_list: list = [result_update_db, result_update_local, result_update_registry, result_update_google]
 
     if not all(result_list):
-        await bot_send_message(chat_id=hse_user_id, text=f'{hse_user_id = }. Ошибка обновления данных {item_number} {character = }!')
+        await bot_send_message(chat_id=hse_user_id,
+                               text=f'{hse_user_id = }. Ошибка обновления данных {item_number} {character = }!')
         return False
 
-    await bot_send_message(chat_id=hse_user_id, text=f'{hse_user_id = }. Данные записи {item_number} {character = } успешно обновлены')
+    await bot_send_message(chat_id=hse_user_id,
+                           text=f'{hse_user_id = }. Данные записи {item_number} {character = } успешно обновлены')
     return True
 
 
@@ -112,10 +115,11 @@ async def update_column_value_in_local(*, item_number: str | int, column_name: s
     if not violation_data.get('json', None):
         return False
 
-    violation_read_json = await read_json_file(file=f"{Udocan_media_path}{violation_data.get('json', None)}")
+    violation_read_json = await read_json_file(file=f"{Udocan_media_path}\\HSE\\{violation_data.get('json', None)}")
     violation_data.update(violation_read_json)
 
-    if not await write_json_file(data=violation_data, name=f"{Udocan_media_path}{violation_data.get('json', None)}"):
+    if not await write_json_file(data=violation_data,
+                                 name=f"{Udocan_media_path}\\HSE\\{violation_data.get('json', None)}"):
         return False
 
     logger.info(f'{hse_user_id = } Данные записи {item_number} успешно обновлены в local!')
@@ -189,7 +193,7 @@ async def update_column_value_in_registry(*, item_number: str | int, column_name
     year = act_dataframe.act_year.values[0]
     month = act_dataframe.act_month.values[0]
     month = month if month > 10 else f'0{month}'
-    report_path = f"{Udocan_media_path}{REGISTRY_NAME}\\{hse_organization_name}\\{year}\\{month}"
+    report_path = f"{Udocan_media_path}\\HSE\\{REGISTRY_NAME}\\{hse_organization_name}\\{year}\\{month}"
     report_name = f'Акт-предписание № {act_number} от {act_date} {short_title}'
     report_full_name = f'{report_path}\\{report_name}\\{report_name}.json'
 
@@ -223,16 +227,15 @@ async def update_column_value_in_registry(*, item_number: str | int, column_name
     contractor: dict = await db_get_data_dict_from_table_with_id(
         table_name='core_generalcontractor', post_id=act_constractor_id)
 
-    act_data_dict: dict = {}
-
-    act_data_dict['violations'] = [
-        {'violations_items': violations_items_list},
-        {'violations_index': len(violations_items_list)},
-    ]
-
-    act_data_dict['contractor'] = contractor
-    act_data_dict['hse_userdata'] = hse_userdata
-    act_data_dict['hse_organization'] = hse_organization_dict
+    act_data_dict: dict = {
+        'violations': [
+            {'violations_items': violations_items_list},
+            {'violations_index': len(violations_items_list)},
+        ],
+        'contractor': contractor,
+        'hse_userdata': hse_userdata,
+        'hse_organization': hse_organization_dict
+    }
 
     # TODO Дополнить заголовками и пр.
 

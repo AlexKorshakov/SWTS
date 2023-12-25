@@ -12,7 +12,9 @@ from apps.core.bot.handlers.correct_entries.correct_entries_handler import corre
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
 from apps.core.bot.messages.messages import Messages, LogMessage
 from apps.core.bot.messages.messages_test import msg
-from apps.core.database.db_utils import db_get_data_list, db_get_table_headers, db_del_item_from_table
+from apps.core.database.db_utils import (db_get_data_list,
+                                         db_get_clean_headers,
+                                         db_del_item_from_table)
 from apps.core.database.query_constructor import QueryConstructor
 from apps.core.utils.secondary_functions.get_filepath import Udocan_media_path
 from loader import logger

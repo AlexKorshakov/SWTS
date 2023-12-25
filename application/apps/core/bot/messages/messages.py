@@ -26,7 +26,7 @@ class Messages:
         confirm: str = "При завершении регистрации дальнейшее изменение невозможно!"
         canceled: str = "OK! если хотите зарегистрироваться, отправьте /start заново"
         cancel: str = "Отменить регистрацию"
-        successful: str = 'Все фотографии зарегистрированы'
+        successful: str = 'Всего фотографий загружено '
 
     class Violations:
         canceled: str = "Изменения отменены"
@@ -65,7 +65,7 @@ class Messages:
         sent_successfully: str = "Отчет успешно отправлен"
         generated_successfully: str = "Отчет успешно создан"
         begin: str = "Запись загружается"
-        completed_successfully: str = "Запись загружена"
+        completed_successfully: str = "Запись загружена  в базу данных"
         convert_successfully: str = "Отчет успешно конвертирован в pdf"
         error: str = 'не удалось конвертировать отчет в pdf'
         acts_generated_successfully: str = 'Акт(-ы) успешно созданы'

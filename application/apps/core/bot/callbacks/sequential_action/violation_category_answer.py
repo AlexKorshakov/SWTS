@@ -17,12 +17,11 @@ logger.debug(f"{__name__} finish import")
 async def violation_category_answer(call: types.CallbackQuery, state: FSMContext = None):
     """Обработка ответов содержащихся в VIOLATION_CATEGORY
     """
-    if call.data in get_data_list("VIOLATION_CATEGORY"):
-        try:
+    try:
 
-            await set_violation_atr_data("violation_category", call.data, state=state)
+        await set_violation_atr_data("violation_category", call.data, state=state)
 
-            await get_and_send_violation_category_data(call, state=state)
+        await get_and_send_violation_category_data(call, state=state)
 
-        except Exception as callback_err:
-            logger.error(f"{repr(callback_err)}")
+    except Exception as callback_err:
+        logger.error(f"{repr(callback_err)}")

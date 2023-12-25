@@ -2,26 +2,23 @@ import asyncio
 import os
 from datetime import timedelta
 
-
-from apps.core.bot.handlers.correct_entries.correct_entries_handler import (
-    del_file, del_file_from_gdrive)
+from apps.core.bot.handlers.correct_entries.correct_entries_handler import (del_file,
+                                                                            del_file_from_gdrive)
 from apps.core.bot.messages.messages import Messages
 from apps.core.database.db_utils import (db_check_record_existence,
-                                         db_del_violations, db_get_data_list,
-                                         db_get_id, db_get_id_violation,
+                                         db_del_violations,
+                                         db_get_data_list,
+                                         db_get_id,
+                                         db_get_id_violation,
                                          db_get_single_violation,
-                                         db_get_table_headers,
-                                         db_update_column_value)
+                                         db_update_column_value, db_get_clean_headers)
 from apps.core.database.query_constructor import QueryConstructor
 from apps.core.database.transformation_category import CATEGORY_ID_TRANSFORM
-from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import \
-    drive_account_credentials
-from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.set_user_violation_data_on_google_drave import \
-    update_user_violation_data_on_google_drive
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import  drive_account_credentials
+
 from apps.core.utils.json_worker.read_json_file import read_json_file
 from apps.core.utils.json_worker.writer_json_file import write_json
-from apps.core.utils.secondary_functions.get_filepath import \
-    get_json_full_filename
+from apps.core.utils.secondary_functions.get_filepath import  get_json_full_filename
 from apps.core.web.models import Violations
 from config.config import WRITE_DATA_ON_GOOGLE_DRIVE, Udocan_media_path
 from loader import logger
@@ -148,7 +145,7 @@ async def delete_violation_files_from_gdrive(violation: dict) -> bool:
         return False
 
     name: str = violation.get("file_id")
-    violation_data_file = str(Udocan_media_path) + str(violation['json'])
+    violation_data_file = str(Udocan_media_path) + "HSE" + str(violation['json'])
     violation_json_parent_id = violation['json_folder_id']
 
     drive_service = await drive_account_credentials()
@@ -177,13 +174,13 @@ async def delete_violation_files_from_pc(violation: dict):
 
     :param violation dict данные записи для удаления
     """
-    json_full_path = str(Udocan_media_path) + str(violation['json'])
+    json_full_path = str(Udocan_media_path) + "HSE" + str(violation['json'])
 
     if not await del_file(path=json_full_path):
         logger.error(Messages.Error.file_not_found)
     logger.info(Messages.Removed.violation_data_pc)
 
-    photo_full_path = str(Udocan_media_path) + str(violation['photo'])
+    photo_full_path = str(Udocan_media_path) + "HSE" + str(violation['photo'])
 
     if not await del_file(path=photo_full_path):
         logger.error(Messages.Error.file_not_found)
@@ -195,7 +192,7 @@ async def get_id_registered_users() -> list[str]:
 
     :return: list[str] список директорий
     """
-    return os.listdir(str(Udocan_media_path))
+    return os.listdir(str(Udocan_media_path) + "HSE")
 
 
 async def get_params(id_registered_users: list) -> list[dict]:
@@ -236,14 +233,14 @@ async def update_violation_files_from_gdrive(data_for_update: dict = None):
     file_id: str = str(data_for_update.get('file_id'))
     date: str = file_id.split("___")[0]
 
-    file_full_name = str(Udocan_media_path) + f'/{user_id}/data_file/{date}/json/report_data___{file_id}.json'
+    file_full_name = str(Udocan_media_path) + "HSE" + f'/{user_id}/data_file/{date}/json/report_data___{file_id}.json'
 
-    await update_user_violation_data_on_google_drive(
-        chat_id=user_id,
-        violation_data=data_for_update,
-        file_full_name=file_full_name,
-        notify_user=False
-    )
+    # await update_user_violation_data_on_google_drive(
+    #     chat_id=user_id,
+    #     violation_data=data_for_update,
+    #     file_full_name=file_full_name,
+    #     notify_user=False
+    # )
 
     logger.info('данные обновлены в Google Drive!')
 
@@ -377,7 +374,8 @@ async def get_data_for_update(data: dict, get_from: str = 'local') -> dict:
         user_id: str = str(data.get('user_id'))
         file_id: str = str(data.get('file_id'))
         date: str = str(file_id).split("___")[0]
-        json_full_path: str = str(Udocan_media_path) + f'/{user_id}/data_file/{date}/json/report_data___{file_id}.json'
+        json_full_path: str = str(
+            Udocan_media_path) + "HSE" + f'/{user_id}/data_file/{date}/json/report_data___{file_id}.json'
 
         if not os.path.isfile(json_full_path):
             logger.error(f'Not found file {file_id}')
@@ -389,8 +387,9 @@ async def get_data_for_update(data: dict, get_from: str = 'local') -> dict:
             if await db_check_record_existence(file_id=data.get('file_id')):
                 violation_list: list = await db_get_single_violation(file_id=data.get('file_id'))
 
-                headers: list[str] = [row[1] for row in await db_get_table_headers()]
-                violation_dict: dict = dict(zip(headers, violation_list[0]))
+                # headers: list[str] = [row[1] for row in await db_get_table_headers()]
+                clean_headers: list[str] = await db_get_clean_headers('core_violations')
+                violation_dict: dict = dict(zip(clean_headers, violation_list[0]))
                 return violation_dict
 
         except Exception as err:
@@ -516,7 +515,7 @@ async def update_violations_from_all_repo(data_from_form: dict = None) -> bool:
 
     await update_violation_files_from_local(data_update_local=normalize_data)
 
-    await update_violation_files_from_gdrive(data_for_update=normalize_data)
+    # await update_violation_files_from_gdrive(data_for_update=normalize_data)
 
     return True
 
@@ -535,10 +534,10 @@ async def delete_violations_from_all_repo(violation_file_id: str) -> bool:
         logger.error(f'violation: {violation_file_id} - запись не найдена')
         return False
 
-    headers = [row[1] for row in await db_get_table_headers()]
-    violation_dict = dict(zip(headers, violation_list[0]))
+    clean_headers = await db_get_clean_headers('core_violations')
+    violation_dict = dict(zip(clean_headers, violation_list[0]))
 
-    await delete_violation_files_from_gdrive(violation=violation_dict)
+    # await delete_violation_files_from_gdrive(violation=violation_dict)
 
     await delete_violation_files_from_pc(violation=violation_dict)
 

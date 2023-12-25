@@ -38,13 +38,14 @@ class ProgressBar:
                 text=self.empty_character * 10,
                 reply_markup=self.reply_markup
             )
+
         except RuntimeWarning as run_time_err:
             logger.error(f'{repr(run_time_err)}')
 
         except Exception as err:
             logger.error(f'{__class__.__name__} {repr(err)}')
 
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.5)
         return self.msg
 
     async def finish(self) -> types.Message:

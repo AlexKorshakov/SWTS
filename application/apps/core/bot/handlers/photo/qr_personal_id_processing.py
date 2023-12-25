@@ -22,7 +22,7 @@ from apps.core.bot.states import PersonalIdHuntingState
 from apps.core.database.query_constructor import QueryConstructor
 
 
-class DataBaseEmployeeID:
+class DataBaseSubconEmployeeID:
 
     def __init__(self):
 
@@ -91,6 +91,7 @@ class DataBaseEmployeeID:
 async def qr_personal_id_processing(hse_user_id: str | int, data: list, message, state: FSMContext = None):
     """
 
+    :param state:
     :param message:
     :param hse_user_id: str
     :param data: list
@@ -303,7 +304,7 @@ async def check_employee_id(item_id) -> list:
     query: str = await QueryConstructor(None, table_name, **query_kwargs).prepare_data()
 
     try:
-        datas_list: list = await DataBaseEmployeeID().db_get_data_list(table_name=table_name, query=query)
+        datas_list: list = await DataBaseSubconEmployeeID().db_get_data_list(table_name=table_name, query=query)
 
     except sqlite3.OperationalError as err:
         logger.error(f'{table_name = } is missing from the database! err: {repr(err)}')
@@ -313,7 +314,7 @@ async def check_employee_id(item_id) -> list:
         # logger.error('Missing datas_list from the database.')
         return []
 
-    clean_headers: list = await DataBaseEmployeeID().get_table_headers(table_name)
+    clean_headers: list = await DataBaseSubconEmployeeID().get_table_headers(table_name)
     list_dicts: list = [dict(zip(clean_headers, data_list)) for data_list in datas_list]
 
     if list_dicts:
@@ -338,7 +339,7 @@ async def check_employee_id_from_db(item_id) -> list:
     query: str = await QueryConstructor(None, table_name, **query_kwargs).prepare_data()
 
     try:
-        datas_list: list = await DataBaseEmployeeID().db_get_data_list(table_name=table_name, query=query)
+        datas_list: list = await DataBaseSubconEmployeeID().db_get_data_list(table_name=table_name, query=query)
 
     except sqlite3.OperationalError as err:
         logger.error(f'{table_name = } is missing from the database! err: {repr(err)}')
@@ -348,7 +349,7 @@ async def check_employee_id_from_db(item_id) -> list:
         # logger.error('Missing datas_list from the database.')
         return []
 
-    clean_headers: list = await DataBaseEmployeeID().get_table_headers(table_name)
+    clean_headers: list = await DataBaseSubconEmployeeID().get_table_headers(table_name)
     list_dicts: list = [dict(zip(clean_headers, data_list)) for data_list in datas_list]
 
     if list_dicts:

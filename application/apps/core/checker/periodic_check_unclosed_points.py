@@ -5,12 +5,13 @@ from datetime import datetime
 
 from pandas import DataFrame
 
-from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
 from loader import logger
 from apps.core.settyngs import get_sett
-from apps.MyBot import bot_send_message, MyBot
+from apps.MyBot import bot_send_message
 from apps.core.bot.messages.messages import LogMessage, Messages
-from apps.core.database.db_utils import db_get_table_headers, db_get_data_list, db_get_data_dict_from_table_with_id
+from apps.core.database.db_utils import (db_get_data_list,
+                                         db_get_data_dict_from_table_with_id,
+                                         db_get_clean_headers)
 from apps.core.database.query_constructor import QueryConstructor
 
 
@@ -115,7 +116,7 @@ async def get_hse_role_receive_notifications_list() -> list:
     if not isinstance(datas_query, list):
         return []
 
-    clean_headers: list = [item[1] for item in await db_get_table_headers(table_name=db_table_name)]
+    clean_headers: list = await db_get_clean_headers(table_name=db_table_name)
     if not clean_headers:
         return []
 
@@ -124,6 +125,9 @@ async def get_hse_role_receive_notifications_list() -> list:
     except Exception as err:
         logger.error(F"create_dataframe {repr(err)}")
         return []
+
+    # TODO  raise KeyError(key) from err
+    #                    └ 'hse_role_receive_notifications'
 
     current_act_violations_df: DataFrame = hse_role_receive_df.loc[
         hse_role_receive_df['hse_role_receive_notifications'] == 1
@@ -268,8 +272,7 @@ async def create_lite_dataframe_from_query(query: str, table_name: str) -> DataF
         logger.debug(f"{LogMessage.Check.no_violations} ::: {await get_now()}")
         return None
 
-    headers = await db_get_table_headers(table_name=table_name)
-    clean_headers: list = [item[1] for item in headers]
+    clean_headers = await db_get_clean_headers(table_name=table_name)
 
     try:
         dataframe = DataFrame(violations_data, columns=clean_headers)

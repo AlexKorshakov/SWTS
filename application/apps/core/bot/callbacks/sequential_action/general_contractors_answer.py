@@ -19,16 +19,15 @@ logger.debug(f"{__name__} finish import")
 async def general_contractors_answer(call: types.CallbackQuery, state: FSMContext = None):
     """Обработка ответов содержащихся в GENERAL_CONTRACTORS
     """
-    if call.data in get_data_list("GENERAL_CONTRACTORS"):
-        try:
-            value: str = await db_get_full_title(
-                table_name=CATEGORY_ID_TRANSFORM['general_contractor']['table'],
-                short_title=call.data
-            )
+    try:
+        value: str = await db_get_full_title(
+            table_name=CATEGORY_ID_TRANSFORM['general_contractor']['table'],
+            short_title=call.data
+        )
 
-            await set_violation_atr_data("general_contractor", value, state=state)
+        await set_violation_atr_data("general_contractor", value, state=state)
 
-            await get_and_send_general_contractors_data(call, state=state)
+        await get_and_send_general_contractors_data(call, state=state)
 
-        except Exception as callback_err:
-            logger.error(f"{repr(callback_err)}")
+    except Exception as callback_err:
+        logger.error(f"{repr(callback_err)}")

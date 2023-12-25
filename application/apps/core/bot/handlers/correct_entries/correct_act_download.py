@@ -10,11 +10,13 @@ from pandas import DataFrame
 
 from apps.MyBot import MyBot, bot_send_message, bot_send_document
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
+from apps.core.bot.handlers.correct_entries.correct_support_path import get_full_act_prescription_path
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
 from apps.core.bot.messages.messages import Messages, LogMessage
-from apps.core.database.db_utils import db_get_data_list, db_get_table_headers, db_get_data_dict_from_table_with_id
+from apps.core.database.db_utils import (db_get_data_list,
+                                         db_get_clean_headers,
+                                         db_get_data_dict_from_table_with_id)
 from apps.core.database.query_constructor import QueryConstructor
-from apps.core.utils.secondary_functions.get_filepath import Udocan_media_path
 from loader import logger
 
 
@@ -70,7 +72,7 @@ async def call_correct_act_download(call: types.CallbackQuery = None, callback_d
     short_title = contractor_data.get('short_title')
 
     full_act_prescription_path: str = await get_full_act_prescription_path(
-        hse_user_id=hse_user_id, act_number=act_number, act_date=act_date, short_title=short_title
+        chat_id=hse_user_id, act_number=act_number, act_date=act_date, short_title=short_title
     )
 
     if not full_act_prescription_path:
@@ -88,13 +90,13 @@ async def call_correct_act_download(call: types.CallbackQuery = None, callback_d
     )
 
 
-async def get_full_act_prescription_path(hse_user_id, act_number, act_date, short_title) -> str:
-    """Получение и создание полного пути акта предписания
-
-    """
-    act_prescription_full_name: str = f'{Udocan_media_path}{hse_user_id}\\data_file\\{act_date}\\reports\\Акт-предписание № ' \
-                                      f'{act_number} от {act_date} {short_title}'
-    return act_prescription_full_name
+# async def get_full_act_prescription_path(hse_user_id, act_number, act_date, short_title) -> str:
+#     """Получение и создание полного пути акта предписания
+#
+#     """
+#     act_prescription_full_name: str = f'{Udocan_media_path}\\HSE\\{hse_user_id}\\data_file\\{act_date}\\reports\\Акт-предписание № ' \
+#                                       f'{act_number} от {act_date} {short_title}'
+#     return act_prescription_full_name
 
 
 async def send_act_prescription(hse_user_id: int or str, full_act_prescription_path: str) -> bool:
@@ -139,8 +141,7 @@ async def create_lite_dataframe_from_query(query: str, table_name: str) -> DataF
         logger.debug(f"{LogMessage.Check.no_violations} ::: {await get_now()}")
         return None
 
-    headers = await db_get_table_headers(table_name=table_name)
-    clean_headers: list = [item[1] for item in headers]
+    clean_headers = await db_get_clean_headers(table_name=table_name)
 
     try:
         dataframe = DataFrame(violations_data, columns=clean_headers)

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from loader import logger
 
 logger.debug(f"{__name__} start import")
@@ -9,7 +11,6 @@ from apps.core.bot.data.board_config import BoardConfig as board_config
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.reports.report_data import (global_reg_form,
                                                headlines_data,
-    # violation_data,
                                                user_data)
 from apps.core.utils.misc import rate_limit
 from apps.MyBot import MyBot, bot_send_message
@@ -38,18 +39,20 @@ class NamedDict(dict):
 @rate_limit(limit=5)
 @MyBot.dp.message_handler(Command('cancel'), state='*')
 @MyBot.dp.message_handler(Text(equals='cancel', ignore_case=True), state='*')
-async def cancel_handler(call: types.CallbackQuery, state: FSMContext):
+async def cancel_handler(message: types.Message, user_id: int | str = None, state: FSMContext = None):
     """Корректирование уже введённых значений на локальном pc и на google drive
 
     :return:
     """
+    try:
+        user_id = message.chat.id if message else user_id
+    except AttributeError:
+        user_id = message.message.chat.id if message else user_id
 
-    chat_id = call.from_user.id
-    if not await check_user_access(chat_id=chat_id):
+    if not await check_user_access(chat_id=user_id):
         return
 
     dict_list = [
-        # NamedDict.fromkeys('violation_data', violation_data),
         NamedDict.fromkeys('user_data', user_data),
         NamedDict.fromkeys('global_reg_form', global_reg_form),
         NamedDict.fromkeys('headlines_data', headlines_data)
@@ -61,13 +64,6 @@ async def cancel_handler(call: types.CallbackQuery, state: FSMContext):
         if items_data_name:
             items_data.clear()
             logger.info(f"Report is clear {str(items_data.name)} {items_data}")
-    #
-    # board_config.menu_level = 1
-    # board_config.menu_list = []
-    # board_config.violation_menu_list = []
-    # board_config.violation_file = []
-    # board_config.previous_level = ''
-    # board_config.current_file = None
 
     await board_config(state, "menu_level", 1).set_data()
     await board_config(state, "menu_list", []).set_data()
@@ -76,8 +72,8 @@ async def cancel_handler(call: types.CallbackQuery, state: FSMContext):
     await board_config(state, "previous_level", '').set_data()
     await board_config(state, "current_file", 'None').set_data()
 
-    await bot_send_message(chat_id=chat_id, text=Messages.all_canceled)
-    await bot_send_message(chat_id=ADMIN_ID, text=f'cancel_all from {chat_id}')
+    await bot_send_message(chat_id=user_id, text=Messages.all_canceled)
+    await bot_send_message(chat_id=ADMIN_ID, text=f'cancel_all from {user_id}')
 
     current_state = await state.get_state()
     logger.info(f'Cancelling state {current_state}')

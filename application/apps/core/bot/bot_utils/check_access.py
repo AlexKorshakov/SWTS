@@ -2,13 +2,16 @@ from __future__ import print_function, annotations
 
 import traceback
 
+from aiogram import types
 from pandas import DataFrame
 
 from apps.MyBot import bot_send_message
 from apps.core.bot.bot_utils.bot_admin_notify import admin_notify
+from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.messages.messages_test import msg
-from apps.core.database.db_utils import db_get_data_list, db_get_table_headers
+from apps.core.database.db_utils import (db_get_data_list,
+                                         db_get_clean_headers)
 from apps.core.database.query_constructor import QueryConstructor
 from loader import logger
 
@@ -223,7 +226,7 @@ async def get_hse_role_receive_df() -> DataFrame | None:
     if not isinstance(datas_query, list):
         return None
 
-    clean_headers: list = [item[1] for item in await db_get_table_headers(table_name=db_table_name)]
+    clean_headers: list = await db_get_clean_headers(table_name=db_table_name)
     if not clean_headers:
         return None
 
@@ -282,11 +285,12 @@ async def user_access_fail(chat_id: int, notify_text: str = None, hse_id: str = 
             notify_text: str = f'User {chat_id} попытка доступа к функциям без регистрации'
 
         logger.error(notify_text)
-        # button = types.InlineKeyboardButton(text=f'{chat_id}', url=f"tg://user?id={chat_id}")
+        button = types.InlineKeyboardButton('user_actions',
+                                            callback_data=posts_cb.new(id='-', action='admin_user_actions'))
         await admin_notify(
             user_id=chat_id,
             notify_text=notify_text,
-            # button=button
+            button=button
         )
 
 

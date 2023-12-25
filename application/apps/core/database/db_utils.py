@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from loader import logger
-
-logger.debug(f"{__name__} start import")
 import asyncio
 from datetime import date, datetime, timedelta
 import traceback
 from pandas import DataFrame
 from sqlite3 import OperationalError
 
-from apps.core.database.ViolationsDataBase import ViolationsDataBase
+from loader import logger
+
+logger.debug(f"{__name__} start import")
+from apps.core.database.ViolationsDataBase import DataBaseViolations
 from apps.core.database.query_constructor import QueryConstructor
 
 logger.debug(f"{__name__} finish import")
@@ -18,10 +18,10 @@ logger.debug(f"{__name__} finish import")
 async def db_check_record_existence(file_id: int) -> bool:
     """Проверка наличия записи в БД
 
-    :type file_id: int - id записи
+    :param file_id: int - id записи
     :return: bool is_exists
     """
-    is_exists: bool = ViolationsDataBase().violation_exists(file_id=file_id)
+    is_exists: bool = DataBaseViolations().violation_exists(file_id=file_id)
     if is_exists:
         return True
 
@@ -31,10 +31,33 @@ async def db_check_record_existence(file_id: int) -> bool:
 async def db_add_violation(violation_data: dict) -> bool:
     """Добавление записи в БД
 
-    :param violation_data: dict -  dict с данными для записи в БД
+    :param violation_data: dict - dict с данными для записи в БД
     :return: bool violation_exists
     """
-    is_added: bool = ViolationsDataBase().add_violation(violation_dict=violation_data)
+
+    if not violation_data: return False
+
+    is_added: bool = await DataBaseViolations().add_data(
+        table_name='core_violations', data_dict=violation_data
+    )
+    if is_added:
+        return True
+
+    return False
+
+
+async def db_add_user(hseuser_data: dict) -> bool:
+    """Добавление записи в БД
+
+    :param hseuser_data: dict - dict с данными для записи в БД
+    :return: bool violation_exists
+    """
+
+    if not hseuser_data: return False
+
+    is_added: bool = await DataBaseViolations().add_data(
+        table_name='core_hseuser', data_dict=hseuser_data
+    )
     if is_added:
         return True
 
@@ -47,10 +70,8 @@ async def db_get_data_dict_from_table_with_id(table_name: str, post_id: int, que
     :return: dict - dict с данными
     """
 
-    data_exists: dict = ViolationsDataBase().get_dict_data_from_table_from_id(
-        table_name=table_name,
-        id=post_id,
-        query=query
+    data_exists: dict = DataBaseViolations().get_dict_data_from_table_from_id(
+        table_name=table_name, id=post_id, query=query
     )
 
     return data_exists
@@ -82,8 +103,8 @@ async def db_get_categories_list() -> list:
     }
     query: str = await QueryConstructor(None, 'core_category', **query_kwargs).prepare_data()
     categories: list = await db_get_data_list(query=query)
-    headers = [row[1] for row in await db_get_table_headers(table_name='core_category')]
-    categories_list = [dict(zip(headers, cat)) for cat in categories]
+    clean_headers = await db_get_clean_headers(table_name='core_category')
+    categories_list = [dict(zip(clean_headers, cat)) for cat in categories]
     return categories_list
 
 
@@ -110,7 +131,7 @@ async def db_del_violations(violation: dict) -> list:
     """
 
     file_id = violation['file_id']
-    result = ViolationsDataBase().delete_single_violation(file_id=file_id)
+    result = DataBaseViolations().delete_single_violation(file_id=file_id)
     return result
 
 
@@ -123,7 +144,7 @@ async def db_del_item_from_table(*, table_name: str, table_column_name: str, fil
     :return: list
     """
 
-    result = ViolationsDataBase().delete_item_from_table(
+    result = DataBaseViolations().delete_item_from_table(
         table_name=table_name,
         table_column_name=table_column_name,
         file_id=file_id
@@ -139,7 +160,7 @@ async def db_get_all_tables_names() -> list:
 
     :return:
     """
-    result = ViolationsDataBase().get_all_tables_names()
+    result = DataBaseViolations().get_all_tables_names()
     clean_result: list = [item[0] for item in result]
     return clean_result
 
@@ -149,7 +170,7 @@ async def db_get_data_list(query: str) -> list:
 
     :return: list
     """
-    datas_query: list = ViolationsDataBase().get_data_list(query=query)
+    datas_query: list = DataBaseViolations().get_data_list(query=query)
     return datas_query
 
 
@@ -159,8 +180,22 @@ async def db_get_single_violation(file_id: str) -> list:
     :return: list
     """
 
-    violation_list: list = ViolationsDataBase().get_single_violation(file_id=file_id)
+    violation_list: list = DataBaseViolations().get_single_violation(file_id=file_id)
     return violation_list
+
+
+async def db_get_clean_headers(table_name: str) -> list:
+    """Получение заголовков таблицы по имени table_name
+
+    :param table_name: str - имя таблицы для получения заголовков
+    :return: list[str] or []
+    """
+
+    if not table_name:
+        return []
+
+    clean_headers: list = [item[1] for item in await db_get_table_headers(table_name=table_name)]
+    return clean_headers
 
 
 async def db_get_table_headers(table_name: str = None) -> list:
@@ -169,7 +204,7 @@ async def db_get_table_headers(table_name: str = None) -> list:
     :return:
     """
 
-    table_headers: list = ViolationsDataBase().get_table_headers(table_name)
+    table_headers: list = await DataBaseViolations().get_table_headers(table_name)
     return table_headers
 
 
@@ -179,11 +214,11 @@ async def db_get_id_violation(file_id) -> int:
     :return: int
     """
 
-    vi_id: int = ViolationsDataBase().get_id_violation(file_id=file_id)
+    vi_id: int = DataBaseViolations().get_id_violation(file_id=file_id)
     return vi_id
 
 
-async def db_get_id(table, entry, file_id, name) -> int:
+async def db_get_id(table, entry, file_id: str = None, name: str = None) -> int:
     """Получение id записи по значению title из соответствующий таблицы table
 
     :param name:
@@ -192,13 +227,15 @@ async def db_get_id(table, entry, file_id, name) -> int:
     :param table: str - имя таблицы
     :return: int
     """
-    value: int = ViolationsDataBase().get_id(
-        table=table,
-        entry=entry,
-        file_id=file_id,
-        name=name
-    )
-    return value
+    try:
+        value: int = DataBaseViolations().get_id(
+            table=table, entry=entry, file_id=file_id, name=name
+        )
+        return value
+
+    except OperationalError as err:
+        logger.error(f'{repr(err)} {table = }, {entry = }, {file_id = }, {name = }')
+        return 0
 
 
 async def db_update_hse_user_language(*, value: str, hse_id: str) -> bool:
@@ -207,9 +244,29 @@ async def db_update_hse_user_language(*, value: str, hse_id: str) -> bool:
     :return:
     """
 
-    result: bool = ViolationsDataBase().update_hse_user_language(
+    result: bool = DataBaseViolations().update_hse_user_language(
         value=str(value), hse_id=str(hse_id)
     )
+    if result:
+        return True
+    return False
+
+
+async def db_update_column_value_for_query(*, table_name: str, hse_telegram_id: str, table_column_name: str,
+                                           item_value: str | int) -> bool:
+    """Обновление значений item_value в столбце table_column_name строки item_number таблицы table_name
+
+    :param item_number: str - id строки
+    :param table_name: str  - имя таблицы для изменений
+    :param table_column_name: str  - имя столбца таблицы table_name для изменений
+    :param item_value: str  - значение для внесения изменений
+
+    :return: bool true если удачно or false если не удачно
+    """
+    # TODO заменить на вызов конструктора QueryConstructor
+    query: str = f"UPDATE {table_name} SET `{table_column_name}` = {bool(item_value)} WHERE `hse_telegram_id` = {hse_telegram_id}"
+
+    result: bool = await DataBaseViolations().update_column_value_for_query(query=query)
     if result:
         return True
     return False
@@ -221,7 +278,7 @@ async def db_update_column_value(column_name: str, value: None | int | str, viol
     :return:
     """
 
-    result: bool = ViolationsDataBase().update_column_value(
+    result: bool = DataBaseViolations().update_column_value(
         column_name=column_name,
         value=value,
         id=str(violation_id)
@@ -246,7 +303,7 @@ async def db_update_table_column_value(*, table_name: str, table_column_name_for
     query: str = f"UPDATE {table_name} SET {table_column_name_for_update} = ? WHERE {table_column_name} = ?"
     logger.debug(f'{table_name = } {table_column_name = } {item_name = } {item_value = }')
 
-    result: bool = ViolationsDataBase().update_table_column_value(
+    result: bool = DataBaseViolations().update_table_column_value(
         query=query,
         item_name=item_name,
         item_value=str(item_value)
@@ -261,7 +318,7 @@ async def db_get_full_title(table_name: str, short_title: str) -> str:
 
     :return:
     """
-    full_title:str = ViolationsDataBase().get_full_title(table_name=table_name, short_title=short_title)
+    full_title: str = DataBaseViolations().get_full_title(table_name=table_name, short_title=short_title)
     return full_title
 
 
@@ -270,7 +327,7 @@ async def db_get_max_max_number() -> int:
 
     :return: int act_num: номер акта - предписания
     """
-    act_num: int = ViolationsDataBase().get_max_max_number()
+    act_num: int = DataBaseViolations().get_max_max_number()
     return act_num
 
 
@@ -279,9 +336,9 @@ async def db_set_act_value(act_data_dict: DataFrame, act_number: int, act_date: 
 
     :return:
     """
-    act_is_created: bool = ViolationsDataBase().set_act_value(act_data_dict=act_data_dict,
-                                                              act_number=act_number,
-                                                              act_date=act_date)
+    act_is_created: bool = DataBaseViolations().set_act_value(
+        act_data_dict=act_data_dict, act_number=act_number, act_date=act_date
+    )
     return act_is_created
 
 
@@ -300,7 +357,7 @@ async def db_get_username(user_id: int) -> str:
         },
     }
     query: str = await QueryConstructor(None, 'core_hseuser', **query_kwargs).prepare_data()
-    datas_query: list = ViolationsDataBase().get_data_list(query=query)
+    datas_query: list = DataBaseViolations().get_data_list(query=query)
     username = datas_query[0][4]
 
     return username
@@ -315,8 +372,7 @@ async def db_get_dict_userdata(user_id: int) -> dict:
         logger.error('ERROR: No user_id foe db_get_username ')
         return {}
 
-    headers: list = await db_get_table_headers(table_name='core_hseuser')
-    clean_headers: list = [item[1] for item in headers]
+    clean_headers: list = await db_get_clean_headers(table_name='core_hseuser')
 
     query_kwargs: dict = {
         "action": 'SELECT', "subject": '*',
@@ -326,9 +382,10 @@ async def db_get_dict_userdata(user_id: int) -> dict:
     }
     query: str = await QueryConstructor(None, 'core_hseuser', **query_kwargs).prepare_data()
 
-    datas_query: list = ViolationsDataBase().get_data_list(query=query)
+    datas_query: list = DataBaseViolations().get_data_list(query=query)
     try:
         clean_values: list = datas_query[0]
+
     except IndexError:
         return {}
 
@@ -356,10 +413,10 @@ async def db_get_period_for_current_week(current_week: str, current_year: str = 
 
     logger.debug(f'{__name__} {say_fanc_name()} {query}')
 
-    datas_query: list = ViolationsDataBase().get_data_list(query=query)
+    datas_query: list = DataBaseViolations().get_data_list(query=query)
     period_data = datas_query[0]
 
-    table_headers: list = ViolationsDataBase().get_table_headers('core_week')
+    table_headers: list = await DataBaseViolations().get_table_headers('core_week')
     headers = [row[1] for row in table_headers]
     period_dict = dict(zip(headers, period_data))
     return [
@@ -402,10 +459,12 @@ def db_get_data_list_no_async(query: str) -> list:
     :return: list
     """
     try:
-        datas_query: list = ViolationsDataBase().get_data_list(query=query)
+        datas_query: list = DataBaseViolations().get_data_list(query=query)
+
     except OperationalError as err:
         logger.error(f'{repr(err)} {query = }')
         return []
+
     return datas_query
 
 
@@ -415,7 +474,7 @@ def db_get_table_headers_no_async(db_table_name: str) -> list:
     :return:
     """
 
-    result_list: list = ViolationsDataBase().get_table_headers(table_name=db_table_name)
+    result_list: list = asyncio.run(DataBaseViolations().get_table_headers(table_name=db_table_name))
     return result_list
 
 
@@ -425,7 +484,7 @@ def db_get_id_no_async(table, entry, file_id: str = None, name=None) -> int:
     :return: int
     """
 
-    value: int = ViolationsDataBase().get_id(
+    value: int = DataBaseViolations().get_id(
         table=table,
         entry=entry,
         file_id=file_id,
@@ -491,17 +550,13 @@ def say_fanc_name():
 
 
 async def test():
-    """Test
-
-    :return:
-    """
     res: list = await db_get_all_tables_names()
     for item in res:
         logger.info(f'{item}')
 
     now = datetime.now()
     current_week: str = await get_week_message(current_date=now)
-    current_month: str = await get_month_message(current_date=now)
+    # current_month: str = await get_month_message(current_date=now)
     current_year: str = await get_year_message(current_date=now)
 
     stat_date_period: list = await db_get_period_for_current_week(current_week, current_year)

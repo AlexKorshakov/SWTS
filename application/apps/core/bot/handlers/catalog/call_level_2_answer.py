@@ -10,6 +10,7 @@ from apps.core.bot.data.board_config import BoardConfig as board_config
 from apps.core.bot.handlers.catalog.catalog_func_handler import catalog_spot_data
 from apps.core.bot.handlers.catalog.catalog_support import get_dataframe, get_level_2_list_dict, get_nan_value_text, \
     text_processor_level, text_processor, list_number, level_2_column, level_3_column
+from apps.core.bot.handlers.catalog.catalog_support import check_dataframe
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard
 from apps.core.bot.messages.messages import Messages
 from loader import logger
@@ -50,10 +51,6 @@ async def call_level_2_answer(call: types.CallbackQuery, user_id: int | str = No
 
     title_list: list = [f"level_3__{num}" for num, item in enumerate(level_3, start=1) if item is not None]
 
-    # menu_level = board_config.menu_level = 1
-    # menu_list = board_config.menu_list = title_list
-    # count_col = board_config.count_col = 2
-
     menu_level = await board_config(state, "menu_level", 1).set_data()
     menu_list = await board_config(state, "menu_list", title_list).set_data()
     count_col = await board_config(state, "count_col", 2).set_data()
@@ -71,21 +68,3 @@ async def call_level_2_answer(call: types.CallbackQuery, user_id: int | str = No
     await bot_send_message(chat_id=hse_user_id, text=Messages.Choose.choose_value)
 
 
-async def check_dataframe(dataframe: DataFrame, hse_user_id: str | int) -> bool:
-    """Проверка dataframe на наличие данных
-
-    :param dataframe:
-    :param hse_user_id: id пользователя
-    :return:
-    """
-    if dataframe is None:
-        text_violations: str = 'не удалось получить данные!'
-        logger.error(f'{hse_user_id = } {text_violations}')
-        # await bot_send_message(chat_id=hse_user_id, text=text_violations)
-        return False
-
-    if dataframe.empty:
-        logger.error(f'{hse_user_id = } {Messages.Error.dataframe_is_empty}')
-        return False
-
-    return True

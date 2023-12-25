@@ -11,8 +11,10 @@ from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.bot.handlers.correct_entries.correct_entries_handler import correct_entries_handler
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
 from apps.core.bot.messages.messages import Messages, LogMessage
-from apps.core.database.db_utils import db_get_data_list, db_get_table_headers, db_update_column_value, \
-    db_update_table_column_value
+from apps.core.database.db_utils import (db_get_data_list,
+                                         db_get_clean_headers,
+                                         db_update_column_value,
+                                         db_update_table_column_value)
 from apps.core.database.query_constructor import QueryConstructor
 from loader import logger
 
@@ -191,8 +193,7 @@ async def create_lite_dataframe_from_query(query: str, table_name: str) -> DataF
         logger.debug(f"{LogMessage.Check.no_violations} ::: {await get_now()}")
         return None
 
-    headers = await db_get_table_headers(table_name=table_name)
-    clean_headers: list = [item[1] for item in headers]
+    clean_headers = await db_get_clean_headers(table_name=table_name)
 
     try:
         dataframe = DataFrame(violations_data, columns=clean_headers)

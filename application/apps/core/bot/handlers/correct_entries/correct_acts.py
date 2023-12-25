@@ -9,13 +9,15 @@ from aiogram.dispatcher import FSMContext
 from aiogram.types import InlineKeyboardMarkup
 from pandas import DataFrame
 
-from apps.MyBot import MyBot, bot_send_message, bot_delete_message, bot_delete_markup
+from apps.MyBot import MyBot, bot_send_message, bot_delete_markup
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.bot.data.board_config import BoardConfig as board_config
 from apps.core.bot.handlers.correct_entries.correct_support import create_user_dataframe, check_dataframe
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb, build_inlinekeyboard
 from apps.core.bot.messages.messages import Messages, LogMessage
-from apps.core.database.db_utils import db_get_data_list, db_get_table_headers, db_get_data_dict_from_table_with_id
+from apps.core.database.db_utils import (db_get_data_list,
+                                         db_get_clean_headers,
+                                         db_get_data_dict_from_table_with_id)
 from apps.core.database.query_constructor import QueryConstructor
 from loader import logger
 
@@ -171,7 +173,7 @@ async def get_hse_role_receive_notifications_list() -> list:
     if not isinstance(datas_query, list):
         return []
 
-    clean_headers: list = [item[1] for item in await db_get_table_headers(table_name=db_table_name)]
+    clean_headers: list = await db_get_clean_headers(table_name=db_table_name)
     if not clean_headers:
         return []
 
@@ -284,8 +286,7 @@ async def create_lite_dataframe_from_query(query: str, table_name: str) -> DataF
         logger.debug(f"{LogMessage.Check.no_violations} ::: {await get_now()}")
         return None
 
-    headers = await db_get_table_headers(table_name=table_name)
-    clean_headers: list = [item[1] for item in headers]
+    clean_headers = await db_get_clean_headers(table_name=table_name)
 
     try:
         dataframe = DataFrame(violations_data, columns=clean_headers)

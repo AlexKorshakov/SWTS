@@ -13,8 +13,9 @@ from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.bot.data.board_config import BoardConfig as board_config
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb, build_inlinekeyboard
 from apps.core.bot.messages.messages import Messages, LogMessage
-from apps.core.bot.messages.messages_test import msg
-from apps.core.database.db_utils import db_get_table_headers, db_get_data_list, db_get_data_dict_from_table_with_id
+from apps.core.database.db_utils import (db_get_clean_headers,
+                                         db_get_data_list,
+                                         db_get_data_dict_from_table_with_id)
 from apps.core.database.query_constructor import QueryConstructor
 from loader import logger
 
@@ -50,11 +51,11 @@ async def call_correct_act_item_correct(call: types.CallbackQuery = None, callba
         logger.error(f'{hse_user_id = } {repr(err)} {act_number_text = }')
         await bot_send_message(chat_id=hse_user_id, text=Messages.Error.error_command)
 
-        # TODO Delete
-        logger.error(f'{hse_user_id = } Messages.Error.error_action')
-        msg_text = await msg(hse_user_id, cat='error', msge='error_action', default=Messages.Error.error_action).g_mas()
-        await bot_send_message(chat_id=hse_user_id, text=msg_text)
-        return
+        # # TODO Delete
+        # logger.error(f'{hse_user_id = } Messages.Error.error_action')
+        # msg_text = await msg(hse_user_id, cat='error', msge='error_action', default=Messages.Error.error_action).g_mas()
+        # await bot_send_message(chat_id=hse_user_id, text=msg_text)
+        # return
 
     query_kwargs: dict = {
         "action": 'SELECT', "subject": '*',
@@ -110,12 +111,21 @@ async def add_act_inline_keyboard_with_action():
 
     markup = types.InlineKeyboardMarkup()
 
-    markup.add(types.InlineKeyboardButton('Финализировать и записать пункт',
-                                          callback_data=posts_cb.new(id='-', action='correct_act_item_finalize')))
-    markup.add(types.InlineKeyboardButton('Исправить данные пункта',
-                                          callback_data=posts_cb.new(id='-', action='correct_act_item_data_correct')))
-    markup.add(types.InlineKeyboardButton('Удалить пункт',
-                                          callback_data=posts_cb.new(id='-', action='correct_act_item_delete')))
+    markup.add(
+        types.InlineKeyboardButton(
+            text='Финализировать и записать пункт',
+            callback_data=posts_cb.new(id='-', action='correct_act_item_finalize'))
+    )
+    markup.add(
+        types.InlineKeyboardButton(
+            text='Исправить данные пункта',
+            callback_data=posts_cb.new(id='-', action='correct_act_item_data_correct'))
+    )
+    markup.add(
+        types.InlineKeyboardButton(
+            text='Удалить пункт',
+            callback_data=posts_cb.new(id='-', action='correct_act_item_delete'))
+    )
     return markup
 
 
@@ -238,10 +248,6 @@ async def add_correct_item_inline_keyboard_with_action(user_violations: DataFram
     unique_acts_numbers: list = user_violations.id.unique().tolist()
     unique_acts_numbers: list = [f'item_number_{item}' for item in unique_acts_numbers if item]
 
-    # menu_level = board_config.menu_level = 1
-    # menu_list = board_config.menu_list = unique_acts_numbers
-    # count_col = board_config.count_col = 2
-
     menu_level = await board_config(state, "menu_level", 1).set_data()
     menu_list = await board_config(state, "menu_list", unique_acts_numbers).set_data()
     count_col = await board_config(state, "count_col", 2).set_data()
@@ -267,8 +273,7 @@ async def create_lite_dataframe_from_query(query: str, table_name: str) -> DataF
         logger.debug(f"{LogMessage.Check.no_violations} ::: {await get_now()}")
         return None
 
-    headers = await db_get_table_headers(table_name=table_name)
-    clean_headers: list = [item[1] for item in headers]
+    clean_headers = await db_get_clean_headers(table_name=table_name)
 
     try:
         dataframe = DataFrame(violations_data, columns=clean_headers)

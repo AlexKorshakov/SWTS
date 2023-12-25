@@ -92,7 +92,7 @@ DB_NAME = 'UdocanHSEViolationsDataBase.db'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR.parent.parent / DB_NAME,
+        'NAME': str(BASE_DIR.parent.parent.parent.parent) + '\\!DataBase\\' + DB_NAME,
     }
 }  # BASE_DIR = \\application\\config\\web
 
@@ -136,8 +136,9 @@ STATIC_URL = "/static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # BASE_DIR = \\application\\config\\web
-MEDIA_ROOT = os.path.join(BASE_DIR.parent.parent, '!media')
+MEDIA_ROOT = os.path.join(BASE_DIR.parent.parent.parent, '!media')
 MEDIA_URL = '/!media/'
+MEDIA_DIR = '/!media/'
 
 INTERNAL_IPS = [
     "127.0.0.1",

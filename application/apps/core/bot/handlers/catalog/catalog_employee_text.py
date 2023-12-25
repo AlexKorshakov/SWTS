@@ -12,7 +12,7 @@ from pandas import DataFrame, Timestamp
 from apps.MyBot import MyBot, bot_send_message
 from apps.core.bot.filters.custom_filters import is_private
 from apps.core.bot.handlers.catalog.catalog_support import get_dataframe, list_number
-from apps.core.bot.messages.messages import Messages
+from apps.core.bot.handlers.catalog.catalog_support import check_dataframe
 from apps.core.bot.states.CatalogState import CatalogStateEmployee
 from loader import logger
 
@@ -213,26 +213,6 @@ async def get_now() -> str:
     :return: str
     """
     return datetime.now().strftime("%d.%m.%Y %H:%M:%S")
-
-
-async def check_dataframe(dataframe: DataFrame, hse_user_id: str | int) -> bool:
-    """Проверка dataframe на наличие данных
-
-    :param dataframe:
-    :param hse_user_id: id пользователя
-    :return:
-    """
-    if dataframe is None:
-        text_violations: str = 'не удалось получить данные!'
-        logger.error(f'{hse_user_id = } {text_violations}')
-        # await bot_send_message(chat_id=hse_user_id, text=text_violations)
-        return False
-
-    if dataframe.empty:
-        logger.error(f'{hse_user_id = } {Messages.Error.dataframe_is_empty}')
-        return False
-
-    return True
 
 
 async def test():

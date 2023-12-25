@@ -7,7 +7,9 @@ from itertools import chain
 
 from apps.MyBot import bot_send_message
 from apps.core.bot.messages.messages import Messages
-from apps.core.database.db_utils import db_get_table_headers, db_get_data_list, db_get_data_dict_from_table_with_id
+from apps.core.database.db_utils import (db_get_data_list,
+                                         db_get_data_dict_from_table_with_id,
+                                         db_get_clean_headers)
 from apps.core.database.query_constructor import QueryConstructor
 from loader import logger
 
@@ -214,8 +216,7 @@ async def create_lite_dataframe_from_query(query: str, table_name: str,
         # logger.debug(f"{hse_user_id} {LogMessage.Check.no_violations} ::: {await get_now()}")
         return None
 
-    headers = await db_get_table_headers(table_name=table_name)
-    clean_headers: list = [item[1] for item in headers]
+    clean_headers = await db_get_clean_headers(table_name=table_name)
 
     try:
         dataframe = DataFrame(violations_data, columns=clean_headers)
@@ -293,4 +294,3 @@ async def check_dataframe(dataframe: DataFrame, hse_user_id: str | int) -> bool:
         return False
 
     return True
-

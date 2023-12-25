@@ -14,15 +14,3 @@ async def read_json_file(file: str):
         return None
 
 
-async def read_json_files(files: list, data: list) -> list:
-    """Получение данных множества jsons и запись данных в data
-
-    :param files: список полных имён / путей к файлам
-    :param data: входящий list
-    :return: data
-    """
-
-    for item in files:
-        data.append(await read_json_file(item))
-
-    return data

@@ -17,12 +17,11 @@ logger.debug(f"{__name__} finish import")
 async def incident_level(call: types.CallbackQuery, state: FSMContext = None):
     """Обработка ответов содержащихся в INCIDENT_LEVEL
     """
-    if call.data in get_data_list("INCIDENT_LEVEL"):
-        try:
+    try:
 
-            await set_violation_atr_data("incident_level", call.data, state=state)
+        await set_violation_atr_data("incident_level", call.data, state=state)
 
-            await get_and_send_incident_level_data(call, state=state)
+        await get_and_send_incident_level_data(call, state=state)
 
-        except Exception as callback_err:
-            logger.error(f"{repr(callback_err)}")
+    except Exception as callback_err:
+        logger.error(f"{repr(callback_err)}")

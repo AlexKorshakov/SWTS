@@ -9,7 +9,7 @@ from apps.MyBot import MyBot, bot_send_message
 from apps.core.bot.data.board_config import BoardConfig as board_config
 from apps.core.bot.handlers.catalog.catalog_support import get_dataframe, text_processor_level, text_processor, \
     get_nan_value_text, list_number, level_1_column
-from apps.core.bot.handlers.correct_entries.correct_support import check_dataframe
+from apps.core.bot.handlers.catalog.catalog_support import check_dataframe
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard, posts_cb
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.messages.messages_test import msg
@@ -47,12 +47,16 @@ async def add_employee_inline_keyboard_with_action():
 
     markup = types.InlineKeyboardMarkup()
 
-    markup.add(types.InlineKeyboardButton(
-        text='Текстовый запрос',
-        callback_data=posts_cb.new(id='-', action='cat_employee_text')))
-    markup.add(types.InlineKeyboardButton(
-        text='Открыть справочник',
-        callback_data=posts_cb.new(id='-', action='cat_employee_catalog')))
+    markup.add(
+        types.InlineKeyboardButton(
+            text='Текстовый запрос',
+            callback_data=posts_cb.new(id='-', action='cat_employee_text'))
+    )
+    markup.add(
+        types.InlineKeyboardButton(
+            text='Открыть справочник',
+            callback_data=posts_cb.new(id='-', action='cat_employee_catalog'))
+    )
     return markup
 
 
@@ -99,10 +103,6 @@ async def call_catalog_normative_documents_catalog_answer(call: types.CallbackQu
         return
 
     title_list: list = [f"level_1__{num}" for num, item in enumerate(level_1, start=1) if item is not None]
-
-    # menu_level = board_config.menu_level = 1
-    # menu_list = board_config.menu_list = title_list
-    # count_col = board_config.count_col = 2
 
     menu_level = await board_config(state, "menu_level", 1).set_data()
     menu_list = await board_config(state, "menu_list", title_list).set_data()

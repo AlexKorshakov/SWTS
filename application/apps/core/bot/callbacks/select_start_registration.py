@@ -1,13 +1,13 @@
-from aiogram.dispatcher import FSMContext
-
-from apps.core.bot.callbacks.callback_action import cb_start
-from apps.core.bot.reports.report_data import ViolationData
 from loader import logger
 
 logger.debug(f"{__name__} start import")
 from aiogram import types
-from apps.core.bot.callbacks.sequential_action.data_answer import get_and_send_start_main_locations_data
+from aiogram.dispatcher import FSMContext
+
 from apps.MyBot import MyBot
+from apps.core.bot.callbacks.callback_action import cb_start
+from apps.core.bot.callbacks.sequential_action.data_answer import get_and_send_start_main_locations_data
+from apps.core.bot.reports.report_data import ViolationData
 
 logger.debug(f"{__name__} finish import")
 

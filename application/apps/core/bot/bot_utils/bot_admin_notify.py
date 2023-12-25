@@ -2,12 +2,12 @@ from loader import logger
 
 logger.debug(f"{__name__} start import")
 from pandas import DataFrame
-import asyncio
 from aiogram.utils.exceptions import NetworkError
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiohttp import ClientConnectorError
 
-from apps.core.database.db_utils import db_get_table_headers, db_get_data_list
+from apps.core.database.db_utils import (db_get_data_list,
+                                         db_get_clean_headers)
 from apps.core.database.query_constructor import QueryConstructor
 from apps.xxx import assistant
 
@@ -22,6 +22,7 @@ async def admin_notify(user_id, notify_text: str, button: InlineKeyboardButton =
     try:
         reply_markup = InlineKeyboardMarkup()
         reply_markup.add(InlineKeyboardButton(text=f'{user_id}', url=f"tg://user?id={user_id}"))
+
         if button:
             reply_markup.add(button)
 
@@ -56,7 +57,7 @@ async def get_developer_id_list() -> list:
     if not isinstance(datas_query, list):
         return []
 
-    clean_headers: list = [item[1] for item in await db_get_table_headers(table_name=db_table_name)]
+    clean_headers: list = await db_get_clean_headers(table_name=db_table_name)
     if not clean_headers:
         return []
 
@@ -75,13 +76,13 @@ async def get_developer_id_list() -> list:
     return unique_hse_telegram_id
 
 
-async def test2():
-    user_id: str = '373084462'
-    notify_text: str = f'User {user_id} попытка доступа к функциям без регистрации'
-    button = InlineKeyboardButton(text=f'{user_id}', url=f"tg://user?id={user_id}")
-    answer: bool = await admin_notify(user_id, notify_text, button)
-    print(answer)
-
-
-if __name__ == "__main__":
-    asyncio.run(test2())
+# async def test2():
+#     user_id: str = '373084462'
+#     notify_text: str = f'User {user_id} попытка доступа к функциям без регистрации'
+#     button = InlineKeyboardButton(text=f'{user_id}', url=f"tg://user?id={user_id}")
+#     answer: bool = await admin_notify(user_id, notify_text, button)
+#     print(answer)
+#
+#
+# if __name__ == "__main__":
+#     asyncio.run(test2())

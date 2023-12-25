@@ -11,11 +11,12 @@ from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.bot.handlers.correct_entries.correct_entries_handler import correct_entries_handler, del_file
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
 from apps.core.bot.messages.messages import Messages, LogMessage
-from apps.core.database.db_utils import db_get_table_headers, db_get_data_list, db_update_column_value, \
-    db_del_item_from_table
+from apps.core.database.db_utils import (db_get_data_list,
+                                         db_update_column_value,
+                                         db_del_item_from_table,
+                                         db_get_clean_headers)
 from apps.core.database.query_constructor import QueryConstructor
-from apps.core.utils.generate_report.generate_act_prescription.create_and_send_act_prescription import \
-    get_full_act_prescription_path
+from apps.core.bot.handlers.correct_entries.correct_support_path import get_full_act_prescription_path
 from loader import logger
 
 
@@ -68,12 +69,16 @@ async def add_correct_act_delete_from_base_inline_keyboard_with_action():
 
     markup = types.InlineKeyboardMarkup()
 
-    markup.add(types.InlineKeyboardButton('Да. Удалить Акт',
-                                          callback_data=posts_cb.new(id='-',
-                                                                     action='correct_act_delete_from_base_yes')))
-    markup.add(types.InlineKeyboardButton('Нет. Вернуться',
-                                          callback_data=posts_cb.new(id='-',
-                                                                     action='correct_act_delete_from_base_not')))
+    markup.add(types.InlineKeyboardButton(
+        text='Да. Удалить Акт',
+        callback_data=posts_cb.new(id='-',
+                                   action='correct_act_delete_from_base_yes'))
+    )
+    markup.add(types.InlineKeyboardButton(
+        text='Нет. Вернуться',
+        callback_data=posts_cb.new(id='-',
+                                   action='correct_act_delete_from_base_not'))
+    )
     return markup
 
 
@@ -287,8 +292,7 @@ async def create_lite_dataframe_from_query(query: str, table_name: str) -> DataF
         logger.debug(f"{LogMessage.Check.no_violations} ::: {await get_now()}")
         return None
 
-    headers = await db_get_table_headers(table_name=table_name)
-    clean_headers: list = [item[1] for item in headers]
+    clean_headers = await db_get_clean_headers(table_name=table_name)
 
     try:
         dataframe = DataFrame(violations_data, columns=clean_headers)

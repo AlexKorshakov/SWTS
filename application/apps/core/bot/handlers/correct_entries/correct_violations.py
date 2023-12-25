@@ -6,24 +6,28 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from pandas import DataFrame
 
-from apps.core.bot.handlers.correct_entries.correct_violations_special_meaning_handler import special_meaning_handler
 from apps.core.bot.messages.messages_test import msg
 from loader import logger
 from apps.MyBot import MyBot, bot_send_message, bot_delete_message, bot_delete_markup
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
-from apps.core.bot.handlers.correct_entries.correct_acts import call_correct_acts
-from apps.core.bot.handlers.correct_entries.correct_non_act_item_item_correct import \
-    create_lite_dataframe_from_query, COLUMNS_DICT
-from apps.core.bot.handlers.correct_entries.correct_support import spotter_data, get_item_number_from_call, \
-    check_dataframe, check_spotter_data, get_violations_df
-from apps.core.bot.handlers.correct_entries.correct_support_updater import update_column_value
-from apps.core.bot.handlers.correct_entries.correct_violations_complex_meaning_handler import complex_meaning_handler
-from apps.core.bot.handlers.correct_entries.correct_violations_simple_meaning_handler import simple_meaning_handler
-from apps.core.bot.handlers.correct_entries.correct_violations_text_meaning_handler import text_meaning_handler
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
 from apps.core.bot.messages.messages import Messages
 from apps.core.database.query_constructor import QueryConstructor
 from apps.core.database.transformation_category import CATEGORY_ID_TRANSFORM
+
+from apps.core.bot.handlers.correct_entries.correct_acts import call_correct_acts
+from apps.core.bot.handlers.correct_entries.correct_non_act_item_item_correct import (create_lite_dataframe_from_query,
+                                                                                      COLUMNS_DICT)
+from apps.core.bot.handlers.correct_entries.correct_support_updater import update_column_value
+from apps.core.bot.handlers.correct_entries.correct_violations_complex_meaning_handler import complex_meaning_handler
+from apps.core.bot.handlers.correct_entries.correct_violations_special_meaning_handler import special_meaning_handler
+from apps.core.bot.handlers.correct_entries.correct_violations_simple_meaning_handler import simple_meaning_handler
+from apps.core.bot.handlers.correct_entries.correct_violations_text_meaning_handler import text_meaning_handler
+from apps.core.bot.handlers.correct_entries.correct_support import (spotter_data,
+                                                                    get_item_number_from_call,
+                                                                    check_dataframe,
+                                                                    check_spotter_data,
+                                                                    get_violations_df)
 
 
 @MyBot.dp.callback_query_handler(posts_cb.filter(action=['correct_characteristic_not']))
@@ -44,7 +48,8 @@ async def call_correct_characteristic_not(call: types.CallbackQuery, callback_da
 
 
 @MyBot.dp.callback_query_handler(lambda call: 'correct_character' in call.data, state='*')
-async def call_correct_character_answer(call: types.CallbackQuery, user_id: int | str = None, state: FSMContext = None) -> None:
+async def call_correct_character_answer(call: types.CallbackQuery, user_id: int | str = None,
+                                        state: FSMContext = None) -> None:
     """Обработка ответов
     """
     hse_user_id = call.message.chat.id if call else user_id
@@ -91,16 +96,17 @@ async def call_correct_character_answer(call: types.CallbackQuery, user_id: int 
         )
     elif type_character == 'simple_meaning':
         result = await simple_meaning_handler(
-            hse_user_id, character, item_number_text, violations_dataframe, state= state
+            hse_user_id, character, item_number_text, violations_dataframe, state=state
         )
     elif type_character == 'text_meaning':
         result = await text_meaning_handler(
-            hse_user_id, character, item_number_text, violations_dataframe, state= state
+            hse_user_id, character, item_number_text, violations_dataframe, state=state
         )
     elif type_character == 'special_meaning':
         result = await special_meaning_handler(
-            hse_user_id, character, item_number_text, violations_dataframe, state= state
+            hse_user_id, character, item_number_text, violations_dataframe, state=state
         )
+    return result
 
     # character_table_name = RESULT_DICT.get(character, None)
     #

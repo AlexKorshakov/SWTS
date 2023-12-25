@@ -216,9 +216,9 @@ async def work_shift_answer(call: types.CallbackQuery, state: FSMContext = None)
                 menu_level = await board_config(state, "menu_level", 2).set_data()
                 menu_list = await board_config(state, "menu_list", METRO).set_data()
 
-
-                reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level,
-                                                          step=len(menu_list))
+                reply_markup = await build_inlinekeyboard(
+                    some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list)
+                )
                 await bot_send_message(chat_id=chat_id, text="Выберите строительную площадку",
                                        reply_markup=reply_markup)
                 break

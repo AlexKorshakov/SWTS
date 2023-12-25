@@ -5,13 +5,11 @@ import asyncio
 
 from aiogram import types
 from aiogram.dispatcher import FSMContext
-from aiogram.types import ReplyKeyboardRemove
 from apps.core.bot.messages.messages import Messages
-# from apps.core.bot.reports.report_data import violation_data
 from apps.core.database.db_utils import db_get_data_dict_from_table_with_id
 from apps.core.database.entry_in_db import write_data_in_database
-# from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.set_user_violation_data_on_google_drave import \
-#     write_violation_data_on_google_drive
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.set_user_violation_data_on_google_drave import \
+    write_violation_data_on_google_drive
 from apps.core.utils.json_worker.writer_json_file import write_json_violation_user_file
 from apps.MyBot import bot_send_message
 
@@ -22,34 +20,41 @@ async def pre_set_violation_data(message: types.Message, state: FSMContext, user
     """Интерфейс записи нарушения на Google Drive
 
     """
-    hse_user_id = message.chat.id if message else user_id
+    try:
+        hse_user_id = message.chat.id if message else user_id
+
+    except AttributeError as err:
+        logger.debug(f'{__file__} {repr(err)}')
+        hse_user_id = user_id if user_id else message.from_user.id
 
     v_data: dict = await state.get_data()
 
     await set_violation_data(chat_id=hse_user_id, v_data=v_data)
 
-    await bot_send_message(chat_id=hse_user_id, text=Messages.Report.completed_successfully)
-    await bot_send_message(chat_id=hse_user_id, text=Messages.help_message, reply_markup=ReplyKeyboardRemove())
-
-    # TODO исправить cyclical_delete_message
-    # await cyclical_delete_message(chat_id=chat_id)
-
 
 async def set_violation_data(*, chat_id: str, v_data: dict):
     """Запись и сохранение данных в local storage, database, Google Drive
     """
-
     logger.debug(f'{chat_id = } {v_data = }')
 
-    if await write_json_violation_user_file(data=v_data):
+    result_write_json = await write_json_violation_user_file(data=v_data)
+    if result_write_json:
         logger.info(f"Данные сохранены в local storage {v_data.get('json_full_name')}")
 
-    # if await write_violation_data_on_google_drive(chat_id=chat_id, violation_data=v_data):
-    #     logger.info(f"Данные сохранены в Google Drive в директорию \n"
-    #                 f"https://drive.google.com/drive/folders/{v_data.get('json_folder_id')}")
+    result_google: bool = await write_violation_data_on_google_drive(chat_id=chat_id, violation_data=v_data)
+    if result_google:
+        logger.info(f"Данные сохранены в Google Drive в директорию \n"
+                    f"https://drive.google.com/drive/folders/{v_data.get('json_folder_id')}")
 
-    if await write_data_in_database(violation_data_to_db=v_data):
-        logger.info(f"Данные сохранены в database")
+    result_database: bool = await write_data_in_database(violation_data_to_db=v_data)
+    if result_database:
+        logger.info(Messages.Report.completed_successfully)
+        await bot_send_message(chat_id=chat_id, text=Messages.Report.completed_successfully)
+
+    else:
+        await bot_send_message(chat_id=chat_id, text=Messages.Error.entry_in_bd_fail)
+
+    await bot_send_message(chat_id=chat_id, text=Messages.help_message)
 
 
 async def test():

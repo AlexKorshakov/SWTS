@@ -6,7 +6,8 @@ from aiogram.dispatcher import FSMContext
 
 
 # from aiogram.dispatcher.filters import Text
-# from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup,
+# from aiogram.types import (InlineKeyboardButton,
+# InlineKeyboardMarkup,
 #                            ReplyKeyboardRemove)
 # from apps.core.bot.data.board_config import BoardConfig as board_config
 # from apps.core.bot.filters.custom_filters import is_private
@@ -15,8 +16,7 @@ from aiogram.dispatcher import FSMContext
 # from apps.core.utils.generate_report.get_file_list import (
 #     get_json_file_list, get_registration_json_file_list, get_report_file_list)
 # from apps.core.utils.json_worker.read_json_file import read_json_file
-# from apps.core.utils.secondary_functions.get_filepath import \
-#     get_file_path_user_data
+# from apps.core.utils.secondary_functions.get_filepath import  get_file_path_user_data
 # from apps.MyBot import MyBot, bot_send_message
 #
 # logger.debug(f"{__name__} finish import")
@@ -51,18 +51,18 @@ from aiogram.dispatcher import FSMContext
 #     """
 #     await state.finish()
 #     return await message.reply(Messages.Viewer.canceled, reply_markup=ReplyKeyboardRemove())
-
-
-async def get_state_storage_name(state: FSMContext, chat_id: int):
-    """Получение имени состояния state[state]
-
-    """
-    state_storage: dict = dict(state.storage.data)
-    state_name: str = state_storage.get(f'{chat_id}').get(f'{chat_id}').get('state').split(':')[-1]
-
-    return state_name
-
-# async def view_user_data(*, chat_id: int, view_data, state_name: str):
+#
+#
+# async def get_state_storage_name(state: FSMContext, chat_id: int):
+#     """Получение имени состояния state[state]
+#
+#     """
+#     state_storage: dict = dict(state.storage.data)
+#     state_name: str = state_storage.get(f'{chat_id}').get(f'{chat_id}').get('state').split(':')[-1]
+#
+#     return state_name
+#
+# # async def view_user_data(*, chat_id: int, view_data, state_name: str):
 #     """Обработка состояний из get_state_storage_name и данных correct_data
 #
 #     :param chat_id:

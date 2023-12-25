@@ -17,11 +17,10 @@ logger.debug(f"{__name__} finish import")
 async def elimination_time_answer(call: types.CallbackQuery, state: FSMContext = None):
     """Обработка ответов содержащихся в ELIMINATION_TIME
     """
-    if call.data in get_data_list("ELIMINATION_TIME"):
-        try:
-            await set_violation_atr_data("elimination_time", call.data, state=state)
+    await set_violation_atr_data("elimination_time", call.data, state=state)
 
-            await get_and_send_elimination_time_data(call, state=state)
+    try:
+        await get_and_send_elimination_time_data(call, state=state)
 
-        except Exception as callback_err:
-            logger.error(f"{repr(callback_err)}")
+    except Exception as callback_err:
+        logger.error(f"{repr(callback_err)}")

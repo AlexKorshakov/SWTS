@@ -20,40 +20,36 @@ async def normative_documents_answer(call: types.CallbackQuery, state: FSMContex
     """
     v_data: dict = await state.get_data()
 
-    if call.data in get_data_list("NORMATIVE_DOCUMENTS",
-                                  category=v_data.get("category", None),
-                                  condition='short_title'):
+    if call.data == _PREFIX_ND + "0":
+        await get_and_send_null_normative_documents_data(call)
 
-        if call.data == _PREFIX_ND + "0":
-            await get_and_send_null_normative_documents_data(call)
+        await set_violation_atr_data("normative_documents", 'Нет нужной записи', state=state)
+        await set_violation_atr_data("normative_documents_normative", 'укажите НД', state=state)
+        await set_violation_atr_data("normative_documents_procedure", 'укажите процедуру устранения по НД',
+                                     state=state)
+        return
 
-            await set_violation_atr_data("normative_documents", 'Нет нужной записи', state=state)
-            await set_violation_atr_data("normative_documents_normative", 'укажите НД', state=state)
-            await set_violation_atr_data("normative_documents_procedure", 'укажите процедуру устранения по НД',
-                                         state=state)
-            return
+    nd_data: list = []
+    try:
+        condition: dict = {
+            "data": call.data,
+            "category_in_db": "NORMATIVE_DOCUMENTS",
+        }
+        nd_data: list = get_data_list("NORMATIVE_DOCUMENTS",
+                                      category=v_data.get("category", None),
+                                      condition=condition)
+        if not nd_data:
+            await set_violation_atr_data("normative_documents", call.data, state=state)
 
-        nd_data: list = []
-        try:
-            condition: dict = {
-                "data": call.data,
-                "category_in_db": "NORMATIVE_DOCUMENTS",
-            }
-            nd_data: list = get_data_list("NORMATIVE_DOCUMENTS",
-                                          category=v_data.get("category", None),
-                                          condition=condition)
-            if not nd_data:
-                await set_violation_atr_data("normative_documents", call.data, state=state)
+        nd_data = [item for item in nd_data if (isinstance(item, dict) and item.get("id", None))]
 
-            nd_data = [item for item in nd_data if (isinstance(item, dict) and item.get("id", None))]
+        await set_violation_atr_data("normative_documents", nd_data[0].get('title', None), state=state)
+        await set_violation_atr_data("normative_documents_normative", nd_data[0].get('normative', None),
+                                     state=state)
+        await set_violation_atr_data("normative_documents_procedure", nd_data[0].get('procedure', None),
+                                     state=state)
 
-            await set_violation_atr_data("normative_documents", nd_data[0].get('title', None), state=state)
-            await set_violation_atr_data("normative_documents_normative", nd_data[0].get('normative', None),
-                                         state=state)
-            await set_violation_atr_data("normative_documents_procedure", nd_data[0].get('procedure', None),
-                                         state=state)
+        await get_and_send_normative_documents_data(call, state=state)
 
-            await get_and_send_normative_documents_data(call, state=state)
-
-        except Exception as callback_err:
-            logger.error(f"{repr(callback_err)} {nd_data = }")
+    except Exception as callback_err:
+        logger.error(f"{repr(callback_err)} {nd_data = }")

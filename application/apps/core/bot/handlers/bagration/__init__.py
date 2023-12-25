@@ -1,25 +1,10 @@
-# from loader import logger
-#
-# logger.debug(f"{__name__} start import")
-#
-# from . import bagration_func_handler
-# from . import bagration_super_user_change_role
-# from . import bagration_admin_add_user
-# from . import bagration_admin_get_pass_report
-# from . import bagration_user_get_data
-#
-# logger.debug(f"{__name__} finish import")
 import asyncio
 import sys
 import traceback
 from itertools import chain
 import importlib
 import os
-
-from aiogram import types
-
 import loader
-from apps.MyBot import MyBot
 
 loader.logger.debug(f"{__name__} start import")
 
@@ -36,8 +21,6 @@ async def run_custom_import():
         module = importlib.util.module_from_spec(spec)
         sys.modules[module_name] = module
         spec.loader.exec_module(module)
-
-    # await MyBot.bot.set_my_commands([types.BotCommand(command="/bagration", description="Багратион")])
 
 
 async def fanc_name():

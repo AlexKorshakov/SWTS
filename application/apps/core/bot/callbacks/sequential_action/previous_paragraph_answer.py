@@ -1,3 +1,4 @@
+from apps.core.bot.handlers.catalog.catalog_lna import call_catalog_lna_catalog_answer
 from apps.core.bot.reports.report_data import ViolationData
 from loader import logger
 
@@ -34,11 +35,10 @@ async def previous_paragraph_answer(call: types.CallbackQuery, callback_data: di
 
     v_data: dict = await state.get_data()
 
-    if callback_data['previous_value'] == 'main_locations':
+    if callback_data['pre_val'] == 'main_locations':
         await get_and_send_start_main_locations_data(call, callback_data, state=state)
 
-    elif callback_data['previous_value'] == "sub_location":
-
+    elif callback_data['pre_val'] == "sub_location":
         if call.data == _PREFIX_POZ + "0":
             await get_and_send_null_sub_locations_data(call, callback_data, state=state)
 
@@ -57,14 +57,13 @@ async def previous_paragraph_answer(call: types.CallbackQuery, callback_data: di
 
         await get_and_send_sub_locations_data(call, callback_data, state=state)
 
-    elif callback_data['previous_value'] == "main_category":
+    elif callback_data['pre_val'] == "main_category":
         await get_and_send_main_category_data(call, callback_data, state=state)
 
-    elif callback_data['previous_value'] == "category":
+    elif callback_data['pre_val'] == "category":
         await get_and_send_category_data(call, callback_data, state=state)
 
-    elif callback_data['previous_value'] == "normative_documents":
-
+    elif callback_data['pre_val'] == "normative_documents":
         if call.data == _PREFIX_ND + "0":
             await get_and_send_null_normative_documents_data(call, state=state)
 
@@ -84,20 +83,23 @@ async def previous_paragraph_answer(call: types.CallbackQuery, callback_data: di
 
         await get_and_send_normative_documents_data(call, state=state)
 
-    elif callback_data['previous_value'] == "violation_category":
+    elif callback_data['pre_val'] == "violation_category":
         await get_and_send_violation_category_data(call, callback_data, state=state)
 
-    elif callback_data['previous_value'] == "general_contractors":
+    elif callback_data['pre_val'] == "general_contractors":
         await get_and_send_general_contractors_data(call, callback_data, state=state)
 
-    elif callback_data['previous_value'] == "incident_level":
+    elif callback_data['pre_val'] == "incident_level":
         await get_and_send_incident_level_data(call, callback_data, state=state)
 
-    elif callback_data['previous_value'] == "act_required":
+    elif callback_data['pre_val'] == "act_required":
         await get_and_send_act_required_data(call, callback_data, state=state)
 
-    elif callback_data['previous_value'] == "elimination_time":
+    elif callback_data['pre_val'] == "elimination_time":
         await get_and_send_elimination_time_data(call, callback_data, state=state)
+
+    elif callback_data['pre_val'] == 'call_catalog_lna_catalog_answer':
+        await call_catalog_lna_catalog_answer(call, callback_data, state=state)
 
     else:
         logger.debug(f"{chat_id = }  Выбрано: {callback_data['action']}")

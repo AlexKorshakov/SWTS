@@ -18,6 +18,7 @@ class NamedDict(dict):
     def __init__(self, *args, **kwargs):
         try:
             self._name = kwargs.pop('name')
+
         except KeyError:
             raise KeyError('a "name" keyword argument must be supplied')
         super(NamedDict, self).__init__(*args, **kwargs)
@@ -42,7 +43,6 @@ async def callbacks_num_finish_fab(call: types.CallbackQuery, state: FSMContext)
         return
 
     dict_list = [
-        # NamedDict.fromkeys('ViolationData', ViolationData),
         NamedDict.fromkeys('user_data', user_data),
         NamedDict.fromkeys('global_reg_form', global_reg_form),
         NamedDict.fromkeys('headlines_data', headlines_data)
@@ -56,13 +56,6 @@ async def callbacks_num_finish_fab(call: types.CallbackQuery, state: FSMContext)
         if items_data_name:
             items_data.clear()
             logger.info(f"Report is clear {str(items_data.name)} {items_data}")
-
-    # board_config.menu_level = 1
-    # board_config.menu_list = []
-    # board_config.violation_menu_list = []
-    # board_config.violation_file = []
-    # board_config.previous_level = ''
-    # board_config.current_file = None
 
     await board_config(state, "menu_level", 1).set_data()
     await board_config(state, "menu_list", []).set_data()

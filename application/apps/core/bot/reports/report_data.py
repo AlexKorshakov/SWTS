@@ -57,6 +57,7 @@ class ViolationData(StatesGroup):
 
     add_many_photo = State()
     finish = State()
+    add_act_number = State()
 
 
 class QRData(StatesGroup):

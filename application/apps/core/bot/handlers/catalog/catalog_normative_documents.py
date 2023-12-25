@@ -17,14 +17,19 @@ from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inl
 from apps.core.bot.messages.messages import Messages, LogMessage
 from apps.core.bot.messages.messages_test import msg
 from apps.core.bot.states import CatalogState
-from apps.core.database.db_utils import db_get_categories_list, db_get_data_dict_from_table_with_id, db_get_data_list, \
-    db_get_table_headers
 from apps.core.database.query_constructor import QueryConstructor
+from apps.core.database.db_utils import (db_get_categories_list,
+                                         db_get_data_dict_from_table_with_id,
+                                         db_get_data_list,
+                                         db_get_clean_headers)
+from apps.core.bot.handlers.catalog.catalog_support import (check_dataframe,
+                                                            notify_user_for_choice)
 from apps.core.settyngs import get_sett
 
 
 @MyBot.dp.callback_query_handler(lambda call: 'catalog_normative_documents' in call.data)
-async def call_catalog_normative_documents_answer(call: types.CallbackQuery, user_id: int | str = None, state: FSMContext = None) -> None:
+async def call_catalog_normative_documents_answer(call: types.CallbackQuery, user_id: int | str = None,
+                                                  state: FSMContext = None) -> None:
     """Обработка ответов
     """
     hse_user_id = call.message.chat.id if call else user_id
@@ -49,21 +54,28 @@ async def add_catalog_inline_keyboard_with_action():
 
     markup = types.InlineKeyboardMarkup()
 
-    markup.add(types.InlineKeyboardButton(
-        text='Текстовый запрос',
-        callback_data=posts_cb.new(id='-', action='cat_normative_documents_text')))
-    markup.add(types.InlineKeyboardButton(
-        text='Открыть справочник',
-        callback_data=posts_cb.new(id='-', action='cat_normative_documents_catalog')))
+    markup.add(
+        types.InlineKeyboardButton(
+            text='Текстовый запрос',
+            callback_data=posts_cb.new(id='-', action='cat_normative_documents_text'))
+    )
+    markup.add(
+        types.InlineKeyboardButton(
+            text='Открыть справочник',
+            callback_data=posts_cb.new(id='-', action='cat_normative_documents_catalog'))
+    )
     return markup
 
 
 @MyBot.dp.callback_query_handler(lambda call: 'cat_normative_documents_text' in call.data)
-async def call_catalog_normative_documents_catalog_answer(call: types.CallbackQuery, user_id: int | str = None, state: FSMContext = None) -> None:
+async def call_catalog_normative_documents_catalog_answer(call: types.CallbackQuery, user_id: int | str = None,
+                                                          state: FSMContext = None) -> None:
     """Обработка ответов
     """
     hse_user_id = call.message.chat.id if call else user_id
     logger.debug(f'{hse_user_id = } {call.data = }')
+
+    await notify_user_for_choice(call, data_answer=call.data)
 
     if not get_sett(cat='enable_features', param='use_catalog_normative_documents_text').get_set():
         msg_text: str = f"{await msg(hse_user_id, cat='error', msge='features_disabled', default=Messages.Error.features_disabled).g_mas()}"
@@ -76,8 +88,7 @@ async def call_catalog_normative_documents_catalog_answer(call: types.CallbackQu
 
 
 @MyBot.dp.message_handler(is_private, state=CatalogState.all_states)
-async def catalog_data_all_states_answer(message: types.Message, state: FSMContext,
-                                         user_id: int | str = None):
+async def catalog_data_all_states_answer(message: types.Message, state: FSMContext, user_id: int | str = None):
     """Обработка изменений
 
     :param user_id:
@@ -139,11 +150,14 @@ async def text_processor_for_text_query(table_dataframe: DataFrame) -> str:
 
 
 @MyBot.dp.callback_query_handler(lambda call: 'cat_normative_documents_catalog' in call.data)
-async def call_catalog_normative_documents_catalog_answer(call: types.CallbackQuery, user_id: int | str = None, state: FSMContext = None) -> None:
+async def call_catalog_normative_documents_catalog_answer(call: types.CallbackQuery, user_id: int | str = None,
+                                                          state: FSMContext = None) -> None:
     """Обработка ответов
     """
     hse_user_id = call.message.chat.id if call else user_id
     logger.debug(f'{hse_user_id = } {call.data = }')
+
+    await notify_user_for_choice(call, data_answer=call.data)
 
     if not get_sett(cat='enable_features', param='use_catalog_normative_documents_catalog').get_set():
         msg_text: str = f"{await msg(hse_user_id, cat='error', msge='features_disabled', default=Messages.Error.features_disabled).g_mas()}"
@@ -153,10 +167,6 @@ async def call_catalog_normative_documents_catalog_answer(call: types.CallbackQu
     clean_categories: list = await db_get_categories_list()
 
     title_list: list = [f"norm_doc__{num}" for num, item in enumerate(clean_categories, start=1)]
-
-    # menu_level = board_config.menu_level = 1
-    # menu_list = board_config.menu_list = title_list
-    # count_col = board_config.count_col = 2
 
     menu_level = await board_config(state, "menu_level", 1).set_data()
     menu_list = await board_config(state, "menu_list", title_list).set_data()
@@ -307,8 +317,7 @@ async def create_lite_dataframe_from_query(query: str, table_name: str) -> DataF
         logger.debug(f"{LogMessage.Check.no_violations} ::: {await get_now()}")
         return None
 
-    headers = await db_get_table_headers(table_name=table_name)
-    clean_headers: list = [item[1] for item in headers]
+    clean_headers = await db_get_clean_headers(table_name=table_name)
 
     try:
         dataframe = DataFrame(violations_data, columns=clean_headers)
@@ -323,26 +332,6 @@ async def get_now() -> str:
     :return: str
     """
     return datetime.now().strftime("%d.%m.%Y %H:%M:%S")
-
-
-async def check_dataframe(dataframe: DataFrame, hse_user_id: str | int) -> bool:
-    """Проверка dataframe на наличие данных
-
-    :param dataframe:
-    :param hse_user_id: id пользователя
-    :return:
-    """
-    if dataframe is None:
-        text_violations: str = 'не удалось получить данные!'
-        logger.error(f'{hse_user_id = } {text_violations}')
-        # await bot_send_message(chat_id=hse_user_id, text=text_violations)
-        return False
-
-    if dataframe.empty:
-        logger.error(f'{hse_user_id = } {Messages.Error.dataframe_is_empty}')
-        return False
-
-    return True
 
 
 async def test():

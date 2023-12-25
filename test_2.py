@@ -8,6 +8,13 @@ from apps.core.bot.bot_utils.progress_bar import ProgressBar
 from apps.core.bot.reports.report_data_preparation import get_vio_atr_data
 
 
+import reportlab
+
+from reportlab.pdfgen.canvas import Canvas
+
+canvas = Canvas("hello.pdf")
+
+
 def main():
     # menu_list = get_data_list("VIOLATION_CATEGORY")
     # pprint(menu_list)

@@ -53,7 +53,7 @@ async def insert_signalline_to_report_body(worksheet: Worksheet) -> bool:
     photo_full_name: str = "signalline.jpeg"
 
     files: list = await get_files(
-        directory=await get_directory_name(Udocan_media_path, "!service_img"),
+        directory=await get_directory_name(Udocan_media_path, 'HSE', "!service_img"),
         endswith=".jpg"
     )
 
@@ -90,14 +90,15 @@ async def insert_service_image(worksheet: Worksheet, *, chat_id: int = None, ser
     :return: bool
     """
 
-    photo_full_name: str = await get_image_name(Udocan_media_path, f"{service_image_name}.jpg")
+    photo_full_name: str = await get_image_name(Udocan_media_path, "HSE", str(chat_id), f"{service_image_name}.jpg")
 
-    if chat_id:
-        photo_full_name: str = await get_image_name(Udocan_media_path, str(chat_id), f"{service_image_name}.jpg")
+    # if chat_id:
+    #     photo_full_name: str = await get_image_name(Udocan_media_path, "HSE",
+    #     str(chat_id), f"{service_image_name}.jpg")
 
     if not os.path.isfile(photo_full_name):
         logger.error("service image not found")
-        photo_full_name: str = await get_image_name(Udocan_media_path, "Logo.jpg")
+        photo_full_name: str = await get_image_name(Udocan_media_path, "HSE", str(chat_id), "Logo.jpg")
 
     if not img_params:
         img_params: dict = {
@@ -109,19 +110,19 @@ async def insert_service_image(worksheet: Worksheet, *, chat_id: int = None, ser
             "column_img": 2,
             "row": 2,
         }
-    img_params['photo_full_name'] = photo_full_name
 
-    if not os.path.isfile(img_params.get('photo_full_name', None)):
+    if not os.path.isfile(photo_full_name):
         logger.error("service image not found")
         return False
 
-    img: Image = Image(img_params['photo_full_name'])
+    img: Image = Image(photo_full_name)
 
     img = await image_preparation(img, img_params)
 
-    await insert_images(worksheet, img=img)
-
-    return True
+    result = await insert_images(worksheet, img=img)
+    if result:
+        return True
+    return False
 
 
 async def image_preparation(img: Image, img_params: dict):
@@ -165,6 +166,7 @@ async def insert_images(worksheet: Worksheet, img: Image) -> bool:
     try:
         worksheet.add_image(img)
         return True
+
     except Exception as err:
         logger.error(f"insert_images {repr(err)}")
         return False

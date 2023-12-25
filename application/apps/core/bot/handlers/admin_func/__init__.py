@@ -4,11 +4,8 @@ import traceback
 from itertools import chain
 import importlib
 import os
-
-from aiogram import types
-
 import loader
-from apps.MyBot import MyBot
+
 
 loader.logger.debug(f"{__name__} start import")
 
@@ -25,8 +22,6 @@ async def run_custom_import():
         module = importlib.util.module_from_spec(spec)
         sys.modules[module_name] = module
         spec.loader.exec_module(module)
-
-    # await MyBot.bot.set_my_commands([types.BotCommand(command="/admin_func", description="Админка")])
 
 
 async def fanc_name():

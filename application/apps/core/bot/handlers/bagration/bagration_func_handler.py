@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import asyncio
+
 from loader import logger
 
 logger.debug(f"{__name__} start import")
@@ -14,7 +16,8 @@ from apps.core.bot.bot_utils.bot_admin_notify import admin_notify
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
 from apps.core.bot.messages.messages_test import msg
 from apps.core.bot.messages.messages import Messages
-from apps.core.database.db_utils import db_get_data_list, db_get_table_headers
+from apps.core.database.db_utils import (db_get_data_list,
+                                         db_get_clean_headers)
 from apps.core.database.query_constructor import QueryConstructor
 from apps.core.settyngs import get_sett
 from apps.core.utils.misc import rate_limit
@@ -33,6 +36,10 @@ async def bagration_func_handler(message: types.Message):
     """
 
     chat_id = message.chat.id
+
+    # if chat_id == 373084462:
+    #     await user_access_fail(chat_id)
+    #     return
 
     if not await check_user_access(chat_id=chat_id):
         logger.error(f'access fail {chat_id = }')
@@ -179,11 +186,12 @@ async def user_access_fail(chat_id: int, notify_text: str = None, hse_id: str = 
             notify_text: str = f'User {chat_id} попытка доступа к функциям без регистрации'
 
         logger.error(notify_text)
-        # button = types.InlineKeyboardButton(text=f'{chat_id}', url=f"tg://user?id={chat_id}")
+        button = types.InlineKeyboardButton('user_actions',
+                                            callback_data=posts_cb.new(id='-', action=f'admin_user_actions_{chat_id}'))
         await admin_notify(
             user_id=chat_id,
             notify_text=notify_text,
-            # button=button
+            button=button
         )
 
 
@@ -241,7 +249,7 @@ async def get_bagration_role_receive_df() -> DataFrame | None:
     if not isinstance(datas_query, list):
         return None
 
-    clean_headers: list = [item[1] for item in await db_get_table_headers(table_name=db_table_name)]
+    clean_headers: list = await db_get_clean_headers(table_name=db_table_name)
     if not clean_headers:
         return None
 
@@ -277,3 +285,22 @@ async def fanc_name():
     stack = traceback.extract_stack()
     return str(stack[-2][2])
 
+
+async def test():
+    chat_id = '373084462'
+
+    # if not notify_text:
+    notify_text: str = f'User {chat_id} попытка доступа к функциям без регистрации'
+
+    logger.error(notify_text)
+    button = types.InlineKeyboardButton('user_actions',
+                                        callback_data=posts_cb.new(id='-', action=f'admin_user_actions_{chat_id}'))
+    await admin_notify(
+        user_id=chat_id,
+        notify_text=notify_text,
+        button=button
+    )
+
+
+if __name__ == '__main__':
+    asyncio.run(test())

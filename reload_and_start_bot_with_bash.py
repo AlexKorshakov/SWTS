@@ -27,15 +27,15 @@ async def load_bot(bot_path: str = '') -> None:
                 prog = await start_bot()
 
             elif trigger == 'stop':
-                await asyncio.sleep(DELAY)
                 await del_trigger(bot_path)
-                await kill_bot(prog)
+                await asyncio.sleep(DELAY)
+                bot_is_work = False
 
     except Exception as err:
         logger.error(f'{repr(err)}')
         await kill_bot(prog)
-        # prog = await start_bot()
-        await load_bot()
+        prog = await start_bot()
+        # await load_bot()
 
     finally:
         await del_trigger(bot_path)
@@ -45,28 +45,16 @@ async def load_bot(bot_path: str = '') -> None:
 async def start_bot() -> subprocess.Popen:
     """Запуск процесса бота из .bat"""
     proc_path: str = str(Path(__file__).resolve().parent)
-    proc_path_file: str = str(Path(proc_path, "MyBot_Run.bat"))
+    proc_path_file: str = str(Path(proc_path, "Bot_Run.bat"))
 
     process: subprocess.Popen = subprocess.Popen(
         [proc_path_file, '-m'],
         # "MyBot_Run.bat",
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        # stdout=subprocess.PIPE,
+        # stderr=subprocess.PIPE,
         shell=True,
         creationflags=subprocess.CREATE_NEW_CONSOLE
     )
-    # stdout, stderr = process.communicate(timeout=15)
-    # print(f'{process.pid = }')
-    # try:
-    #     outs, errs = process.communicate(timeout=15)
-    # except subprocess.TimeoutExpired:
-    #     process.kill()
-    #     outs, errs = process.communicate()
-    # print(f'{outs = }')
-    # print(f'{errs = }')
-    # print(f'{stdout = }')
-    # print(f'{stderr = }')
-    # print(f'{process.pid = }')
     logger.info(f'load_bot {process.pid = } ')
     return process
 
@@ -88,23 +76,17 @@ async def kill_bot(proc):
 
     except Exception as err:
         logger.error(f'{repr(err)}')
-        logger.info("taskkill /f /im MyBot_Run.bat")
+        logger.info("taskkill /f /im Bot_Run.bat")
 
 
 async def get_trigger(bot_path: str = '') -> str:
     """Получение команды из имени файла-триггера"""
-    # dir_files = Path(bot_path).iterdir() if bot_path else Path('.').iterdir()
-    # trigger_files: list[str, str,] = [str(item) for item in list(dir_files) if 'trigger_' in str(item)]
-    # if not trigger_files: return ''
     trigger_file: list = [file.split('_')[-1] for file in await get_trigger_file(bot_path) if isinstance(file, str)]
     return trigger_file[-1] if trigger_file else ''
 
 
 async def del_trigger(bot_path: str = ''):
     """Удаление файла-триггера"""
-    # dir_files = Path(bot_path).iterdir() if bot_path else Path('.').iterdir()
-    # trigger_files: list = [str(item) for item in list(dir_files) if 'trigger_' in str(item)]
-    # if not await get_trigger_file(bot_path): return ''
     for trigger_file in await get_trigger_file(bot_path):
         try:
             logger.info(f'{trigger_file = }')

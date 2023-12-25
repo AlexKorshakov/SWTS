@@ -1,7 +1,11 @@
+from __future__ import annotations
+
 import asyncio
+import os
 import sqlite3
 import traceback
 from datetime import datetime, timedelta
+from sqlite3 import Cursor
 
 from apps.core.bot.messages.messages import LogMessage
 from apps.core.settyngs import get_sett
@@ -10,7 +14,7 @@ from apps.core.database.query_constructor import QueryConstructor
 from loader import logger
 
 
-class DataBaseForCheck:
+class DataBaseForPeriodicCheck:
     """Основной класс работы с базой данных для класса PeriodicCheck
     """
 
@@ -18,6 +22,31 @@ class DataBaseForCheck:
         self.db_file: str = Udocan_main_data_base_dir
         self.connection = sqlite3.connect(self.db_file)
         self.cursor = self.connection.cursor()
+
+        self.name: str = self.db_file.stem
+
+    async def create_backup(self) -> str | None:
+        """
+
+        :return:
+        """
+        backup_file_path: str = f"C:\\backup\\{datetime.now().strftime('%d.%m.%Y')}\\"
+        if not os.path.isdir(backup_file_path):
+            os.makedirs(backup_file_path)
+
+        query: str = f"vacuum into '{backup_file_path}backup_{datetime.now().strftime('%d.%m.%Y, %H.%M.%S')}_{self.name}.db'"
+
+        try:
+            with self.connection:
+                result = self.cursor.execute(query)
+                return self.name
+
+        except (ValueError, sqlite3.OperationalError) as err:
+            logger.error(f'Invalid query. {repr(err)}')
+            return None
+
+        finally:
+            self.cursor.close()
 
     async def get_data_list(self, query: str = None) -> list:
         """Получение данных из таблицы по запросу 'query'"""
@@ -136,7 +165,7 @@ async def check_violations_final_date_elimination() -> bool:
         if datetime.now() >= final_date:
             violation_id = violation.get('id', None)
             logger.info(f'{violation_id = }  now >= final_date_elimination')
-            await DataBaseForCheck().update_column_value(column_name='finished_id',
+            await DataBaseForPeriodicCheck().update_column_value(column_name='finished_id',
                                                          value=str(2),
                                                          violation_id=str(violation_id)
                                                          )
@@ -177,7 +206,7 @@ async def check_violations_status():
 
         if finished_id == 1 and status_id != 1:
             logger.info(f'{violation_id= } ::: {finished_id = } ::: {status_id = }')
-            await DataBaseForCheck().update_column_value(
+            await DataBaseForPeriodicCheck().update_column_value(
                 column_name='status_id',
                 value=str(1),
                 violation_id=str(violation_id)
@@ -201,13 +230,13 @@ async def get_list_violations_for_query(query: str) -> list:
     list_violations: list = []
     table_name = 'core_violations'
 
-    violations_data: list = await DataBaseForCheck().get_data_list(query=query)
+    violations_data: list = await DataBaseForPeriodicCheck().get_data_list(query=query)
 
     if not violations_data:
         logger.debug(f"{LogMessage.Check.no_violations} ::: {await get_now()}")
         return []
 
-    headers = await DataBaseForCheck().get_table_headers(table_name=table_name)
+    headers = await DataBaseForPeriodicCheck().get_table_headers(table_name=table_name)
     clean_headers: list = [item[1] for item in headers]
 
     for violation in violations_data:
@@ -246,7 +275,7 @@ async def get_elimination_days(e_time: int) -> int:
     if e_time is None:
         return 0
 
-    elimination_time: dict = await DataBaseForCheck().get_dict_data_from_table_from_id(
+    elimination_time: dict = await DataBaseForPeriodicCheck().get_dict_data_from_table_from_id(
         table_name='core_eliminationtime',
         id=e_time
     )

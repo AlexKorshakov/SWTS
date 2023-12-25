@@ -16,7 +16,6 @@ async def call_level_3_answer(call: types.CallbackQuery, user_id: int | str = No
     logger.debug(f'{hse_user_id = } {call.data = }')
 
     msg_id = call.message.message_id
-    # await bot_delete_message(chat_id=hse_user_id, message_id=msg_id, sleep_sec=15)
 
     if not await check_user_access(chat_id=hse_user_id):
         logger.error(f'access fail {hse_user_id = }')
