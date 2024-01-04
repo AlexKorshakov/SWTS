@@ -1,26 +1,37 @@
 from __future__ import annotations
 
-from apps.core.bot.data.board_config import BoardConfig as board_config
-from apps.core.bot.reports.report_data import ViolationData
 from loader import logger
 
 logger.debug(f"{__name__} start import")
+
+import traceback
+from pprint import pprint
 from pandas import DataFrame
 
 from aiogram import types
 from aiogram.dispatcher import FSMContext
-from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup)
+from aiogram.dispatcher.filters import ChatTypeFilter
 from aiogram.utils.callback_data import CallbackData
+from aiogram.types import (InlineKeyboardButton,
+                           InlineKeyboardMarkup,
+                           ChatType)
 
-from apps.core.bot.filters.custom_filters import is_private
-from apps.MyBot import MyBot, bot_send_message
+from apps.core.bot.data.board_config import BoardConfig
+from apps.core.bot.reports.report_data import ViolationData
+from apps.MyBot import MyBot, bot_send_message, bot_edit_message
 
 logger.debug(f"{__name__} finish import")
 
-NUM_COL = 2
-STEP_MENU = 10
+NUM_COL: int = 2
+STEP_MENU: int = 8
 move_action: CallbackData = CallbackData("desc", "action", "pre_val")
 posts_cb: CallbackData = CallbackData('post', 'id', 'action')
+
+
+async def is_private(message: types.Message = None):
+    """Фильтр состояния"""
+    pprint(f"{__file__} {await fanc_name()} {message =}")
+    return ChatTypeFilter(ChatType.PRIVATE)
 
 
 async def build_inlinekeyboard(*, some_list: list = None, num_col: int = 1, level: int = 1, step: int = None,
@@ -38,7 +49,7 @@ async def build_inlinekeyboard(*, some_list: list = None, num_col: int = 1, leve
         reply_markup = await add_previous_paragraph_button(previous_level=previous_level)
         return reply_markup
 
-    some_list: list = check_list_bytes_len(some_list=some_list)
+    some_list: list = await check_list_bytes_len(list_for_check=some_list)
 
     if addition:
         button_list: list = [item for item in addition if item is not None]
@@ -47,9 +58,10 @@ async def build_inlinekeyboard(*, some_list: list = None, num_col: int = 1, leve
         button_list: list = button_list + [
             InlineKeyboardButton(text=ss, callback_data=f'{called_prefix}{ss}{postfix}') for ss in some_list
         ]
-        menu: list = await _build_menu(buttons=button_list, n_cols=num_col)
 
+        menu: list = await _build_menu(buttons=button_list, n_cols=num_col)
         reply_markup = InlineKeyboardMarkup(resize_keyboard=True, inline_keyboard=menu)
+
         if previous_level:
             reply_markup = await add_previous_paragraph_button(
                 reply_markup=reply_markup, previous_level=previous_level
@@ -57,17 +69,16 @@ async def build_inlinekeyboard(*, some_list: list = None, num_col: int = 1, leve
         return reply_markup
 
     if len(some_list) <= STEP_MENU:
-        # board_config.use_search = False
-        await board_config(state).set_data('use_search', False)
-
         logger.debug(f'len(some_list) <= STEP_MENU {len(some_list) <= STEP_MENU}')
+        await BoardConfig(state).set_data('use_search', False)
 
         button_list = button_list + [
             InlineKeyboardButton(text=ss, callback_data=f'{called_prefix}{ss}{postfix}') for ss in some_list
         ]
-        menu = await _build_menu(buttons=button_list, n_cols=num_col)
 
+        menu: list = await _build_menu(buttons=button_list, n_cols=num_col)
         reply_markup = InlineKeyboardMarkup(resize_keyboard=True, inline_keyboard=menu)
+
         if previous_level:
             reply_markup = await add_previous_paragraph_button(
                 reply_markup=reply_markup, previous_level=previous_level
@@ -75,42 +86,83 @@ async def build_inlinekeyboard(*, some_list: list = None, num_col: int = 1, leve
         return reply_markup
 
     if len(some_list) > STEP_MENU:
-        # board_config.use_search = True
-        await board_config(state).set_data('use_search', True)
-
         logger.debug(f'STEP_MENU < len(some_list) {STEP_MENU < len(some_list)}')
-        end_list: int = len(some_list)
-        start_index, stop_index = await define_indices(level, end_list)
+        await BoardConfig(state).set_data('use_search', True)
 
-        button_list: list = button_list + [
-            InlineKeyboardButton(text=ss, callback_data=f'{called_prefix}{ss}{postfix}')
-            for ss in some_list[start_index:stop_index]
-        ]
+        param_dict: dict = {
+            'some_list': some_list,
+            'button_list': button_list,
+            'level': level,
+            'num_col': num_col,
+            'prefix': called_prefix,
+            'postfix': postfix,
+            'previous_level': previous_level,
+            'use_search': use_search
+        }
 
-        menu: list = await _build_menu(buttons=button_list, n_cols=num_col)
-
-        reply_markup = InlineKeyboardMarkup(resize_keyboard=True, inline_keyboard=menu)
-
-        reply_markup = await add_action_button(
-            reply_markup=reply_markup, start_index=start_index, stop_index=stop_index, end_list=end_list
+        reply_markup: InlineKeyboardMarkup = await get_long_markup(
+            some_list=some_list, state=state, param_dict=param_dict
         )
-
-        if previous_level:
-            reply_markup = await add_previous_paragraph_button(
-                reply_markup=reply_markup, previous_level=previous_level
-            )
-
-        if use_search:
-            reply_markup = await add_use_search_button(
-                reply_markup=reply_markup, previous_level=''
-            )
-
         return reply_markup
 
 
-async def get_button_list(button_list: list, some_list: list, calld_prefix: str = '', postfix: str = '',
-                          **kwargs: dict) -> list:
+async def get_long_markup(some_list: list, state: FSMContext = None, param_dict=None) -> InlineKeyboardMarkup:
+    """Сборка reply_markup их большого набора данных some_list с параметрами param_dict и состоянием state
+
+    :return:
     """
+    logger.debug('STEP_MENU < len(some_list)')
+    await BoardConfig(state).set_data('use_search', True)
+
+    button_list: list[InlineKeyboardButton] = await get_param('button_list', param_dict)
+
+    previous_level: str = await get_param('previous_level', param_dict)
+    use_search: bool = await get_param('use_search', param_dict)
+
+    button_list: list = await get_button_list(some_list, button_list, param_dict=param_dict)
+
+    reply_markup = await _build_markup(buttons=button_list, param_dict=param_dict)
+
+    reply_markup = await add_action_button(reply_markup=reply_markup, some_list=some_list, param_dict=param_dict)
+
+    if previous_level:
+        reply_markup = await add_previous_paragraph_button(
+            reply_markup=reply_markup, previous_level=previous_level, param_dict=param_dict
+        )
+
+    if use_search:
+        reply_markup = await add_use_search_button(
+            reply_markup=reply_markup, previous_level=previous_level,
+        )
+
+    return reply_markup
+
+
+async def get_param(param_name: str, param_dict: dict) -> any:
+    """Определение типа данных и нулевых значений
+
+    :param param_name: str -
+    :param param_dict: dict - Дополнительные параметры
+    :return: any
+    """
+    null_value: any = ''
+
+    if param_name in {'previous_level', 'use_search', 'postfix', 'called_prefix', 'prefix'}:
+        null_value: str = ''
+    if param_name in {'some_list', 'button_list'}:
+        null_value: list = []
+    if param_name in {'use_search', }:
+        null_value: bool = False
+    if param_name in {'level', 'num_col'}:
+        null_value: int = 1
+
+    if isinstance(param_dict, dict):
+        param = param_dict.get(param_name, null_value)
+        return param if param else null_value
+
+
+async def get_button_list(some_list: list, button_list: list, param_dict=None) -> list:
+    """Формирование списка с кнопками действий
 
     :return:
     """
@@ -120,64 +172,63 @@ async def get_button_list(button_list: list, some_list: list, calld_prefix: str 
     if not isinstance(some_list, list):
         return []
 
-    button_list: list = button_list + await get_button_list_for_list(
-        prefix=calld_prefix, postfix=postfix, some_list=some_list, **kwargs
-    )
+    button_list: list = button_list + await get_button_list_for_list(some_list=some_list, param_dict=param_dict)
     return button_list
 
 
-async def get_button_list_for_list(*, some_list: list, prefix: str = '', postfix: str = '', **kwargs: dict) -> list:
+async def get_button_list_for_list(some_list: list, param_dict: dict = None) -> list:
     """Функция формирования данных button_list с InlineKeyboardButton из some_list с использованием prefix и postfix
 
-
-    :param prefix: префикс, добавляемый перед основными данными
-    :param postfix: префикс, добавляемый после основных данных
+    :param param_dict: dict - Дополнительные параметры
     :param some_list: list с данными для формирования button_list с InlineKeyboardButton
-    :param kwargs: Дополнительные параметры
     :return:
     """
-
-    logger.info(f'{kwargs}')
-
     if not some_list:
         return []
 
     if not isinstance(some_list, list):
         return []
 
-    for item in some_list:
+    prefix: str = await get_param('prefix', param_dict=param_dict)
+    postfix: str = await get_param('postfix', param_dict=param_dict)
+    level: int = await get_param('level', param_dict=param_dict)
+
+    end_list: int = len(some_list)
+    start_index, stop_index = await define_indices(level, end_list)
+
+    button_list_full: list = []
+
+    for item in some_list[start_index:stop_index]:
+
+        if isinstance(item, str):
+            button = InlineKeyboardButton(text=item, callback_data=f'{prefix}{item}{postfix}')
+            button_list_full.append(button)
+            continue
 
         if isinstance(item, list):
-            button_list: list = [
-                InlineKeyboardButton(
-                    text=ss,
-                    callback_data=f'{prefix}{ss}{postfix}') for ss in some_list
-            ]
-            return button_list
+            button = InlineKeyboardButton(text=item[0], callback_data=f'{prefix}{item[1]}{postfix}')
+            button_list_full.append(button)
+            continue
 
         if isinstance(item, tuple):
-            button_list: list = [
-                InlineKeyboardButton(
-                    text=ss[0],
-                    callback_data=f'{prefix}{ss[1]}{postfix}') for ss in some_list
-            ]
-            return button_list
+            button = InlineKeyboardButton(text=item[0], callback_data=f'{prefix}{item[1]}{postfix}')
+            button_list_full.append(button)
+            continue
 
         if isinstance(item, dict):
-            button_list: list = [
-                InlineKeyboardButton(
-                    text=key,
-                    callback_data=f'{prefix}{val}{postfix}') for key, val in item.items()
-            ]
-            return button_list
+            text, val = ((k, v) for k, v in item.items())
+            button = InlineKeyboardButton(text=text, callback_data=f'{prefix}{val}{postfix}')
+            button_list_full.append(button)
+
+    return button_list_full
 
 
-def check_list_bytes_len(some_list: list, target_parameter: int = 60) -> list:
+async def check_list_bytes_len(list_for_check: list, target_parameter: int = 60) -> list:
     """Проверка длинны записи в байтах для формирования надписей кнопок
     текст длиннее 64 байт обрезается, добавляются точки
     """
     processed_values: len = []
-    for item in some_list:
+    for item in list_for_check:
         if len(item.encode('utf-8')) > target_parameter:
             logger.debug(f" {item} : {len(item.encode('utf-8'))}")
 
@@ -239,38 +290,44 @@ async def define_max_level(menu_list: list = None):
     return min_level, max_index
 
 
-async def add_action_button(reply_markup, start_index: int, stop_index: int, end_list: int) -> InlineKeyboardMarkup:
+async def add_action_button(reply_markup: InlineKeyboardMarkup, some_list: list,
+                            param_dict: dict) -> InlineKeyboardMarkup:
     """Добавление кнопок навигации в зависимости от начального (start_index),
     конечного индекса (stop_index) и конца списка list (end_list)
-    :param start_index:
-    :param end_list:
-    :param stop_index:
-    :param reply_markup:
+
+    :param some_list: - лист со значениями
+    :param reply_markup: InlineKeyboardMarkup - объект InlineKeyboardMarkup
+    :param param_dict: dict -  дополнительные параметры
     :return: reply_markup
     """
     bt_down = InlineKeyboardButton(text="<--", callback_data=move_action.new(action="move_down", pre_val=''))
     bt_up = InlineKeyboardButton(text="-->", callback_data=move_action.new(action="move_up", pre_val=''))
 
+    level: int = await get_param('level', param_dict)
+
+    start_index, stop_index, end_list = 0, 0, 0
+    if some_list:
+        end_list: int = len(some_list)
+        start_index, stop_index = await define_indices(level, end_list)
+
     if start_index == 0:
         reply_markup.row(bt_up)
-        # reply_markup.add(bt_up)
         return reply_markup
 
     if stop_index == end_list:
         reply_markup.row(bt_down)  # добавление кнопок в новую строку # ПРИОРИТЕТ
-        # reply_markup.add(bt_down)  # добавление кнопок в конец списка
         return reply_markup
 
     reply_markup.row(bt_down, bt_up)
-    # reply_markup.add(bt_down).add(bt_up)
 
     return reply_markup
 
 
-async def add_previous_paragraph_button(reply_markup=None, previous_level: str = None) -> InlineKeyboardMarkup:
+async def add_previous_paragraph_button(reply_markup: InlineKeyboardMarkup = None, previous_level: str = None,
+                                        param_dict: dict = None) -> InlineKeyboardMarkup:
     """Добавление кнопки - предыдущее действий"""
-
     logger.debug(f"{reply_markup = } {previous_level = }")
+    logger.debug(f"{param_dict = }")
 
     if not reply_markup:
         reply_markup = InlineKeyboardMarkup(resize_keyboard=True)
@@ -278,7 +335,8 @@ async def add_previous_paragraph_button(reply_markup=None, previous_level: str =
     if not previous_level:
         return reply_markup
 
-    previous_level: str = check_list_bytes_len(some_list=[previous_level], target_parameter=45)[0]
+    previous_level_list: list = await check_list_bytes_len(list_for_check=[previous_level], target_parameter=45)
+    previous_level: str = previous_level_list[0]
 
     btn_previous = InlineKeyboardButton(
         text="previous",
@@ -292,10 +350,10 @@ async def add_previous_paragraph_button(reply_markup=None, previous_level: str =
 async def add_use_search_button(reply_markup, previous_level: str = '') -> InlineKeyboardMarkup:
     """Добавление кнопки - предыдущее действий"""
 
-    search_button = InlineKeyboardButton(text="поиск",
-                                         callback_data=move_action.new(action="search",
-                                                                       pre_val=previous_level)
-                                         )
+    search_button = InlineKeyboardButton(
+        text="поиск",
+        callback_data=move_action.new(action="search", pre_val=previous_level)
+    )
     reply_markup.inline_keyboard.insert(0, [search_button])
 
     return reply_markup
@@ -304,13 +362,25 @@ async def add_use_search_button(reply_markup, previous_level: str = '') -> Inlin
 async def _build_menu(buttons: list, n_cols: int = 1, header_buttons: list = None, footer_buttons: list = None) -> list:
     """Создание меню кнопок
     """
-    menu = [buttons[i:i + n_cols] for i in range(0, len(buttons), n_cols)]
+    menu: list = [buttons[i:i + n_cols] for i in range(0, len(buttons), n_cols)]
 
     if header_buttons:
         menu.insert(0, [header_buttons])
     if footer_buttons:
         menu.append([footer_buttons])
+
     return menu
+
+
+async def _build_markup(buttons: list, num_col: int = None, param_dict=None) -> InlineKeyboardMarkup:
+    """Создание меню кнопок
+    """
+    num_col: int = num_col if num_col else await get_param('num_col', param_dict=param_dict)
+
+    menu: list = await _build_menu(buttons=buttons, n_cols=num_col)
+    reply_markup: InlineKeyboardMarkup = InlineKeyboardMarkup(resize_keyboard=True, inline_keyboard=menu)
+
+    return reply_markup
 
 
 @MyBot.dp.callback_query_handler(move_action.filter(action=["move_down", "move_up"]), state='*')
@@ -325,68 +395,65 @@ async def build_inlinekeyboard_answer(call: types.CallbackQuery, callback_data: 
     :return:
     """
 
-    hse_user_id = user_id if user_id else call.message.chat.id
+    hse_user_id: int = user_id if user_id else call.message.chat.id
 
     v_data: dict = await state.get_data()
 
-    menu_level = v_data.get('menu_level')
-    menu_list = v_data.get('menu_list', [])
-    menu_text_list = v_data.get('menu_text_list', menu_list[0])
-    use_search = v_data.get('use_search')
-    count_col = v_data.get('count_col')
-    call_fanc_name = v_data.get('call_fanc_name', '')
+    menu_level: int = v_data.get('menu_level')
+    menu_list: list = v_data.get('menu_list', [])
+    menu_text_list: list = v_data.get('menu_text_list', menu_list)
+    use_search: bool = v_data.get('use_search', False)
+    count_col: int = v_data.get('count_col')
+    call_fanc_name: str = v_data.get('call_fanc_name', '')
+    previous_level: str = v_data.get('previous_level', '')
 
-    prefix = ''
+    prefix: str = v_data.get('prefix')
 
     if call_fanc_name == 'enable_features':
         prefix = 'features_'
+    if call_fanc_name == 'hse_add_roles':
+        prefix = 'hse_role_'
 
-    chat_id = call.message.chat.id
-    message_id = call.message.message_id
+    message_id: int = call.message.message_id
 
-    if callback_data['action'] == "move_down":
-        # board_config(user=hse_user_id).menu_level  = menu_level - 1
-        # min_level, max_index = await define_max_level(menu_list)
-        menu_level = await board_config(state, "menu_level", menu_level - 1).set_data()
+    if callback_data.get('action') == "move_down":
+        menu_level: int = await BoardConfig(state, "menu_level", menu_level - 1).set_data()
 
-    if callback_data['action'] == "move_up":
-        # # board_config(user=hse_user_id).menu_level  = menu_level + 1
-        # min_level, max_index = await define_max_level(menu_list)
-        menu_level = await board_config(state, "menu_level", menu_level + 1).set_data()
+    if callback_data.get('action') == "move_up":
+        menu_level: int = await BoardConfig(state, "menu_level", menu_level + 1).set_data()
 
-    reply_markup = await build_inlinekeyboard(
+    reply_markup: InlineKeyboardMarkup = await build_inlinekeyboard(
         some_list=menu_list, num_col=count_col, level=menu_level, called_prefix=prefix, use_search=use_search,
         state=state
     )
-
-    reply_text = await build_text_for_inlinekeyboard(
+    reply_text: str = await build_text_for_inlinekeyboard(
         some_list=menu_text_list, level=menu_level
     )
-
-    if v_data['previous_level']:
-        reply_markup = await add_previous_paragraph_button(
-            reply_markup=reply_markup, previous_level=v_data['previous_level']
+    if previous_level:
+        reply_markup: InlineKeyboardMarkup = await add_previous_paragraph_button(
+            reply_markup=reply_markup, previous_level=previous_level
         )
-
-    await MyBot.bot.edit_message_text(
-        text=reply_text, chat_id=chat_id, message_id=message_id, reply_markup=reply_markup
+    result: bool = await bot_edit_message(
+        hse_user_id=hse_user_id, message_id=message_id,
+        reply_markup=reply_markup, reply_text=reply_text, kvargs={'fanc_name': await fanc_name()}
     )
-    # await MyBot.bot.edit_message_reply_markup(chat_id=chat_id, message_id=message_id, reply_markup=reply_markup)
 
-    # board_config(user=hse_user_id).call_fanc_name = ''
-    await board_config(state, "call_fanc_name", '').set_data()
+    await BoardConfig(state, "call_fanc_name", '').set_data()
+    return result
 
 
 @MyBot.dp.callback_query_handler(move_action.filter(action=["search"]), state='*')
-async def build_inlinekeyboard_answer(call: types.CallbackQuery, callback_data: dict, state: FSMContext = None):
+async def build_inlinekeyboard_search_answer(call: types.CallbackQuery, callback_data: dict,
+                                             state: FSMContext = None) -> bool:
     """Обработка ответа клавиш переключения уровня меню в inlinekeyboard в сообщении
 
-    :param call:
-    :param callback_data:
-    :return:
+    :param state: FSMContext - объект состояния
+    :param call: CallbackQuery - объект CallbackQuery
+    :param callback_data: dict - dict со значениями сообщения
+    :return: result bool -  результат изменения сообщения True or False
     """
-
     item_txt: str = 'введите текстовый зарос'
+    pprint(f'{callback_data = }')
 
     chat_id = call.message.chat.id
     message_id = call.message.message_id
@@ -396,63 +463,52 @@ async def build_inlinekeyboard_answer(call: types.CallbackQuery, callback_data: 
     await state.update_data(chat_id=chat_id)
     await state.update_data(message_id=message_id)
 
-    await MyBot.bot.edit_message_text(
-        text=item_txt, chat_id=chat_id, message_id=message_id
+    result: bool = await bot_edit_message(
+        hse_user_id=chat_id,
+        message_id=message_id,
+        reply_text=item_txt,
+        kvargs={'fanc_name': await fanc_name()}
     )
+
+    return result
 
 
 @MyBot.dp.message_handler(is_private, state=ViolationData.inquiry)
-async def search_data_all_states_answer(message: types.Message = None, user_id: int | str = None, text: str = None,
-                                        state: FSMContext = None):
-    """Обработка изменений
+async def search_data_all_states_answer(message: types.Message = None, text: str = None,
+                                        state: FSMContext = None) -> bool:
+    """Обработка поиск text во всех состояниях state по команде search (поиск) на клавиатуре в message
 
-    :param text:
-    :param user_id:
-    :param message:
-    :param state:
-    :return:
+    :param text: str - текст для поиска
+    :param message: Message - сообщение с текстом из которого берется текст
+    :param state: FSMContext - состояние пользователя
+    :return: bool - True if successfully else False
     """
-    hse_user_id = user_id if user_id else message.chat.id
-
-    # await state.finish()
-
     text_too_search: str = message.text if message else text
 
-    # menu_level = board_config(user=hse_user_id).menu_level
-    # menu_list = board_config(user=hse_user_id).menu_list
-    # menu_text_list = board_config(user=hse_user_id).menu_text_list
-    # use_search = board_config(user=hse_user_id).use_search
-    # count_col = board_config(user=hse_user_id).count_col
-    # call_fanc_name = board_config(user=hse_user_id).call_fanc_name
     v_data: dict = await state.get_data()
 
-    menu_level = v_data.get('menu_level')
-    menu_list = v_data.get('menu_list', [])
-    menu_text_list = v_data.get('menu_text_list', menu_list[0])
+    menu_level: int = v_data.get('menu_level')
+    menu_list: list = v_data.get('menu_list', [])
+    menu_text_list: list = v_data.get('menu_text_list', menu_list[0])
     use_search = v_data.get('use_search')
-    count_col = v_data.get('count_col')
-    call_fanc_name = v_data.get('call_fanc_name', '')
+    count_col: int = v_data.get('count_col')
+    call_fanc_name: str = v_data.get('call_fanc_name', '')
 
-    prefix = ''
+    prefix: str = ''
 
     if call_fanc_name == 'enable_features':
         prefix = 'features_'
+    if call_fanc_name == 'hse_add_roles':
+        prefix = 'hse_role_'
 
     chat_id: str = v_data.get('chat_id')
-    message_id = v_data.get('message_id')
 
-    # if callback_data['action'] == "search":
-    #     board_config(user=hse_user_id).menu_level = menu_level = menu_level - 1
-    #
-    # end_list: int = len(menu_list)
-    # start_index, stop_index = await define_indices(menu_level, end_list)
-
-    menu_list = [item for item in menu_list if item[0] != '#']
+    menu_list: list = [item for item in menu_list if item[0] != '#']
 
     dataframe: DataFrame = await create_dataframe(menu_list, menu_text_list)
 
     menu_list, menu_text_list = await processor_search_if_str(
-        dataframe, text_too_search=text_too_search, chat_id=str(chat_id)
+        dataframe, text_too_search=text_too_search
     )
 
     reply_markup = await build_inlinekeyboard(
@@ -466,27 +522,20 @@ async def search_data_all_states_answer(message: types.Message = None, user_id: 
     if not reply_text:
         reply_text = 'Нет данных для отображения'
         await bot_send_message(text=reply_text, chat_id=chat_id)
-        # board_config(user=hse_user_id).call_fanc_name = ''
-        await board_config(state, "call_fanc_name", '').set_data()
+        await BoardConfig(state, "call_fanc_name", '').set_data()
 
-    await bot_send_message(
-        text=reply_text, chat_id=chat_id, reply_markup=reply_markup
-        # message_id=message_id,
-    )
-
-    # board_config(user=hse_user_id).call_fanc_name = ''
-    await board_config(state, "call_fanc_name", '').set_data()
+    result: bool = await bot_send_message(text=reply_text, chat_id=chat_id, reply_markup=reply_markup)
+    await BoardConfig(state, "call_fanc_name", '').set_data()
+    return result
 
 
-async def build_text_for_inlinekeyboard(*, some_list: list, level: int = 1, use_search=False) -> list:
+async def build_text_for_inlinekeyboard(*, some_list: list, level: int = 1) -> str:
     """
 
-    :param use_search:
     :param some_list:
     :param level:
     :return:
     """
-
     text_list: list = []
 
     if len(some_list) > STEP_MENU:
@@ -524,18 +573,16 @@ async def create_dataframe(menu_list: list, menu_text_list: list) -> DataFrame:
     return df
 
 
-async def processor_search_if_str(table_dataframe: DataFrame, text_too_search: str, chat_id: str) -> (list, list):
+async def processor_search_if_str(table_dataframe: DataFrame, text_too_search: str) -> (list, list):
     """
 
-    :param chat_id:
     :param table_dataframe:
     :param text_too_search:
     :return:
     """
-
     menu_list, menu_text_list = [], []
 
-    if not await check_dataframe(table_dataframe, chat_id):
+    if not await check_dataframe(table_dataframe):
         return [], []
 
     for num_col, col_item in enumerate(table_dataframe):
@@ -551,21 +598,21 @@ async def processor_search_if_str(table_dataframe: DataFrame, text_too_search: s
     return menu_list, menu_text_list
 
 
-async def check_dataframe(dataframe: DataFrame, hse_user_id: str) -> bool:
+async def check_dataframe(dataframe: DataFrame) -> bool:
     """Проверка dataframe на наличие данных
 
     :param dataframe:
-    :param hse_user_id: id пользователя
     :return:
     """
     if dataframe is None:
-        text_violations: str = 'не удалось получить данные!'
-        # logger.error(f'{hse_user_id = } {text_violations}')
-        # await bot_send_message(chat_id=hse_user_id, text=text_violations)
         return False
 
     if dataframe.empty:
-        # logger.error(f'{hse_user_id = } {Messages.Error.dataframe_is_empty}')
         return False
 
     return True
+
+
+async def fanc_name():
+    stack = traceback.extract_stack()
+    return str(stack[-2][2])
