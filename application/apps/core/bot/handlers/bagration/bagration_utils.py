@@ -19,7 +19,7 @@ from apps.core.bot.handlers.bagration.bagration_utils_paths import bagration_get
     bagration_check_or_create_dir, bagration_check_path
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
 from apps.core.bot.messages.messages import Messages
-from apps.core.database.ViolationsDataBase import ViolationsDataBase
+from apps.core.database.ViolationsDataBase import DataBaseViolations
 from apps.core.database.query_constructor import QueryConstructor
 from config.config import Udocan_media_path, Udocan_Bagration_subcontractor_employee_DB
 from loader import logger
@@ -531,10 +531,10 @@ async def db_get_period_for_current_week(current_week: str, current_year: str = 
 
     logger.debug(f'{__name__} {await fanc_name()} {query}')
 
-    datas_query: list = ViolationsDataBase().get_data_list(query=query)
+    datas_query: list = await DataBaseViolations().get_data_list(query=query)
     period_data = datas_query[0]
 
-    table_headers: list = ViolationsDataBase().get_table_headers('core_week')
+    table_headers: list = await DataBaseViolations().get_table_headers(table_name='core_week')
     headers = [row[1] for row in table_headers]
     period_dict = dict(zip(headers, period_data))
     return [

@@ -1,14 +1,12 @@
 from datetime import datetime
+from pandas import DataFrame
 
+from loader import logger
+from apps.MyBot import bot_send_message
 from apps.core.bot.messages.messages import Messages
 from apps.core.database.db_utils import (db_get_data_dict_from_table_with_id,
                                          db_get_data_list,
-                                         db_get_table_headers)
-from apps.core.utils.generate_report.create_dataframe import \
-    create_lite_dataframe
-from apps.MyBot import bot_send_message
-from loader import logger
-from pandas import DataFrame
+                                         db_get_clean_headers)
 
 
 async def get_clear_list_value(chat_id: int, query: str, clean_headers: list) -> list[dict]:
@@ -85,8 +83,7 @@ async def get_clean_headers(table_name: str) -> list:
     if not table_name:
         return []
 
-    headers: list = await db_get_table_headers(table_name=table_name)
-    clean_headers: list = [item[1] for item in headers]
+    clean_headers: list = await db_get_clean_headers(table_name=table_name)
     logger.debug(clean_headers)
 
     return clean_headers
@@ -111,6 +108,22 @@ async def create_lite_dataframe_from_query(chat_id: int, query: str, clean_heade
         await bot_send_message(chat_id=chat_id, text=Messages.Error.dataframe_is_empty)
 
     return report_dataframe
+
+
+async def create_lite_dataframe(chat_id, data_list: list, header_list: list) -> DataFrame:
+    """Создание dataframe
+
+    :param chat_id:
+    :param header_list: список с заголовками
+    :param data_list: список с данными
+    """
+    try:
+        dataframe: DataFrame = DataFrame(data_list, columns=header_list)
+        return dataframe
+
+    except Exception as err:
+        logger.error(F"create_dataframe {repr(err)}")
+        return None
 
 
 async def get_query(type_query: str, table_name: str, query_date: str = None, value_id: int = None, user_id=None) -> str:

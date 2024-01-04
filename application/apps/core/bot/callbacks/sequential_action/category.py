@@ -8,7 +8,7 @@ import inspect
 import os.path
 from apps.core.database.query_constructor import QueryConstructor
 from apps.core.database.db_utils import (db_get_data_list_no_async,
-                                         db_get_id_no_async,
+                                         db_get_id,
                                          db_get_table_headers_no_async)
 
 logger.debug(f"{__name__} finish import")
@@ -237,7 +237,7 @@ def get_category_data_list_whits_condition(db_table_name: str, category, conditi
     if db_table_name == 'core_sublocation':
         main_table_name = 'core_mainlocation'
 
-    category_id = db_get_id_no_async(table=main_table_name, entry=category, )
+    category_id = asyncio.run(db_get_id(table=main_table_name, entry=category, ))
 
     if category_id is None:
         return []

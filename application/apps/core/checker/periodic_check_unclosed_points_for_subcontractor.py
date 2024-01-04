@@ -14,7 +14,9 @@ from apps.core.bot.data.board_config import BoardConfig as board_config
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard, posts_cb
 from apps.core.bot.messages.messages import LogMessage, Messages
 from apps.core.bot.messages.messages_test import msg
-from apps.core.database.db_utils import db_get_table_headers, db_get_data_list, db_get_data_dict_from_table_with_id
+from apps.core.database.db_utils import (db_get_data_list,
+                                         db_get_data_dict_from_table_with_id,
+                                         db_get_clean_headers)
 from apps.core.database.query_constructor import QueryConstructor
 from apps.core.settyngs import get_sett
 from apps.core.utils.secondary_functions.get_filepath import Udocan_media_path
@@ -22,7 +24,7 @@ from config.config import REPORT_NAME, SEPARATOR
 from loader import logger
 
 
-async def periodic_check_unclosed_points_for_subcontractor( state: FSMContext = None):
+async def periodic_check_unclosed_points_for_subcontractor(state: FSMContext = None):
     """Периодическая проверка незакрытых пунктов и актов"""
 
     while True:
@@ -43,7 +45,7 @@ async def periodic_check_unclosed_points_for_subcontractor( state: FSMContext = 
             await asyncio.sleep(work_period)
             continue
 
-        result_check_list: bool = await check_acts_prescriptions_status_for_subcontractor(state = state)
+        result_check_list: bool = await check_acts_prescriptions_status_for_subcontractor(state=state)
         if result_check_list:
             logger.info(f"{LogMessage.Check.periodic_check_unclosed_points} ::: {await get_now()}")
         else:
@@ -298,8 +300,7 @@ async def get_subcontractor_role_receive_notifications_list(violations_dataframe
     if not await check_dataframe(subc_role_receive_df, hse_user_id=None):
         return []
 
-    headers = await db_get_table_headers(table_name=db_table_name)
-    clean_headers: list = [item[1] for item in headers]
+    clean_headers = await db_get_clean_headers(table_name=db_table_name)
 
     subc_list: list = []
     for _, subc_data in enumerate(subc_role_receive_df.itertuples(index=False), start=1):
@@ -318,8 +319,6 @@ async def get_notifications_list_list(violations_df: DataFrame = None, scr_list:
 
     if not scr_list:
         return []
-
-    # clean_headers: list = [item[1] for item in await db_get_table_headers(table_name='core_violations')]
 
     notyf_list: list = []
     for subc_item in scr_list:
@@ -366,8 +365,7 @@ async def create_lite_dataframe_from_query(query: str, table_name: str) -> DataF
         logger.debug(f"{LogMessage.Check.no_violations} ::: {await get_now()}")
         return None
 
-    headers = await db_get_table_headers(table_name=table_name)
-    clean_headers: list = [item[1] for item in headers]
+    clean_headers = await db_get_clean_headers(table_name=table_name)
 
     try:
         dataframe = DataFrame(violations_data, columns=clean_headers)
