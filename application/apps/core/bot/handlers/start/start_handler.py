@@ -1,9 +1,6 @@
 from __future__ import annotations
 
-from apps.core.bot.messages.messages_test import msg
-from apps.core.database.db_utils import db_update_hse_user_language
-from apps.core.settyngs import get_sett
-from apps.core.utils.secondary_functions.get_filepath import get_user_registration_file, create_file_path
+import traceback
 from loader import logger
 
 logger.debug(f"{__name__} start import")
@@ -12,17 +9,19 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command, Text
 from aiogram.types import ReplyKeyboardMarkup, ReplyKeyboardRemove
+
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.bot.data.board_config import BoardConfig as board_config
 from apps.core.bot.callbacks.sequential_action.category import get_data_list
 from apps.core.bot.filters.custom_filters import is_private
-from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import \
-    build_inlinekeyboard
+from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard
+from apps.core.bot.messages.messages_test import msg
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.reports.report_data import user_data
 from apps.core.bot.states import RegisterState
-# from apps.core.utils.data_recording_processor.set_user_registration_data import \
-#     registration_data
+from apps.core.database.db_utils import db_update_hse_user_language
+from apps.core.settyngs import get_sett
+from apps.core.utils.secondary_functions.get_filepath import get_user_registration_file, create_file_path
 from apps.core.utils.misc import rate_limit
 from apps.MyBot import MyBot, bot_send_message
 
@@ -30,21 +29,25 @@ logger.debug(f"{__name__} finish import")
 
 
 @rate_limit(limit=20)
-@MyBot.dp.message_handler(Command('start'), is_private)
+@MyBot.dp.message_handler(Command('start'), is_private, state='*')
 async def start(message: types.Message, user_id: int | str = None, state: FSMContext = None):
     """Начало регистрации пользователя
 
+    :param state:
     :param user_id: id пользователя
     :param message:
     :return:
     """
-
     hse_user_id = message.chat.id if message else user_id
     logger.debug(f'{hse_user_id = }')
     logger.info(f'User @{message.from_user.username} : {hse_user_id} start work')
 
     if not await check_user_access(chat_id=hse_user_id, message=message):
         return
+
+    current_state = await state.get_state()
+    await state.finish()
+    logger.info(f'{await fanc_name()} state is finish {current_state = }')
 
     if not get_sett(cat='enable_features', param='choose_language').get_set():
         await bot_send_message(chat_id=hse_user_id, text=Messages.HSEUserAnswer.user_access_success)
@@ -68,21 +71,13 @@ async def start(message: types.Message, user_id: int | str = None, state: FSMCon
 
     await bot_send_message(chat_id=hse_user_id, text=text_violations, reply_markup=reply_markup)
 
-    # await RegisterState.name.set()
-    # reply_markup = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-    # reply_markup.add(Messages.Registration.cancel)
-    # await MyBot(hse_user_id, Messages.Ask.name, reply_markup=reply_markup)
-
 
 @MyBot.dp.callback_query_handler(lambda call: 'select_lang_' in call.data)
 async def call_correct_item_answer(call: types.CallbackQuery, user_id: str | int = None, state: FSMContext = None):
     """Обработка ответов
     """
-
     hse_user_id = call.message.chat.id if call else user_id
     logger.debug(f'{hse_user_id = } ::: {call.data = }')
-
-    # await bot_delete_markup(message=call.message)
 
     character_language: str = call.data.split('_')[-1]
     result: bool = await db_update_hse_user_language(value=character_language, hse_id=hse_user_id)
@@ -169,9 +164,6 @@ async def enter_phone_number(message: types.Message, state: FSMContext):
 
     user_data["phone_number"] = int(message.text.strip("+"))
 
-    # menu_level = board_config.menu_level = 2
-    # menu_list = board_config.menu_list = get_data_list("WORK_SHIFT")
-
     menu_level = await board_config(state, "menu_level", 2).set_data()
     menu_list = await board_config(state, "menu_list", get_data_list("WORK_SHIFT")).set_data()
 
@@ -198,33 +190,26 @@ async def work_shift_answer(call: types.CallbackQuery, state: FSMContext = None)
     """Обработка ответов содержащихся в WORK_SHIFT
     """
     chat_id = call.message.chat.id
-    for i in get_data_list("WORK_SHIFT"):
-        try:
-            if call.data == i:
-                logger.debug(f"{chat_id = } Выбрано: {i}")
-                user_data["work_shift"] = i
-                await bot_send_message(chat_id=chat_id, text=f"Выбрано: {i}")
-                # await write_json_file(data=violation_data, name=violation_data["json_full_name"])
+    try:
 
-                await call.message.edit_reply_markup()
+        logger.debug(f"{chat_id = } Выбрано: {call.data}")
+        user_data["work_shift"] = call.data
+        await call.message.edit_reply_markup()
 
-                METRO = [list(item.keys())[0] for item in get_data_list("METRO_STATION")]
+        METRO = [list(item.keys())[0] for item in get_data_list("METRO_STATION")]
 
-                # menu_level = board_config.menu_level = 2
-                # menu_list = board_config.menu_list = METRO
+        menu_level = await board_config(state, "menu_level", 2).set_data()
+        menu_list = await board_config(state, "menu_list", METRO).set_data()
 
-                menu_level = await board_config(state, "menu_level", 2).set_data()
-                menu_list = await board_config(state, "menu_list", METRO).set_data()
+        reply_markup = await build_inlinekeyboard(
+            some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list)
+        )
+        await bot_send_message(
+            chat_id=chat_id, text="Выберите строительную площадку", reply_markup=reply_markup
+        )
 
-                reply_markup = await build_inlinekeyboard(
-                    some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list)
-                )
-                await bot_send_message(chat_id=chat_id, text="Выберите строительную площадку",
-                                       reply_markup=reply_markup)
-                break
-
-        except Exception as callback_err:
-            logger.error(f"{repr(callback_err)}")
+    except Exception as callback_err:
+        logger.error(f"{repr(callback_err)}")
 
     await RegisterState.next()
 
@@ -250,4 +235,8 @@ async def enter_location_answer(call: types.CallbackQuery, state: FSMContext):
             logger.error(f"{repr(callback_err)}")
 
     await state.finish()
-    # await registration_data(call.message, user_data)
+
+
+async def fanc_name():
+    stack = traceback.extract_stack()
+    return str(stack[-2][2])
