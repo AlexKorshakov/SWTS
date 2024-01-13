@@ -30,7 +30,7 @@ posts_cb: CallbackData = CallbackData('post', 'id', 'action')
 
 async def is_private(message: types.Message = None):
     """Фильтр состояния"""
-    pprint(f"{__file__} {await fanc_name()} {message =}")
+    pprint(f"{__file__} {await fanc_name()} {message =}", width=200)
     return ChatTypeFilter(ChatType.PRIVATE)
 
 
@@ -453,7 +453,7 @@ async def build_inlinekeyboard_search_answer(call: types.CallbackQuery, callback
     :return: result bool -  результат изменения сообщения True or False
     """
     item_txt: str = 'введите текстовый зарос'
-    pprint(f'{callback_data = }')
+    pprint(f'{callback_data = }', width=200)
 
     chat_id = call.message.chat.id
     message_id = call.message.message_id

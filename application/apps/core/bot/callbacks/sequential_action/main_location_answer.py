@@ -31,8 +31,10 @@ async def main_location_answer(call: types.CallbackQuery, state: FSMContext):
         query: str = await QueryConstructor(table_name='core_mainlocation', **kwargs).prepare_data()
 
         datas_query: list = await db_get_data_list(query=query)
-        main_category_id = datas_query[0][0] if datas_query else None
-        await set_violation_atr_data("main_location_id", main_category_id, state=state)
+        main_location_id = datas_query[0][0] if datas_query else None
+
+        await set_violation_atr_data("main_location", art_val=call.data, state=state)
+        await set_violation_atr_data("main_location_id", main_location_id, state=state)
 
         await get_and_send_main_locations_data(call, state=state)
 

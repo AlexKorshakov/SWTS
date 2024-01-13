@@ -5,6 +5,8 @@ import os
 import io
 import json
 import sqlite3
+from pathlib import Path
+
 from pandas import DataFrame
 import datetime
 
@@ -22,19 +24,17 @@ class DataBaseViolations:
         self.name: str = self.db_file.stem
 
     async def create_backup(self) -> str | None:
-        """
-
-        :return:
-        """
-        backup_file_path: str = f"C:\\backup\\{datetime.datetime.now().strftime('%d.%m.%Y')}\\"
+        """Создание бэкапа"""
+        backup_file_path: str = str(Path('C:', 'backup', datetime.datetime.now().strftime('%d.%m.%Y')))
         if not os.path.isdir(backup_file_path):
             os.makedirs(backup_file_path)
 
-        query: str = f"vacuum into '{backup_file_path}backup_{datetime.datetime.now().strftime('%d.%m.%Y, %H.%M.%S')}_{self.name}.db'"
+        query: str = f"vacuum into '{backup_file_path}{os.sep}backup_{datetime.datetime.now().strftime('%d.%m.%Y, %H.%M.%S')}_{self.name}.db'"
 
         try:
             with self.connection:
                 result = self.cursor.execute(query)
+                logger.debug(result)
                 return self.name
 
         except (ValueError, sqlite3.OperationalError) as err:
@@ -59,6 +59,8 @@ class DataBaseViolations:
 
         dict_keys = ', '.join(list(data_dict.keys()))
         qs = ', '.join(['?'] * len(data_dict))
+
+        # TODO заменить на вызов конструктора QueryConstructor
         sqlite_insert_with_param: str = "INSERT INTO `" + table_name + "` (" + dict_keys + ") VALUES (" + qs + ");"
         data_tuple: tuple = tuple(data_dict.values())
 
@@ -77,16 +79,16 @@ class DataBaseViolations:
         finally:
             self.cursor.close()
 
-    async def get_id(self, table_name: str, entry, file_id: str = None) -> int:
+    async def get_id(self, table_name: str, entry, file_id: str = None, calling_function_name: str = None) -> int:
         """Получение id записи по значению title из соответствующий таблицы table
 
         """
-        param_list: list = [table_name, entry, file_id]
+        param_list: list = [table_name, entry]
         for param in param_list:
-            if not param:
-                logger.error(f'{__file__} {await fanc_name()} Invalid param. {param = }')
+            if param is None:
+                logger.error(f'{__file__} {await fanc_name()} Invalid param. {param = } {calling_function_name =}')
                 return 0
-
+        # TODO заменить на вызов конструктора QueryConstructor
         query: str = "SELECT `id` FROM `" + table_name + "`  WHERE `title` = ?"
 
         try:
@@ -94,6 +96,7 @@ class DataBaseViolations:
                 result = self.cursor.execute(query, (entry,)).fetchall()
 
                 if not result:
+                    # TODO заменить на вызов конструктора QueryConstructor
                     query: str = "SELECT `id` FROM `" + table_name + "`  WHERE `short_title` = ?"
                     result = self.cursor.execute(query, (entry,)).fetchall()
 
@@ -110,8 +113,8 @@ class DataBaseViolations:
             return 0
 
         entry_id: int = 0
-        if result:
-            entry_id = int(result[0])
+        if isinstance(result, list) and len(result) > 0 and len(result[0]) > 0:
+            entry_id = int(result[0][0])
 
         if entry_id == 0:
             logger.info(f"no matches found {entry = } in {table_name} because entry_id file_id: {file_id}")
@@ -282,7 +285,7 @@ class DataBaseViolations:
                 return False
 
         # TODO заменить на вызов конструктора QueryConstructor
-        query: str = f"DELETE FROM {table_name} WHERE {column_name} = ?"
+        query: str = "DELETE FROM `" + table_name + "` WHERE `" + column_name + "` = ?"
         try:
             with self.connection:
                 result = self.cursor.execute(query, (file_id,))
@@ -295,18 +298,6 @@ class DataBaseViolations:
         finally:
             self.cursor.close()
 
-    # def get_info_violations(self, file_id: int):
-    #     """Получение информации"""
-    #     with self.connection:
-    #         return self.cursor.execute("SELECT * FROM {} WHERE `file_id` = ?",
-    #                                    (file_id,)).fetchone()
-
-    # def count_violations(self):
-    #     """Вывод кол-ва записей из core_violations
-    #     """
-    #     with self.connection:
-    #         return self.cursor.execute('SELECT COUNT(*) FROM `core_violations`').fetchone()
-
     async def get_count_items(self, table_name: str):
         """Вывод кол-ва записей из core_violations
         """
@@ -316,6 +307,7 @@ class DataBaseViolations:
                 logger.error(f'{__file__} {await fanc_name()} Invalid param. {param = }')
                 return 0
 
+        # TODO заменить на вызов конструктора QueryConstructor
         query: str = "SELECT COUNT(*) FROM `" + table_name + " `"
         try:
             with self.connection:
@@ -328,20 +320,6 @@ class DataBaseViolations:
 
         finally:
             self.cursor.close()
-
-    # def all_violations(self):
-    #     """Вывод кол-ва юзеров"""
-    #
-    #     try:
-    #         with self.connection:
-    #             return self.cursor.execute('SELECT * FROM `core_violations`').fetchall()
-    #
-    #     except sqlite3.OperationalError as err:
-    #         logger.error(f"sqlite3.OperationalError {err = } {query = }")
-    #         return []
-    #
-    #     finally:
-    #         self.cursor.close()
 
     async def get_data_list(self, query: str = None) -> list:
         """Получение данных из таблицы по запросу query
@@ -360,8 +338,8 @@ class DataBaseViolations:
             logger.error(f"sqlite3.OperationalError {err = } {query = }")
             return []
 
-        finally:
-            self.cursor.close()
+        # finally:
+        #     self.cursor.close()
 
     async def get_dict_data_from_table_from_id(self, table_name: str, data_id: int, query: str = None) -> dict:
         """Получение данных из таблицы table_name по id
@@ -404,7 +382,7 @@ class DataBaseViolations:
                 return False
 
         # TODO заменить на вызов конструктора QueryConstructor
-        query: str = f"UPDATE `core_hseuser` SET hse_language_code = ? WHERE `title` = ?"
+        query: str = "UPDATE `core_hseuser` SET `hse_language_code` = ? WHERE `title` = ?"
 
         try:
             with self.connection:
@@ -521,7 +499,7 @@ class DataBaseViolations:
 
     async def set_act_value(self, act_data_dict: DataFrame, act_number: int, act_date: str) -> bool:
         """Добавление записи в database core_actsprescriptions"""
-        param_list: list = [act_data_dict, act_number, act_date]
+        param_list: list = [act_number, act_date]
         for param in param_list:
             if not param:
                 logger.error(f'{__file__} {await fanc_name()} Invalid param. {param = }')
@@ -620,9 +598,6 @@ async def upload_from_local(*, params: dict = None):
 
         error_counter, violation_data = await data_violation_completion(violation_file=violation_file, params=params)
 
-        # normalize_violation = await normalize_violation_data(violation=violation)
-        # normalize_violation = violation_data
-
         if not await DataBaseViolations().violation_exists(violation_data.get('file_id')):
 
             is_add = await DataBaseViolations().add_data(table_name='core_violations', data_dict=violation_data)
@@ -634,10 +609,7 @@ async def upload_from_local(*, params: dict = None):
 
 
 async def data_violation_completion(violation_file: str, params: dict) -> tuple[int, dict]:
-    """
-    :param
-
-    """
+    """ """
     error_counter: int = 0
     # comment_counter: int = 0
     # act_required_counter: int = 0
@@ -759,7 +731,7 @@ async def get_files(main_path: str, endswith: str = ".json") -> list:
     :param endswith: расширение файлов для обработки и формирования списка
     """
     json_files = []
-    for subdir, dirs, files in os.walk(main_path):
+    for subdir, _, files in os.walk(main_path):
         for file in files:
             filepath = subdir + os.sep + file
             if filepath.endswith(endswith):

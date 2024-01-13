@@ -1,5 +1,6 @@
 import asyncio
 import os
+import traceback
 from pathlib import Path
 from pprint import pprint
 from sqlite3 import OperationalError
@@ -98,6 +99,8 @@ async def prepare_violation_data(violation_dict: dict) -> (bool, dict):
     :return: 
     """
 
+    this_fanc_name: str = await fanc_name()
+
     file_id = violation_dict.get('file_id', None)
 
     if not file_id:
@@ -119,7 +122,7 @@ async def prepare_violation_data(violation_dict: dict) -> (bool, dict):
         table='core_location',
         entry=violation_dict.get("location", None),
         file_id=file_id,
-        name='location'
+        calling_function_name=f'{this_fanc_name}: location'
     )
     violation_dict.update({'location_id': location_id})
 
@@ -127,7 +130,7 @@ async def prepare_violation_data(violation_dict: dict) -> (bool, dict):
         table='core_mainlocation',
         entry=violation_dict.get("main_location", None),
         file_id=file_id,
-        name='main_location'
+        calling_function_name=f'{this_fanc_name}: main_location'
     )
     violation_dict.update({'main_location_id': main_location_id})
 
@@ -135,7 +138,7 @@ async def prepare_violation_data(violation_dict: dict) -> (bool, dict):
         table='core_sublocation',
         entry=violation_dict.get("sub_location", None),
         file_id=file_id,
-        name='sub_location'
+        calling_function_name=f'{this_fanc_name}: sub_location'
     )
     violation_dict.update({'sub_location_id': sub_location_id})
 
@@ -143,7 +146,7 @@ async def prepare_violation_data(violation_dict: dict) -> (bool, dict):
         table='core_workshift',
         entry=violation_dict.get("work_shift", None),
         file_id=file_id,
-        name='work_shift'
+        calling_function_name=f'{this_fanc_name}: work_shift'
     )
     violation_dict.update({'work_shift_id': work_shift_id})
 
@@ -151,7 +154,7 @@ async def prepare_violation_data(violation_dict: dict) -> (bool, dict):
         table='core_generalcontractor',
         entry=violation_dict.get("general_contractor", None),
         file_id=file_id,
-        name='general_contractor'
+        calling_function_name=f'{this_fanc_name}: general_contractor'
     )
     violation_dict.update({'general_contractor_id': general_contractor_id})
 
@@ -159,7 +162,7 @@ async def prepare_violation_data(violation_dict: dict) -> (bool, dict):
         table='core_maincategory',
         entry=violation_dict.get("main_category", None),
         file_id=file_id,
-        name='main_category'
+        calling_function_name=f'{this_fanc_name}: main_category'
     )
     violation_dict.update({'main_category_id': main_category_id})
 
@@ -167,7 +170,7 @@ async def prepare_violation_data(violation_dict: dict) -> (bool, dict):
         table='core_category',
         entry=violation_dict.get("category", None),
         file_id=file_id,
-        name='category'
+        calling_function_name=f'{this_fanc_name}: category'
     )
     violation_dict.update({'category_id': category_id})
 
@@ -175,7 +178,7 @@ async def prepare_violation_data(violation_dict: dict) -> (bool, dict):
         table='core_normativedocuments',
         entry=violation_dict.get("normative_documents", None),
         file_id=file_id,
-        name='normative_documents'
+        calling_function_name=f'{this_fanc_name}: normative_documents'
     )
     violation_dict.update({'normative_documents_id': normative_documents_id})
 
@@ -183,7 +186,7 @@ async def prepare_violation_data(violation_dict: dict) -> (bool, dict):
         table='core_actrequired',
         entry=violation_dict.get("act_required", None),
         file_id=file_id,
-        name='act_required'
+        calling_function_name=f'{this_fanc_name}: act_required'
     )
     violation_dict.update({'act_required_id': act_required_id})
 
@@ -191,7 +194,7 @@ async def prepare_violation_data(violation_dict: dict) -> (bool, dict):
         table='core_eliminationtime',
         entry=violation_dict.get("elimination_time", None),
         file_id=file_id,
-        name='elimination_time'
+        calling_function_name=f'{this_fanc_name}: elimination_time'
     )
     violation_dict.update({'elimination_time_id': elimination_time_id})
 
@@ -199,7 +202,7 @@ async def prepare_violation_data(violation_dict: dict) -> (bool, dict):
         table='core_incidentlevel',
         entry=violation_dict.get("incident_level", None),
         file_id=file_id,
-        name='incident_level'
+        calling_function_name=f'{this_fanc_name}: incident_level'
     )
     violation_dict.update({'incident_level_id': incident_level_id})
 
@@ -207,7 +210,7 @@ async def prepare_violation_data(violation_dict: dict) -> (bool, dict):
         table='core_violationcategory',
         entry=violation_dict.get("violation_category", None),
         file_id=file_id,
-        name='violation_category'
+        calling_function_name=f'{this_fanc_name}: violation_category'
     )
     violation_dict.update({'violation_category_id': violation_category_id})
 
@@ -215,7 +218,7 @@ async def prepare_violation_data(violation_dict: dict) -> (bool, dict):
         table='core_status',
         entry=violation_dict.get("status", None),
         file_id=file_id,
-        name='status'
+        calling_function_name=f'{this_fanc_name}: status'
     )
     violation_dict.update({'status_id': status_id})
 
@@ -223,7 +226,7 @@ async def prepare_violation_data(violation_dict: dict) -> (bool, dict):
         table='core_finished',
         entry=violation_dict.get("finished", None),
         file_id=file_id,
-        name='finished'
+        calling_function_name=f'{this_fanc_name}: finished'
     )
     violation_dict.update({'finished_id': finished_id})
 
@@ -231,7 +234,7 @@ async def prepare_violation_data(violation_dict: dict) -> (bool, dict):
         table='core_agreed',
         entry=violation_dict.get("agreed", None),
         file_id=file_id,
-        name='agreed'
+        calling_function_name=f'{this_fanc_name}: agreed'
     )
     violation_dict.update({'agreed_id': agreed_id})
 
@@ -384,6 +387,11 @@ async def test_1():
     for data_dict in violations_data:
         result: bool = await write_data_in_database(violation_data_to_db=data_dict)
         pprint(result)
+
+
+async def fanc_name():
+    stack = traceback.extract_stack()
+    return str(stack[-2][2])
 
 
 async def test_2():

@@ -313,6 +313,11 @@ async def bot_delete_markup(message: types.Message, sleep_sec: int = None):
     return False
 
 
+async def fanc_name():
+    stack = traceback.extract_stack()
+    return str(stack[-2][2])
+
+
 async def test():
     try:
         my_bot_task = asyncio.create_task(MyBot.run(), name='MyBot.run')

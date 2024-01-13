@@ -219,23 +219,23 @@ async def db_get_id_violation(file_id) -> int:
     return vi_id
 
 
-async def db_get_id(table, entry, file_id: str = None, name: str = None) -> int:
+async def db_get_id(table: str, entry: str, file_id: str = None, calling_function_name: str = None) -> int:
     """Получение id записи по значению title из соответствующий таблицы table
 
-    :param name:
-    :param file_id:
-    :param entry:
+    :param file_id: str id  файла формата dd.mm.gggg___user_id___msg_id (26.09.2022___373084462___24809)
+    :param entry: str - информация для записи в БД
     :param table: str - имя таблицы
-    :return: int
+    :param calling_function_name: - имя вызвавшей функции (для отладки)
+    :return: int - id из БД
     """
     try:
         value: int = await DataBaseViolations().get_id(
-            table_name=table, entry=entry, file_id=file_id
+            table_name=table, entry=entry, file_id=file_id, calling_function_name=calling_function_name
         )
         return value
 
     except OperationalError as err:
-        logger.error(f'{repr(err)} {table = }, {entry = }, {file_id = }, {name = }')
+        logger.error(f'{repr(err)} {table = }, {entry = }, {file_id = }, {calling_function_name = }')
         return 0
 
 

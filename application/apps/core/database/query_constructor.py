@@ -54,6 +54,7 @@ class QueryStorageFields(metaclass=ABCMeta):
         self.__part_lazy_query = None
         self.__part_title = None
         self.__part_id = None
+        self.__part_general_contractor_id = None
         self.lazy_query = None
 
         self.date_start = None
@@ -61,6 +62,7 @@ class QueryStorageFields(metaclass=ABCMeta):
 
         self.week_number = None
         self.hse_telegram_id = None
+        self.general_contractor_id = None
 
 
 class QueryStorageMethods(QueryStorageFields):
@@ -146,7 +148,7 @@ class QueryStorageMethods(QueryStorageFields):
 
     async def get_part_hashtags(self) -> str:
         """Обработка параметра hashtags и формирование части запроса и part_hashtags """
-        if not self.hashtag: return ''
+        if self.hashtag is None : return ''
 
         if isinstance(self.hashtag, str):
             hashtag_condition = self.conditions.get('hashtag_condition', None)
@@ -156,6 +158,8 @@ class QueryStorageMethods(QueryStorageFields):
 
         if isinstance(self.hashtag, list):
             return ''
+
+        return ''
 
     async def get_normative_documents_id(self):
         if self.normative_documents_id is None: return ''
@@ -192,6 +196,11 @@ class QueryStorageMethods(QueryStorageFields):
         """Обработка параметра status_id и формирование части запроса и hse_telegram_id """
         if self.hse_telegram_id is None: return ''
         return f" `hse_telegram_id` = {self.hse_telegram_id} "
+
+    async def get_general_contractor_id(self) -> str:
+        """Обработка параметра status_id и формирование части запроса и general_contractor_id """
+        if self.general_contractor_id is None: return ''
+        return f" `general_contractor_id` = {self.general_contractor_id} "
 
     async def get_period(self):
         """Формирование периода"""
@@ -264,6 +273,7 @@ class QueryConstructor(QueryStorageMethods):
     __part_finished: str
     __part_violation: str
     __part_hashtags: str
+    __part_general_contractor_id: str
     __part_lazy_query: str
     __part_category_id: str
     __part_title: str
@@ -308,6 +318,7 @@ class QueryConstructor(QueryStorageMethods):
 
         self.lazy_query = self.conditions.get("lazy_query", None)
 
+        self.general_contractor_id = self.conditions.get("general_contractor_id", None)
         self.hashtag = self.conditions.get('hashtag', None)
         self.week_number = self.conditions.get('week_number', None)
         self.hse_telegram_id = self.conditions.get('hse_telegram_id', None)
@@ -331,7 +342,7 @@ class QueryConstructor(QueryStorageMethods):
         self.__part_normative_documents_id = await self.get_normative_documents_id()
         self.__part_title = await self.get_part_title()
         self.__part_id = await self.get_part_id()
-
+        self.__part_general_contractor_id = await self.get_general_contractor_id()
         self.__part_hashtags = await self.get_part_hashtags()
         self.__part_lazy_query = await self.get_part_lazy_query()
         self.__part_week_number = await self.get_part_week_number()
@@ -370,7 +381,6 @@ class QueryConstructor(QueryStorageMethods):
 
         :return: str query
         """
-
         parts: list = [part.split('__')[-1] for part in self.__dict__ if (self.__dict__[part] and '__' in part)]
         logger.debug(f'{parts = }')
         conditions: list = [
@@ -382,14 +392,6 @@ class QueryConstructor(QueryStorageMethods):
 
         return self.main_part + ' AND '.join(cond for cond in conditions if cond)
 
-
-# async def db_get_data_list(query: str) -> list:
-#     """Получение list с данными по запросу query
-#
-#     :return: list
-#     """
-#     datas_query: list = DataBase().get_data_list(query=query)
-#     return datas_query
 
 async def test():
     """Функция тестирования """
