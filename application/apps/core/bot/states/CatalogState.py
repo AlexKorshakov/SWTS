@@ -9,5 +9,6 @@ class CatalogStateEmployee(StatesGroup):
     inquiry = State()
 
 
-# class SearchState(StatesGroup):
-#     inquiry = State()
+class CatalogStateLNA(StatesGroup):
+    inquiry = State()
+

@@ -2,14 +2,23 @@ from __future__ import annotations
 
 import math
 import os
+import sqlite3
+from datetime import datetime
 
 import pandas as pd
+from aiogram import types
 from pandas import DataFrame
 
 from apps.MyBot import bot_send_message
+from apps.core.bot.handlers.catalog.catalog_support_paths import catalog_check_path, catalog_get_file_path, \
+    catalog_async_check_path
 from apps.core.bot.handlers.catalog.catalog_func_handler import catalog_spot_data
-from apps.core.bot.handlers.correct_entries.correct_support import check_dataframe
 from apps.core.bot.messages.messages import Messages
+from apps.core.bot.messages.messages_test import msg
+from apps.core.database.query_constructor import QueryConstructor
+from apps.core.settyngs import get_sett
+from config.config import Udocan_Catalog_DB, Udocan_Catalog_Employee_DB, Udocan_LNA_path
+from loader import logger
 
 list_number = 0
 level_1_column = 3
@@ -18,9 +27,328 @@ level_3_column = 5
 level_4_column = 6
 
 
+class DataBaseCatalogEmployee:
+
+    def __init__(self):
+
+        if not catalog_check_path(Udocan_Catalog_Employee_DB):
+            logger.error(f'path {Udocan_Catalog_Employee_DB} is not exists!')
+
+        self.db_file = Udocan_Catalog_Employee_DB
+        self.connection = sqlite3.connect(self.db_file)
+        self.cursor = self.connection.cursor()
+
+        self.name: str = self.db_file.stem
+
+    async def create_backup(self) -> str | None:
+        """
+
+        :return:
+        """
+        backup_file_path: str = f"C:\\backup\\{datetime.now().strftime('%d.%m.%Y')}\\"
+        if not os.path.isdir(backup_file_path):
+            os.makedirs(backup_file_path)
+
+        query: str = f"vacuum into '{backup_file_path}backup_{datetime.now().strftime('%d.%m.%Y, %H.%M.%S')}_{self.name}.db'"
+
+        try:
+            with self.connection:
+                result = self.cursor.execute(query)
+                return self.name
+
+        except (ValueError, sqlite3.OperationalError) as err:
+            logger.error(f'Invalid query. {repr(err)}')
+            return None
+
+        finally:
+            self.cursor.close()
+
+    async def get_table_headers(self, table_name: str = None) -> list[str]:
+        """Получение всех заголовков таблицы core_violations
+
+        :return: list[ ... ]
+        """
+        if not table_name:
+            return []
+        try:
+
+            with self.connection:
+                result: list = self.cursor.execute(f"PRAGMA table_info('{table_name}')").fetchall()
+                clean_headers: list = [item[1] for item in result]
+                return clean_headers
+
+        except (ValueError, sqlite3.OperationalError) as err:
+            logger.error(f'{repr(err)}')
+            logger.error(f"Invalid query. {type(err).__name__} {err}")
+            return []
+
+        finally:
+            self.cursor.close()
+
+    async def get_all_tables_names(self) -> list:
+        """Получение всех имен таблиц в БД
+
+        :return:
+        """
+        try:
+            with self.connection:
+                result: list = self.cursor.execute("SELECT name FROM sqlite_master WHERE type='table';").fetchall()
+                return result
+
+        except (ValueError, sqlite3.OperationalError) as err:
+            logger.error(f'{repr(err)}')
+            logger.error(f"Invalid query. {type(err).__name__} {err}")
+            return []
+
+        finally:
+            self.cursor.close()
+
+    async def get_data_list(self, query: str = None) -> list:
+        """Получение данных из таблицы по запросу 'query'"""
+        if not query:
+            return []
+        try:
+            with self.connection:
+                return self.cursor.execute(query).fetchall()
+        except (ValueError, sqlite3.OperationalError) as err:
+            logger.error(f'{repr(err)}')
+            logger.error(f"Invalid query. {type(err).__name__} {err}")
+            return []
+
+        finally:
+            self.cursor.close()
+
+    async def get_data_list_without_query(self, table_name: str = None) -> list:
+        """Получение данных из таблицы table_name"""
+        try:
+            with self.connection:
+                query_kwargs: dict = {
+                    "action": 'SELECT',
+                    "subject": '*',
+                }
+                query: str = await QueryConstructor(None, table_name, **query_kwargs).prepare_data()
+                result: list = self.cursor.execute(query).fetchall()
+                if not result:
+                    logger.error(f"no matches found {table_name} in DB "
+                                 f"because .cursor.execute is none `table_name`: {table_name}")
+                    return []
+            return result
+
+        except (ValueError, sqlite3.OperationalError) as err:
+            logger.error(f'{repr(err)}')
+            logger.error(f"Invalid query. {type(err).__name__} {err}")
+            return []
+
+        finally:
+            self.cursor.close()
+
+    async def update_column_value(self, query: str):
+        """Обновление записи id в database
+
+        :param query: str
+        :return: result
+        """
+        try:
+            with self.connection:
+                result = self.cursor.execute(query)
+            self.connection.commit()
+            return result
+
+        except (ValueError, sqlite3.OperationalError) as err:
+            logger.error(f'{repr(err)}')
+            logger.error(f"Invalid query. {type(err).__name__} {err}")
+            return []
+
+        finally:
+            self.cursor.close()
+
+
+async def notify_user_for_choice(call_msg: types.CallbackQuery | types.Message, user_id: int | str = None,
+                                 data_answer: str = None) -> bool:
+    """Уведомление пользователя о выборе + логирование
+
+    :param data_answer:
+    :param user_id: int | str id пользователя
+    :param call_msg:
+    :return None :
+    """
+
+    if isinstance(call_msg, types.CallbackQuery):
+
+        for i in ('previous_paragraph', 'move_up', 'move_down'):
+            if i in call_msg.data: return True
+
+        mesg_text: str = f"Выбрано: {data_answer}"
+        if call_msg.data in call_msg.message.text:
+            mesg_list: list = [item for item in call_msg.message.text.split('\n\n') if call_msg.data in item]
+            mesg_text = f"Выбрано: {mesg_list[0]}"
+
+        try:
+            hse_user_id = call_msg.message.chat.id if call_msg else user_id
+            logger.debug(f"{hse_user_id = } Выбрано: {data_answer} {call_msg.data}")
+            await call_msg.message.edit_text(text=mesg_text, reply_markup=None)
+            return True
+
+        except Exception as err:
+            logger.debug(f"{call_msg.message.chat.id = } {repr(err)}")
+
+    if isinstance(call_msg, types.Message):
+
+        for i in ('previous_paragraph', 'move_up', 'move_down'):
+            if i in call_msg.text: return True
+
+        mesg_text: str = f"Выбрано: {data_answer}"
+        if call_msg.text in call_msg.text:
+            mesg_list: list = [item for item in call_msg.text.split('\n\n') if call_msg.text in item]
+            mesg_text = f"Выбрано: {mesg_list[0] if mesg_list else ''}"
+
+        try:
+            hse_user_id = call_msg.chat.id if call_msg else user_id
+            logger.debug(f"{hse_user_id = } Выбрано: {data_answer} {call_msg.text}")
+            await call_msg.edit_text(text=mesg_text, reply_markup=None)
+            return True
+
+        except Exception as err:
+            logger.debug(f"{call_msg.chat.id = } {repr(err)}")
+
+
 async def get_dataframe(hse_user_id: str | int, column_number: int = None) -> DataFrame | None:
     """
 
+    :return:
+    """
+    dataframe: DataFrame = await get_bd_from_database(hse_user_id)
+    if await check_dataframe(dataframe, hse_user_id=hse_user_id):
+        return dataframe
+
+    dataframe: DataFrame = await get_bd_from_excel(hse_user_id, column_number)
+    if await check_dataframe(dataframe, hse_user_id=hse_user_id):
+        return dataframe
+
+    # dataframe: DataFrame = await get_dataframe_from_local_files(hse_user_id, column_number)
+    # if await check_dataframe(dataframe, hse_user_id=hse_user_id):
+    #     return dataframe
+
+    return None
+
+
+async def check_dataframe(dataframe: DataFrame, hse_user_id: str | int) -> bool:
+    """Проверка dataframe на наличие данных
+
+    :param dataframe:
+    :param hse_user_id: id пользователя
+    :return:
+    """
+    if dataframe is None:
+        text_violations: str = 'не удалось получить данные!'
+        logger.error(f'{hse_user_id = } {text_violations}')
+        return False
+
+    if dataframe.empty:
+        logger.error(f'{hse_user_id = } {Messages.Error.dataframe_is_empty}')
+        return False
+
+    return True
+
+
+async def get_dataframe_from_local_files(hse_user_id: str | int, column_number: int = None) -> DataFrame | None:
+    """
+
+    :return:
+    """
+
+    file_list: list = await get_lna_files(lna_path=str(Udocan_LNA_path))
+    if not file_list:
+        await bot_send_message(chat_id=hse_user_id, text='Данные не найдены file_list')
+        return None
+
+    parts_with_number: list = []
+    list_dict: list = []
+    for num, file_path in enumerate(file_list):
+        if not os.path.isfile(file_path):
+            continue
+
+        file_name: str = file_path.split(os.sep)[-1]
+        list_parts: list = file_name.split('_')
+
+        part_with_number: list = [item for item in list_parts if item.isnumeric()]
+        parts_with_number = parts_with_number + part_with_number
+
+        list_parts: list = file_name.split(' ')
+        part_with_number: list = [item for item in list_parts if item.isnumeric()]
+        parts_with_number = parts_with_number + part_with_number
+
+        list_parts: list = file_name.split('.')
+        part_with_number: list = [item for item in list_parts if item.isnumeric()]
+        parts_with_number = parts_with_number + part_with_number
+
+        parts_with_number: list = list(set(parts_with_number))
+
+        list_dict.append(
+            {
+                "num": num,
+                "num_parts": ', '.join(parts_with_number),
+                # "num_parts": parts_with_number,
+                "file_path": file_path,
+                "file": file_name,
+            }
+        )
+        parts_with_number = []
+
+    if not list_dict:
+        await bot_send_message(chat_id=hse_user_id, text='Данные не найдены file_list')
+        return None
+
+    dataframe: DataFrame = pd.DataFrame(list_dict)
+    return dataframe
+
+
+async def get_bd_from_database(hse_user_id: str | int) -> DataFrame | None:
+    """
+
+    :param hse_user_id:
+    :return:
+    """
+
+    if not get_sett(cat='enable_features', param='use_catalog_employee_catalog').get_set():
+        msg_text: str = f"{await msg(hse_user_id, cat='error', msge='features_disabled', default=Messages.Error.features_disabled).g_mas()}"
+        await bot_send_message(chat_id=hse_user_id, text=msg_text, disable_web_page_preview=True)
+        return
+
+    db_table_name: str = 'employee_user'
+    kwargs: dict = {
+        "action": 'SELECT',
+        "subject": '*',
+    }
+    query: str = await QueryConstructor(table_name=db_table_name, **kwargs).prepare_data()
+
+    datas_query: list = await DataBaseCatalogEmployee().get_data_list(query=query)
+
+    if not datas_query:
+        return None
+
+    if not isinstance(datas_query, list):
+        return None
+
+    clean_headers: list = [item[1] for item in
+                           await DataBaseCatalogEmployee().get_table_headers(table_name=db_table_name)]
+    if not clean_headers:
+        return None
+
+    try:
+        dataframe: DataFrame = DataFrame(datas_query, columns=clean_headers)
+    except Exception as err:
+        logger.error(f"create_dataframe {repr(err)}")
+        return None
+
+    return dataframe
+
+
+async def get_bd_from_excel(hse_user_id: str | int, column_number: int = None) -> DataFrame | None:
+    """
+
+    :param hse_user_id:
+    :param column_number:
     :return:
     """
     file_list: list = await get_file_xlsx()
@@ -34,10 +362,6 @@ async def get_dataframe(hse_user_id: str | int, column_number: int = None) -> Da
         return None
 
     dataframe: DataFrame = datadict[list(datadict.keys())[column_number]]
-    if not await check_dataframe(dataframe, hse_user_id=hse_user_id):
-        await bot_send_message(chat_id=hse_user_id, text='Данные не найдены dataframe')
-        return None
-
     return dataframe
 
 
@@ -137,10 +461,48 @@ async def get_file_xlsx() -> list:
     """
     file_list: list = []
 
-    for root, _, files in os.walk("."):
+    if not await catalog_async_check_path(Udocan_Catalog_DB):
+        logger.error(f'path {Udocan_Catalog_DB} is not exists!')
+        return []
+
+    for root, _, files in os.walk(Udocan_Catalog_DB):
         for filename in files:
+
+            if not filename: continue
+            if '~' in filename: continue
+            if filename.endswith('.py'): continue
+            if filename.endswith('.jpg'): continue
+            if filename.endswith('.tmp'): continue
+            if filename.endswith('.db'): continue
+
             if '.xlsx' in filename and 'constractor' in filename:
-                file_list.append(f"{root}\\{filename}")
+                file_list.append(await catalog_get_file_path(root, filename))
+    return file_list
+
+
+async def get_lna_files(lna_path: str) -> list:
+    """Получение файлов со штатным расписанием в текущей директории
+
+    """
+    file_list: list = []
+
+    if not await catalog_async_check_path(lna_path):
+        logger.error(f'path {lna_path} is not exists!')
+        return []
+
+    for root, _, files in os.walk(lna_path):
+        for filename in files:
+
+            if not filename: continue
+            if '~' in filename: continue
+            if filename.endswith('.py'): continue
+            if filename.endswith('.jpg'): continue
+            if filename.endswith('.tmp'): continue
+            if filename.endswith('.db'): continue
+
+            # if '.pdf' in filename:
+            file_list.append(await catalog_get_file_path(root, filename))
+
     return file_list
 
 
@@ -191,3 +553,52 @@ async def check_dataframe(dataframe: DataFrame, hse_user_id: str | int) -> bool:
         return False
 
     return True
+
+
+async def notify_user_for_choice(call_msg: types.CallbackQuery | types.Message, user_id: int | str = None,
+                                 data_answer: str = None) -> bool:
+    """Уведомление пользователя о выборе + логирование
+
+    :param data_answer:
+    :param user_id: int | str id пользователя
+    :param call_msg:
+    :return None :
+    """
+
+    if isinstance(call_msg, types.CallbackQuery):
+
+        for i in ('previous_paragraph', 'move_up', 'move_down'):
+            if i in call_msg.data: return True
+
+        mesg_text: str = f"Выбрано: {data_answer}"
+        if call_msg.data in call_msg.message.text:
+            mesg_list: list = [item for item in call_msg.message.text.split('\n\n') if call_msg.data in item]
+            mesg_text = f"Выбрано: {mesg_list[0]}"
+
+        try:
+            hse_user_id = call_msg.message.chat.id if call_msg else user_id
+            logger.debug(f"{hse_user_id = } Выбрано: {data_answer} {call_msg.data}")
+            await call_msg.message.edit_text(text=mesg_text, reply_markup=None)
+            return True
+
+        except Exception as err:
+            logger.debug(f"{call_msg.message.chat.id = } {repr(err)}")
+
+    if isinstance(call_msg, types.Message):
+
+        for i in ('previous_paragraph', 'move_up', 'move_down'):
+            if i in call_msg.text: return True
+
+        mesg_text: str = f"Выбрано: {data_answer}"
+        if call_msg.text in call_msg.text:
+            mesg_list: list = [item for item in call_msg.text.split('\n\n') if call_msg.text in item]
+            mesg_text = f"Выбрано: {mesg_list[0] if mesg_list else ''}"
+
+        try:
+            hse_user_id = call_msg.chat.id if call_msg else user_id
+            logger.debug(f"{hse_user_id = } Выбрано: {data_answer} {call_msg.text}")
+            await call_msg.edit_text(text=mesg_text, reply_markup=None)
+            return True
+
+        except Exception as err:
+            logger.debug(f"{call_msg.chat.id = } {repr(err)}")
