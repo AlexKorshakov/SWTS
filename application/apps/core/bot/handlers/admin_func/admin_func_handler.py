@@ -5,33 +5,23 @@ from aiogram.dispatcher import FSMContext
 from loader import logger
 
 logger.debug(f"{__name__} start import")
-import time
 
 import traceback
 from pandas import DataFrame
 from aiogram import types
 from aiogram.dispatcher.filters import Command
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+
+from apps.MyBot import MyBot, bot_send_message
+from apps.core.utils.misc import rate_limit
+from apps.core.bot.messages.messages_test import msg
+from apps.core.bot.messages.messages import Messages
+from apps.core.database.db_utils import (db_get_data_list,
+                                         db_get_clean_headers)
+from apps.core.database.query_constructor import QueryConstructor
 from apps.core.bot.bot_utils.bot_admin_notify import admin_notify
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
-from apps.core.bot.data.board_config import BoardConfig as board_config
-from apps.core.bot.callbacks.sequential_action.category import ADMIN_MENU_LIST
-from apps.core.bot.filters.custom_filters import is_private
-from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import \
-    build_inlinekeyboard, posts_cb
-from apps.core.bot.messages.messages_test import msg
-from apps.core.checker.periodic_check_indefinite_normative import check_indefinite_normative
-from apps.core.checker.periodic_check_unclosed_points import check_acts_prescriptions_status
-from apps.core.checker.periodic_check_unclosed_points_for_subcontractor import \
-    check_acts_prescriptions_status_for_subcontractor
-from apps.core.settyngs import get_sett
-from apps.core.bot.messages.messages import Messages
-from apps.core.utils.misc import rate_limit
-from apps.core.utils.secondary_functions.get_json_files import get_registered_users
-from apps.MyBot import MyBot, bot_send_message
-from config.config import ADMIN_ID, DEVELOPER_ID
 
-logger.debug(f"{__name__} finish import")
+from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
 
 
 @rate_limit(limit=10)
@@ -39,6 +29,8 @@ logger.debug(f"{__name__} finish import")
 async def admin_func_handler(message: types.Message = None, *, hse_user_id: int | str = None, state: FSMContext = None):
     """Административные функции
 
+    :param state:
+    :param hse_user_id:
     :param message:
     :return: None
     """
@@ -57,31 +49,37 @@ async def admin_func_handler(message: types.Message = None, *, hse_user_id: int 
     #     await bot_send_message(chat_id=chat_id, text=msg_text, disable_web_page_preview=True)
     #     return
 
-    # TODO  переделать
-    if chat_id != int(ADMIN_ID) or chat_id != int(DEVELOPER_ID):
-        await admin_notify(
-            user_id=chat_id, notify_text=f'User @{message.from_user.username}:{chat_id} попытка доступа в админку!'
-        )
-        text: str = 'У Вас нет прав доступа к административным функциям!\n' \
-                    'По всем вопросам обращайтесь к администратору\n' \
-                    'https://t.me/AlexKor_MSK'
+    # if not get_sett(cat='enable_features', param='use_catalog_func').get_set():
+    #     msg_text: str = f"{await msg(chat_id, cat='error', msge='features_disabled', default=Messages.Error.features_disabled).g_mas()}"
+    #     await bot_send_message(chat_id=chat_id, text=msg_text, disable_web_page_preview=True)
+    #     return
 
-        await bot_send_message(chat_id=chat_id, text=text, disable_web_page_preview=True)
+    main_reply_markup = types.InlineKeyboardMarkup()
+    hse_role_df: DataFrame = await get_role_receive_df()
+
+    if not await check_user_access(chat_id=chat_id, role_df=hse_role_df):
+        logger.error(f'access fail {chat_id = }')
         return
 
-    reply_markup = await add_correct_inline_keyboard_with_action()
-    text: str = 'Выберите действие'
+    main_reply_markup = await add_inline_keyboard_with_action_for_admin(main_reply_markup)
 
-    await bot_send_message(chat_id=chat_id, text=text, reply_markup=reply_markup)
+    if await check_admin_access(chat_id=chat_id, role_df=hse_role_df):
+        main_reply_markup = await add_inline_keyboard_with_action_for_admin(main_reply_markup)
+
+    if await check_super_user_access(chat_id=chat_id, role_df=hse_role_df):
+        main_reply_markup = await add_inline_keyboard_with_action_for_super_user(main_reply_markup)
+
+    await bot_send_message(chat_id=chat_id, text=Messages.Choose.action, reply_markup=main_reply_markup)
 
 
-async def add_correct_inline_keyboard_with_action():
+async def add_inline_keyboard_with_action_for_admin(markup: types.InlineKeyboardMarkup):
     """Формирование сообщения с текстом и кнопками действий в зависимости от параметров
 
     :return:
     """
 
-    markup = types.InlineKeyboardMarkup()
+    if not markup:
+        markup = types.InlineKeyboardMarkup()
 
     markup.add(types.InlineKeyboardButton(
         'Проверить статус Актов',
@@ -95,146 +93,242 @@ async def add_correct_inline_keyboard_with_action():
         'Проверить нормативку',
         callback_data=posts_cb.new(id='-', action='check_indefinite_normative'))
     )
+    markup.add(types.InlineKeyboardButton(
+        text='добавить пользователя',
+        callback_data=posts_cb.new(id='-', action='admin_add_user'))
+    )
+    markup.add(types.InlineKeyboardButton(
+        text='Оповещение пользователей',
+        callback_data=posts_cb.new(id='-', action='admin_informing_users'))
+    )
+    return markup
+
+
+async def add_inline_keyboard_with_action_for_super_user(markup: types.InlineKeyboardMarkup):
+    """Формирование сообщения с текстом и кнопками действий в зависимости от параметров
+
+    :return:
+    """
+    # markup.add(types.InlineKeyboardButton(
+    #     text='SU Включение функций',
+    #     callback_data=posts_cb.new(id='-', action='s_user_enable_features')))
 
     return markup
 
 
-@MyBot.dp.callback_query_handler(posts_cb.filter(action=['check_acts_prescriptions_status']))
-async def check_acts_prescriptions_status_answer(
-        call: types.CallbackQuery, callback_data: dict[str, str], state: FSMContext = None):
-    """
+async def add_correct_inline_keyboard_with_action_for_developer(markup: types.InlineKeyboardMarkup):
+    """Формирование сообщения с текстом и кнопками действий в зависимости от параметров
 
     :return:
     """
-    hse_user_id = call.message.chat.id
-    if not await check_user_access(chat_id=hse_user_id):
-        logger.error(f'access fail {hse_user_id = }')
-        return
+    markup.add(types.InlineKeyboardButton(
+        text='DEV Включение функций',
+        callback_data=posts_cb.new(id='-', action='s_user_enable_features')))
 
-    msg_text = await msg(hse_user_id, cat='error', msge='error_action', default=Messages.Error.error_action).g_mas()
-    await bot_send_message(chat_id=hse_user_id, text=msg_text)
-    await check_acts_prescriptions_status()
+    return markup
 
 
-@MyBot.dp.callback_query_handler(posts_cb.filter(action=['check_acts_prescriptions_status_for_subcontractor']))
-async def check_acts_prescriptions_status_for_subcontractor_answer(
-        call: types.CallbackQuery, callback_data: dict[str, str], state: FSMContext = None):
-    """
+async def get_role_receive_df() -> DataFrame | None:
+    """Получение df с ролями пользователя
 
     :return:
     """
-    hse_user_id = call.message.chat.id
-    if not await check_user_access(chat_id=hse_user_id):
-        logger.error(f'access fail {hse_user_id = }')
+
+    db_table_name: str = 'core_hseuser'
+    kwargs: dict = {
+        "action": 'SELECT',
+        "subject": '*',
+    }
+    query: str = await QueryConstructor(table_name=db_table_name, **kwargs).prepare_data()
+    datas_query: list = await db_get_data_list(query=query)
+    if not datas_query:
+        return None
+
+    if not isinstance(datas_query, list):
+        return None
+
+    clean_headers: list = await db_get_clean_headers(table_name=db_table_name)
+    if not clean_headers:
+        return None
+
+    try:
+        hse_role_receive_df: DataFrame = DataFrame(datas_query, columns=clean_headers)
+    except Exception as err:
+        logger.error(f"create_dataframe {repr(err)}")
+        return None
+
+    return hse_role_receive_df
+
+
+async def check_admin_access(chat_id: int | str, role_df: DataFrame = None):
+    """
+
+    :param role_df:
+    :param chat_id:
+    :return:
+    """
+    admin_id_list: list = await get_id_list(
+        hse_user_id=chat_id, user_role='hse_role_is_admin', hse_role_df=role_df
+    )
+    if not admin_id_list:
+        logger.error(f'{await fanc_name()} access fail {chat_id = }')
+        await user_access_fail(chat_id, hse_id=chat_id)
+        return False
+
+    if chat_id not in admin_id_list:
+        logger.error(f'{await fanc_name()} access fail {chat_id = }')
+        return False
+
+    logger.info(f"user_access_granted for {chat_id = }")
+    await user_access_granted(chat_id, role=await fanc_name(), notify=True)
+    return True
+
+
+async def check_super_user_access(chat_id: int | str, role_df: DataFrame = None):
+    """
+
+    :param role_df:
+    :param chat_id:
+    :return:
+    """
+    super_user_id_list: list = await get_id_list(
+        hse_user_id=chat_id, user_role='hse_role_is_super_user', hse_role_df=role_df
+    )
+    if not super_user_id_list:
+        logger.warning(f'{await fanc_name()} access fail {chat_id = }')
+        await user_access_fail(chat_id, hse_id=chat_id)
+        return False
+
+    if chat_id not in super_user_id_list:
+        logger.warning(f'{await fanc_name()} access fail {chat_id = }')
+        return False
+
+    logger.info(f"user_access_granted for {chat_id = }")
+    await user_access_granted(chat_id, role=await fanc_name())
+    return True
+
+
+async def user_access_fail(chat_id: int, notify_text: str = None, hse_id: str = None):
+    """Отправка сообщения о недостатке прав
+    """
+    hse_id = hse_id if hse_id else chat_id
+
+    try:
+        default_answer_text: str = 'У вас нет прав доступа \n По всем вопросам обращайтесь к администратору\n' \
+                                   'https://t.me/AlexKor_MSK \n\n'
+
+        part_1 = f"{await msg(hse_id, cat='error', msge='access_fail', default=default_answer_text).g_mas()}"
+        part_2 = f"{await msg(hse_id, cat='help', msge='help_message', default=Messages.help_message).g_mas()}"
+        answer_text = f'{part_1}\n\n{part_2}'
+        print(f'{answer_text = }')
+
+        await bot_send_message(chat_id=chat_id, text=answer_text, disable_web_page_preview=True)
         return
 
-    # msg_text = await msg(hse_user_id, cat='error', msge='error_action', default=Messages.Error.error_action).g_mas()
-    # await bot_send_message(chat_id=hse_user_id, text=msg_text)
-    await check_acts_prescriptions_status_for_subcontractor()
-    await bot_send_message(chat_id=hse_user_id, text="Уведомления направлены")
+    except Exception as err:
+        logger.error(f'User {chat_id} ошибка уведомления пользователя {repr(err)}')
+        await admin_notify(user_id=chat_id, notify_text=notify_text)
+
+    finally:
+        if not notify_text:
+            notify_text: str = f'User {chat_id} попытка доступа к функциям без регистрации'
+
+        logger.error(notify_text)
+        button = types.InlineKeyboardButton('user_actions',
+                                            callback_data=posts_cb.new(id='-', action='admin_user_actions'))
+        await admin_notify(
+            user_id=chat_id,
+            notify_text=notify_text,
+            button=button
+        )
 
 
-@MyBot.dp.callback_query_handler(posts_cb.filter(action=['check_indefinite_normative']))
-async def check_indefinite_normative_answer(
-        call: types.CallbackQuery, callback_data: dict[str, str], state: FSMContext = None):
-    """
+async def user_access_granted(chat_id: int, role: str = None, notify=False):
+    """Отправка сообщения - доступ разрешен"""
+
+    reply_markup = types.InlineKeyboardMarkup()
+    reply_markup.add(types.InlineKeyboardButton(text=f'{chat_id}', url=f"tg://user?id={chat_id}"))
+
+    notify_text: str = f'доступ разрешен {chat_id = } {role = }'
+    logger.debug(notify_text)
+    if notify:
+        await admin_notify(user_id=chat_id, notify_text=notify_text)
+
+
+async def get_id_list(hse_user_id: str | int, user_role: str = None, hse_role_df: DataFrame = None) -> list:
+    """Получение id"""
+
+    if not await check_dataframe_role(hse_role_df, hse_user_id):
+        hse_role_df: DataFrame = await get_bagration_role_receive_df()
+        if not await check_dataframe_role(hse_role_df, hse_user_id):
+            return []
+
+    try:
+        current_act_violations_df: DataFrame = hse_role_df.loc[
+            hse_role_df[user_role] == 1]
+
+    except Exception as err:
+        logger.error(f"loc dataframe {repr(err)}")
+        return []
+
+    unique_hse_telegram_id: list = current_act_violations_df.hse_telegram_id.unique().tolist()
+    if not unique_hse_telegram_id:
+        return []
+
+    return unique_hse_telegram_id
+
+
+async def get_bagration_role_receive_df() -> DataFrame | None:
+    """Получение df с ролями пользователя
 
     :return:
     """
-    hse_user_id = call.message.chat.id
-    if not await check_user_access(chat_id=hse_user_id):
-        logger.error(f'access fail {hse_user_id = }')
-        return
 
-    msg_text = await msg(hse_user_id, cat='error', msge='error_action', default=Messages.Error.error_action).g_mas()
-    await bot_send_message(chat_id=hse_user_id, text=msg_text)
-    await check_indefinite_normative()
+    db_table_name: str = 'core_hseuser'
+    kwargs: dict = {
+        "action": 'SELECT',
+        "subject": '*',
+    }
+    query: str = await QueryConstructor(table_name=db_table_name, **kwargs).prepare_data()
+    datas_query: list = await db_get_data_list(query=query)
+    if not datas_query:
+        return None
+
+    if not isinstance(datas_query, list):
+        return None
+
+    clean_headers: list = await db_get_clean_headers(table_name=db_table_name)
+    if not clean_headers:
+        return None
+
+    try:
+        hse_role_receive_df: DataFrame = DataFrame(datas_query, columns=clean_headers)
+    except Exception as err:
+        logger.error(f"create_dataframe {repr(err)}")
+        return None
+
+    return hse_role_receive_df
 
 
-@MyBot.dp.callback_query_handler(is_private, lambda call: call.data in ADMIN_MENU_LIST)
-async def admin_function_answer(call: types.CallbackQuery, user_id: int | str = None, state: FSMContext = None):
-    """Обработка ответов содержащихся в ADMIN_MENU_LIST
+async def check_dataframe_role(dataframe: DataFrame, hse_user_id: str | int) -> bool:
+    """Проверка dataframe на наличие данных
+
+    :param dataframe:
+    :param hse_user_id: id пользователя
+    :return:
     """
-    hse_user_id = call.message.chat.id if call else user_id
+    if dataframe is None:
+        # text_violations: str = 'не удалось получить данные!'
+        # logger.error(f'{hse_user_id = } {text_violations}')
+        return False
 
-    users_datas, users_ids = await get_registered_users()
+    if dataframe.empty:
+        logger.error(f'{hse_user_id = } {Messages.Error.dataframe_is_empty}')
+        return False
 
-    if call.data == 'Показать всех пользователей':
-        # menu_level = board_config.menu_level = 2
-        # menu_list = board_config.menu_list = users_datas
+    return True
 
-        menu_level = await board_config(state, "menu_level", 2).set_data()
-        menu_list = await board_config(state, "menu_list", users_datas).set_data()
 
-        reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level)
-        await bot_send_message(chat_id=hse_user_id, text=Messages.Admin.answer, reply_markup=reply_markup)
-
-    if call.data == 'Оповещение':
-
-        text: str = 'Приветствую! \n' \
-                    'Бот MIP_HSE_BOT обновился!\n' \
-                    '\n' \
-                    'Команда: Изменение данных или /correct_entries_handler\n' \
-                    'добавлено: \n' \
-                    'коррекция данных регистрации \n' \
-                    'возможно исправить \n' \
-                    '    ФИО\n' \
-                    '    Должность\n' \
-                    '    Площалку\n' \
-                    '    Смена\n' \
-                    '    Телефон\n' \
-                    '\n' \
-                    'коррекция данных зарегистрированных нарушений\n' \
-                    'возможно исправить \n' \
-                    '    Описание нарушения\n' \
-                    '    Комментарий к нарушению\n' \
-                    '    Основное направление\n' \
-                    '    Количество дней на устранение\n' \
-                    '    Степень опасности ситуации\n' \
-                    '    Требуется ли оформление акта?\n' \
-                    '    Подрядная организация\n' \
-                    '    Категория нарушения\n' \
-                    '    Уровень происшествия\n' \
-                    '\n' \
-                    'коррекция данных заголовков отчета (Состав комиссии)\n' \
-                    'возможно исправить \n' \
-                    '    Руководитель строительства\n' \
-                    '    Инженер СК\n' \
-                    '    Подрядчик\n' \
-                    '    Субподрядчик\n' \
-                    '    Вид обхода\n' \
-                    '    Представитель подрядчика\n' \
-                    '    Представитель субподрядчика\n' \
-                    '\n' \
-                    'где возможно - добавлен выбор данных из списка\n' \
-                    'в остальных случаях - ручной ввод\n' \
-                    '\n' \
-                    'команда отмены или /cansel прекращает все действия во всех процессах бота\n' \
-                    'работает из любого места или меню\n' \
-                    '\n' \
-                    'исправлены ошибки повышена стабильность работы\n' \
-                    '\n' \
-                    'По всем вопросам - к разработчику\n' \
-                    f'{Messages.help_message}'
-
-        for user_id in users_ids:
-            if user_id == ADMIN_ID: continue
-
-            reply_markup = InlineKeyboardMarkup()
-            reply_markup.add(
-                InlineKeyboardButton(text='написать разработчику', url=f"tg://user?id={ADMIN_ID}")
-            )
-
-            try:
-
-                await bot_send_message(chat_id=user_id, text=text, reply_markup=reply_markup)
-            except Exception as err:
-                logger.error(f'bot.send_message error {repr(err)}')
-                await bot_send_message(chat_id=ADMIN_ID, text='bot.send_message error user_id')
-                continue
-
-            await admin_notify(
-                user_id=user_id,
-                notify_text=f'Оповещение отправлено {user_id}'
-            )
-            time.sleep(1)
+async def fanc_name():
+    stack = traceback.extract_stack()
+    return str(stack[-2][2])
