@@ -1,3 +1,11 @@
+import traceback
+from pprint import pprint
+
+from aiogram.dispatcher import FSMContext
+
+from apps.core.bot.bot_utils.check_user_registration import check_user_access
+from apps.core.bot.messages.messages import Messages
+from apps.core.settyngs import get_sett
 from loader import logger
 logger.debug(f"{__name__} start import")
 from aiogram import types
@@ -12,15 +20,28 @@ logger.debug(f"{__name__} finish import")
 
 
 @rate_limit(limit=10)
-@MyBot.dp.message_handler(Command('help'))
-async def process_help_command(message: types.Message):
+@MyBot.dp.message_handler(Command('help'), state='*')
+async def help_command_handler(message: types.Message, state: FSMContext = None):
     """Обработка команды help
     """
+    chat_id = message.chat.id
+    if not await check_user_access(chat_id=chat_id):
+        return
 
-    hse_id = message.chat.id
+    # pprint(f'before after {state =  }', width=200)
+    # pprint(f'before after {await state.get_data() = }', width=200)
+    current_state = await state.get_state()
+    await state.finish()
+    # pprint(f'state after {await fanc_name()} state is finish {current_state = }')
+    # pprint(f'state after {state =  }', width=200)
 
-    answer_text = f"{await msg(hse_id, cat='help', msge='bot_developer', default='Меня создал').g_mas()}"
-    await bot_send_message(chat_id=hse_id, text=answer_text)
+    if not get_sett(cat='enable_features', param='use_help_command_handler').get_set():
+        msg_text: str = f"{await msg(chat_id, cat='error', msge='features_disabled', default=Messages.Error.features_disabled).g_mas()}"
+        await bot_send_message(chat_id=chat_id, text=msg_text, disable_web_page_preview=True)
+        return
+
+    answer_text = f"{await msg(chat_id, cat='help', msge='bot_developer', default='Меня создал').g_mas()}"
+    await bot_send_message(chat_id=chat_id, text=answer_text)
 
     help_message = text(
         f"{await msg(hse_id, cat='help', msge='command_help', default='Справка по командам').g_mas()}"
@@ -36,4 +57,9 @@ async def process_help_command(message: types.Message):
         sep="\n"
     )
 
-    await bot_send_message(chat_id=hse_id, text=help_message, reply_markup=await help_inline_button(hse_id=hse_id))
+    await bot_send_message(chat_id=chat_id, text=help_message, reply_markup=await help_inline_button(hse_id=chat_id))
+
+
+async def fanc_name():
+    stack = traceback.extract_stack()
+    return str(stack[-2][2])

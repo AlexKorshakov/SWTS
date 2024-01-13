@@ -1,7 +1,16 @@
+from __future__ import annotations
+
+from aiogram.dispatcher import FSMContext
+
+from apps.core.settyngs import get_sett
+from apps.core.utils.json_worker.writer_json_file import write_json_file
 from loader import logger
+
 logger.debug(f"{__name__} start import")
 
-import typing
+import traceback
+from datetime import datetime, date
+from pandas import DataFrame
 from aiogram import types
 from aiogram.dispatcher.filters import Command
 
@@ -18,8 +27,8 @@ logger.debug(f"{__name__} finish import")
 
 
 @rate_limit(limit=10)
-@MyBot.dp.message_handler(Command('generate'))
-async def generate_handler(message: types.Message):
+@MyBot.dp.message_handler(Command('generate'), state='*')
+async def generate_handler(message: types.Message, state: FSMContext = None):
     """Обработка команд генерации документов
 
     :return:
@@ -28,6 +37,21 @@ async def generate_handler(message: types.Message):
     chat_id = message.chat.id
 
     if not await check_user_access(chat_id=chat_id):
+        return
+
+    current_state = await state.get_state()
+    await state.finish()
+    logger.info(f'{await fanc_name()} state is finish {current_state = }')
+
+    if not get_sett(cat='enable_features', param='use_generate_handler').get_set():
+        msg_text: str = f"{await msg(chat_id, cat='error', msge='features_disabled', default=Messages.Error.features_disabled).g_mas()}"
+        await bot_send_message(chat_id=chat_id, text=msg_text, disable_web_page_preview=True)
+        return
+
+    main_reply_markup = types.InlineKeyboardMarkup()
+    hse_role_df: DataFrame = await get_role_receive_df()
+
+    if not await check_user_access(chat_id=chat_id, role_df=hse_role_df):
         logger.error(f'access fail {chat_id = }')
         return
 

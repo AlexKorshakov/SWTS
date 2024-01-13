@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import asyncio
 
+from aiogram.dispatcher import FSMContext
+
 from loader import logger
 
 logger.debug(f"{__name__} start import")
@@ -27,19 +29,19 @@ logger.debug(f"{__name__} finish import")
 
 
 @rate_limit(limit=10)
-@MyBot.dp.message_handler(Command('bagration'))
-async def bagration_func_handler(message: types.Message):
+@MyBot.dp.message_handler(Command('bagration'), state='*')
+async def bagration_func_handler(message: types.Message, state: FSMContext = None):
     """Административные функции
 
     :param message:
-    :return: None
+    :param state:
     """
 
     chat_id = message.chat.id
 
-    # if chat_id == 373084462:
-    #     await user_access_fail(chat_id)
-    #     return
+    current_state = await state.get_state()
+    await state.finish()
+    logger.info(f'{await fanc_name()} state is finish {current_state = }')
 
     if not await check_user_access(chat_id=chat_id):
         logger.error(f'access fail {chat_id = }')

@@ -1,10 +1,14 @@
+import traceback
 from typing import List
 
+from apps.core.bot.messages.messages import Messages
+from apps.core.bot.messages.messages_test import msg
+from apps.core.settyngs import get_sett
 from loader import logger
 
 logger.debug(f"{__name__} start import")
 from aiogram import types
-from apps.MyBot import MyBot
+from apps.MyBot import MyBot, bot_send_message
 
 from apps.core.utils.misc import rate_limit
 from apps.core.bot.data.board_config import BoardConfig as board_config
@@ -20,7 +24,7 @@ logger.debug("message_handler 'photo'")
 
 
 @rate_limit(limit=5)
-@MyBot.dp.message_handler(content_types=["photo"])
+@MyBot.dp.message_handler(content_types=["photo"], state='*')
 async def photo_handler(message: types.Message, state: FSMContext, chat_id: str = None):
     """Обработчик сообщений с фото
     """
@@ -28,6 +32,15 @@ async def photo_handler(message: types.Message, state: FSMContext, chat_id: str 
     hse_user_id = chat_id if chat_id else message.chat.id
 
     if not await check_user_access(chat_id=hse_user_id):
+        return
+
+    current_state = await state.get_state()
+    await state.finish()
+    logger.info(f'{await fanc_name()} state is finish {current_state = }')
+
+    if not get_sett(cat='enable_features', param='use_photo_handler').get_set():
+        msg_text: str = f"{await msg(chat_id, cat='error', msge='features_disabled', default=Messages.Error.features_disabled).g_mas()}"
+        await bot_send_message(chat_id=chat_id, text=msg_text, disable_web_page_preview=True)
         return
 
     logger.info("photo_handler get photo")
@@ -42,3 +55,8 @@ async def photo_handler(message: types.Message, state: FSMContext, chat_id: str 
     await download_photo(message, hse_user_id)
 
     await select_start_category(message)
+
+
+async def fanc_name():
+    stack = traceback.extract_stack()
+    return str(stack[-2][2])

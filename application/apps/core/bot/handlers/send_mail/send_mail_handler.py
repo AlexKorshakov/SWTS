@@ -28,7 +28,7 @@
 #
 #
 # @rate_limit(limit=360)
-# @MyBot.dp.message_handler(Command('send_mail'))
+# @MyBot.dp.message_handler(Command('send_mail'), state = '*')
 # async def send_mail(message: types.Message, file_list: list = None, registration_data: dict = None) -> None:
 #     """Проверка доступа, получение файлов для отправки, получение списка адресатов для отправки писем
 #     формирование тела письма, добавление вложений
@@ -44,6 +44,10 @@
 #     chat_id = message.chat.id
 #     if not await check_user_access(chat_id=chat_id):
 #         return
+
+    # current_state = await state.get_state()
+    # await state.finish()
+    # logger.info(f'{await fanc_name()} state is finish {current_state = }')
 #
 #     registration_file_list = []
 #

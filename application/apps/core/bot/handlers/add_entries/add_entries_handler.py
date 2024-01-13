@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from aiogram.dispatcher import FSMContext
+
 from apps.core.settyngs import get_sett
 from loader import logger
 
@@ -26,9 +28,9 @@ logger.debug(f"{__name__} finish import")
 
 
 @rate_limit(limit=10)
-@MyBot.dp.message_handler(Command('add_entries'))
-async def add_entries_handler(message: types.Message):
-    """Обработка команд генерации документов
+@MyBot.dp.message_handler(Command('add_entries'), state='*')
+async def add_entries_handler(message: types.Message, state: FSMContext = None):
+    """Обработка команд добавления данных
 
     :return:
     """
@@ -37,6 +39,10 @@ async def add_entries_handler(message: types.Message):
     if not await check_user_access(chat_id=chat_id):
         logger.error(f'access fail {chat_id = }')
         return
+
+    current_state = await state.get_state()
+    await state.finish()
+    logger.info(f'{await fanc_name()} state is finish {current_state = }')
 
     if not get_sett(cat='enable_features', param='use_catalog_func').get_set():
         msg_text: str = f"{await msg(chat_id, cat='error', msge='features_disabled', default=Messages.Error.features_disabled).g_mas()}"

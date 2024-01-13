@@ -1,4 +1,7 @@
+import traceback
 import typing
+
+from aiogram.dispatcher import FSMContext
 
 from apps.core.bot.messages.messages_test import msg
 from loader import logger
@@ -30,8 +33,8 @@ logger.debug(f"{__name__} finish import")
 
 
 @rate_limit(limit=10)
-@MyBot.dp.message_handler(Command('correct_entries'))
-async def correct_entries_handler(message: types.Message = None, *, hse_user_id=None):
+@MyBot.dp.message_handler(Command('correct_entries'), state='*')
+async def correct_entries_handler(message: types.Message = None, *, hse_user_id=None, state: FSMContext = None):
     """Корректирование уже введённых значений на локальном pc и на google drive
 
     :return:
@@ -41,6 +44,15 @@ async def correct_entries_handler(message: types.Message = None, *, hse_user_id=
 
     if not await check_user_access(chat_id=chat_id):
         logger.error(f'access fail {chat_id = }')
+        return
+
+    current_state = await state.get_state()
+    await state.finish()
+    logger.info(f'{await fanc_name()} state is finish {current_state = }')
+
+    if not get_sett(cat='enable_features', param='use_correct_entries').get_set():
+        msg_text: str = f"{await msg(chat_id, cat='error', msge='features_disabled', default=Messages.Error.features_disabled).g_mas()}"
+        await bot_send_message(chat_id=chat_id, text=msg_text, disable_web_page_preview=True)
         return
 
     reply_markup = await add_correct_inline_keyboard_with_action()
@@ -149,3 +161,8 @@ async def del_file_from_gdrive(drive_service, *, name, violation_file, parent_id
         if v.get("id"):
             return True if await delete_folder(service=drive_service, folder_id=v["id"]) else False
     return False
+
+
+async def fanc_name():
+    stack = traceback.extract_stack()
+    return str(stack[-2][2])

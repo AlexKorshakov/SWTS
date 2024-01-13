@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import traceback
+
 from aiogram.dispatcher import FSMContext
 
 from loader import logger
@@ -50,7 +52,7 @@ catalog_spot_data = CatalogSpot().catalog_spot_data
 
 
 @rate_limit(limit=10)
-@MyBot.dp.message_handler(Command('catalog'))
+@MyBot.dp.message_handler(Command('catalog'), state='*')
 async def catalog_func_handler(message: types.Message = None, user_id: str | int = None, state: FSMContext = None):
     """Обработка команд генерации документов
 
@@ -61,6 +63,10 @@ async def catalog_func_handler(message: types.Message = None, user_id: str | int
     except AttributeError as err:
         logger.debug(f'{__file__} {repr(err)}')
         hse_user_id = user_id if user_id else message.message.from_user.id
+
+    current_state = await state.get_state()
+    await state.finish()
+    logger.info(f'{await fanc_name()} state is finish {current_state = }')
 
     if not await check_user_access(chat_id=hse_user_id):
         logger.error(f'access fail {hse_user_id = }')
@@ -105,6 +111,11 @@ async def add_correct_inline_keyboard_with_action():
     )
 
     return markup
+
+
+async def fanc_name():
+    stack = traceback.extract_stack()
+    return str(stack[-2][2])
 
 
 async def test():

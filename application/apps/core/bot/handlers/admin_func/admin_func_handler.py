@@ -7,6 +7,8 @@ from loader import logger
 logger.debug(f"{__name__} start import")
 import time
 
+import traceback
+from pandas import DataFrame
 from aiogram import types
 from aiogram.dispatcher.filters import Command
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
@@ -33,8 +35,8 @@ logger.debug(f"{__name__} finish import")
 
 
 @rate_limit(limit=10)
-@MyBot.dp.message_handler(Command('admin_func'))
-async def admin_func_handler(message: types.Message, state: FSMContext = None):
+@MyBot.dp.message_handler(Command('admin_func'), state='*')
+async def admin_func_handler(message: types.Message = None, *, hse_user_id: int | str = None, state: FSMContext = None):
     """Административные функции
 
     :param message:
@@ -46,10 +48,14 @@ async def admin_func_handler(message: types.Message, state: FSMContext = None):
         logger.error(f'access fail {chat_id = }')
         return
 
-    if not get_sett(cat='enable_features', param='use_catalog_func').get_set():
-        msg_text: str = f"{await msg(chat_id, cat='error', msge='features_disabled', default=Messages.Error.features_disabled).g_mas()}"
-        await bot_send_message(chat_id=chat_id, text=msg_text, disable_web_page_preview=True)
-        return
+    current_state = await state.get_state()
+    await state.finish()
+    logger.info(f'{await fanc_name()} state is finish {current_state = }')
+
+    # if not get_sett(cat='enable_features', param='use_catalog_func').get_set():
+    #     msg_text: str = f"{await msg(chat_id, cat='error', msge='features_disabled', default=Messages.Error.features_disabled).g_mas()}"
+    #     await bot_send_message(chat_id=chat_id, text=msg_text, disable_web_page_preview=True)
+    #     return
 
     # TODO  переделать
     if chat_id != int(ADMIN_ID) or chat_id != int(DEVELOPER_ID):
