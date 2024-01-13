@@ -1,20 +1,16 @@
-import asyncio
-from datetime import datetime
 from pprint import pprint
 
 from apps.core.bot.messages.messages import Messages
 from apps.core.database.db_utils import db_get_data_dict_from_table_with_id
 from apps.core.utils.data_recording_processor.set_user_report_data import \
     set_report_data
-from apps.core.utils.generate_report.generate_act_prescription.create_and_send_act_prescription import \
-    create_and_send_act_prescription
-from apps.core.utils.generate_report.generator_report import \
+from apps.core.bot.handlers.generate.generate_report import \
     create_report_from_other_method
-from apps.core.utils.generate_report.get_data_report import get_data_report
-from apps.core.utils.generate_report.get_file_list import get_json_file_list
-from apps.core.utils.generate_report.get_report_path import \
+from apps.core.bot.handlers.generate.generate_report import get_data_report
+from apps.core.bot.handlers.generate.generate_report.get_file_list import get_json_file_list
+from apps.core.bot.handlers.generate.generate_report.get_report_path import \
     get_full_report_name
-from apps.core.utils.generate_report.send_report_from_user import \
+from apps.core.bot.handlers.generate.generate_report.send_report_from_user import \
     send_report_from_user
 from apps.MyBot import bot_send_message
 from loader import logger
@@ -66,7 +62,7 @@ if __name__ == '__main__':
     # if '2022-10-30' == datetime.now().strftime("%Y-%m-%d"):
     #     print(f'data is true')
     #
-    # asyncio.create_qr_code(create_and_send_act_prescription(
+    # asyncio.create_qr_code(generate_and_send_act_prescription(
     #     chat_id=chat_id,
     #     query_act_date_period='2022-12-01'
     # ))

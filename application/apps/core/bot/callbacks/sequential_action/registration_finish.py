@@ -30,8 +30,6 @@ async def registration_finish_handler(call: types.CallbackQuery = None, callback
     """
     hse_user_id = call.message.chat.id if call else user_id
 
-    await notify_user_for_choice(call, data_answer=call.data)
-
     await bot_send_message(
         chat_id=hse_user_id,
         text="Запущена процедура регистрации данных. Дождитесь сообщения об окончании."
@@ -96,15 +94,6 @@ async def update_violation_data(chat_id, message: types.Message, state: FSMConte
 
     await state.update_data(parent_id=user_registration_data.get("parent_id"))
     await set_violation_atr_data("parent_id", user_registration_data.get("parent_id"), state=state)
-
-    await state.update_data(main_location='')
-    await set_violation_atr_data("main_location", '', state=state)
-
-    await state.update_data(main_location_id='')
-    await set_violation_atr_data("main_location_id", '', state=state)
-
-    await state.update_data(category='')
-    await set_violation_atr_data("category", '', state=state)
 
     await state.update_data(day=await get_day_message())
     await set_violation_atr_data("day", await get_day_message(), state=state)
