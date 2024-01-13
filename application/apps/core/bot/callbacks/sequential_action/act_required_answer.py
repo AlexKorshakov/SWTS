@@ -17,12 +17,11 @@ logger.debug(f"{__name__} finish import")
 async def act_required_answer(call: types.CallbackQuery, state: FSMContext = None):
     """Обработка ответов содержащихся в ACT_REQUIRED
     """
-    if call.data in get_data_list("ACT_REQUIRED"):
-        try:
+    try:
 
-            await set_violation_atr_data("act_required", call.data, state=state)
+        await set_violation_atr_data("act_required", call.data, state=state)
 
-            await get_and_send_act_required_data(call, state=state)
+        await get_and_send_act_required_data(call, state=state)
 
-        except Exception as callback_err:
-            logger.error(f"{repr(callback_err)}")
+    except Exception as callback_err:
+        logger.error(f"{repr(callback_err)}")

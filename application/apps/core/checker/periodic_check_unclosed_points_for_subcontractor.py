@@ -735,7 +735,7 @@ async def call_sub_con_get_photo(call: types.CallbackQuery, callback_data: dict[
         with open(full_photo_path, 'rb') as photo:
             caption: str = f"{await msg(user_id, cat='msg_main', default='Фото пункта нарушения', lang=language).g_mas()}: {sub_con_vio_number} от {date}"
             await bot_send_photo(
-                chat_id=user_id, photo=photo, caption=caption, fanc_name=await fanc_name()
+                chat_id=user_id, photo=photo, caption=caption
             )
 
     except Exception as err:

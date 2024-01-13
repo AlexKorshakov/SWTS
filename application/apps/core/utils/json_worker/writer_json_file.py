@@ -36,7 +36,11 @@ async def write_json_violation_user_file(*, data: dict = None, json_full_name: s
     :return: True or False
     """
     if not json_full_name:
-        json_full_name = str(data["json_full_name"])
+        json_full_name = str(data.get("json_full_name"))
+
+    if not json_full_name:
+        logger.error(f'write_json_violation_user_file error write on {json_full_name}')
+        return False
 
     if await write_json(name=json_full_name, data=data):
         logger.debug(f'Data write on {json_full_name}')

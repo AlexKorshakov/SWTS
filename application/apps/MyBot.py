@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import asyncio
 import sys
+import traceback
+from pprint import pprint
 
 import aiohttp
 import nest_asyncio
@@ -85,6 +87,7 @@ class MyBot:
             import apps.core.bot.callbacks
             import apps.core.bot.handlers
             logger.info(f"{dp.bot._me.first_name} Все части зарегистрированы...")
+
         except Exception as err:
             logger.warning(f'{dp.bot._me.first_name} Exception in app.py {err}')
             sys.exit()
@@ -157,14 +160,14 @@ async def bot_send_document(*, chat_id: int | str, doc_path: str, caption: str =
                 chat_id=chat_id, document=doc, caption=caption, **kvargs
             )
 
-        logger.info(f"{MyBot.get_name()} {chat_id = } {fanc_name} {caption} отправлен отчет {doc}")
+        logger.info(f"{MyBot.get_name()} {chat_id = } {calling_fanc_name} {caption} отправлен отчет {doc}")
 
     except OSError as err:
-        logger.error(f"{MyBot.get_name()} {fanc_name} {repr(err)}")
+        logger.error(f"{MyBot.get_name()} {calling_fanc_name} {repr(err)}")
         return False
 
     except Exception as err:
-        logger.error(f"{MyBot.get_name()} {fanc_name} {repr(err)}")
+        logger.error(f"{MyBot.get_name()} {calling_fanc_name} {repr(err)}")
         return False
 
     if result:
@@ -172,7 +175,7 @@ async def bot_send_document(*, chat_id: int | str, doc_path: str, caption: str =
     return False
 
 
-async def bot_send_photo(*, chat_id: int | str, photo=None, caption: str = None, fanc_name: str = None) -> bool:
+async def bot_send_photo(*, chat_id: int | str, photo=None, caption: str = None) -> bool:
     """Используйте этот метод для отправки текстовых сообщений.
     Источник: https://core.telegram.org/bots/api#sendmessage
 
@@ -187,7 +190,7 @@ async def bot_send_photo(*, chat_id: int | str, photo=None, caption: str = None,
         )
 
     except OSError as err:
-        logger.error(f"{MyBot.get_name()} {fanc_name} {repr(err)}")
+        logger.error(f"{MyBot.get_name()}  {repr(err)}")
         return False
 
     except Exception as err:
@@ -224,7 +227,14 @@ async def bot_send_message(*, chat_id: int | str, text: str,
 async def _send_message(*, chat_id: int | str, text: str,
                         reply_markup: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply | None = None,
                         **kvargs) -> types.Message | None:
-    """"""
+    """Отправка сообщения
+
+    :param chat_id:
+    :param text:
+    :param reply_markup:
+    :param kvargs:
+    :return:
+    """
     try:
         result: types.Message | None = await MyBot.bot.send_message(
             chat_id=chat_id, text=text, reply_markup=reply_markup, **kvargs

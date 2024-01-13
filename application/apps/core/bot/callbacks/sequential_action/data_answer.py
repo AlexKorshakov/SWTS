@@ -10,8 +10,8 @@ from aiogram.dispatcher import FSMContext
 from apps.MyBot import bot_send_message
 from apps.core.bot.data.board_config import BoardConfig as board_config
 from apps.core.bot.callbacks.sequential_action.category import get_data_list
-from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard, \
-    build_text_for_inlinekeyboard
+from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import (build_inlinekeyboard,
+                                                                        build_text_for_inlinekeyboard)
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.reports.report_data import ViolationData
 
@@ -35,19 +35,16 @@ async def get_and_send_start_main_locations_data(
     this_level = 'main_locations'.upper()
 
     await notify_user_for_choice(call, data_answer=data_answer if data_answer else '')
-
-    # menu_level = board_config.menu_level = 1
-    # menu_list = board_config.menu_list = get_data_list(this_level)
-    # count_col = board_config.count_col = 1
-    # board_config.previous_level = ''
-
+    previous_level = 'main_locations'
     menu_level = await board_config(state, "menu_level", 1).set_data()
     menu_list = await board_config(state, "menu_list", get_data_list(this_level)).set_data()
-    menu_text_list = await board_config(state, "menu_text_list", [Messages.Choose.main_category]).set_data()
     count_col = await board_config(state, "count_col", 1).set_data()
     await board_config(state, "previous_level", '').set_data()
 
-    reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=count_col, level=menu_level, state=state)
+    await board_config(state, "previous_level", previous_level).set_data()
+    reply_markup = await build_inlinekeyboard(
+        some_list=menu_list, num_col=count_col, level=menu_level, state=state
+    )
 
     await bot_send_message(
         chat_id=hse_user_id, text=Messages.Choose.main_category, reply_markup=reply_markup
@@ -87,10 +84,6 @@ async def get_and_send_main_locations_data(call: types.CallbackQuery, callback_d
                               category=v_data["main_location"],
                               condition='data_list'
                               )
-    # menu_level = board_config.menu_level = 1
-    # menu_list = board_config.menu_list = short_title
-    # count_col = board_config.count_col = 2
-    # board_config.previous_level = previous_level
 
     menu_level = await board_config(state, "menu_level", 1).set_data()
     menu_list = await board_config(state, "menu_list", short_title).set_data()
@@ -99,28 +92,17 @@ async def get_and_send_main_locations_data(call: types.CallbackQuery, callback_d
 
     zipped_list: list = list(zip(short_title, data_list))
 
-    # text_items: str = get_text(datas=zipped_list)
-    # for item_txt in text_processor(text_items):
-    #     await bot_send_message(chat_id=hse_user_id, text=item_txt)
+    # text_list: list = [f"{await get_character_text(item)}" for item in zipped_list if item[0][0] != '#']
+    text_list: list = [f"{await get_character_text(item)}" for item in zipped_list]
 
-    text_list: list = [f"{await get_character_text(item)}" for item in zipped_list if item[0][0] != '#']
-
-    # menu_text_list = board_config.menu_text_list = text_list
     menu_text_list = await board_config(state, "menu_text_list", text_list).set_data()
-
-    # text_list = await text_process(zipped_list)
-    #
-    # for txt in text_list:
-    #     await bot_send_message(chat_id=hse_user_id,
-    #                            text=txt)
 
     reply_markup = await build_inlinekeyboard(
         some_list=menu_list, num_col=count_col, level=menu_level, previous_level=previous_level, use_search=True,
         state=state
     )
-
     reply_text = await build_text_for_inlinekeyboard(
-        some_list=menu_text_list, level=menu_level, use_search=True
+        some_list=menu_text_list, level=menu_level
     )
     text = f'{Messages.Choose.sub_location}\n\n{reply_text}'
 
@@ -144,11 +126,6 @@ async def get_and_send_null_sub_locations_data(call: types.CallbackQuery, callba
     next_level: str = 'main_category'.upper()
 
     await notify_user_for_choice(call, data_answer=call.data)
-
-    # menu_level = board_config.menu_level = 1
-    # menu_list = board_config.menu_list = get_data_list(next_level)
-    # count_col = board_config.count_col = 2
-    # board_config.previous_level = previous_level
 
     menu_level = await board_config(state, "menu_level", 1).set_data()
     menu_list = await board_config(state, "menu_list", get_data_list(next_level)).set_data()
@@ -181,11 +158,6 @@ async def get_and_send_sub_locations_data(call: types.CallbackQuery, callback_da
 
     await notify_user_for_choice(call, data_answer=call.data)
 
-    # menu_level = board_config.menu_level = 1
-    # menu_list = board_config.menu_list = get_data_list(next_level)
-    # count_col = board_config.count_col = 2
-    # board_config.previous_level = previous_level
-
     menu_level = await board_config(state, "menu_level", 1).set_data()
     menu_list = await board_config(state, "menu_list", get_data_list(next_level)).set_data()
     menu_text_list = await board_config(state, "menu_text_list", [Messages.Choose.main_category]).set_data()
@@ -216,11 +188,6 @@ async def get_and_send_main_category_data(call: types.CallbackQuery, callback_da
     next_level: str = 'category'.upper()
 
     await notify_user_for_choice(call, data_answer=call.data)
-
-    # menu_level = board_config.menu_level = 1
-    # menu_list = board_config.menu_list = get_data_list(next_level)
-    # count_col = board_config.count_col = 1
-    # board_config.previous_level = previous_level
 
     menu_level = await board_config(state, "menu_level", 1).set_data()
     menu_list = await board_config(state, "menu_list", get_data_list(next_level)).set_data()
@@ -262,10 +229,6 @@ async def get_and_send_category_data(call: types.CallbackQuery, callback_data: d
                               category=v_data["category"],
                               condition='data_list'
                               )
-    # menu_level = board_config.menu_level = 1
-    # menu_list = board_config.menu_list = short_title
-    # count_col = board_config.count_col = 2
-    # board_config.previous_level = previous_level
 
     menu_level = await board_config(state, "menu_level", 1).set_data()
     menu_list = await board_config(state, "menu_list", short_title).set_data()
@@ -273,27 +236,18 @@ async def get_and_send_category_data(call: types.CallbackQuery, callback_data: d
     await board_config(state, "previous_level", previous_level).set_data()
 
     zipped_list: list = list(zip(short_title, data_list))
-    # text_items: str = get_text(datas=zipped_list)
-    # for item_txt in text_processor(text_items):
-    #     await bot_send_message(chat_id=hse_user_id, text=item_txt)
 
-    text_list: list = [f"{await get_character_text(item)}" for item in zipped_list if item[0][0] != '#']
-
+    # text_list: list = [f"{await get_character_text(item)}" for item in zipped_list if item[0][0] != '#']
+    text_list: list = [f"{await get_character_text(item)}" for item in zipped_list]
     # menu_text_list = board_config.menu_text_list = text_list
     menu_text_list = await board_config(state, "menu_text_list", text_list).set_data()
-
-    # text_list = await text_process(zipped_list)
-    #
-    # for txt in text_list:
-    #     await bot_send_message(chat_id=hse_user_id,
-    #                            text=txt)
 
     reply_markup = await build_inlinekeyboard(
         some_list=menu_list, num_col=count_col, level=menu_level, previous_level=previous_level, use_search=True,
         state=state
     )
     reply_text = await build_text_for_inlinekeyboard(
-        some_list=menu_text_list, level=menu_level, use_search=True
+        some_list=menu_text_list, level=menu_level
     )
 
     text = f'{Messages.Choose.normative_documents}\n\n{reply_text}'
@@ -318,11 +272,6 @@ async def get_and_send_null_normative_documents_data(call: types.CallbackQuery, 
     next_level: str = 'violation_category'.upper()
 
     await notify_user_for_choice(call, data_answer=call.data)
-
-    # menu_level = board_config.menu_level = 1
-    # menu_list = board_config.menu_list = get_data_list(next_level)
-    # count_col = board_config.count_col = 2
-    # board_config.previous_level = previous_level
 
     menu_level = await board_config(state, "menu_level", 1).set_data()
     menu_list = await board_config(state, "menu_list", get_data_list(next_level)).set_data()
@@ -355,11 +304,6 @@ async def get_and_send_normative_documents_data(call: types.CallbackQuery, callb
 
     await notify_user_for_choice(call, data_answer=call.data)
 
-    # menu_level = board_config.menu_level = 1
-    # menu_list = board_config.menu_list = get_data_list(next_level)
-    # count_col = board_config.count_col = 2
-    # board_config.previous_level = previous_level
-
     menu_level = await board_config(state, "menu_level", 1).set_data()
     menu_list = await board_config(state, "menu_list", get_data_list(next_level)).set_data()
     menu_text_list = await board_config(state, "menu_text_list", [Messages.Choose.category]).set_data()
@@ -391,11 +335,6 @@ async def get_and_send_violation_category_data(call: types.CallbackQuery, callba
 
     await notify_user_for_choice(call, data_answer=call.data)
 
-    # menu_level = board_config.menu_level = 1
-    # menu_list = board_config.menu_list = get_data_list(next_level)
-    # # count_col = board_config.count_col = 1
-    # board_config.previous_level = previous_level
-
     menu_level = await board_config(state, "menu_level", 1).set_data()
     menu_list = await board_config(state, "menu_list", get_data_list(next_level)).set_data()
     # count_col = await board_config(state, "count_col", 1).set_data()
@@ -420,11 +359,9 @@ async def get_and_send_violation_category_data(call: types.CallbackQuery, callba
 
     zipped_list: list = list(zip(short_title, data_list))
 
-    text_list: list = [f"{await get_character_text(item)}" for item in zipped_list if item[0][0] != '#']
+    # text_list: list = [f"{await get_character_text(item)}" for item in zipped_list if item[0][0] != '#']
+    text_list: list = [f"{await get_character_text(item)}" for item in zipped_list]
 
-    # menu_text_list = board_config.menu_text_list = text_list
-    # count_col = board_config.count_col = 1
-    # board_config.previous_level = previous_level
     menu_text_list = await board_config(state, "menu_text_list", text_list).set_data()
     count_col = await board_config(state, "count_col", 1).set_data()
     await board_config(state, "previous_level", previous_level).set_data()
@@ -435,8 +372,7 @@ async def get_and_send_violation_category_data(call: types.CallbackQuery, callba
     )
 
     reply_text = await build_text_for_inlinekeyboard(
-        some_list=menu_text_list, level=menu_level,
-        use_search=True
+        some_list=menu_text_list, level=menu_level
     )
 
     text = f'{Messages.Choose.general_constractor}\n\n{reply_text}'
@@ -461,11 +397,6 @@ async def get_and_send_general_contractors_data(call: types.CallbackQuery, callb
     next_level: str = 'incident_level'.upper()
 
     await notify_user_for_choice(call, data_answer=call.data)
-
-    # menu_level = board_config.menu_level = 1
-    # menu_list = board_config.menu_list = get_data_list(next_level)
-    # count_col = board_config.count_col = 1
-    # board_config.previous_level = previous_level
 
     menu_level = await board_config(state, "menu_level", 1).set_data()
     menu_list = await board_config(state, "menu_list", get_data_list(next_level)).set_data()
@@ -498,11 +429,6 @@ async def get_and_send_incident_level_data(call: types.CallbackQuery, callback_d
 
     await notify_user_for_choice(call, data_answer=call.data)
 
-    # menu_level = board_config.menu_level = 1
-    # menu_list = board_config.menu_list = get_data_list(next_level)
-    # count_col = board_config.count_col = 1
-    # board_config.previous_level = previous_level
-
     menu_level = await board_config(state, "menu_level", 1).set_data()
     menu_list = await board_config(state, "menu_list", get_data_list(next_level)).set_data()
     menu_text_list = await board_config(state, "menu_text_list", [Messages.Choose.act_required]).set_data()
@@ -533,11 +459,6 @@ async def get_and_send_act_required_data(call: types.CallbackQuery, callback_dat
 
     await notify_user_for_choice(call, data_answer=call.data)
 
-    # menu_level = board_config.menu_level = 1
-    # menu_list = board_config.menu_list = get_data_list(next_level)
-    # count_col = board_config.count_col = 2
-    # board_config.previous_level = previous_level
-
     menu_level = await board_config(state, "menu_level", 1).set_data()
     menu_list = await board_config(state, "menu_list", get_data_list(next_level)).set_data()
     menu_text_list = await board_config(state, "menu_text_list", [Messages.Choose.elimination_time]).set_data()
@@ -562,8 +483,10 @@ async def get_and_send_elimination_time_data(call: types.CallbackQuery, callback
     :return: bool
     """
     hse_user_id = call.message.chat.id if call else user_id
-    # board_config.previous_level = ''
-    await board_config(state, "previous_level", '').set_data()
+
+    previous_level: str = 'incident_level'
+
+    await board_config(state, "previous_level", previous_level).set_data()
 
     await notify_user_for_choice(call, data_answer=call.data)
 
@@ -662,36 +585,9 @@ async def get_character_text(param_list: list | str) -> list | str:
 
     if isinstance(param_list, tuple):
         if not param_list: return ''
-        if param_list[0][0] == '#': return ''
-
         text_list: str = f"{param_list[0]} : {param_list[1]}"
 
         return text_list
-
-# async def text_process(zipped_list: list) -> list:
-#     """Формирование тела сообщения
-#
-#     :param zipped_list:
-#     :return: bool
-#     """
-#
-#     text = '\n\n'.join(str(item[0]) + " : " + str(item[1]) for item in zipped_list)
-#
-#     if len(text) <= 3500:
-#         return [text]
-#
-#     text = ''
-#     text_list = []
-#     for item in zipped_list:
-#         if item[0][0] == '#': continue
-#
-#         text = text + f' \n\n {str(item[0])} : {str(item[1])}'
-#         if len(text) > 3500:
-#             text_list.append(text)
-#             text = ''
-#
-#     return text_list
-
 
 # async def test():
 #     previous_level: str = 'main_category'

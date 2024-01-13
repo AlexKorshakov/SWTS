@@ -32,9 +32,7 @@ logger.debug(f"{__name__} finish import")
 async def add_entries_handler(message: types.Message, state: FSMContext = None):
     """Обработка команд добавления данных
 
-    :return:
     """
-
     chat_id = message.chat.id
     if not await check_user_access(chat_id=chat_id):
         logger.error(f'access fail {chat_id = }')

@@ -1,5 +1,6 @@
 import asyncio
 import os
+import traceback
 from datetime import timedelta
 
 from apps.core.bot.handlers.correct_entries.correct_entries_handler import (del_file,
@@ -11,14 +12,15 @@ from apps.core.database.db_utils import (db_check_record_existence,
                                          db_get_id,
                                          db_get_id_violation,
                                          db_get_single_violation,
-                                         db_update_column_value, db_get_clean_headers)
+                                         db_update_column_value,
+                                         db_get_clean_headers)
 from apps.core.database.query_constructor import QueryConstructor
 from apps.core.database.transformation_category import CATEGORY_ID_TRANSFORM
-from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import  drive_account_credentials
+from apps.core.utils.goolgedrive_processor.GoogleDriveUtils.GoogleDriveWorker import drive_account_credentials
 
 from apps.core.utils.json_worker.read_json_file import read_json_file
 from apps.core.utils.json_worker.writer_json_file import write_json
-from apps.core.utils.secondary_functions.get_filepath import  get_json_full_filename
+from apps.core.utils.secondary_functions.get_filepath import get_json_full_filename
 from apps.core.web.models import Violations
 from config.config import WRITE_DATA_ON_GOOGLE_DRIVE, Udocan_media_path
 from loader import logger
@@ -460,7 +462,7 @@ async def update_violations_from_db(data_db: dict = None):
                 table=CATEGORY_ID_TRANSFORM[key]['table'],
                 entry=value,
                 file_id=file_id,
-                name=key
+                calling_function_name=f'{key} {await fanc_name()}'
             )
             key = key + '_id'
 
@@ -544,6 +546,11 @@ async def delete_violations_from_all_repo(violation_file_id: str) -> bool:
     await db_del_violations(violation=violation_dict)
 
     return True
+
+
+async def fanc_name():
+    stack = traceback.extract_stack()
+    return str(stack[-2][2])
 
 
 async def test():

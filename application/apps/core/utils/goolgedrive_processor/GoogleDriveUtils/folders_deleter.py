@@ -13,7 +13,7 @@ async def delete_folders(drive_service: object, folder_names: list):
     """
 
     if not drive_service:
-        logger.error(f'Not find Drive API service instance')
+        logger.error('Not find Drive API service instance')
         return
 
     for item, f_name in enumerate(folder_names):
@@ -37,11 +37,11 @@ async def delete_folder(service: object, folder_id: str) -> bool:
     :param folder_id: str ID of the file to delete.
     """
     if not service:
-        logger.error(f'Not find Drive API service instance')
+        logger.error('Not find Drive API service instance')
         return False
 
     if not folder_id:
-        logger.error(f'Not folder_id to delete')
+        logger.error('Not folder_id to delete')
         return False
 
     try:

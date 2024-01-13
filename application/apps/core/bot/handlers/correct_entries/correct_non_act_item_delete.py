@@ -217,7 +217,7 @@ async def del_act_json(*, hse_user_id: int | str, id_numbers: int | str,
     item_df = item_dataframe.loc[item_dataframe['id'] == int(id_numbers)]
 
     try:
-        json_full_name: str = f"{Udocan_media_path}{item_df['json'].values[0]}"
+        json_full_name: str = f"{Udocan_media_path}\\HSE\\{item_df['json'].values[0]}"
     except IndexError as err:
         logger.error(f'{hse_user_id = } Не удалось получить данные записи {id_numbers} {repr(err)}')
         return False
@@ -241,7 +241,7 @@ async def del_act_photo(*, hse_user_id: int | str, id_numbers: int | str,
         logger.error(f'{hse_user_id = } Не удалось получить данные записи {id_numbers} {repr(err)}')
         return False
 
-    photo_full_name: str = f"{Udocan_media_path}{item_df['photo'].values[0]}"
+    photo_full_name: str = f"{Udocan_media_path}\\HSE\\{item_df['photo'].values[0]}"
     del_file_photo_result: bool = await del_file(path=photo_full_name)
     if not del_file_photo_result:
         logger.error(f'{hse_user_id = } Не удалось удалить запись {id_numbers} в формате .jpeg с сервера ')
@@ -265,8 +265,7 @@ async def create_lite_dataframe_from_query(query: str, table_name: str) -> DataF
         logger.debug(f"{LogMessage.Check.no_violations} ::: {await get_now()}")
         return None
 
-    headers = await db_get_table_headers(table_name=table_name)
-    clean_headers: list = [item[1] for item in headers]
+    clean_headers = await db_get_clean_headers(table_name=table_name)
 
     try:
         dataframe = DataFrame(violations_data, columns=clean_headers)

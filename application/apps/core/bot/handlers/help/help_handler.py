@@ -7,6 +7,7 @@ from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.bot.messages.messages import Messages
 from apps.core.settyngs import get_sett
 from loader import logger
+
 logger.debug(f"{__name__} start import")
 from aiogram import types
 from aiogram.dispatcher.filters import Command
@@ -44,16 +45,16 @@ async def help_command_handler(message: types.Message, state: FSMContext = None)
     await bot_send_message(chat_id=chat_id, text=answer_text)
 
     help_message = text(
-        f"{await msg(hse_id, cat='help', msge='command_help', default='Справка по командам').g_mas()}"
+        f"{await msg(chat_id, cat='help', msge='command_help', default='Справка по командам').g_mas()}"
         "\n",
-        f"/developer - {await msg(hse_id, cat='help', msge='developer', default='Написать разработчику').g_mas()}",
-        f"/cancel- {await msg(hse_id, cat='help', msge='cancel', default='Отмена всех действий').g_mas()}",
-        f"/generate - {await msg(hse_id, cat='help', msge='generate', default='Формирование документов').g_mas()}",
-        f"/start - {await msg(hse_id, cat='help', msge='start', default='Начало работы').g_mas()}",
-        f"/correct_entries - {await msg(hse_id, cat='help', msge='correct_entries', default='Корректирование введённых значений').g_mas()}",
-        f"/admin_func - {await msg(hse_id, cat='help', msge='admin_func', default='Функции администратора').g_mas()}",
+        f"/developer - {await msg(chat_id, cat='help', msge='developer', default='Написать разработчику').g_mas()}",
+        f"/cancel- {await msg(chat_id, cat='help', msge='cancel', default='Отмена всех действий').g_mas()}",
+        f"/generate - {await msg(chat_id, cat='help', msge='generate', default='Формирование документов').g_mas()}",
+        f"/start - {await msg(chat_id, cat='help', msge='start', default='Начало работы').g_mas()}",
+        # f"/correct_entries - {await msg(hse_id, cat='help', msge='correct_entries', default='Корректирование введённых значений').g_mas()}",
+        f"/admin_func - {await msg(chat_id, cat='help', msge='admin_func', default='Функции администратора').g_mas()}",
         "\n"
-        f"{await msg(hse_id, cat='help', msge='video_instruction', default='Видео инструкция').g_mas()}",
+        f"{await msg(chat_id, cat='help', msge='video_instruction', default='Видео инструкция').g_mas()}",
         sep="\n"
     )
 

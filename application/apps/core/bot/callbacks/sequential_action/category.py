@@ -237,7 +237,7 @@ def get_category_data_list_whits_condition(db_table_name: str, category, conditi
     if db_table_name == 'core_sublocation':
         main_table_name = 'core_mainlocation'
 
-    category_id = asyncio.run(db_get_id(table=main_table_name, entry=category, ))
+    category_id = asyncio.run(db_get_id(table=main_table_name, entry=category, calling_function_name=fanc_name()))
 
     if category_id is None:
         return []

@@ -170,7 +170,7 @@ async def send_act_from_user(hse_user_id: int | str, full_report_path: str = Non
         caption = f'Отправлен отчет {act_name}'
 
     await bot_send_document(
-        chat_id=hse_user_id, doc_path=f'{full_report_path} .pdf', caption=caption, fanc_name=await fanc_name()
+        chat_id=hse_user_id, doc_path=f'{full_report_path} .pdf', caption=caption, calling_fanc_name=await fanc_name()
     )
 
 

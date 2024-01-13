@@ -4,6 +4,7 @@ import typing
 from aiogram.dispatcher import FSMContext
 
 from apps.core.bot.messages.messages_test import msg
+from apps.core.settyngs import get_sett
 from loader import logger
 
 logger.debug(f"{__name__} start import")
@@ -159,7 +160,8 @@ async def del_file_from_gdrive(drive_service, *, name, violation_file, parent_id
 
     for v in v_files:
         if v.get("id"):
-            return True if await delete_folder(service=drive_service, folder_id=v["id"]) else False
+            return bool(await delete_folder(service=drive_service, folder_id=v["id"]))
+
     return False
 
 

@@ -163,7 +163,7 @@ async def get_pass_report(hse_user_id, period: list = None):
         chat_id=hse_user_id,
         doc_path=full_doc_path,
         caption=caption,
-        fanc_name=await fanc_name(),
+        calling_fanc_name=await fanc_name(),
         # **kwargs
     )
 

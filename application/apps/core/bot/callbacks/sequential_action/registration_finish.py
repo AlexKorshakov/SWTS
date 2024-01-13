@@ -41,6 +41,7 @@ async def registration_finish_handler(call: types.CallbackQuery = None, callback
         chat_id=hse_user_id, message=call.message, state=state
     )
 
+    await notify_user_for_choice(call, data_answer=call.data)
     await pre_set_violation_data(call.message, state=state)
 
     await state.finish()

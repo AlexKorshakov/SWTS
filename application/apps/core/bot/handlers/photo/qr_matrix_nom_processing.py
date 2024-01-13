@@ -159,7 +159,7 @@ async def industrial_equipment_answer(call: types.CallbackQuery, user_id: str = 
         chat_id=hse_user_id,
         doc_path=equipment_doc_path,
         caption='Файл',
-        fanc_name=await fanc_name()
+        calling_fanc_name=await fanc_name()
     )
 
 

@@ -246,7 +246,7 @@ async def get_local_files_for_sync(endswith: str) -> tuple[list, list]:
     normalize_file_list - список файлов без полного пути
 
     """
-    file_list: list = await get_file_list(directory=str(Udocan_media_path), endswith=endswith)
+    file_list: list = await get_file_list(directory=str(f'{Udocan_media_path}\\HSE'), endswith=endswith)
     normalize_file_list: list = await get_normalize_file_list(file_list)
 
     return file_list, normalize_file_list
@@ -275,7 +275,7 @@ async def get_list_files_to_download(google_files: list, local_files: list, fold
             download += 1
             if DEBUG: print(f'{number_file} file: {item_file} need download')
 
-            file_path = f'{str(Udocan_media_path)}\\{item_file["name"].split("___")[2]}\\' \
+            file_path = f'{str(Udocan_media_path)}\\HSE\\{item_file["name"].split("___")[2]}\\' \
                         f'data_file\\{item_file["name"].split("___")[1]}\\{folder_name}\\'
             item_file['file_path'] = file_path
             item_file["full_name"] = file_path + item_file["name"]

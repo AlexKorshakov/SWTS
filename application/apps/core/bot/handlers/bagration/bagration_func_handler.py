@@ -74,7 +74,6 @@ async def bagration_func_handler(message: types.Message, state: FSMContext = Non
 async def add_correct_inline_keyboard_with_action(markup: types.InlineKeyboardMarkup):
     """Формирование сообщения с текстом и кнопками действий в зависимости от параметров
 
-    :return:
     """
     if not markup:
         markup = types.InlineKeyboardMarkup()
