@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+
 from loader import logger
 
 logger.debug(f"{__name__} start import")
@@ -16,17 +18,24 @@ from apps.core.database.query_constructor import QueryConstructor
 logger.debug(f"{__name__} finish import")
 
 
-async def db_check_record_existence(file_id: int) -> bool:
+async def db_check_violation_exists(file_id: str) -> bool:
     """Проверка наличия записи в БД
 
     :param file_id: int - id записи
     :return: bool is_exists
     """
     is_exists: bool = await DataBaseViolations().violation_exists(file_id=file_id)
-    if is_exists:
-        return True
+    return bool(is_exists)
 
-    return False
+
+async def db_check_user_record_existence(user_telegram_id: int) -> bool:
+    """Проверка наличия пользователя user_telegram_id в таблице `core_hseuser`
+
+    :param user_telegram_id: int - id записи пользователя в `core_hseuser`
+    :return: bool True if is_exists else False
+    """
+    is_exists: bool = await DataBaseViolations().user_exists(user_telegram_id=user_telegram_id)
+    return bool(is_exists)
 
 
 async def db_add_violation(violation_data: dict) -> bool:
@@ -41,13 +50,10 @@ async def db_add_violation(violation_data: dict) -> bool:
     is_added: bool = await DataBaseViolations().add_data(
         table_name='core_violations', data_dict=violation_data
     )
-    if is_added:
-        return True
-
-    return False
+    return bool(is_added)
 
 
-async def db_add_user(hseuser_data: dict) -> bool:
+async def db_add_new_user(hseuser_data: dict) -> bool:
     """Добавление записи в БД
 
     :param hseuser_data: dict - dict с данными для записи в БД
@@ -59,10 +65,7 @@ async def db_add_user(hseuser_data: dict) -> bool:
     is_added: bool = await DataBaseViolations().add_data(
         table_name='core_hseuser', data_dict=hseuser_data
     )
-    if is_added:
-        return True
-
-    return False
+    return bool(is_added)
 
 
 async def db_get_data_dict_from_table_with_id(table_name: str, post_id: int, query: str = None) -> dict:
@@ -70,6 +73,9 @@ async def db_get_data_dict_from_table_with_id(table_name: str, post_id: int, que
 
     :return: dict - dict с данными
     """
+
+    check_result: bool = await get_check_param(__file__, await fanc_name(), table_name=table_name, post_id=post_id)
+    if not check_result: return {}
 
     data_exists: dict = await DataBaseViolations().get_dict_data_from_table_from_id(
         table_name=table_name, data_id=post_id, query=query
@@ -133,7 +139,7 @@ async def db_del_violations(violation: dict) -> bool:
 
     file_id: str = violation.get('file_id', '')
     result: bool = await DataBaseViolations().delete_single_violation(file_id=file_id)
-    return result
+    return bool(result)
 
 
 async def db_del_item_from_table(*, table_name: str, table_column_name: str, file_id: str | int) -> bool:
@@ -150,10 +156,7 @@ async def db_del_item_from_table(*, table_name: str, table_column_name: str, fil
         column_name=table_column_name,
         file_id=file_id
     )
-    if result:
-        return True
-
-    return False
+    return bool(result)
 
 
 async def db_get_all_tables_names() -> list:
@@ -248,9 +251,7 @@ async def db_update_hse_user_language(*, value: str, hse_id: str) -> bool:
     result: bool = await DataBaseViolations().update_hse_user_language(
         value=str(value), hse_id=str(hse_id)
     )
-    if result:
-        return True
-    return False
+    return bool(result)
 
 
 async def db_update_column_value_for_query(*, table_name: str, hse_telegram_id: str, table_column_name: str,
@@ -268,9 +269,7 @@ async def db_update_column_value_for_query(*, table_name: str, hse_telegram_id: 
     query: str = f"UPDATE {table_name} SET `{table_column_name}` = {bool(item_value)} WHERE `hse_telegram_id` = {hse_telegram_id}"
 
     result: bool = await DataBaseViolations().update_column_value_for_query(query=query)
-    if result:
-        return True
-    return False
+    return bool(result)
 
 
 async def db_update_column_value(column_name: str, value: None | int | str, violation_id: int | str) -> bool:
@@ -279,15 +278,12 @@ async def db_update_column_value(column_name: str, value: None | int | str, viol
     :return:
     """
 
-    result: bool = await DataBaseViolations().update_column_value(
+    result: bool = await DataBaseViolations().update_violation_column_value(
         column_name=column_name,
         value=value,
-        user_id=str(violation_id)
+        row_id=str(violation_id)
     )
-    if result:
-        return True
-
-    return False
+    return bool(result)
 
 
 async def db_update_table_column_value(*, table_name: str, table_column_name_for_update: str, table_column_name: str,
@@ -310,11 +306,7 @@ async def db_update_table_column_value(*, table_name: str, table_column_name_for
         item_name=item_name,
         item_value=str(item_value)
     )
-
-    if result:
-        return True
-
-    return False
+    return bool(result)
 
 
 async def db_get_full_title(table_name: str, short_title: str) -> str:
@@ -343,7 +335,7 @@ async def db_set_act_value(act_data_dict: DataFrame, act_number: int, act_date: 
     act_is_created: bool = await DataBaseViolations().set_act_value(
         act_data_dict=act_data_dict, act_number=act_number, act_date=act_date
     )
-    return act_is_created
+    return bool(act_is_created)
 
 
 async def db_get_username(user_id: int) -> str:
@@ -415,7 +407,7 @@ async def db_get_period_for_current_week(current_week: str, current_year: str = 
     }
     query: str = await QueryConstructor(None, 'core_week', **query_kwargs).prepare_data()
 
-    logger.debug(f'{__name__} {say_fanc_name()} {query}')
+    logger.debug(f'{__name__} {await fanc_name()} {query}')
 
     datas_query: list = await DataBaseViolations().get_data_list(query=query)
     period_data = datas_query[0]
@@ -532,7 +524,26 @@ async def str_to_datetime(date_str: str | datetime) -> date:
     return current_date
 
 
-def say_fanc_name():
+async def get_check_param(local_file: str, calling_function: str, **kvargs) -> bool:
+    """Проверка параметров """
+    calling_file: str = f'{os.sep}'.join(local_file.split(os.sep)[-2:])
+
+    result_list: list = []
+    print_dict: dict = {}
+
+    for param_num, param in enumerate(kvargs, start=1):
+
+        if kvargs[param] is None:
+            logger.error(f'{calling_file} {calling_function} Invalid param. #{param_num} {param = } {kvargs[param]}')
+
+        result_list.append(kvargs[param])
+        print_dict[param] = kvargs[param]
+
+    return all(result_list)
+
+
+async def fanc_name() -> str:
+    """Возвращает имя вызываемой функции"""
     stack = traceback.extract_stack()
     return str(stack[-2][2])
 
@@ -567,5 +578,14 @@ async def test():
     print(f"{res = }")
 
 
+async def test_2():
+    table_name = 'core_violations'
+    post_id = 10211
+
+    result = await db_get_data_dict_from_table_with_id(table_name, post_id)
+    print(f'{result = }')
+
+
 if __name__ == '__main__':
-    asyncio.run(test())
+    # asyncio.run(test())
+    asyncio.run(test_2())

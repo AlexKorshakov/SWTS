@@ -8,7 +8,7 @@ from sqlite3 import OperationalError
 from loader import logger
 from apps.core.utils.json_worker.read_json_file import read_json_file
 from apps.core.database.db_utils import (db_add_violation,
-                                         db_check_record_existence,
+                                         db_check_violation_exists,
                                          db_get_table_headers,
                                          db_get_id,
                                          db_get_clean_headers)
@@ -25,7 +25,7 @@ async def write_data_in_database(*, violation_data_to_db: dict) -> bool:
         return False
 
     try:
-        if not await db_check_record_existence(file_id=violation_data_to_db.get('file_id')):
+        if not await db_check_violation_exists(file_id=violation_data_to_db.get('file_id')):
             result, violation_data_to_db = await prepare_violation_data(violation_data_to_db)
             if not result:
                 logger.error(f"Error not result {violation_data_to_db = }")
@@ -389,7 +389,8 @@ async def test_1():
         pprint(result)
 
 
-async def fanc_name():
+async def fanc_name() -> str:
+    """Возвращает имя вызываемой функции"""
     stack = traceback.extract_stack()
     return str(stack[-2][2])
 
@@ -418,6 +419,17 @@ async def test_2():
     pprint(media_str)
 
 
+async def test_3():
+    category_id = await db_get_id(
+        table='core_category',
+        entry='СИЗ',
+        file_id='10.01.2024___373084462___9229',
+        calling_function_name=f'{await fanc_name()}: category'
+    )
+    pprint(category_id)
+
+
 if __name__ == "__main__":
-    asyncio.run(test_1())
-    asyncio.run(test_2())
+    # asyncio.run(test_1())
+    # asyncio.run(test_2())
+    asyncio.run(test_3())

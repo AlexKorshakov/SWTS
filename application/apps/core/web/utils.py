@@ -6,7 +6,7 @@ from datetime import timedelta
 from apps.core.bot.handlers.correct_entries.correct_entries_handler import (del_file,
                                                                             del_file_from_gdrive)
 from apps.core.bot.messages.messages import Messages
-from apps.core.database.db_utils import (db_check_record_existence,
+from apps.core.database.db_utils import (db_check_violation_exists,
                                          db_del_violations,
                                          db_get_data_list,
                                          db_get_id,
@@ -386,12 +386,12 @@ async def get_data_for_update(data: dict, get_from: str = 'local') -> dict:
 
     if get_from == 'data_base':
         try:
-            if await db_check_record_existence(file_id=data.get('file_id')):
+            if await db_check_violation_exists(file_id=data.get('file_id')):
                 violation_list: list = await db_get_single_violation(file_id=data.get('file_id'))
 
                 # headers: list[str] = [row[1] for row in await db_get_table_headers()]
                 clean_headers: list[str] = await db_get_clean_headers('core_violations')
-                violation_dict: dict = dict(zip(clean_headers, violation_list[0]))
+                violation_dict: dict = dict(zip(clean_headers, violation_list[-1]))
                 return violation_dict
 
         except Exception as err:
@@ -447,7 +447,7 @@ async def update_violations_from_db(data_db: dict = None):
     """
 
     file_id = data_db.get('file_id')
-    if not await db_check_record_existence(file_id=file_id):
+    if not await db_check_violation_exists(file_id=file_id):
         logger.error(f"Запись {file_id} не найдена")
         return
 
@@ -537,7 +537,7 @@ async def delete_violations_from_all_repo(violation_file_id: str) -> bool:
         return False
 
     clean_headers = await db_get_clean_headers('core_violations')
-    violation_dict = dict(zip(clean_headers, violation_list[0]))
+    violation_dict = dict(zip(clean_headers, violation_list[-1]))
 
     # await delete_violation_files_from_gdrive(violation=violation_dict)
 

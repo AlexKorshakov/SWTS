@@ -1,8 +1,14 @@
-"""Модуль со вспомогательными функциями класса PeriodicCheck"""
-from loader import logger
+from __future__ import annotations
 
+from sqlite3 import Cursor
+
+"""Модуль со вспомогательными функциями класса DataBaseForCheck"""
+
+from loader import logger
 logger.debug(f"{__name__} start import")
 
+import os
+from pathlib import Path
 import sqlite3
 from datetime import datetime, timedelta
 import traceback
@@ -19,9 +25,34 @@ class DataBaseForCheck:
     """
 
     def __init__(self):
-        self.db_file: str = Udocan_main_data_base_dir
+        self.db_file: str | Path = Udocan_main_data_base_dir
         self.connection = sqlite3.connect(self.db_file)
         self.cursor = self.connection.cursor()
+
+        self.name: str = self.db_file.stem
+
+    async def create_backup(self) -> str | None:
+        """
+
+        :return:
+        """
+        backup_file_path: str = f"C:\\backup\\{datetime.now().strftime('%d.%m.%Y')}\\"
+        if not os.path.isdir(backup_file_path):
+            os.makedirs(backup_file_path)
+
+        query: str = f"vacuum into '{backup_file_path}backup_{datetime.now().strftime('%d.%m.%Y, %H.%M.%S')}_{self.name}.db'"
+
+        try:
+            with self.connection:
+                result = self.cursor.execute(query)
+                return self.name
+
+        except (ValueError, sqlite3.OperationalError) as err:
+            logger.error(f'Invalid query. {repr(err)}')
+            return None
+
+        finally:
+            self.cursor.close()
 
     async def get_data_list(self, query: str = None) -> list:
         """Получение данных из таблицы по запросу 'query'"""

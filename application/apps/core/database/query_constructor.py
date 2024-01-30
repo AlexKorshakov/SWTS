@@ -63,6 +63,7 @@ class QueryStorageFields(metaclass=ABCMeta):
         self.week_number = None
         self.hse_telegram_id = None
         self.general_contractor_id = None
+        self.file_id = None
 
 
 class QueryStorageMethods(QueryStorageFields):
@@ -78,9 +79,9 @@ class QueryStorageMethods(QueryStorageFields):
         if isinstance(self.status_id, str):
             if self.status_id == '': return ''
             return f'`status_id` {self.status_id}'
-
         if isinstance(self.status_id, int):
             return f'`status_id` = {self.status_id}'
+        return ''
 
     async def get_part_short_title(self) -> str:
         """Обработка параметра short_title и формирование части запроса и part_short_title """
@@ -109,7 +110,6 @@ class QueryStorageMethods(QueryStorageFields):
         self.date_start, self.date_stop = await self.get_period()
 
         if self.date_start is None and self.date_stop is None: return ''
-
         return f"`created_at` BETWEEN date('{self.date_start}') AND date('{self.date_stop}') "
 
     async def get_part_finished(self) -> str:
@@ -137,7 +137,6 @@ class QueryStorageMethods(QueryStorageFields):
     async def get_part_location(self) -> str:
         """Обработка параметра location и формирование части запроса и part_location """
         if self.location is None: return ''
-
         return f"`location_id` = '{self.location}' "
 
     async def get_part_main_location(self):
@@ -148,7 +147,7 @@ class QueryStorageMethods(QueryStorageFields):
 
     async def get_part_hashtags(self) -> str:
         """Обработка параметра hashtags и формирование части запроса и part_hashtags """
-        if self.hashtag is None : return ''
+        if self.hashtag is None: return ''
 
         if isinstance(self.hashtag, str):
             hashtag_condition = self.conditions.get('hashtag_condition', None)
@@ -196,6 +195,10 @@ class QueryStorageMethods(QueryStorageFields):
         """Обработка параметра status_id и формирование части запроса и hse_telegram_id """
         if self.hse_telegram_id is None: return ''
         return f" `hse_telegram_id` = {self.hse_telegram_id} "
+
+    async def get_part_file_id(self) -> str:
+        if self.file_id is None: return ''
+        return f"`file_id` = '{self.file_id}' "
 
     async def get_general_contractor_id(self) -> str:
         """Обработка параметра status_id и формирование части запроса и general_contractor_id """
@@ -280,12 +283,14 @@ class QueryConstructor(QueryStorageMethods):
     __part_id: str
     __part_week_number: str
     __part_hse_telegram_id: str
+    __part_file_id: str
 
     def __init__(self, chat_id: [str, int] = None, table_name: str = '', **kwargs: object):
         """ """
         super().__init__()
         self.exception = [None, 'all', 'not', 'not including']
         self.main_actions = ['SELECT', 'UPDATE', 'DELETE', 'INSERT']
+        self.value = kwargs.get('value', None)
 
         self.user_id = chat_id
         self.table_name = table_name
@@ -315,6 +320,7 @@ class QueryConstructor(QueryStorageMethods):
         self.violation_id = self.conditions.get("violation_id", None)
         self.category_id = self.conditions.get("category_id", None)
         self.id = self.conditions.get("id", None)
+        self.file_id = self.conditions.get('file_id', None)
 
         self.lazy_query = self.conditions.get("lazy_query", None)
 
@@ -328,7 +334,11 @@ class QueryConstructor(QueryStorageMethods):
         self.action = await self.get_action_part()
         self.subject = await self.get_subject_part()
 
-        self.main_part = await self.get_main_part()
+        if self.action == "SELECT":
+            self.main_part = await self.get_main_part_select()
+        if self.action == "UPDATE":
+            self.main_part = await self.get_main_part_update()
+
         self.__part_user = await self.get_part_is_admin()
         self.__part_period = await self.get_part_period()
         self.__part_main_location = await self.get_part_main_location()
@@ -347,6 +357,13 @@ class QueryConstructor(QueryStorageMethods):
         self.__part_lazy_query = await self.get_part_lazy_query()
         self.__part_week_number = await self.get_part_week_number()
         self.__part_hse_telegram_id = await self.get_part_hse_telegram_id()
+        self.__part_file_id = await self.get_part_file_id()
+
+        # if self.action == 'UPDATE':
+        #     self.query = await self.get_query_update()
+        #
+        # if self.action == 'SELECT':
+        #     self.query = await self.get_query_select()
 
         self.query = await self.get_query()
         logger.debug(f'\nQueryConstructor: {self.query = }')
@@ -363,9 +380,9 @@ class QueryConstructor(QueryStorageMethods):
     async def get_subject_part(self):
         """Формирование части запроса """
         if not self.subject: return '*'
-        if self.subject: return f"{self.subject} "
+        if self.subject: return f"{self.subject}"
 
-    async def get_main_part(self) -> str:
+    async def get_main_part_select(self) -> str:
         """Формирование основной части запроса """
         self.main_part = f'{self.action} {self.subject} FROM `{self.table_name}` '
 
@@ -374,8 +391,16 @@ class QueryConstructor(QueryStorageMethods):
 
         return self.main_part
 
+    async def get_main_part_update(self) -> str:
+        self.main_part = f"{self.action} `{self.table_name}` SET `{self.subject}` = '{self.value}' "
+
+        if self.conditions:
+            self.main_part = f"{self.action} `{self.table_name}` SET `{self.subject}` = '{self.value}' WHERE "
+
+        return self.main_part
+
     async def get_query(self) -> str:
-        """Формирование запроса
+        """Формирование запроса SELECT
         атрибуты не равные '' или None
         нужные self._part_* не равные '' или None
 
