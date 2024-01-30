@@ -7,9 +7,13 @@ from aiogram.dispatcher import FSMContext
 
 from apps.MyBot import MyBot, bot_send_message
 from apps.core.bot.data.board_config import BoardConfig as board_config
-from apps.core.bot.handlers.catalog.catalog_support import get_dataframe, text_processor_level, text_processor, \
-    get_nan_value_text, list_number, level_1_column
-from apps.core.bot.handlers.catalog.catalog_support import check_dataframe
+from apps.core.bot.handlers.catalog.catalog_support import (get_dataframe,
+                                                            text_processor_level,
+                                                            text_processor,
+                                                            get_nan_value_text,
+                                                            list_number,
+                                                            level_1_column,
+                                                            check_dataframe)
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard, posts_cb
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.messages.messages_test import msg

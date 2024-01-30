@@ -109,6 +109,7 @@ async def call_bagration_admin_get_pass_report(call: types.CallbackQuery = None,
     await bot_send_message(chat_id=hse_user_id, text=msg_text)
 
 
-async def fanc_name():
+async def fanc_name() -> str:
+    """Возвращает имя вызываемой функции"""
     stack = traceback.extract_stack()
     return str(stack[-2][2])

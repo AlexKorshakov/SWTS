@@ -217,11 +217,11 @@ async def get_dataframe(hse_user_id: str | int, column_number: int = None) -> Da
 
     :return:
     """
-    dataframe: DataFrame = await get_bd_from_database(hse_user_id)
+    dataframe: DataFrame = await get_df_from_database(hse_user_id)
     if await check_dataframe(dataframe, hse_user_id=hse_user_id):
         return dataframe
 
-    dataframe: DataFrame = await get_bd_from_excel(hse_user_id, column_number)
+    dataframe: DataFrame = await get_df_from_excel(hse_user_id, column_number)
     if await check_dataframe(dataframe, hse_user_id=hse_user_id):
         return dataframe
 
@@ -303,7 +303,7 @@ async def get_dataframe_from_local_files(hse_user_id: str | int, column_number: 
     return dataframe
 
 
-async def get_bd_from_database(hse_user_id: str | int) -> DataFrame | None:
+async def get_df_from_database(hse_user_id: str | int) -> DataFrame | None:
     """
 
     :param hse_user_id:
@@ -344,7 +344,7 @@ async def get_bd_from_database(hse_user_id: str | int) -> DataFrame | None:
     return dataframe
 
 
-async def get_bd_from_excel(hse_user_id: str | int, column_number: int = None) -> DataFrame | None:
+async def get_df_from_excel(hse_user_id: str | int, column_number: int = None) -> DataFrame | None:
     """
 
     :param hse_user_id:
