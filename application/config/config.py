@@ -23,8 +23,6 @@ except EnvError as env_err:
         logger.error('You have forgot to set BOT_TOKEN')
         sys.exit(0)
 
-WRITE_DATA_ON_GOOGLE_DRIVE = env.bool("WRITE_DATA_ON_GOOGLE_DRIVE", False)
-ADMINS_ID: list = [373084462]
 ADMIN_ID: str = env("ADMIN_ID")
 ADMIN_EMAIL: str = env("ADMIN_EMAIL")
 DEVELOPER_ID: int = env("DEVELOPER_ID")

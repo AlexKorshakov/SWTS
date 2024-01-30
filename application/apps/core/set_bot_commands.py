@@ -17,11 +17,8 @@ async def set_default_commands(dp: Dispatcher):
             types.BotCommand(command="/add_entries", description="Добавление данных"),
             types.BotCommand(command="/admin_func", description="Админка"),
             types.BotCommand(command="/super_user_fanc", description="Админка2"),
+            types.BotCommand(command="/test_command", description="тестовые функции"),
             # types.BotCommand(command="/send_mail", description="Отправка отчета"),
-            # types.BotCommand(command="/test", description="Тестовые команды"),
-            # types.BotCommand(command="/generate_act", description="Формирование акта"),
-            # types.BotCommand(command="/generate_report", description="Формирование отчета"),
-            # types.BotCommand(command="/generate_stat", description="Формирование статистики"),
         ]
     )
     logger.info(f'{dp.bot._me.first_name} {Messages.bot_setting_commands}')

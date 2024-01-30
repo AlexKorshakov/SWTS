@@ -76,7 +76,8 @@ class MyBot:
             # with suppress(RuntimeWarning, DeprecationWarning):
             await cls.dp.storage.close()
             await cls.dp.storage.wait_closed()
-            await cls.bot.session.close()
+            # session = await cls.dp.get_session()
+            # session.close()
 
     @staticmethod
     async def on_startup(dp: Dispatcher):
@@ -135,19 +136,63 @@ class MyBot:
     async def on_shutdown(dp: Dispatcher):
         logger.warning('Bye! Shutting down connection')
         logger.warning(f'{dp.bot._me.first_name} Bye! Shutting down connection')
+
+        payload: dict = generate_payload(**locals())
+        pprint(f'{__file__} {await fanc_name()} {payload = }', width=200)
+
+        state = dp.get_current().current_state(user=373084462)
+        v_data: dict = await state.get_data()
+        pprint(f'{__file__} {await fanc_name()} {v_data = }', width=200)
+
+        session = await dp.bot.get_session()
+        pprint(f'{__file__} {await fanc_name()} {session = }', width=200)
+
+        # await MyBot.loop.run_in_executor(None, input)
+
+        dp.stop_polling()
         await dp.storage.close()
-        await dp.storage.wait_closed()
-        sys.exit()
+
+    @staticmethod
+    async def get_user_ids(dp: Dispatcher, chat_id: int | str) -> list:
+        """Получение списка участников чата chat_id
+
+        :param dp:
+        :param chat_id:
+        :return:
+        """
+        chat_members = await dp.bot.get_chat_members_count(chat_id)
+        user_ids: list = [member.user.id for member in chat_members]
+        return user_ids
 
 
-async def bot_send_document(*, chat_id: int | str, doc_path: str, caption: str = None, fanc_name: str = None,
-                            **kvargs) -> bool:
+def generate_payload(exclude: list = None, **kwargs) -> dict:
+    """Generate payload
+    Usage: payload = generate_payload(**locals(), exclude=['foo'])
+
+    :param exclude: List
+    :param kwargs: dict
+    :return: dict
+    """
+    DEFAULT_FILTER = ['self', 'cls']
+
+    if exclude is None:
+        exclude = []
+
+    return {key: value for key, value in kwargs.items() if
+            key not in exclude + DEFAULT_FILTER
+            and value is not None
+            and not key.startswith('_')}
+
+
+async def bot_send_document(*, chat_id: int | str, doc_path: str, caption: str = None, calling_fanc_name: str = None,
+                            **kvargs: dict) -> bool:
     """Функция отправки документов
 
-    :param fanc_name:
-    :param caption:
-    :param chat_id:
-    :param doc_path:
+    :param calling_fanc_name: str
+    :param caption: str
+    :param chat_id: int
+    :param doc_path: str
+    :param kvargs: dict
     :return:
     """
 
@@ -202,14 +247,17 @@ async def bot_send_photo(*, chat_id: int | str, photo=None, caption: str = None)
     return False
 
 
-async def bot_send_message(*, chat_id: int | str, text: str,
-                           reply_markup: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply | None = None,
-                           **kvargs) -> bool:
+async def bot_send_message(
+        *,
+        chat_id: int | str,
+        text: str,
+        reply_markup: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | ForceReply | None = None,
+        **kvargs
+) -> bool:
     """Используйте этот метод для отправки текстовых сообщений.
     Источник: https://core.telegram.org/bots/api#sendmessage
 
     """
-
     try:
         result: types.Message | None = await _send_message(
             chat_id=chat_id, text=text, reply_markup=reply_markup, **kvargs
@@ -246,6 +294,24 @@ async def _send_message(*, chat_id: int | str, text: str,
         return None
 
 
+async def bot_edit_message(*, hse_user_id: int, message_id: int, reply_text: str,
+                           reply_markup: InlineKeyboardMarkup = None, **kvargs: dict) -> bool:
+    """Изменение сообщения по message_id
+
+    :return:
+    """
+    pprint(f'{__file__} {await fanc_name()} {kvargs = }', width=200)
+
+    result: bool = await MyBot.bot.edit_message_text(
+        chat_id=hse_user_id,
+        text=reply_text,
+        message_id=message_id,
+        reply_markup=reply_markup
+    )
+
+    return result
+
+
 async def bot_delete_message(*, chat_id: int | str, message_id: int | str, sleep_sec: int = 5) -> bool:
     """Используйте этот метод для удаления сообщения, в том числе служебного, со следующими ограничениями:
          - Сообщение может быть удалено только в том случае, если оно было отправлено менее 48 часов назад.
@@ -265,7 +331,6 @@ async def bot_delete_message(*, chat_id: int | str, message_id: int | str, sleep
         :rtype: :obj:`base.Boolean`
     :return:
     """
-
     if not get_sett(cat='enable_features', param='bot_delete_message').get_set():
         msg_text: str = await msg(chat_id, cat='error', msge='features_disabled',
                                   default=Messages.Error.features_disabled).g_mas()
