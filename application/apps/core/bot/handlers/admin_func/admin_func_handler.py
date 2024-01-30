@@ -49,11 +49,6 @@ async def admin_func_handler(message: types.Message = None, *, hse_user_id: int 
     #     await bot_send_message(chat_id=chat_id, text=msg_text, disable_web_page_preview=True)
     #     return
 
-    # if not get_sett(cat='enable_features', param='use_catalog_func').get_set():
-    #     msg_text: str = f"{await msg(chat_id, cat='error', msge='features_disabled', default=Messages.Error.features_disabled).g_mas()}"
-    #     await bot_send_message(chat_id=chat_id, text=msg_text, disable_web_page_preview=True)
-    #     return
-
     main_reply_markup = types.InlineKeyboardMarkup()
     hse_role_df: DataFrame = await get_role_receive_df()
 
@@ -214,10 +209,7 @@ async def user_access_fail(chat_id: int, notify_text: str = None, hse_id: str = 
     hse_id = hse_id if hse_id else chat_id
 
     try:
-        default_answer_text: str = 'У вас нет прав доступа \n По всем вопросам обращайтесь к администратору\n' \
-                                   'https://t.me/AlexKor_MSK \n\n'
-
-        part_1 = f"{await msg(hse_id, cat='error', msge='access_fail', default=default_answer_text).g_mas()}"
+        part_1 = f"{await msg(hse_id, cat='error', msge='access_fail', default=Messages.default_answer_text).g_mas()}"
         part_2 = f"{await msg(hse_id, cat='help', msge='help_message', default=Messages.help_message).g_mas()}"
         answer_text = f'{part_1}\n\n{part_2}'
         print(f'{answer_text = }')
@@ -236,11 +228,7 @@ async def user_access_fail(chat_id: int, notify_text: str = None, hse_id: str = 
         logger.error(notify_text)
         button = types.InlineKeyboardButton('user_actions',
                                             callback_data=posts_cb.new(id='-', action='admin_user_actions'))
-        await admin_notify(
-            user_id=chat_id,
-            notify_text=notify_text,
-            button=button
-        )
+        await admin_notify(user_id=chat_id, notify_text=notify_text, button=button)
 
 
 async def user_access_granted(chat_id: int, role: str = None, notify=False):
@@ -329,6 +317,7 @@ async def check_dataframe_role(dataframe: DataFrame, hse_user_id: str | int) -> 
     return True
 
 
-async def fanc_name():
+async def fanc_name() -> str:
+    """Получение имени вызывающей функции"""
     stack = traceback.extract_stack()
     return str(stack[-2][2])

@@ -26,7 +26,7 @@ async def admin_user_actions_answer(call: types.CallbackQuery, callback_data: di
         logger.error(f'access fail {hse_user_id = }')
         return
 
-    if not get_sett(cat='enable_features', param='use_bagration_admin_add_user').get_set():
+    if not get_sett(cat='enable_features', param='use_admin_add_user').get_set():
         msg_text: str = f"{await msg(hse_user_id, cat='error', msge='features_disabled', default=Messages.Error.features_disabled).g_mas()}"
         await bot_send_message(chat_id=hse_user_id, text=msg_text, disable_web_page_preview=True)
         return
@@ -59,5 +59,4 @@ async def add_inline_keyboard_with_action_for_admin(markup: types.InlineKeyboard
         text='добавить пользователя',
         callback_data=posts_cb.new(id='-', action=f'admin_add_user_{user_for_action}'))
     )
-
     return markup

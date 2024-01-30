@@ -13,8 +13,8 @@ from loader import logger
 
 
 @MyBot.dp.callback_query_handler(posts_cb.filter(action=['check_indefinite_normative']))
-async def check_indefinite_normative_answer(
-        call: types.CallbackQuery, callback_data: dict[str, str], state: FSMContext = None):
+async def check_indefinite_normative_answer(call: types.CallbackQuery, callback_data: dict[str, str],
+                                            state: FSMContext = None):
     """
 
     :return:

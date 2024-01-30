@@ -13,11 +13,11 @@ from loader import logger
 
 
 @MyBot.dp.callback_query_handler(posts_cb.filter(action=['check_acts_prescriptions_status']))
-async def check_acts_prescriptions_status_answer(
-        call: types.CallbackQuery, callback_data: dict[str, str], state: FSMContext = None):
+async def check_acts_prescriptions_status_answer(call: types.CallbackQuery, callback_data: dict[str, str],
+                                                 state: FSMContext = None):
     """
 
-    :return:
+    :return: None
     """
     hse_user_id = call.message.chat.id
     if not await check_user_access(chat_id=hse_user_id):

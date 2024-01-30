@@ -12,8 +12,9 @@ from loader import logger
 
 
 @MyBot.dp.callback_query_handler(posts_cb.filter(action=['check_acts_prescriptions_status_for_subcontractor']))
-async def check_acts_prescriptions_status_for_subcontractor_answer(
-        call: types.CallbackQuery, callback_data: dict[str, str], state: FSMContext = None):
+async def check_acts_prescriptions_status_for_subcontractor_answer(call: types.CallbackQuery,
+                                                                   callback_data: dict[str, str],
+                                                                   state: FSMContext = None):
     """
 
     :return:
