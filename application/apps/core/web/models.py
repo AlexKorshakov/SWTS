@@ -1,76 +1,117 @@
+from pathlib import Path
+
 from django.db import models
 from django.urls import reverse
 from tortoise import Tortoise, fields
+
+from config.config import Udocan_media_path, Udocan_HSE_media_path
+print(f'{Udocan_HSE_media_path = }')
+
+# MEDIA_DIR = Path(Udocan_media_path, 'HSE')
 
 
 class Violations(models.Model):
     """Основная модель Описывающая все поля для Нарушения"""
 
-    location = models.ForeignKey(to='Location', on_delete=models.PROTECT, verbose_name='Закрепленный участок',
-                                 default='')
-    main_location = models.ForeignKey(to='MainLocation', on_delete=models.PROTECT, verbose_name='Площадка', default='')
-    sub_location = models.ForeignKey(to='SubLocation', on_delete=models.PROTECT, verbose_name='Под площадка / участок',
-                                     default='')
+    location = models.ForeignKey(
+        to='Location', on_delete=models.PROTECT, verbose_name='Закрепленный участок',
+        default=''
+    )
+    main_location = models.ForeignKey(
+        to='MainLocation', on_delete=models.PROTECT, verbose_name='Площадка', default=''
+    )
+    sub_location = models.ForeignKey(
+        to='SubLocation', on_delete=models.PROTECT, verbose_name='Под площадка / участок',
+        default=''
+    )
     function = models.CharField(max_length=255, verbose_name='Должность', default='')
     name = models.CharField(max_length=255, verbose_name='ФИО', default='')
-    work_shift = models.ForeignKey(to='WorkShift', on_delete=models.PROTECT, verbose_name='Смена', default='')
+    work_shift = models.ForeignKey(
+        to='WorkShift', on_delete=models.PROTECT, verbose_name='Смена', default=''
+    )
 
     created_at = models.DateField(auto_now_add=True, verbose_name='Дата регистрации')
     updated_at = models.DateField(auto_now=True, verbose_name='Обновлено')
 
-    main_category = models.ForeignKey(to='MainCategory', on_delete=models.PROTECT, verbose_name='Основная категория',
-                                      default='')
+    main_category = models.ForeignKey(
+        to='MainCategory', on_delete=models.PROTECT, verbose_name='Основная категория',
+        default=''
+    )
 
     status = models.ForeignKey(to='Status', on_delete=models.PROTECT, verbose_name='Статус', default=1)
 
     is_published = models.BooleanField(default=True, verbose_name='Опубликовано?')
-    finished = models.ForeignKey(to='Finished', on_delete=models.PROTECT, verbose_name='Устранено?',
-                                 default=0)
-    agreed = models.ForeignKey(to='IsAgreed', on_delete=models.PROTECT, verbose_name='Согласовано?',
-                               default=0)
+    finished = models.ForeignKey(
+        to='Finished', on_delete=models.PROTECT, verbose_name='Устранено?',
+        default=0
+    )
+    agreed = models.ForeignKey(
+        to='IsAgreed', on_delete=models.PROTECT, verbose_name='Согласовано?',
+        default=0
+    )
 
     description = models.TextField(blank=True, verbose_name='Описание', default='')
     comment = models.CharField(max_length=255, verbose_name='Устранение', default='')
 
-    general_contractor = models.ForeignKey(to='GeneralContractor', on_delete=models.PROTECT, verbose_name='Подрядчик',
-                                           default='')
+    general_contractor = models.ForeignKey(
+        to='GeneralContractor', on_delete=models.PROTECT, verbose_name='Подрядчик',
+        default=''
+    )
 
     category = models.ForeignKey(to='Category', on_delete=models.PROTECT, verbose_name='Категория', default='')
-    normative_documents = models.ForeignKey(to='NormativeDocuments', on_delete=models.PROTECT,
-                                            verbose_name='Нормативная документация', default='')
+    normative_documents = models.ForeignKey(
+        to='NormativeDocuments', on_delete=models.PROTECT,
+        verbose_name='Нормативная документация', default=''
+    )
 
-    violation_category = models.ForeignKey(to='ViolationCategory', on_delete=models.PROTECT,
-                                           verbose_name='Категория нарушения', default='')
+    violation_category = models.ForeignKey(
+        to='ViolationCategory', on_delete=models.PROTECT,
+        verbose_name='Категория нарушения', default=''
+    )
 
-    incident_level = models.ForeignKey(to='IncidentLevel', on_delete=models.PROTECT,
-                                       verbose_name='Уровень происшествия', default='')
+    incident_level = models.ForeignKey(
+        to='IncidentLevel', on_delete=models.PROTECT,
+        verbose_name='Уровень происшествия', default=''
+    )
 
-    act_required = models.ForeignKey(to='ActRequired', on_delete=models.PROTECT, verbose_name='Требуется Акт?',
-                                     default='')
+    act_required = models.ForeignKey(
+        to='ActRequired', on_delete=models.PROTECT, verbose_name='Требуется Акт?',
+        default=''
+    )
 
-    elimination_time = models.ForeignKey(to='EliminationTime', on_delete=models.PROTECT,
-                                         verbose_name='Время на устранение', default='')
+    elimination_time = models.ForeignKey(
+        to='EliminationTime', on_delete=models.PROTECT,
+        verbose_name='Время на устранение', default=''
+    )
 
     # final_date = models.DateField(auto_now_add=True, verbose_name='Финальная дата')
 
-    hse = models.ForeignKey(to='HSEUser', on_delete=models.PROTECT,
-                            verbose_name='Специалист', default='')
+    hse = models.ForeignKey(
+        to='HSEUser', on_delete=models.PROTECT, verbose_name='Специалист', default=''
+    )
 
     title = models.CharField(max_length=100, verbose_name='Заголовок')
     user_id = models.CharField(max_length=255, verbose_name='ID пользователя', default='', blank=True)
     file_id = models.CharField(max_length=255, verbose_name='file_id', default='', blank=True)
 
-    photo = models.ImageField(upload_to=f'{user_id}/data_file/{str(file_id).split("___",maxsplit=1)[0]}/photo/',
-                              verbose_name='Фото', blank=True)
-    json = models.FileField(upload_to=f'{user_id}/data_file/{str(file_id).split("___",maxsplit=1)[0]}/json/',
-                            verbose_name='Json', blank=True)
+    photo = models.ImageField(
+        upload_to=f'{user_id}/data_file/{str(file_id).split("___", maxsplit=1)[0]}/photo/',
+        verbose_name='Фото',
+        blank=True
+    )
+    json = models.FileField(
+        upload_to=f'{user_id}/data_file/{str(file_id).split("___", maxsplit=1)[0]}/json/',
+        verbose_name='Json',
+        blank=True
+    )
 
     day = models.PositiveSmallIntegerField(blank=True, verbose_name='День', default=1)
     month = models.PositiveSmallIntegerField(blank=True, verbose_name='Месяц', default=1)
     year = models.PositiveSmallIntegerField(blank=True, verbose_name='Год', default=2000)
 
-    week = models.ForeignKey(to='Week', on_delete=models.PROTECT,
-                             verbose_name='Неделя', default='')
+    week = models.ForeignKey(
+        to='Week', on_delete=models.PROTECT, verbose_name='Неделя', default=''
+    )
 
     act_number = models.PositiveSmallIntegerField(blank=True, verbose_name='Номер акта')
     quarter = models.PositiveSmallIntegerField(blank=True, verbose_name='Квартал', default=1)

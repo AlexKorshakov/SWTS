@@ -3,21 +3,32 @@ import asyncio
 #
 # # Create your views here.
 from apps.core.database.ViolationsDataBase import upload_from_local
-from apps.core.web.utils import (MyMixin, delete_violations_from_all_repo,
-                                 get_id_registered_users, get_params,
+from apps.core.web.utils import (MyMixin,
+                                 delete_violations_from_all_repo,
+                                 get_id_registered_users,
+                                 get_params,
                                  update_violations_from_all_repo)
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.core.paginator import Paginator
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
-from django.views.generic import CreateView, DetailView, ListView
+from django.views.generic import (CreateView,
+                                  DetailView,
+                                  ListView)
 from loader import logger
 
-from .forms import (UserLoginForm, UsrRegisterForm, ViolationsAddForm,
+from .forms import (UserLoginForm,
+                    UsrRegisterForm,
+                    ViolationsAddForm,
                     ViolationsForm)
-from .models import (ActsPrescriptions, GeneralContractor, IncidentLevel,
-                     MainCategory, MainLocation, NormativeDocuments, Status,
+from .models import (ActsPrescriptions,
+                     GeneralContractor,
+                     IncidentLevel,
+                     MainCategory,
+                     MainLocation,
+                     NormativeDocuments,
+                     Status,
                      Violations)
 
 

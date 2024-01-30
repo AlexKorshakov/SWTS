@@ -99,3 +99,17 @@ def show_weeks_2023():
     ).filter(cnt__gt=0)
 
     return {'weeks_2023': weeks_2023}
+
+
+@register.inclusion_tag('list_weeks_2024.html')
+def show_weeks_2024():
+    # weeks = Week.objects.all()
+    # return weeks
+
+    weeks_2024 = Week.objects.annotate(
+        cnt=Count(
+            'violations', filter=Q(violations__is_published=True, violations__year=2024)
+        )
+    ).filter(cnt__gt=0)
+
+    return {'weeks_2024': weeks_2024}
