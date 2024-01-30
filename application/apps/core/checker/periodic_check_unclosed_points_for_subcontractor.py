@@ -419,7 +419,8 @@ async def get_now() -> str:
     return datetime.now().strftime("%d.%m.%Y %H:%M:%S")
 
 
-async def fanc_name():
+async def fanc_name() -> str:
+    """Возвращает имя вызываемой функции"""
     stack = traceback.extract_stack()
     return str(stack[-2][2])
 
@@ -729,7 +730,7 @@ async def call_sub_con_get_photo(call: types.CallbackQuery, callback_data: dict[
     hse_id = violations_dataframe.user_id.values[0]
 
     name = f'{REPORT_NAME}{file_id}.jpg'
-    full_photo_path = f"{Udocan_media_path}{hse_id}\\data_file\\{date}\\photo\\{name}"
+    full_photo_path = f"{Udocan_media_path}\\HSE\\{hse_id}\\data_file\\{date}\\photo\\{name}"
 
     try:
         with open(full_photo_path, 'rb') as photo:

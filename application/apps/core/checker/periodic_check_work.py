@@ -24,6 +24,7 @@ async def periodic_check_work():
         await asyncio.sleep(work_period)
 
 
-async def fanc_name():
+async def fanc_name() -> str:
+    """Возвращает имя вызываемой функции"""
     stack = traceback.extract_stack()
     return str(stack[-2][2])
