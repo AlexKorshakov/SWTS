@@ -354,10 +354,7 @@ async def user_access_fail(chat_id: int, notify_text: str = None, hse_id: str = 
     hse_id = hse_id if hse_id else chat_id
 
     try:
-        default_answer_text: str = 'У вас нет прав доступа \n По всем вопросам обращайтесь к администратору\n' \
-                                   'https://t.me/AlexKor_MSK \n\n'
-
-        part_1 = f"{await msg(hse_id, cat='error', msge='access_fail', default=default_answer_text).g_mas()}"
+        part_1 = f"{await msg(hse_id, cat='error', msge='access_fail', default=Messages.default_answer_text).g_mas()}"
         part_2 = f"{await msg(hse_id, cat='help', msge='help_message', default=Messages.help_message).g_mas()}"
         answer_text = f'{part_1}\n\n{part_2}'
         print(f'{answer_text = }')
@@ -423,7 +420,8 @@ async def str_to_datetime(date_str: str) -> date:
     return current_date
 
 
-async def fanc_name():
+async def fanc_name() -> str:
+    """Возвращает имя вызываемой функции"""
     stack = traceback.extract_stack()
     return str(stack[-2][2])
 
