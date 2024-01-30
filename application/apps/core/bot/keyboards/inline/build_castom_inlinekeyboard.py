@@ -613,6 +613,7 @@ async def check_dataframe(dataframe: DataFrame) -> bool:
     return True
 
 
-async def fanc_name():
+async def fanc_name() -> str:
+    """Возвращает имя вызываемой функции"""
     stack = traceback.extract_stack()
     return str(stack[-2][2])

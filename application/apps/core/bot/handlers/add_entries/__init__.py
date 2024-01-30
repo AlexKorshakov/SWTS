@@ -26,7 +26,8 @@ async def run_custom_import():
     # await MyBot.bot.set_my_commands([types.BotCommand(command="/add_entries", description="Добавление данных")])
 
 
-async def fanc_name():
+async def fanc_name() -> str:
+    """Возвращает имя вызываемой функции"""
     stack = traceback.extract_stack()
     return str(stack[-2][2])
 

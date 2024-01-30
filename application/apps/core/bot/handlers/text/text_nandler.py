@@ -28,6 +28,7 @@ async def text_message_handler(message: types.Message, state: FSMContext = None)
     await bot_send_message(chat_id=chat_id, text=f'Это текст \n {get_message_bot} \n {Messages.help_message}')
 
 
-async def fanc_name():
+async def fanc_name() -> str:
+    """Возвращает имя вызываемой функции"""
     stack = traceback.extract_stack()
     return str(stack[-2][2])

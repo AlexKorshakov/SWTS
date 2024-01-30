@@ -596,7 +596,8 @@ def last_day_of_month(current_date: datetime):
     return current_date.replace(month=current_date.month + 1, day=1) - timedelta(days=1)
 
 
-async def fanc_name():
+async def fanc_name() -> str:
+    """Возвращает имя вызываемой функции"""
     stack = traceback.extract_stack()
     return str(stack[-2][2])
 

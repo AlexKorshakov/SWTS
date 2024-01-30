@@ -306,6 +306,7 @@ async def user_access_granted(chat_id: int, role: str = None, notify=False):
         await admin_notify(user_id=chat_id, notify_text=notify_text)
 
 
-async def fanc_name():
+async def fanc_name() -> str:
+    """Возвращает имя вызываемой функции"""
     stack = traceback.extract_stack()
     return str(stack[-2][2])

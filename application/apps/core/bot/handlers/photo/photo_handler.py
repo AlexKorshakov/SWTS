@@ -57,6 +57,7 @@ async def photo_handler(message: types.Message, state: FSMContext, chat_id: str 
     await select_start_category(message)
 
 
-async def fanc_name():
+async def fanc_name() -> str:
+    """Возвращает имя вызываемой функции"""
     stack = traceback.extract_stack()
     return str(stack[-2][2])

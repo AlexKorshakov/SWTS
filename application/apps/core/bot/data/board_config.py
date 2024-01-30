@@ -35,3 +35,9 @@ class BoardConfig:
         """
         v_data: dict = await self.state.get_data()
         return v_data
+
+
+async def fanc_name() -> str:
+    """Возвращает имя вызываемой функции"""
+    stack = traceback.extract_stack()
+    return str(stack[-2][2])

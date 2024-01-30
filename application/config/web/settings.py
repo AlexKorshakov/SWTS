@@ -272,7 +272,6 @@ STATICFILES_FINDERS = (
 )
 
 if __name__ == '__main__':
-
     BASE_DIR = Path(__file__).resolve().parent  # BASE_DIR = \\application\\config\\web
     print(f'{BASE_DIR =}')
     print(f'{BASE_DIR.parent =}')

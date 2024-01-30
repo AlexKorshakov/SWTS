@@ -171,72 +171,7 @@ async def enter_phone_number(message: types.Message, state: FSMContext):
     await RegisterState.next()
     return await message.reply(Messages.Ask.work_shift, reply_markup=reply_markup)
 
-
-@MyBot.dp.message_handler(is_private, state=RegisterState.work_shift)
-async def enter_work_shift(message: types.Message, state: FSMContext):
-    """Обработка рабочей смены
-    """
-    user_data["work_shift"] = str(message.text)
-
-    await RegisterState.next()
-    markup = ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.add(Messages.Registration.cancel)
-    return await message.reply(Messages.Ask.location, reply_markup=markup)
-
-
-@MyBot.dp.callback_query_handler(is_private, lambda call: call.data in get_data_list("WORK_SHIFT"),
-                                 state=RegisterState.work_shift)
-async def work_shift_answer(call: types.CallbackQuery, state: FSMContext = None):
-    """Обработка ответов содержащихся в WORK_SHIFT
-    """
-    chat_id = call.message.chat.id
-    try:
-
-        logger.debug(f"{chat_id = } Выбрано: {call.data}")
-        user_data["work_shift"] = call.data
-        await call.message.edit_reply_markup()
-
-        METRO = [list(item.keys())[0] for item in get_data_list("METRO_STATION")]
-
-        menu_level = await board_config(state, "menu_level", 2).set_data()
-        menu_list = await board_config(state, "menu_list", METRO).set_data()
-
-        reply_markup = await build_inlinekeyboard(
-            some_list=menu_list, num_col=1, level=menu_level, step=len(menu_list)
-        )
-        await bot_send_message(
-            chat_id=chat_id, text="Выберите строительную площадку", reply_markup=reply_markup
-        )
-
-    except Exception as callback_err:
-        logger.error(f"{repr(callback_err)}")
-
-    await RegisterState.next()
-
-
-@MyBot.dp.callback_query_handler(is_private,
-                                 lambda call: call.data in [list(item.keys())[0] for item in
-                                                            get_data_list("METRO_STATION")],
-                                 state=RegisterState.location)
-async def enter_location_answer(call: types.CallbackQuery, state: FSMContext):
-    """Обработка ответов содержащихся в METRO_STATION
-    """
-    chat_id = call.message.chat.id
-
-    for i in [list(item.keys())[0] for item in get_data_list("METRO_STATION")]:
-        try:
-            if call.data == i:
-                user_data["name_location"] = i
-                await bot_send_message(chat_id=chat_id, text=f"Выбрано: {i}")
-                await call.message.edit_reply_markup()
-                break
-
-        except Exception as callback_err:
-            logger.error(f"{repr(callback_err)}")
-
-    await state.finish()
-
-
-async def fanc_name():
+async def fanc_name() -> str:
+    """Возвращает имя вызываемой функции"""
     stack = traceback.extract_stack()
     return str(stack[-2][2])

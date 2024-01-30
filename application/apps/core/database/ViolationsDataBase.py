@@ -789,7 +789,8 @@ async def create_file_path(path: str):
             logger.info(f"makedirs err {repr(err)}")
 
 
-async def fanc_name():
+async def fanc_name() -> str:
+    """Возвращает имя вызываемой функции"""
     stack = traceback.extract_stack()
     return str(stack[-2][2])
 

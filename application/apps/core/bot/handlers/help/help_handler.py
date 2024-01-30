@@ -61,6 +61,7 @@ async def help_command_handler(message: types.Message, state: FSMContext = None)
     await bot_send_message(chat_id=chat_id, text=help_message, reply_markup=await help_inline_button(hse_id=chat_id))
 
 
-async def fanc_name():
+async def fanc_name() -> str:
+    """Возвращает имя вызываемой функции"""
     stack = traceback.extract_stack()
     return str(stack[-2][2])
