@@ -106,7 +106,7 @@ async def build_inlinekeyboard(*, some_list: list = None, num_col: int = 1, leve
         return reply_markup
 
 
-async def get_long_markup(some_list: list, state: FSMContext = None, param_dict=None) -> InlineKeyboardMarkup:
+async def get_long_markup(some_list: list, state: FSMContext = None, param_dict: dict = None) -> InlineKeyboardMarkup:
     """Сборка reply_markup их большого набора данных some_list с параметрами param_dict и состоянием state
 
     :return:
@@ -139,9 +139,9 @@ async def get_long_markup(some_list: list, state: FSMContext = None, param_dict=
 
 
 async def get_param(param_name: str, param_dict: dict) -> any:
-    """Определение типа данных и нулевых значений
+    """Определение нулевых значений в зависимости от типа данных
 
-    :param param_name: str -
+    :param param_name: str - наименование параметра
     :param param_dict: dict - Дополнительные параметры
     :return: any
     """
@@ -161,10 +161,13 @@ async def get_param(param_name: str, param_dict: dict) -> any:
         return param if param else null_value
 
 
-async def get_button_list(some_list: list, button_list: list, param_dict=None) -> list:
-    """Формирование списка с кнопками действий
+async def get_button_list(some_list: list, button_list: list, param_dict: dict = None) -> list:
+    """Формирование list с кнопками действий
 
-    :return:
+    :param param_dict: dict - дополнительные параметры
+    :param some_list: list с данными для формирования button_list с InlineKeyboardButton
+    :param button_list: dict - list c дополнительными кнопками
+    :return: List button_list с кнопками действий
     """
     if not some_list:
         return button_list
@@ -179,7 +182,7 @@ async def get_button_list(some_list: list, button_list: list, param_dict=None) -
 async def get_button_list_for_list(some_list: list, param_dict: dict = None) -> list:
     """Функция формирования данных button_list с InlineKeyboardButton из some_list с использованием prefix и postfix
 
-    :param param_dict: dict - Дополнительные параметры
+    :param param_dict: dict - дополнительные параметры
     :param some_list: list с данными для формирования button_list с InlineKeyboardButton
     :return:
     """
@@ -223,9 +226,13 @@ async def get_button_list_for_list(some_list: list, param_dict: dict = None) -> 
     return button_list_full
 
 
-async def check_list_bytes_len(list_for_check: list, target_parameter: int = 60) -> list:
+async def check_list_bytes_len(list_for_check: list[str], target_parameter: int = 60) -> list:
     """Проверка длинны записи в байтах для формирования надписей кнопок
     текст длиннее 64 байт обрезается, добавляются точки
+
+    :param target_parameter: int максимальная длина строки
+    :param list_for_check: list с данными для проверки
+    :return: list - лист с проверенными данными
     """
     processed_values: len = []
     for item in list_for_check:
@@ -244,54 +251,64 @@ async def check_list_bytes_len(list_for_check: list, target_parameter: int = 60)
     return processed_values
 
 
-async def check_text_bytes_len(some_text: str) -> str:
-    """Проверка длинны записи в байтах для формирования надписей кнопок
-    текст длиннее 64 байт обрезается, добавляются точки
-    """
-
-    if len(some_text.encode('utf-8')) > 62:
-        logger.debug(f" {some_text} : {len(some_text.encode('utf-8'))}")
-
-        while int(len(some_text.encode('utf-8'))) > 60:
-            some_text = some_text[:-1]
-            logger.debug(f" {some_text} : {len(some_text.encode('utf-8'))}")
-
-        some_text = some_text[:-2] + '...'
-        logger.debug(f" {some_text} : {len(some_text.encode('utf-8'))}")
-
-    return some_text
-
-
-async def define_indices(level, end_list):
+async def define_indices(level: int, end_list: int) -> (int, int):
     """Определение начального и конечного индекса для среза на основе level
+
+    :param level: int уровень
+    :param end_list: int - индекс окончания листа
+    :return: (int, int) - индекс начало и конц среза
     """
-    start_index = 0 if level == 1 else (STEP_MENU * level) - STEP_MENU
+    start_index: int = 0 if level == 1 else (STEP_MENU * level) - STEP_MENU
 
     if level == 1:
         start_index = 0
 
-    stop_index = STEP_MENU if start_index == 0 else start_index + STEP_MENU
-    stop_index = end_list if stop_index > end_list else start_index + STEP_MENU
+    stop_index: int = STEP_MENU if start_index == 0 else start_index + STEP_MENU
+    stop_index: int = end_list if stop_index > end_list else start_index + STEP_MENU
 
     return start_index, stop_index
 
 
-async def define_max_level(menu_list: list = None):
-    """Определение начального и конечного индекса для среза на основе level
-    """
-    if not menu_list:
-        return 1, 1
+# async def check_text_bytes_len(some_text: str) -> str:
+#     """Проверка длинны записи в байтах для формирования надписей кнопок
+#     текст длиннее 64 байт обрезается, добавляются точки
+#
+#     :param some_text: str текст для проверки длины
+#     :return: str - проверенная строка
+#     """
+#
+#     if len(some_text.encode('utf-8')) > 62:
+#         logger.debug(f" {some_text} : {len(some_text.encode('utf-8'))}")
+#
+#         while int(len(some_text.encode('utf-8'))) > 60:
+#             some_text = some_text[:-1]
+#             logger.debug(f" {some_text} : {len(some_text.encode('utf-8'))}")
+#
+#         some_text = some_text[:-2] + '...'
+#         logger.debug(f" {some_text} : {len(some_text.encode('utf-8'))}")
+#
+#     return some_text
+#
+#
+# async def define_max_level(menu_list: list = None):
+#     """Определение начального и конечного индекса для среза на основе level
+#
+#     :param menu_list: list - list
+#     :return: (int, int) - индекс начало и конц среза
+#     """
+#     if not menu_list:
+#         return 1, 1
+#
+#     min_level = 1
+#     max_index = len(menu_list) // STEP_MENU
+#     if len(menu_list) - (STEP_MENU * max_index) != 0:
+#         max_index += 1
+#
+#     return min_level, max_index
 
-    min_level = 1
-    max_index = len(menu_list) // STEP_MENU
-    if len(menu_list) - (STEP_MENU * max_index) != 0:
-        max_index += 1
 
-    return min_level, max_index
-
-
-async def add_action_button(reply_markup: InlineKeyboardMarkup, some_list: list,
-                            param_dict: dict) -> InlineKeyboardMarkup:
+async def add_action_button(reply_markup: InlineKeyboardMarkup, some_list: list, param_dict: dict
+                            ) -> InlineKeyboardMarkup:
     """Добавление кнопок навигации в зависимости от начального (start_index),
     конечного индекса (stop_index) и конца списка list (end_list)
 
@@ -347,9 +364,9 @@ async def add_previous_paragraph_button(reply_markup: InlineKeyboardMarkup = Non
     return reply_markup
 
 
-async def add_use_search_button(reply_markup, previous_level: str = '') -> InlineKeyboardMarkup:
-    """Добавление кнопки - предыдущее действий"""
-
+async def add_use_search_button(reply_markup: InlineKeyboardMarkup, previous_level: str = '') -> InlineKeyboardMarkup:
+    """Добавление кнопки - предыдущее действий
+    """
     search_button = InlineKeyboardButton(
         text="поиск",
         callback_data=move_action.new(action="search", pre_val=previous_level)
@@ -378,28 +395,31 @@ async def _build_markup(buttons: list, num_col: int = None, param_dict=None) -> 
     num_col: int = num_col if num_col else await get_param('num_col', param_dict=param_dict)
 
     menu: list = await _build_menu(buttons=buttons, n_cols=num_col)
-    reply_markup: InlineKeyboardMarkup = InlineKeyboardMarkup(resize_keyboard=True, inline_keyboard=menu)
+    reply_markup = InlineKeyboardMarkup(resize_keyboard=True, inline_keyboard=menu)
 
     return reply_markup
 
 
 @MyBot.dp.callback_query_handler(move_action.filter(action=["move_down", "move_up"]), state='*')
 async def build_inlinekeyboard_answer(call: types.CallbackQuery, callback_data: dict, state: FSMContext = None,
-                                      user_id: str | int = None):
+                                      user_id: str | int = None) -> bool:
     """Обработка ответа клавиш переключения уровня меню в inlinekeyboard в сообщении
 
     :param user_id:
     :param state:
     :param call:
     :param callback_data:
-    :return:
+    :return: bool
     """
-
     hse_user_id: int = user_id if user_id else call.message.chat.id
 
     v_data: dict = await state.get_data()
 
     menu_level: int = v_data.get('menu_level')
+    if menu_level is None:
+        logger.warning(f'{await fanc_name()} WARNING {menu_level = }')
+        return False
+
     menu_list: list = v_data.get('menu_list', [])
     menu_text_list: list = v_data.get('menu_text_list', menu_list)
     use_search: bool = v_data.get('use_search', False)
@@ -453,7 +473,7 @@ async def build_inlinekeyboard_search_answer(call: types.CallbackQuery, callback
     :return: result bool -  результат изменения сообщения True or False
     """
     item_txt: str = 'введите текстовый зарос'
-    pprint(f'{callback_data = }', width=200)
+    pprint(f'{await fanc_name()} {callback_data = }', width=200)
 
     chat_id = call.message.chat.id
     message_id = call.message.message_id
@@ -469,7 +489,6 @@ async def build_inlinekeyboard_search_answer(call: types.CallbackQuery, callback
         reply_text=item_txt,
         kvargs={'fanc_name': await fanc_name()}
     )
-
     return result
 
 
@@ -488,6 +507,10 @@ async def search_data_all_states_answer(message: types.Message = None, text: str
     v_data: dict = await state.get_data()
 
     menu_level: int = v_data.get('menu_level')
+    if menu_level is None:
+        logger.warning(f'{await fanc_name()} WARNING {menu_level = }')
+        return False
+
     menu_list: list = v_data.get('menu_list', [])
     menu_text_list: list = v_data.get('menu_text_list', menu_list[0])
     use_search = v_data.get('use_search')
@@ -495,7 +518,6 @@ async def search_data_all_states_answer(message: types.Message = None, text: str
     call_fanc_name: str = v_data.get('call_fanc_name', '')
 
     prefix: str = ''
-
     if call_fanc_name == 'enable_features':
         prefix = 'features_'
     if call_fanc_name == 'hse_add_roles':
@@ -510,12 +532,11 @@ async def search_data_all_states_answer(message: types.Message = None, text: str
     menu_list, menu_text_list = await processor_search_if_str(
         dataframe, text_too_search=text_too_search
     )
-
-    reply_markup = await build_inlinekeyboard(
+    reply_markup: InlineKeyboardMarkup = await build_inlinekeyboard(
         some_list=menu_list, num_col=count_col, level=menu_level, called_prefix=prefix, use_search=use_search,
         state=state
     )
-    reply_text = await build_text_for_inlinekeyboard(
+    reply_text: str = await build_text_for_inlinekeyboard(
         some_list=menu_text_list, level=menu_level
     )
 
@@ -530,11 +551,12 @@ async def search_data_all_states_answer(message: types.Message = None, text: str
 
 
 async def build_text_for_inlinekeyboard(*, some_list: list, level: int = 1) -> str:
-    """
+    """Создание текста text_list из list с данными some_list в зависимости  от level
+    по условию len(some_list) <=> STEP_MENU
 
-    :param some_list:
-    :param level:
-    :return:
+    :param some_list: list - лист с данными
+    :param level: int -  уровень меню (влияет на отображаемую часть текста)(some_list[start_index:stop_index])
+    :return: str: text_list
     """
     text_list: list = []
 
@@ -558,9 +580,11 @@ async def build_text_for_inlinekeyboard(*, some_list: list, level: int = 1) -> s
 
 
 async def create_dataframe(menu_list: list, menu_text_list: list) -> DataFrame:
-    """
+    """Создание create_dataframe
 
-    :return:
+    :param menu_list: list - лист с данными
+    :param menu_text_list: list - лист с данными
+    :return: DataFrame Or None
     """
     df = None
     data_dict: dict = {'index': menu_list, 'text': menu_text_list}
@@ -574,7 +598,7 @@ async def create_dataframe(menu_list: list, menu_text_list: list) -> DataFrame:
 
 
 async def processor_search_if_str(table_dataframe: DataFrame, text_too_search: str) -> (list, list):
-    """
+    """Поиск текста text_too_search в table_dataframe по неполному соответствию
 
     :param table_dataframe:
     :param text_too_search:
@@ -589,11 +613,10 @@ async def processor_search_if_str(table_dataframe: DataFrame, text_too_search: s
         if num_col == 7: break
 
         mask = table_dataframe[col_item].str.contains(f"{text_too_search}", case=False, regex=True, na=False)
-
         df_res: DataFrame = table_dataframe.loc[mask]
 
-        menu_list = list(df_res['index'])
-        menu_text_list = list(df_res['text'])
+        menu_list: list = list(df_res['index'])
+        menu_text_list: list = list(df_res['text'])
 
     return menu_list, menu_text_list
 

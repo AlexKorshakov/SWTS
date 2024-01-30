@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import traceback
+
 from aiogram.dispatcher import FSMContext
+
+from loader import logger
 
 
 class BoardConfig:
@@ -24,7 +28,10 @@ class BoardConfig:
         if art_val is None:
             return self.state
 
-        await self.state.update_data({atr_name: art_val})
+        try:
+            await self.state.update_data({atr_name: art_val})
+        except AttributeError as err:
+            logger.error(f'{__file__} {await fanc_name()} Invalid err. {repr(err)}')
 
         return art_val
 
