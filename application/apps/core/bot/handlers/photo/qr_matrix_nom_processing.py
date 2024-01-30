@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import io
+import json
 import os
 import traceback
 from itertools import chain
@@ -12,11 +14,11 @@ from aiogram.types import InlineKeyboardMarkup
 from apps.MyBot import bot_send_document, bot_send_message, MyBot, bot_edit_message
 from apps.core.bot.data.board_config import BoardConfig as board_config
 from apps.core.bot.handlers.photo.qr_support_paths import qr_get_file_path
-from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard, \
-    build_text_for_inlinekeyboard, move_action
+from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import (build_inlinekeyboard,
+                                                                        build_text_for_inlinekeyboard,
+                                                                        move_action)
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.reports.report_data import QRData
-from apps.core.utils.json_worker.writer_json_file import write_json_file
 from config.config import Udocan_media_path
 from loader import logger
 
@@ -465,6 +467,38 @@ async def get_character_text(param_list: list | str) -> list | str:
         text_list: str = f"{param_list[0].split('_')[0]} : {param_list[1]}"
 
         return text_list
+
+
+async def write_json_file(*, data: dict | str = None, name: str = None) -> bool:
+    """Запись данных в json
+
+    :param name: полный путь к файлу
+    :param data: dict  с данными для записи
+    """
+
+    result: bool = await write_json(name=name, data=data)
+    return result
+
+
+async def write_json(name: str, data) -> bool:
+    """Запись данных в json
+
+    :param name: полный путь для записи / сохранения файла включая расширение,
+    :param data: данные для записи / сохранения
+    :return: True or False
+    """
+    try:
+        with io.open(name, 'w', encoding='utf8') as outfile:
+            str_ = json.dumps(data,
+                              indent=4,
+                              sort_keys=True,
+                              separators=(',', ': '),
+                              ensure_ascii=False)
+            outfile.write(str_)
+            return True
+    except TypeError as err:
+        logger.error(f"TypeError: {repr(err)}")
+        return False
 
 
 async def fanc_name() -> str:

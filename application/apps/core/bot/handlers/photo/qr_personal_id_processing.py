@@ -33,6 +33,31 @@ class DataBaseSubconEmployeeID:
         self.connection = sqlite3.connect(self.db_file)
         self.cursor = self.connection.cursor()
 
+        self.name: str = self.db_file.stem
+
+    async def create_backup(self) -> str | None:
+        """
+
+        :return:
+        """
+        backup_file_path: str = f"C:\\backup\\{datetime.now().strftime('%d.%m.%Y')}\\"
+        if not os.path.isdir(backup_file_path):
+            os.makedirs(backup_file_path)
+
+        query: str = f"vacuum into '{backup_file_path}backup_{datetime.now().strftime('%d.%m.%Y, %H.%M.%S')}_{self.name}.db'"
+
+        try:
+            with self.connection:
+                result = self.cursor.execute(query)
+                return self.name
+
+        except (ValueError, sqlite3.OperationalError) as err:
+            logger.error(f'Invalid query. {repr(err)}')
+            return None
+
+        finally:
+            self.cursor.close()
+
     async def get_table_headers(self, table_name: str = None) -> list[str]:
         """Получение всех заголовков таблицы core_violations
 

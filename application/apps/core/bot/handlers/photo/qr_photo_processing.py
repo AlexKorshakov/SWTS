@@ -68,11 +68,11 @@ async def qr_code_processing(message: types.Message, state: FSMContext, context:
     if qr_dat:
         await qr_personal_id_processing(hse_user_id, data=data, message=message)
         return True
-
-    qr_dat = [item for item in list(chain(*data)) if 'personal_id_code_' in item]
-    if qr_dat:
-        await qr_personal_id_processing(hse_user_id, data=data, message=message)
-        return True
+    #
+    # qr_dat = [item for item in list(chain(*data)) if 'personal_id_code_' in item]
+    # if qr_dat:
+    #     await qr_personal_id_processing(hse_user_id, data=data, message=message)
+    #     return True
 
     try:
         os.remove(destination_file_path)
