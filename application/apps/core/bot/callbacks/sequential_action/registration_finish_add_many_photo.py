@@ -163,7 +163,7 @@ async def get_photo_full_filename(user_id: str = None, name=None, date=None):
     if not date:
         date = await date_now()
 
-    photo_full_name = Path(Udocan_media_path, "HSE", str(user_id), 'data_file', date, 'photo')
+    photo_full_name: Path = Path(Udocan_media_path, "HSE", str(user_id), 'data_file', date, 'photo')
 
     try:
         os.makedirs(photo_full_name)

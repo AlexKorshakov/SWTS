@@ -143,16 +143,11 @@ async def add_correct_inline_keyboard_with_action(user_violations: DataFrame, st
     unique_acts_numbers: list = user_violations.act_number.unique().tolist()
     unique_acts_numbers: list = [f'act_number_{item}' for item in unique_acts_numbers if item]
 
-    # menu_level = board_config.menu_level = 1
-    # menu_list = board_config.menu_list = unique_acts_numbers
-    # count_col = board_config.count_col = 2
-
     menu_level = await board_config(state, "menu_level", 1).set_data()
     menu_list = await board_config(state, "menu_list", unique_acts_numbers).set_data()
     count_col = await board_config(state, "count_col", 2).set_data()
 
     reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=count_col, level=menu_level)
-
     return reply_markup
 
 

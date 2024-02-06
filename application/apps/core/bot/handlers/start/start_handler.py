@@ -7,18 +7,14 @@ logger.debug(f"{__name__} start import")
 
 from aiogram import types
 from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters import Command, Text
-from aiogram.types import ReplyKeyboardMarkup, ReplyKeyboardRemove
+from aiogram.dispatcher.filters import Command
 
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
-from apps.core.bot.data.board_config import BoardConfig as board_config
-from apps.core.bot.callbacks.sequential_action.category import get_data_list
 from apps.core.bot.filters.custom_filters import is_private
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard
 from apps.core.bot.messages.messages_test import msg
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.reports.report_data import user_data
-from apps.core.bot.states import RegisterState
 from apps.core.database.db_utils import db_update_hse_user_language
 from apps.core.settyngs import get_sett
 from apps.core.utils.secondary_functions.get_filepath import get_user_registration_file, create_file_path
@@ -110,66 +106,6 @@ async def get_language_list(message: types.Message, user_id: int | str = None):
     lang_list: list = await msg(hse_user_id).get_lang_in_main()
     return lang_list
 
-
-@MyBot.dp.message_handler(is_private, Text(equals=Messages.cancel), state=RegisterState.all_states)
-async def cancel(message: types.Message, state: FSMContext):
-    """Отмена регистрации
-    :param message:
-    :param state:
-    :return:
-    """
-    await state.finish()
-    return await message.reply(Messages.Registration.canceled, reply_markup=ReplyKeyboardRemove())
-
-
-@MyBot.dp.message_handler(is_private, state=RegisterState.name)
-async def enter_name(message: types.Message, state: FSMContext):
-    """Обработка ввода имени пользователя
-    :param message:
-    :param state:
-    :return:
-    """
-    user_data['name'] = message.text
-
-    await RegisterState.next()
-    markup = ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.add(Messages.Registration.cancel)
-    return await message.reply(Messages.Ask.function, reply_markup=markup)
-
-
-@MyBot.dp.message_handler(is_private, state=RegisterState.function)
-async def enter_function(message: types.Message, state: FSMContext):
-    """Обработка ввода должности пользователя
-    :param message:
-    :param state:
-    :return:
-    """
-    user_data['function'] = message.text
-
-    await RegisterState.next()
-    markup = ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.add(Messages.Registration.cancel)
-    return await message.reply(Messages.Ask.phone_number, reply_markup=markup)
-
-
-@MyBot.dp.message_handler(is_private, state=RegisterState.phone_number)
-async def enter_phone_number(message: types.Message, state: FSMContext):
-    """Обработка ввода номера телефона пользователя
-    :param message:
-    :param state:
-    :return:
-    """
-    if not message.text.startswith("+") or not message.text.strip("+").isnumeric():
-        return await message.reply(Messages.Error.invalid_input)
-
-    user_data["phone_number"] = int(message.text.strip("+"))
-
-    menu_level = await board_config(state, "menu_level", 2).set_data()
-    menu_list = await board_config(state, "menu_list", get_data_list("WORK_SHIFT")).set_data()
-
-    reply_markup = await build_inlinekeyboard(some_list=menu_list, num_col=1, level=menu_level)
-    await RegisterState.next()
-    return await message.reply(Messages.Ask.work_shift, reply_markup=reply_markup)
 
 async def fanc_name() -> str:
     """Возвращает имя вызываемой функции"""

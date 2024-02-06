@@ -5,6 +5,10 @@ class Messages:
     """Класс со всеми текстовыми сообщениями
     """
 
+    default_answer_text: str = 'У вас нет прав доступа \n По всем вопросам обращайтесь к администратору\n' \
+                               'https://t.me/AlexKor_MSK \n\n Для ускорения процесса отправьте администратору ' \
+                               'свой табельный номер'
+
     help_message: str = "Справка по командам бота /help \n\n" \
                         "Видео инструкция https://www.youtube.com/channel/UCbq0Z7aDzYc3S4dAPTFDtkA \n\n" \
                         "Чтобы написать разработчику нажмите /developer"
@@ -116,6 +120,7 @@ class Messages:
         generate_doc: str = "Выберите вид документа для формирования"
 
         correct_entries: str = "Выберите запись для изменения"
+        action: str = 'Выберите действие'
 
     class Error:
         features_disabled: str = 'Функции отключены\nПо всем вопросам обращайтесь к разработчику\n https://t.me/AlexKor_MSK'
@@ -155,6 +160,23 @@ class Messages:
                                        "Если ошибка повторится обратитесь к разработчику " \
                                        "Чтобы написать разработчику нажмите /developer"
         act_prescription_path_not_found: str = 'Фалл отчета не найден'
+        entry_in_bd_fail: str = 'Не удалось загрузить данные в базу данных'
+        entry_in_registry_fail: str = 'Не удалось загрузить данные в реестр'
+
+    class AddUser:
+        hse_full_name = 'Введите ФИО сотрудника'
+        hse_full_name_dative = 'Введите ФИО сотрудника в дательном падеже'
+        hse_short_name = 'Введите короткое ФИО сотрудника'
+        hse_full_name_telegram = 'Введите ФИО в телеграмм'
+        hse_function = 'Введите должность сотрудника'
+        hse_function_dative = 'Введите должность сотрудника в дательном падеже'
+        hse_department = 'Введите отдел сотрудника'
+        hse_department_dative = 'Введите отдел сотрудника в дательном падеже'
+        hse_is_work = 'Сотрудник находится на работе? 1 / 0'
+        hse_add_finish = 'Данные внесены с настройками ролей по умолчанию. ' \
+                         'Выберите дальнейшие действия или завершите загрузку.'
+
+        hse_add_finish_success = 'Данные успешно внесены!'
 
 
 class LogMessage:

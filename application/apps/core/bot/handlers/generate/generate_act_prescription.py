@@ -44,7 +44,7 @@ async def create_act_prescription(chat_id: int, act_number: int, dataframe: Data
     if not worksheet:
         return False
 
-    await format_act_prescription_sheet(worksheet)
+    await format_act_prescription_sheet(worksheet, act_num=act_number)
 
     await set_act_body_values(worksheet)
     workbook.save(full_act_path)
@@ -84,7 +84,7 @@ async def create_act_prescription(chat_id: int, act_number: int, dataframe: Data
         logger.error(f'create_act_prescription: set_act_violation_values error: {repr(err)}')
         return False
 
-    await format_act_footer_prescription_sheet(worksheet, row_number)
+    await format_act_footer_prescription_sheet(worksheet, row_number, act_num=act_number)
     await set_act_footer_values(worksheet, row_number)
     await set_act_footer_footer_values(worksheet, row_number)
     workbook.save(full_act_path)

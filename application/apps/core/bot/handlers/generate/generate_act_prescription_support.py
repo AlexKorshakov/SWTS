@@ -25,27 +25,31 @@ from config.config import Udocan_media_path
 from loader import logger
 
 
-async def create_xlsx(chat_id: int | str, full_act_path: str):
-    """
+async def create_xlsx(chat_id: int | str, full_act_path: str) -> (Workbook, Worksheet):
+    """Создание файла xlsx с нуля
+
+    :param: chat_id
+    :param: full_act_path
+
     """
 
     is_created: bool = await create_new_xlsx(report_file=full_act_path)
     if is_created is None:
         logger.warning(Messages.Error.workbook_not_create)
         await bot_send_message(chat_id=chat_id, text=Messages.Error.workbook_not_create)
-        return
+        return None, None
 
-    workbook = await get_workbook(fill_report_path=full_act_path)
+    workbook: Workbook = await get_workbook(fill_report_path=full_act_path)
     if workbook is None:
         logger.warning(Messages.Error.workbook_not_found)
         await bot_send_message(chat_id=chat_id, text=Messages.Error.workbook_not_found)
-        return
+        return None, None
 
-    worksheet = await get_worksheet(workbook, index=0)
+    worksheet: Worksheet = await get_worksheet(workbook, index=0)
     if worksheet is None:
         logger.warning(Messages.Error.worksheet_not_found)
         await bot_send_message(chat_id=chat_id, text=Messages.Error.worksheet_not_found)
-        return
+        return None, None
 
     return workbook, worksheet
 
@@ -63,7 +67,7 @@ async def create_new_xlsx(report_file: str) -> bool:
         return False
 
 
-async def get_worksheet(wb: Workbook, index: int = 0) -> Worksheet:
+async def get_worksheet(wb: Workbook, index: int = 0) -> Worksheet | None:
     """Получение Страницы из документа по индексу
     :param wb: Workbook - книга xls
     :param index: int - индекс листа
@@ -78,7 +82,7 @@ async def get_worksheet(wb: Workbook, index: int = 0) -> Worksheet:
         return None
 
 
-async def get_workbook(fill_report_path: str) -> Workbook:
+async def get_workbook(fill_report_path: str) -> Workbook | None:
     """Открыть и загрузить Workbook
     :param fill_report_path: str полный путь к файлу
     :return: Workbook or None
@@ -191,7 +195,7 @@ async def anchor_dop_photo(chat_id, dataframe: DataFrame, start_row_number: int,
 
 
 async def get_img_params(user_id: str, dataframe: DataFrame, start_row_num: int) -> list:
-    """
+    """Получение параметров изображений
 
     :return:
     """
@@ -226,8 +230,6 @@ async def get_img_params(user_id: str, dataframe: DataFrame, start_row_num: int)
                 img_params["row_header"] = img_params["row_header"] + 2
                 img_params["row_description"] = img_params["row_description"] + 2
                 img_params["row"] = img_params["row"] + 2
-                # await format_act_photo_header(worksheet, img_params["row_header"])
-                # await format_act_photo_description(worksheet, img_params["row_description"])
                 photo_row += 2
         else:
             img_params["column"] = 'H'
@@ -237,7 +239,7 @@ async def get_img_params(user_id: str, dataframe: DataFrame, start_row_num: int)
 
         img_params_list.append(img_params)
 
-    return img_params
+    return img_params_list
 
 
 async def get_group_photo_list(user_id: str, dataframe: DataFrame) -> list:
@@ -245,8 +247,6 @@ async def get_group_photo_list(user_id: str, dataframe: DataFrame) -> list:
 
     :return:
     """
-    params = []
-
     clean_headers: list = await db_get_clean_headers(table_name='core_violations')
 
     group_list: list = []
@@ -281,7 +281,7 @@ async def insert_service_image(worksheet: Worksheet, *, chat_id: int = None, ser
     :param service_image_name: str - имя файла для обработки
     :param chat_id: int - id пользователя (папки) где находится logo
     :param img_params: dict параметры вставки
-    :param worksheet:
+    :param worksheet: Worksheet - объект страницы файла
     :return: bool
     """
 
@@ -311,19 +311,19 @@ async def insert_service_image(worksheet: Worksheet, *, chat_id: int = None, ser
         return False
 
     img: Image = Image(photo_full_name)
-
     img = await image_preparation(img, img_params)
 
     result = await insert_images(worksheet, img=img)
-    if result:
-        return True
-    return False
+    return bool(result)
 
 
-async def image_preparation(img: Image, img_params: dict):
+async def image_preparation(img: Image, img_params: dict) -> Image:
     """Подготовка изображения перед вставкой на страницу
-    """
 
+    :param: img - объект изображения
+    :param: img_params - параметры изображения
+    :return: Image - измененный объект изображения
+    """
     height = img_params.get("height")
     scale = img_params.get("scale")
     width = img_params.get("width")
@@ -352,10 +352,11 @@ async def image_preparation(img: Image, img_params: dict):
 
 
 async def insert_images(worksheet: Worksheet, img: Image) -> bool:
-    """Вставка изображения на лист worksheet*,
+    """Вставка изображения на лист worksheet,
+
     :param img: файл изображения
     :param worksheet: Worksheet - страница документа для вставки изображения
-    :return:
+    :return: bool
     """
 
     try:
@@ -367,10 +368,10 @@ async def insert_images(worksheet: Worksheet, img: Image) -> bool:
         return False
 
 
-async def set_act_body_values(worksheet):
-    """
+async def set_act_body_values(worksheet: Worksheet):
+    """Вставка информации на лист отчета
 
-    :param worksheet:
+    :param worksheet: Worksheet - объект страницы файла
     :return:
     """
     values = [
@@ -429,7 +430,7 @@ async def set_act_page_after_footer_setup(worksheet: Worksheet, print_area: str,
 
     :param break_line: int
     :param print_area: str
-    :param worksheet: Worksheet
+    :param worksheet: Worksheet - объект страницы файла
     :return: bool
     """
 
@@ -452,11 +453,10 @@ async def set_act_violation_values(worksheet: Worksheet, dataframe: DataFrame, w
 
     :param full_act_path:
     :param workbook:
-    :param worksheet: страница для заполнения
+    :param worksheet: Worksheet - объект страницы файла для заполнения
     :param dataframe: dataframe с данными нарушений
-    :return: None
+    :return: int
     """
-
     # берём уникальные значения main_location_id
     unique_main_locations_ids: list = dataframe.main_location_id.unique().tolist()
     row_number: int = 0
@@ -497,15 +497,15 @@ async def set_act_worksheet_cell_value(worksheet: Worksheet, violation_values: D
                                        item_row_value: int) -> int:
     """Заполнение тела акта каждым пунктом
 
-        :param item_row_value:
-        :param full_act_path:
-        :param workbook:
-        :param new_header_row: bool  Требуется ли новый заголовок?
-        :param row_number:
-        :param violation_values: DataFrame
-        :param worksheet: страница для заполнения
-        :return
-        """
+    :param item_row_value:
+    :param full_act_path:
+    :param workbook:
+    :param new_header_row: bool  Требуется ли новый заголовок?
+    :param row_number:
+    :param violation_values: DataFrame
+    :param worksheet: Worksheet - объект страницы файла для заполнения
+    :return
+    """
 
     if row_number == 0:
         logger.debug(violation_values)
@@ -535,16 +535,15 @@ async def set_act_worksheet_cell_value(worksheet: Worksheet, violation_values: D
 
 async def set_act_violation(worksheet: Worksheet, violation_values: DataFrame, row_number: int,
                             item_row_value: int) -> int:
-    """
+    """Ставка данных нарушения в строку
 
-    :param item_row_value:
-    :param row_number:
-    :param worksheet:
-    :param violation_values:
-    :return:
+    :param item_row_value: - номер строки
+    :param row_number: - номер строки
+    :param worksheet: Worksheet - объект страницы файла
+    :param violation_values: DataFrame - с данными нарушения
+    :return: int - номер заполненной строки
     """
-
-    row_value = 28 + row_number
+    row_value: int = 28 + row_number
 
     worksheet.cell(row=row_value, column=2, value=item_row_value)
     normative_document: dict = await db_get_data_dict_from_table_with_id(
@@ -626,16 +625,14 @@ async def set_act_violation(worksheet: Worksheet, violation_values: DataFrame, r
     await set_automatic_row_dimensions(
         worksheet, row_number=row_value, row_value=violation_values
     )
-
     return row_value
 
 
-async def set_single_violation(worksheet: Worksheet, violation_values):
+async def set_single_violation(worksheet: Worksheet, violation_values: DataFrame):
     """Заполнение акта из единственного пункта
 
     :param
     """
-
     main_location: dict = await db_get_data_dict_from_table_with_id(
         table_name='core_mainlocation',
         post_id=violation_values.main_location_id
@@ -688,11 +685,10 @@ async def set_automatic_row_dimensions(worksheet: Worksheet, row_number: int, ro
     """Автоматическое установление высоты строки по тексту
 
     :param row_value:
-    :param worksheet:
+    :param worksheet: Worksheet - объект страницы файла
     :param row_number:
     :return:
     """
-
     if not row_value:
         return False
 
@@ -726,7 +722,6 @@ async def set_automatic_row_dimensions(worksheet: Worksheet, row_number: int, ro
         max_height = round(max(item_list), 2) + 15
 
         max_height = max_height if max_height > 60 else 60
-
 
         dim = worksheet.row_dimensions[row_number]
         dim.height = max_height
@@ -777,10 +772,9 @@ async def set_value_title(worksheet: Worksheet, violation_values: DataFrame, row
 
     :param row_number:
     :param violation_values:
-    :param worksheet:
+    :param worksheet: Worksheet - объект страницы файла
     :return:
     """
-
     row_value = 28 + row_number
     main_location: dict = await db_get_data_dict_from_table_with_id(
         table_name='core_mainlocation',
@@ -869,12 +863,12 @@ async def sets_report_font(worksheet, cell_range, params: dict) -> bool:
     return True
 
 
-async def set_row_dimensions(worksheet: Worksheet, row_number: int or str, height: int):
+async def set_row_dimensions(worksheet: Worksheet, row_number: int | str, height: int):
     """Установление высоты строки
 
-    :param worksheet:
-    :param row_number:
-    :param height:
+    :param worksheet: Worksheet - объект страницы файла
+    :param row_number: int | str - номер страницы
+    :param height: int - высота
     :return:
     """
     try:
@@ -916,7 +910,7 @@ async def set_range_border(worksheet, cell_range, border=None):
 async def set_merge_cells(worksheet: Worksheet, merged_cell: str) -> bool:
     """Форматирование: обьединение ячеек
 
-    :param worksheet:
+    :param worksheet: Worksheet - объект страницы файла
     :param merged_cell:
     :return:
     """
@@ -932,10 +926,9 @@ async def set_act_photographic_materials(worksheet: Worksheet, img_params: dict)
     """Вставка фото нарушения на страницу акта
 
     :param img_params:
-    :param worksheet:
+    :param worksheet: Worksheet - объект страницы файла
     :return:
     """
-
     if not img_params:
         logger.error(f'set_act_photographic_materials not found dict img_params {img_params = }')
         return False
@@ -973,7 +966,7 @@ async def format_act_photo_description(worksheet: Worksheet, row_number: int):
     """Форматирование строк с фото материалами
 
     :param row_number:
-    :param worksheet
+    :param worksheet: Worksheet - объект страницы файла
     :return:
     """
     merged_cells = [
@@ -1019,7 +1012,7 @@ async def format_act_photo_header(worksheet: Worksheet, row_number: int) -> bool
     """Форматирование строк с фото материалами
 
     :param row_number:
-    :param worksheet
+    :param worksheet: Worksheet - объект страницы файла
     :return: bool
     """
     merged_cells = [
@@ -1060,7 +1053,7 @@ async def set_act_photographic_materials_values(worksheet: Worksheet, row_value:
     """
 
     :param row_value:
-    :param worksheet:
+    :param worksheet: Worksheet - объект страницы файла
     """
     values = [
         {'coordinate': 'K59', 'row': f'{59 + row_value}', 'column': '12', 'value': 'Приложение 1', },
@@ -1081,7 +1074,7 @@ async def set_act_footer_values(worksheet, row_number):
     """
 
      :param row_number:
-     :param worksheet:
+     :param worksheet: Worksheet - объект страницы файла
      :return:
      """
     row_value = 28 + row_number
@@ -1167,7 +1160,7 @@ async def set_act_header_values(worksheet, headlines_data: dict = None) -> bool:
     """Заполнение заголовка отчета
 
     :param headlines_data:
-    :param worksheet:
+    :param worksheet: Worksheet - объект страницы файла
     :return:
     """
     values: list = [
@@ -1210,10 +1203,10 @@ async def set_act_header_values(worksheet, headlines_data: dict = None) -> bool:
     return True
 
 
-async def set_act_footer_footer_values(worksheet, row_number):
+async def set_act_footer_footer_values(worksheet: Worksheet, row_number):
     """Установка значений футера акта
 
-    :param worksheet:
+    :param worksheet: Worksheet - объект страницы файла
     :param row_number:
     :return:
     """
@@ -1254,7 +1247,8 @@ async def set_act_footer_footer_values(worksheet, row_number):
             continue
 
 
-async def get_act_headlines_data_values(chat_id, dataframe=None, act_date=None, act_number=None) -> dict:
+async def get_act_headlines_data_values(chat_id, dataframe: DataFrame = None, act_date: str = None,
+                                        act_number: int = None) -> dict:
     """ Формирование данных для формирования шапки акта - предписания
 
     :return: dict headlines_data
@@ -1375,14 +1369,15 @@ async def get_act_headlines_data_values(chat_id, dataframe=None, act_date=None, 
     return headlines_data
 
 
-async def format_act_footer_prescription_sheet(worksheet: Worksheet, row_number: int) -> bool:
+async def format_act_footer_prescription_sheet(worksheet: Worksheet, row_number: int, act_num: str = None) -> bool:
     """Пошаговое форматирование страницы
 
+    :param act_num:
     :param row_number:
-    :param worksheet:
+    :param worksheet: Worksheet - объект страницы файла
     :return: bool
     """
-    await set_act_page_setup(worksheet)
+    await set_act_page_setup(worksheet, act_num)
 
     ACT_FOOTER_MERGED_CELLS = [
         f'B{30 + row_number}:L{30 + row_number}', f'B{31 + row_number}:F{31 + row_number}',
@@ -1468,10 +1463,10 @@ async def format_act_footer_prescription_sheet(worksheet: Worksheet, row_number:
     return True
 
 
-async def format_act_prescription_sheet(worksheet: Worksheet):
+async def format_act_prescription_sheet(worksheet: Worksheet, act_num: int):
     """Пошаговое форматирование страницы
     """
-    await set_act_page_setup(worksheet)
+    await set_act_page_setup(worksheet, act_num)
 
     for item in ACT_RANGE_COLUMNS:
         await set_column_dimensions(worksheet, column=item[0], width=item[1])
@@ -1495,41 +1490,15 @@ async def format_act_prescription_sheet(worksheet: Worksheet):
         await sets_report_font(worksheet, cell_range[0], params=cell_range[1])
 
 
-async def format_act_prescription_sheet(worksheet: Worksheet):
-    """Пошаговое форматирование страницы
-    """
-    await set_act_page_setup(worksheet)
-
-    for item in ACT_RANGE_COLUMNS:
-        await set_column_dimensions(worksheet, column=item[0], width=item[1])
-
-    for merged_cell in ACT_MERGED_CELLS:
-        await set_merge_cells(worksheet, merged_cell=merged_cell)
-
-    for item in ACT_CELL_RANGES:
-        await set_range_border(worksheet, cell_range=item[0], border=item[1])
-
-    for item in ACT_ROW_DIMENSIONS:
-        await set_row_dimensions(worksheet, row_number=item[0], height=item[1])
-
-    for item_range in ACT_CELL_RANGES_BASIC_ALIGNMENT:
-        await set_report_font(worksheet, cell_range=item_range[0], font_size=item_range[2], font_name=item_range[1])
-
-    for item_range in ACT_CELL_RANGES_BASIC_ALIGNMENT:
-        await set_act_alignment(worksheet, item_range[0], horizontal=item_range[3], vertical=item_range[4])
-
-    for cell_range in ACT_CELL_RANGES_SET_REPORT_FONT:
-        await sets_report_font(worksheet, cell_range[0], params=cell_range[1])
-
-
-async def format_act_footer_prescription_sheet(worksheet: Worksheet, row_number: int) -> bool:
+async def format_act_footer_prescription_sheet(worksheet: Worksheet, row_number: int, act_number: int) -> bool:
     """Пошаговое форматирование страницы
 
+    :param act_number:
     :param row_number:
-    :param worksheet:
+    :param worksheet: Worksheet - объект страницы файла
     :return: bool
     """
-    await set_act_page_setup(worksheet)
+    await set_act_page_setup(worksheet, act_num=act_number)
 
     ACT_FOOTER_MERGED_CELLS = [
         f'B{30 + row_number}:L{30 + row_number}', f'B{31 + row_number}:F{31 + row_number}',
@@ -1619,7 +1588,7 @@ async def format_act_photo_header(worksheet: Worksheet, row_number: int) -> bool
     """Форматирование строк с фото материалами
 
     :param row_number:
-    :param worksheet
+    :param worksheet: Worksheet - объект страницы файла
     :return: bool
     """
     merged_cells = [
@@ -1660,7 +1629,7 @@ async def format_act_photo_description(worksheet: Worksheet, row_number: int) ->
     """Форматирование строк с фото материалами
 
     :param row_number:
-    :param worksheet
+    :param worksheet: Worksheet - объект страницы файла
     :return:
     """
     merged_cells = [
@@ -1704,52 +1673,10 @@ async def format_act_photo_description(worksheet: Worksheet, row_number: int) ->
     return True
 
 
-async def set_report_font(worksheet, cell_range, font_size=14, font_name='Arial') -> bool:
-    """Форматирование ячейки: шрифт и размер шрифта
-
-    """
-    cells = [cell for row in worksheet[cell_range] for cell in row]
-
-    for item, cell in enumerate(cells, start=1):
-        try:
-            cell.font = Font(size=font_size, name=font_name)
-
-        except Exception as err:
-            logger.error(f"item {item} cell {cell}")
-            logger.error(f"set_report_font {repr(err)}")
-            continue
-    return True
-
-
-async def sets_report_font(worksheet, cell_range, params: dict) -> bool:
-    """Форматирование ячейки: размер шрифта
-
-    """
-    cells = [cell for row in worksheet[cell_range] for cell in row]
-
-    for item, cell in enumerate(cells, start=1):
-        try:
-            cell.font = Font(
-                color=params.get("color"),
-                italic=params.get("italic"),
-                size=params.get("font_size"),
-                bold=params.get("bold"),
-                name=params.get("name"),
-                underline=params.get("underline"),
-                vertAlign=params.get("vertAlign"),
-            )
-
-        except Exception as err:
-            logger.error(f"item {item} cell {cell}")
-            logger.error(f"sets_report_font {repr(err)}")
-            continue
-    return True
-
-
 async def set_column_dimensions(worksheet, column, width):
     """Форматирование: ширина столбцов
 
-    :param worksheet:
+    :param worksheet: Worksheet - объект страницы файла
     :param column:
     :param width:
     :return:
@@ -1761,88 +1688,11 @@ async def set_column_dimensions(worksheet, column, width):
         logger.error(f"set_column_widths {repr(err)}")
 
 
-async def set_range_border(worksheet, cell_range, border=None):
-    """Форматирование ячейки: все границы ячейки
-
-    border - только нижняя граница
-    """
-
-    thin_border = Border(left=Side(style='thin'),
-                         right=Side(style='thin'),
-                         top=Side(style='thin'),
-                         bottom=Side(style='thin'))
-    if border:
-        thin_border = Border(bottom=Side(style='thin'))
-
-    rows = worksheet[cell_range]
-
-    try:
-        for row in rows:
-            for cell in row:
-                try:
-                    cell.border = thin_border
-
-                except Exception as err:
-                    logger.error(f"set_border {repr(err)}")
-                    continue
-
-    except Exception as err:
-        logger.error(f"set_border {repr(err)}")
-        return False
-
-
-async def set_merge_cells(worksheet: Worksheet, merged_cell: str) -> bool:
-    """Форматирование: обьединение ячеек
-
-    :param worksheet:
-    :param merged_cell:
-    :return:
-    """
-    try:
-        worksheet.merge_cells(merged_cell)
-        return True
-
-    except Exception as err:
-        logger.error(f"set_merge_cells {repr(err)}")
-        return False
-
-
-async def set_row_dimensions(worksheet: Worksheet, row_number: int or str, height: int or str):
-    """Установление высоты строки
-
-    :param worksheet:
-    :param row_number:
-    :param height:
-    :return:
-    """
-    try:
-        worksheet.row_dimensions[int(row_number)].height = float(height)
-
-    except Exception as err:
-        logger.error(f"set_row_dimensions {repr(err)}")
-
-
-async def set_act_alignment(worksheet, cell_range, horizontal=None, vertical=None):
-    """Форматирование ячейки: положение текста в ячейке (лево верх)
-
-    """
-    wrap_alignment = Alignment(wrap_text=True, horizontal=horizontal, vertical=vertical)
-
-    cells = [cell for row in worksheet[cell_range] for cell in row]
-
-    for item, cell in enumerate(cells, start=1):
-        try:
-            cell.alignment = wrap_alignment
-
-        except Exception as err:
-            logger.error(f"iter {item} cell {cell}")
-            logger.error(f"set_mip_alignment {repr(err)}")
-
-
-async def set_act_page_setup(worksheet: Worksheet) -> bool:
+async def set_act_page_setup(worksheet: Worksheet, act_num=None) -> bool:
     """Установка параметров страницы
 
-    :param worksheet:
+    :param act_num:
+    :param worksheet: Worksheet - объект страницы файла
     :return: bool
     """
 
@@ -1874,33 +1724,15 @@ async def set_act_page_setup(worksheet: Worksheet) -> bool:
     worksheet.page_margins = PageMargins(left=left_right, right=left_right, top=top_bottom, bottom=top_bottom)
 
     worksheet.oddFooter.left.text = "Страница &[Page] из &N"
+
+    if act_num:
+        worksheet.oddFooter.left.text = f"Страница &[Page] из &N  акта № {act_num}"
+
     worksheet.oddFooter.left.size = 10
     worksheet.oddFooter.left.font = "Arial,Bold"
     worksheet.oddFooter.left.color = "030303"
     worksheet.differentFirst = False
     worksheet.differentOddEven = True
-
-    return True
-
-
-async def set_act_page_after_footer_setup(worksheet: Worksheet, print_area: str, break_line: int = None) -> bool:
-    """Установка параметров страницы
-
-    :param break_line: int
-    :param print_area: str
-    :param worksheet: Worksheet
-    :return: bool
-    """
-
-    #  https://xlsxons.horizontalCentered = True
-    worksheet.print_area = print_area
-
-    #  масштабный коэффициент для распечатываемой страницы
-    # worksheet.set_print_scale(75)
-
-    if break_line:
-        worksheet.row_breaks.append(Break(id=break_line))
-        # worksheet.col_breaks.append(Break(id=13))
 
     return True
 

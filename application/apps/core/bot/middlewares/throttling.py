@@ -25,6 +25,9 @@ class ThrottlingMiddleware(BaseMiddleware):
 
     # noinspection PyUnusedLocal
     async def on_process_message(self, message: types.Message, data: dict):
+        if hasattr(message, "media_group_id") and message.media_group_id:
+            return
+
         handler = current_handler.get()
         dispatcher = Dispatcher.get_current()
 

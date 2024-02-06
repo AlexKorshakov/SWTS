@@ -1,34 +1,33 @@
 import traceback
-from typing import List
 
-from apps.core.bot.messages.messages import Messages
-from apps.core.bot.messages.messages_test import msg
-from apps.core.settyngs import get_sett
 from loader import logger
-
 logger.debug(f"{__name__} start import")
+
 from aiogram import types
+from aiogram.dispatcher import FSMContext
+
+from apps.core.settyngs import get_sett
 from apps.MyBot import MyBot, bot_send_message
 
 from apps.core.utils.misc import rate_limit
+from apps.core.bot.filters.custom_filters import message_not_media_group
+from apps.core.bot.messages.messages import Messages
+from apps.core.bot.messages.messages_test import msg
 from apps.core.bot.data.board_config import BoardConfig as board_config
 from apps.core.bot.handlers.photo.qr_photo_processing import qr_code_processing
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.bot.callbacks.select_start_category import select_start_category
 from apps.core.bot.reports.report_data_preparation import preparing_violation_data, download_photo
-from aiogram.dispatcher import FSMContext
 
 logger.debug(f"{__name__} finish import")
-
 logger.debug("message_handler 'photo'")
 
 
 @rate_limit(limit=5)
-@MyBot.dp.message_handler(content_types=["photo"], state='*')
+@MyBot.dp.message_handler(message_not_media_group, content_types=["photo"], state='*')
 async def photo_handler(message: types.Message, state: FSMContext, chat_id: str = None):
     """Обработчик сообщений с фото
     """
-
     hse_user_id = chat_id if chat_id else message.chat.id
 
     if not await check_user_access(chat_id=hse_user_id):

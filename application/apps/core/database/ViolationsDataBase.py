@@ -664,7 +664,7 @@ async def get_check_param(local_file: str, calling_function: str, **kvargs) -> b
         result_list.append(kvargs[param])
         print_dict[param] = kvargs[param]
 
-    pprint(f'check_param: {print_dict}')
+    pprint(f'{await fanc_name()} :: {calling_function = } check_param: {print_dict}', width=200)
     return all(result_list)
 
 
