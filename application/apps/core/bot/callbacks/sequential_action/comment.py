@@ -1,4 +1,3 @@
-from apps.core.bot.callbacks.sequential_action.data_answer import notify_user_for_choice
 from loader import logger
 
 logger.debug(f"{__name__} start import")

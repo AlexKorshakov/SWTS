@@ -34,3 +34,4 @@ async def fanc_name() -> str:
 
 asyncio.run(run_custom_import())
 
+loader.logger.debug(f"{__name__} finish import")

@@ -5,18 +5,17 @@ from loader import logger
 logger.debug(f"{__name__} start import")
 
 import asyncio
-from aiogram import types
-from aiogram.dispatcher.filters import ChatTypeFilter
-from aiogram.types import ChatType
-from pandas import DataFrame
 import traceback
+from aiogram import types
+from pandas import DataFrame
+from aiogram.dispatcher.filters import ChatTypeFilter
+
 from apps.MyBot import MyBot
 from apps.core.bot.bot_utils.check_access import (user_access_fail,
                                                   get_id_list,
                                                   user_access_granted)
 from apps.core.database.query_constructor import QueryConstructor
-from apps.core.database.db_utils import (db_get_data_list_no_async,
-                                         db_get_id,
+from apps.core.database.db_utils import (db_get_id,
                                          db_get_data_list,
                                          db_get_clean_headers)
 
@@ -54,64 +53,23 @@ async def admin_add_user_role_update_role(call: types.CallbackQuery):
     return True if 'hse_role_item_' in call.data else False
 
 
+async def message_not_media_group(message: types.Message):
+    return True if not message.media_group_id else False
+
+
 async def is_lna_text_answer(call: types.CallbackQuery):
     return True if '_lna_file_' in call.data else False
 
 
-# async def is_group(message: types.Message):
-#     return ChatTypeFilter([ChatType.GROUP, ChatType.SUPERGROUP])
-
-
 async def is_private(message: types.Message):
-    return ChatTypeFilter(ChatType.PRIVATE)
+    return ChatTypeFilter(types.ChatType.PRIVATE)
 
 
 async def is_channel(message: types.Message):
-    return ChatTypeFilter(ChatType.CHANNEL)
+    return ChatTypeFilter(types.ChatType.CHANNEL)
 
 
-# async def is_sudo(message: types.Message) -> str | int:
-#     return message.from_user.id in ADMIN_ID
-
-
-async def filter_sub_location(message: types.Message):
-    """
-
-    :param message:
-    :return:
-    """
-    call_data = message.data
-    state = MyBot.dp.current_state(user=message.from_user.id)
-
-    v_data: dict = asyncio.run(state.get_data())
-    result = call_data in await get_data_list(category_in_db='core_sublocation',
-                                              category=v_data.get("main_location", None),
-                                              condition='short_title')
-    return result
-
-
-async def filter_normativedocuments(message: types.Message):
-    """
-
-    :param message:
-    :return:
-    """
-    call_data = message.data
-    state = MyBot.dp.current_state(user=message.from_user.id)
-
-    v_data: dict = asyncio.run(state.get_data())
-    result = call_data in await get_data_list(category_in_db='core_normativedocuments',
-                                              category=v_data.get("category", None),
-                                              condition='short_title')
-    return result
-
-
-async def filter_is_super_user(message: types.Message):
-    """
-
-    :param message:
-    :return:
-    """
+async def filter_is_super_user(message: types.Message) -> bool:
     user = message.from_user.id
 
     result = await check_super_user_access(chat_id=user)
@@ -120,14 +78,12 @@ async def filter_is_super_user(message: types.Message):
 
 
 async def check_super_user_access(chat_id: int | str, role_df: DataFrame = None) -> bool:
-    """
-
-    :param role_df:
-    :param chat_id:
-    :return:
+    """Проверка допуска super_user
     """
     super_user_id_list: list = await get_id_list(
-        hse_user_id=chat_id, user_role='hse_role_is_super_user', hse_role_df=role_df
+        hse_user_id=chat_id,
+        user_role='hse_role_is_super_user',
+        hse_role_df=role_df
     )
     if not super_user_id_list:
         logger.error(f'{await fanc_name()} access fail {chat_id = }')
@@ -143,18 +99,141 @@ async def check_super_user_access(chat_id: int | str, role_df: DataFrame = None)
     return True
 
 
-async def get_data_list(category_in_db: str = None, category: str = None, condition: str | dict = None) -> list:
+async def filter_is_hashtag(call: types.CallbackQuery) -> bool:
+    return bool(call.data[0] == '#')
+
+
+async def filter_act_required(call: types.CallbackQuery) -> bool:
+    # lambda call: call.data in get_filter_data_list("ACT_REQUIRED")
+    if 'fabnum' in call.data: return False
+    result = call.data in await get_filter_data_list(category_in_db='core_actrequired',
+                                                     coll_func=await fanc_name()
+                                                     )
+    return result
+
+
+async def filter_category(call: types.CallbackQuery) -> bool:
+    # lambda call: call.data in get_filter_data_list("CATEGORY")
+    if 'fabnum' in call.data: return False
+    result = call.data in await get_filter_data_list(category_in_db='core_category',
+                                                     coll_func=await fanc_name()
+                                                     )
+    return result
+
+
+async def filter_elimination_time(call: types.CallbackQuery) -> bool:
+    # lambda call: call.data in get_filter_data_list("ELIMINATION_TIME")
+    if 'fabnum' in call.data: return False
+    result = call.data in await get_filter_data_list(category_in_db='core_eliminationtime',
+                                                     coll_func=await fanc_name()
+                                                     )
+    return result
+
+
+async def filter_general_contractors(call: types.CallbackQuery) -> bool:
+    # lambda call: call.data in get_filter_data_list("GENERAL_CONTRACTORS")
+    if 'fabnum' in call.data: return False
+    result = call.data in await get_filter_data_list(category_in_db='core_generalcontractor',
+                                                     coll_func=await fanc_name()
+                                                     )
+    return result
+
+
+async def filter_incident_level(call: types.CallbackQuery) -> bool:
+    # lambda call: call.data in get_filter_data_list("INCIDENT_LEVEL")
+    if 'fabnum' in call.data: return False
+    result = call.data in await get_filter_data_list(category_in_db='core_incidentlevel',
+                                                     coll_func=await fanc_name()
+                                                     )
+    return result
+
+
+async def filter_start_location(call: types.CallbackQuery) -> bool:
+    # lambda call: call.data in get_filter_data_list("LOCATIONS")
+    if 'fabnum' in call.data: return False
+    result = call.data in await get_filter_data_list(category_in_db='core_location',
+                                                     coll_func=await fanc_name()
+                                                     )
+    return result
+
+
+async def filter_main_location(call: types.CallbackQuery) -> bool:
+    # lambda call: call.data in get_filter_data_list("MAIN_LOCATIONS", condition='short_title')
+    if 'fabnum' in call.data: return False
+    state = MyBot.dp.current_state(user=call.from_user.id)
+    v_data: dict = asyncio.run(state.get_data())
+    result = call.data in await get_filter_data_list(category_in_db='core_mainlocation',
+                                                     # category=v_data.get("main_location", None),
+                                                     condition='short_title',
+                                                     coll_func=await fanc_name()
+                                                     )
+    return result
+
+
+async def filter_main_category(call: types.CallbackQuery) -> bool:
+    if 'fabnum' in call.data: return False
+    state = MyBot.dp.current_state(user=call.from_user.id)
+    v_data: dict = asyncio.run(state.get_data())
+    result = call.data in await get_filter_data_list(category_in_db='core_maincategory',
+                                                     coll_func=await fanc_name()
+                                                     )
+    return result
+
+
+async def filter_violation_category(call: types.CallbackQuery) -> bool:
+    # lambda call: call.data in get_filter_data_list("INCIDENT_LEVEL")
+    if 'fabnum' in call.data: return False
+    result = call.data in await get_filter_data_list(category_in_db='core_violationcategory',
+                                                     coll_func=await fanc_name()
+                                                     )
+    return result
+
+
+async def filter_sub_location(call: types.CallbackQuery) -> bool:
+    if 'fabnum' in call.data: return False
+    call_data = call.data
+    state = MyBot.dp.current_state(user=call.from_user.id)
+
+    v_data: dict = asyncio.run(state.get_data())
+    result = call_data in await get_filter_data_list(category_in_db='core_sublocation',
+                                                     category=v_data.get("main_location", None),
+                                                     condition='short_title',
+                                                     coll_func=await fanc_name())
+    return result
+
+
+async def filter_normativedocuments(call: types.CallbackQuery) -> bool:
+    if 'fabnum' in call.data: return False
+    call_data = call.data
+    state = MyBot.dp.current_state(user=call.from_user.id)
+
+    v_data: dict = asyncio.run(state.get_data())
+    result: bool = call_data in await get_filter_data_list(category_in_db='core_normativedocuments',
+                                                           category=v_data.get("category", None),
+                                                           condition='short_title',
+                                                           coll_func=await fanc_name()
+                                                           )
+    return result
+
+
+async def get_filter_data_list(category_in_db: str = None, category: str = None, condition: str | dict = None,
+                               coll_func: str = None) -> list:
     """Функция получения данных из базы данных. При отсутствии данных поиск в json.
     При наличии condition - формирование данных согласно  condition
 
+    :param coll_func:
     :param category:
     :param category_in_db:
     :param condition:
     :return: data_list or [ ]
     """
-
     if not category_in_db:
         return []
+
+    if 'fabnum' in category_in_db:
+        return []
+
+    coll_func = coll_func if coll_func else ''
 
     if category and condition:
         clean_datas_query: list = await get_category_data_list_whits_condition(
@@ -170,17 +249,23 @@ async def get_data_list(category_in_db: str = None, category: str = None, condit
     if not data_list:
         return []
 
-    logger.debug(f'{__name__} {await fanc_name()} {data_list = }')
+    logger.debug(f'{__name__} {await fanc_name()} {data_list = } {coll_func}')
     return data_list
 
 
 async def get_category_data_list_whits_condition(db_table_name: str, category: str, condition: str | dict) -> list:
-    """Получение
+    """Получение данных из таблицы db_table_name с условиями condition
 
     :param category:
     :param condition:
     :param db_table_name: имя базы данных
     """
+    if not db_table_name:
+        return []
+
+    if not isinstance(condition, str):
+        return []
+
     main_table_name: str = ''
 
     if db_table_name == 'core_normativedocuments':
@@ -197,15 +282,12 @@ async def get_category_data_list_whits_condition(db_table_name: str, category: s
     if category_id is None:
         return []
 
-    if isinstance(condition, str):
-        datas_from_db: list = await get_category_data_list_whits_single_condition(
-            db_table_name=db_table_name,
-            item_id=category_id,
-            single_condition=condition
-        )
-        return datas_from_db
-
-    return []
+    datas_from_db: list = await get_category_data_list_whits_single_condition(
+        db_table_name=db_table_name,
+        item_id=category_id,
+        single_condition=condition
+    )
+    return datas_from_db
 
 
 async def get_category_data_list_whits_single_condition(db_table_name: str, item_id: int,
@@ -228,7 +310,6 @@ async def get_category_data_list_whits_single_condition(db_table_name: str, item
             },
         }
         query: str = await QueryConstructor(None, db_table_name, **query_kwargs).prepare_data()
-
         logger.debug(f'{__name__} {await fanc_name()} {query = }')
 
     if db_table_name == 'core_normativedocuments':
@@ -239,10 +320,9 @@ async def get_category_data_list_whits_single_condition(db_table_name: str, item
             },
         }
         query: str = await QueryConstructor(None, db_table_name, **query_kwargs).prepare_data()
-
         logger.debug(f'{__name__} {await fanc_name()} {query = }')
 
-    datas_query: list = db_get_data_list_no_async(query=query)
+    datas_query: list = await db_get_data_list(query=query)
 
     if not datas_query:
         return []
@@ -266,19 +346,21 @@ async def get_category_data_list_whits_single_condition(db_table_name: str, item
 
 
 async def get_data_from_db(db_table_name: str) -> list:
-    """Получение
+    """Получение данных из таблицы db_table_name базы данных
     """
+    if not db_table_name:
+        return []
+
     query_kwargs: dict = {
         "action": 'SELECT', "subject": '*',
     }
-
     query: str = await QueryConstructor(None, db_table_name, **query_kwargs).prepare_data()
-
     datas_query: list = await db_get_data_list(query=query)
-    clean_headers: list = await db_get_clean_headers(table_name=db_table_name)
 
     if not isinstance(datas_query, list):
         return []
+
+    clean_headers: list = await db_get_clean_headers(table_name=db_table_name)
 
     if 'short_title' in clean_headers:
         data_list = [data[2] for data in datas_query]

@@ -1,15 +1,18 @@
-from apps.core.bot.bot_utils.check_user_registration import check_user_access
-from apps.core.bot.data.board_config import BoardConfig as board_config
-from apps.core.bot.messages.messages import Messages
-from apps.core.bot.reports.report_data import ViolationData, user_data, global_reg_form, headlines_data
 from loader import logger
-
 logger.debug(f"{__name__} finish import")
 
 from aiogram import types
+from aiogram.dispatcher import FSMContext
+
 from apps.MyBot import MyBot, bot_send_message
 from apps.core.bot.callbacks.callback_action import cb_start
-from aiogram.dispatcher import FSMContext
+from apps.core.bot.bot_utils.check_user_registration import check_user_access
+from apps.core.bot.data.board_config import BoardConfig as board_config
+from apps.core.bot.messages.messages import Messages
+from apps.core.bot.reports.report_data import (ViolationData,
+                                               user_data,
+                                               global_reg_form,
+                                               headlines_data)
 
 logger.debug(f"{__name__} finish import")
 

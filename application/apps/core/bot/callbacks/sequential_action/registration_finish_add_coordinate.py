@@ -20,7 +20,6 @@ async def call_registration_finish_add_coordinate(call: types.CallbackQuery = No
                                                   user_id: int | str = None, state: FSMContext = None):
     """Обработка ответов содержащихся в call_registration_finish_add_coordinate
     """
-
     hse_user_id = call.message.chat.id if call else user_id
     logger.debug(f'{hse_user_id = } {call.data = }')
 

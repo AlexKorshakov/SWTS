@@ -28,7 +28,6 @@ from loader import logger
 async def call_registration_finish_add_many_photo(call: types.CallbackQuery = None, callback_data: dict = None,
                                                   user_id: int | str = None, state: FSMContext = None):
     """Обработка ответов содержащихся в call_registration_finish_add_coordinate
-
     """
     hse_user_id = call.message.chat.id if call else user_id
     logger.debug(f'{hse_user_id = } {call.data = }')
@@ -60,7 +59,6 @@ async def call_registration_finish_add_many_photo(call: types.CallbackQuery = No
 async def handler_albums(message: types.Message, album: list[types.Message] = None, callback_data: dict = None,
                          user_id: int | str = None, state: FSMContext = None):
     """This handler will receive a complete album of any type
-
     """
 
     hse_user_id = message.chat.id if message else user_id
@@ -127,10 +125,8 @@ async def handler_albums(message: types.Message, album: list[types.Message] = No
 
 async def registration_finish_keyboard_inline_test():
     """Формирование индентфикатора записи
-
     """
     markup = types.InlineKeyboardMarkup()
-
     markup.add(
         types.InlineKeyboardButton(
             text='Добавить фотографии к нарушению',
@@ -142,7 +138,6 @@ async def registration_finish_keyboard_inline_test():
 
 async def get_filename_msg_with_photo(message, main_message_id):
     """Формирование индентфикатора записи
-
     """
     day: str = await get_day_message()
     month: str = await get_month_message()
@@ -158,7 +153,6 @@ async def get_filename_msg_with_photo(message, main_message_id):
 
 async def get_photo_full_filename(user_id: str = None, name=None, date=None):
     """Обработчик сообщений с photo. Получение полного пути файла
-
     """
     if not date:
         date = await date_now()
@@ -176,8 +170,6 @@ async def get_photo_full_filename(user_id: str = None, name=None, date=None):
 
 async def date_now() -> str:
     """Возвращает текущую дату в формате дд.мм.гггг
-
-    :return:
     """
     return str((datetime.datetime.now()).strftime("%d.%m.%Y"))
 
@@ -185,7 +177,6 @@ async def date_now() -> str:
 async def get_day_message(current_date: datetime | str = None) -> str:
     """Обработчик сообщений с фото
     Получение номер str дня из сообщения в формате dd
-
     """
     current_date: datetime.date = await str_to_datetime(current_date)
 
@@ -196,7 +187,6 @@ async def get_day_message(current_date: datetime | str = None) -> str:
 
 async def get_month_message(current_date: datetime | str = None) -> str:
     """Получение номер str месяца из сообщения в формате mm
-
     """
     current_date: datetime.date = await str_to_datetime(current_date)
 
@@ -207,7 +197,6 @@ async def get_month_message(current_date: datetime | str = None) -> str:
 
 async def get_year_message(current_date: datetime | str = None) -> str:
     """Обработчик сообщений с фото. Получение полного пути файла
-
     """
     current_date: datetime.date = await str_to_datetime(current_date)
 
@@ -219,7 +208,6 @@ async def get_year_message(current_date: datetime | str = None) -> str:
 
 async def str_to_datetime(date_str: str) -> datetime.date:
     """Преобразование str даты в datetime
-
     :param
     """
     current_date = datetime.datetime.now()

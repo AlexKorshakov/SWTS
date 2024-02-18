@@ -50,7 +50,6 @@ async def set_violation_data(*, chat_id: str, v_data: dict):
     if result_database:
         logger.info(Messages.Report.completed_successfully)
         await bot_send_message(chat_id=chat_id, text=Messages.Report.completed_successfully)
-
     else:
         await bot_send_message(chat_id=chat_id, text=Messages.Error.entry_in_bd_fail)
 

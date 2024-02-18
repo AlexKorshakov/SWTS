@@ -1,15 +1,14 @@
-
 from loader import logger
 
 logger.debug(f"{__name__} start import")
 from aiogram import types
 
+from apps.MyBot import MyBot, bot_send_message
 from aiogram.dispatcher import FSMContext
 from apps.core.bot.callbacks.sequential_action.registration_finist_keybord import registration_finish_keyboard_inline
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.reports.report_data import ViolationData
 from apps.core.bot.reports.report_data_preparation import set_violation_atr_data
-from apps.MyBot import MyBot, bot_send_message
 
 logger.debug(f"{__name__} finish import")
 

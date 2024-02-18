@@ -1,13 +1,14 @@
-from apps.core.bot.handlers.catalog.catalog_lna import call_catalog_lna_catalog_answer
-from apps.core.bot.reports.report_data import ViolationData
 from loader import logger
 
 logger.debug(f"{__name__} start import")
 from aiogram import types
+from aiogram.dispatcher import FSMContext
+
+from apps.MyBot import MyBot
 from apps.core.bot.callbacks.sequential_action.data_answer import (get_and_send_act_required_data,
                                                                    get_and_send_category_data,
                                                                    get_and_send_elimination_time_data,
-                                                                   get_and_send_general_contractors_data,
+                                                                   get_and_send_general_contractor_data,
                                                                    get_and_send_incident_level_data,
                                                                    get_and_send_main_category_data,
                                                                    get_and_send_normative_documents_data,
@@ -15,12 +16,15 @@ from apps.core.bot.callbacks.sequential_action.data_answer import (get_and_send_
                                                                    get_and_send_null_sub_locations_data,
                                                                    get_and_send_sub_locations_data,
                                                                    get_and_send_violation_category_data,
-                                                                   get_and_send_start_main_locations_data)
-from apps.core.bot.callbacks.sequential_action.category import _PREFIX_ND, get_data_list, _PREFIX_POZ
+                                                                   get_and_send_start_location_data,
+                                                                   get_and_send_main_location_data)
+from apps.core.bot.callbacks.sequential_action.category import (_PREFIX_ND,
+                                                                _PREFIX_POZ,
+                                                                get_data_list)
+from apps.core.bot.handlers.catalog.catalog_lna import call_catalog_lna_catalog_answer
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import move_action
+from apps.core.bot.reports.report_data import ViolationData
 from apps.core.bot.reports.report_data_preparation import set_violation_atr_data
-from apps.MyBot import MyBot
-from aiogram.dispatcher import FSMContext
 
 logger.debug(f"{__name__} finish import")
 
@@ -35,33 +39,35 @@ async def previous_paragraph_answer(call: types.CallbackQuery, callback_data: di
 
     v_data: dict = await state.get_data()
 
-    if callback_data['pre_val'] == 'main_locations':
-        await get_and_send_start_main_locations_data(call, callback_data, state=state)
+    if callback_data['pre_val'] == 'location':
+        await get_and_send_start_location_data(call, callback_data, state=state)
+
+    if callback_data['pre_val'] == 'main_location':
+        await get_and_send_main_location_data(call, state=state)
 
     elif callback_data['pre_val'] == "sub_location":
         if call.data == _PREFIX_POZ + "0":
-            await get_and_send_null_sub_locations_data(call, callback_data, state=state)
+            await get_and_send_null_sub_locations_data(call, state=state)
 
-        print(f"{call.data}")
         condition: dict = {
             "data": call.data,
-            "category_in_db": "SUB_LOCATIONS",
+            "category_in_db": "core_sublocation",
         }
-        sub_loc = get_data_list("SUB_LOCATIONS",
-                                category=v_data["main_location"],
-                                condition=condition)
+        sub_loc: list = await get_data_list("core_sublocation",
+                                            category=v_data["main_location"],
+                                            condition=condition)
         if not sub_loc:
             await set_violation_atr_data("sub_location", call.data, state=state)
 
         await set_violation_atr_data("sub_location", sub_loc[0].get('title', None), state=state)
 
-        await get_and_send_sub_locations_data(call, callback_data, state=state)
+        await get_and_send_sub_locations_data(call, state=state)
 
     elif callback_data['pre_val'] == "main_category":
-        await get_and_send_main_category_data(call, callback_data, state=state)
+        await get_and_send_main_category_data(call, state=state)
 
     elif callback_data['pre_val'] == "category":
-        await get_and_send_category_data(call, callback_data, state=state)
+        await get_and_send_category_data(call, state=state)
 
     elif callback_data['pre_val'] == "normative_documents":
         if call.data == _PREFIX_ND + "0":
@@ -69,11 +75,11 @@ async def previous_paragraph_answer(call: types.CallbackQuery, callback_data: di
 
         condition: dict = {
             "data": call.data,
-            "category_in_db": "NORMATIVE_DOCUMENTS",
+            "category_in_db": "core_normativedocuments",
         }
-        nd_data: list = get_data_list("NORMATIVE_DOCUMENTS",
-                                      category=v_data["category"],
-                                      condition=condition)
+        nd_data: list = await get_data_list("core_normativedocuments",
+                                            category=v_data["category"],
+                                            condition=condition)
         if not nd_data:
             await set_violation_atr_data("normative_documents", call.data, state=state)
 
@@ -84,19 +90,19 @@ async def previous_paragraph_answer(call: types.CallbackQuery, callback_data: di
         await get_and_send_normative_documents_data(call, state=state)
 
     elif callback_data['pre_val'] == "violation_category":
-        await get_and_send_violation_category_data(call, callback_data, state=state)
+        await get_and_send_violation_category_data(call, state=state)
 
     elif callback_data['pre_val'] == "general_contractors":
-        await get_and_send_general_contractors_data(call, callback_data, state=state)
+        await get_and_send_general_contractor_data(call, state=state)
 
     elif callback_data['pre_val'] == "incident_level":
-        await get_and_send_incident_level_data(call, callback_data, state=state)
+        await get_and_send_incident_level_data(call, state=state)
 
     elif callback_data['pre_val'] == "act_required":
-        await get_and_send_act_required_data(call, callback_data, state=state)
+        await get_and_send_act_required_data(call, state=state)
 
     elif callback_data['pre_val'] == "elimination_time":
-        await get_and_send_elimination_time_data(call, callback_data, state=state)
+        await get_and_send_elimination_time_data(call, state=state)
 
     elif callback_data['pre_val'] == 'call_catalog_lna_catalog_answer':
         await call_catalog_lna_catalog_answer(call, callback_data, state=state)

@@ -1,22 +1,22 @@
 from __future__ import annotations
 
-import datetime
+from loader import logger
 
+logger.debug(f"{__name__} start import")
+import pandas
+from aiogram import types
+from aiogram.dispatcher import FSMContext
+from datetime import date, datetime
+
+from apps.MyBot import MyBot, bot_send_message
 from apps.core.bot.bot_utils.check_user_registration import get_hse_user_data
 from apps.core.bot.callbacks.sequential_action.data_answer import notify_user_for_choice
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
 from apps.core.bot.reports.report_data_preparation import set_violation_atr_data
-from apps.core.database.db_utils import get_year_message, get_month_message, get_week_message, \
-    db_get_data_dict_from_table_with_id
-from apps.core.utils.secondary_functions.get_part_date import get_day_message, get_day_of_year_message, \
-    get_quarter_message
-from loader import logger
-
-logger.debug(f"{__name__} start import")
-from aiogram import types
-from aiogram.dispatcher import FSMContext
-from apps.MyBot import MyBot, bot_send_message
-
+from apps.core.database.db_utils import (get_year_message,
+                                         get_month_message,
+                                         get_week_message,
+                                         db_get_data_dict_from_table_with_id)
 from apps.core.utils.data_recording_processor.set_user_violation_data import pre_set_violation_data
 
 logger.debug(f"{__name__} finish import")
@@ -34,15 +34,64 @@ async def registration_finish_handler(call: types.CallbackQuery = None, callback
         chat_id=hse_user_id,
         text="Запущена процедура регистрации данных. Дождитесь сообщения об окончании."
     )
-
     await update_violation_data(
         chat_id=hse_user_id, message=call.message, state=state
     )
-
     await notify_user_for_choice(call, data_answer=call.data)
     await pre_set_violation_data(call.message, state=state)
 
     await state.finish()
+
+
+async def get_day_message(current_date: datetime | str = None) -> str:
+    """Обработчик сообщений с фото
+    Получение номер str дня из сообщения в формате dd
+    """
+
+    current_date: date = await str_to_datetime(current_date)
+
+    if not current_date:
+        current_date: datetime = datetime.now()
+    return str("0" + str(current_date.day) if current_date.day < 10 else str(current_date.day))
+
+
+async def str_to_datetime(date_str: str) -> date:
+    """Преобразование str даты в datetime
+
+    :param
+    """
+    current_date = None
+    try:
+        if isinstance(date_str, str):
+            current_date: date = datetime.strptime(date_str, "%d.%m.%Y").date()
+    except ValueError as err:
+        logger.error(f"{repr(err)}")
+
+    return current_date
+
+
+async def get_day_of_year_message(current_date: datetime | str = None) -> str:
+    """Возвращает номер дня в году для даты сообщения
+
+    """
+    current_date: date = await str_to_datetime(current_date)
+
+    if not current_date:
+        current_date: datetime = datetime.now()
+    day_of_year = pandas.Timestamp(current_date).day_of_year
+    return str("0" + str(day_of_year) if day_of_year < 10 else str(day_of_year))
+
+
+async def get_quarter_message(current_date: datetime | str = None) -> str:
+    """Обработчик сообщений с фото
+    Получение номер str квартала из сообщения в формате dd
+    """
+    current_date: date = await str_to_datetime(current_date)
+
+    if not current_date:
+        current_date: date = datetime.now()
+    quarter = pandas.Timestamp(current_date).quarter
+    return str("0" + str(quarter) if quarter < 10 else str(quarter))
 
 
 async def update_violation_data(chat_id, message: types.Message, state: FSMContext):
@@ -53,14 +102,13 @@ async def update_violation_data(chat_id, message: types.Message, state: FSMConte
     :param state:
     :return:
     """
-
     await state.update_data(user_id=chat_id)
     await set_violation_atr_data("user_id", chat_id, state=state)
 
     await state.update_data(user_fullname=message.from_user.full_name)
     await set_violation_atr_data("user_fullname", message.from_user.full_name, state=state)
 
-    await set_violation_atr_data("now", str(datetime.datetime.now()), state=state)
+    await set_violation_atr_data("now", str(datetime.now()), state=state)
 
     await state.update_data(status='В работе')
     await set_violation_atr_data("status", 'В работе', state=state)

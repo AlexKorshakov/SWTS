@@ -473,7 +473,7 @@ async def build_inlinekeyboard_search_answer(call: types.CallbackQuery, callback
     :return: result bool -  результат изменения сообщения True or False
     """
     item_txt: str = 'введите текстовый зарос'
-    pprint(f'{await fanc_name()} {callback_data = }', width=200)
+    pprint(f'{__name__}{await fanc_name()} {callback_data = }', width=200)
 
     chat_id = call.message.chat.id
     message_id = call.message.message_id
@@ -553,6 +553,7 @@ async def search_data_all_states_answer(message: types.Message = None, text: str
 async def build_text_for_inlinekeyboard(*, some_list: list, level: int = 1) -> str:
     """Создание текста text_list из list с данными some_list в зависимости  от level
     по условию len(some_list) <=> STEP_MENU
+    Возвращает готовый текст
 
     :param some_list: list - лист с данными
     :param level: int -  уровень меню (влияет на отображаемую часть текста)(some_list[start_index:stop_index])
@@ -566,17 +567,17 @@ async def build_text_for_inlinekeyboard(*, some_list: list, level: int = 1) -> s
         start_index, stop_index = await define_indices(level, end_list)
 
         text_list: list = text_list + some_list[start_index:stop_index]
-        text_list: str = '\n\n'.join(text_list)
+        text_str: str = '\n\n'.join(text_list)
 
-        return text_list
+        return text_str
 
     if len(some_list) <= STEP_MENU:
         logger.debug(f'len(some_list) <= STEP_MENU {len(some_list) <= STEP_MENU}')
 
         text_list = text_list + some_list
-        text_list: str = '\n\n'.join(text_list)
+        text_str: str = '\n\n'.join(text_list)
 
-        return text_list
+        return text_str
 
 
 async def create_dataframe(menu_list: list, menu_text_list: list) -> DataFrame:

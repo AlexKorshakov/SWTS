@@ -7,21 +7,19 @@ from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
 async def registration_finish_keyboard_reply() -> ReplyKeyboardMarkup:
     """Сборка клавиатуры команд в конце ввода данных
     """
-
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-
     markup.add(
         types.KeyboardButton(
             text="Завершить регистрацию",
         )
     )
-
     return markup
 
 
 async def registration_finish_keyboard_inline() -> InlineKeyboardMarkup:
+    """Сборка клавиатуры команд в конце ввода данных
+    """
     markup = types.InlineKeyboardMarkup()
-
     markup.add(
         types.InlineKeyboardButton(
             text='Добавить координаты',

@@ -14,7 +14,6 @@ logger.debug(f"{__name__} finish import")
 async def select_start_category(message: types.Message, user_id: int | str = None) -> None:
     """Действия при начале регистрации нарушения / начале работы бота
     """
-
     hse_user_id = message.chat.id if message else user_id
     markup = await get_start_category()
 
@@ -25,9 +24,7 @@ async def get_start_category() -> InlineKeyboardMarkup:
     """Действия при начале регистрации нарушений (в конце ввода данных).
     Возвращает кнопки 'Зарегистрировать' и 'Отмена'
     """
-
     markup = types.InlineKeyboardMarkup(row_width=1)
-
     markup.add(
         types.InlineKeyboardButton(
             text="Зарегистрировать",
@@ -39,5 +36,4 @@ async def get_start_category() -> InlineKeyboardMarkup:
             text="Отмена",
             callback_data=cb_start.new(action="select_abort_registration"))
     )
-
     return markup
