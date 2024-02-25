@@ -51,29 +51,6 @@ _PREFIX_ND: str = 'nrm_doc_'
 _PREFIX_POZ: str = 'nrm_poz_'
 
 
-async def convert_category_name(category_in_db: str) -> str:
-    """
-
-    :param category_in_db:
-    :return:
-    """
-    all_category_in_db: dict = {
-        'MAIN_CATEGORY': 'core_maincategory',
-        'CATEGORY': 'core_category',
-        'VIOLATION_CATEGORY': 'core_violationcategory',
-        'GENERAL_CONTRACTORS': 'core_generalcontractor',
-        'ACT_REQUIRED': 'core_actrequired',
-        'INCIDENT_LEVEL': 'core_incidentlevel',
-        'ELIMINATION_TIME': 'core_eliminationtime',
-        'LOCATIONS': 'core_location',
-        'NORMATIVE_DOCUMENTS': 'core_normativedocuments',
-        'MAIN_LOCATIONS': 'core_mainlocation',
-        'SUB_LOCATIONS': 'core_sublocation',
-
-    }
-    return all_category_in_db.get(category_in_db, None)
-
-
 async def add_null_value_to_ziped_list(zip_list: list) -> list:
     """Добавление значения заглушки
     

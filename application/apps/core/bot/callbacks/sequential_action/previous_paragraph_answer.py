@@ -40,14 +40,14 @@ async def previous_paragraph_answer(call: types.CallbackQuery, callback_data: di
     v_data: dict = await state.get_data()
 
     if callback_data['pre_val'] == 'location':
-        await get_and_send_start_location_data(call, callback_data, state=state)
+        await get_and_send_start_location_data(call, state=state, context='this_level')
 
     if callback_data['pre_val'] == 'main_location':
-        await get_and_send_main_location_data(call, state=state)
+        await get_and_send_main_location_data(call, state=state, context='this_level')
 
     elif callback_data['pre_val'] == "sub_location":
         if call.data == _PREFIX_POZ + "0":
-            await get_and_send_null_sub_locations_data(call, state=state)
+            await get_and_send_null_sub_locations_data(call, state=state, context='this_level')
 
         condition: dict = {
             "data": call.data,
@@ -61,17 +61,17 @@ async def previous_paragraph_answer(call: types.CallbackQuery, callback_data: di
 
         await set_violation_atr_data("sub_location", sub_loc[0].get('title', None), state=state)
 
-        await get_and_send_sub_locations_data(call, state=state)
+        await get_and_send_sub_locations_data(call, state=state, context='this_level')
 
     elif callback_data['pre_val'] == "main_category":
-        await get_and_send_main_category_data(call, state=state)
+        await get_and_send_main_category_data(call, state=state, context='this_level')
 
     elif callback_data['pre_val'] == "category":
-        await get_and_send_category_data(call, state=state)
+        await get_and_send_category_data(call, state=state, context='this_level')
 
     elif callback_data['pre_val'] == "normative_documents":
         if call.data == _PREFIX_ND + "0":
-            await get_and_send_null_normative_documents_data(call, state=state)
+            await get_and_send_null_normative_documents_data(call, state=state, context='this_level')
 
         condition: dict = {
             "data": call.data,
@@ -87,22 +87,22 @@ async def previous_paragraph_answer(call: types.CallbackQuery, callback_data: di
         await set_violation_atr_data("normative_documents_normative", nd_data[0].get('normative', None), state=state)
         await set_violation_atr_data("normative_documents_procedure", nd_data[0].get('procedure', None), state=state)
 
-        await get_and_send_normative_documents_data(call, state=state)
+        await get_and_send_normative_documents_data(call, state=state, context='this_level')
 
     elif callback_data['pre_val'] == "violation_category":
-        await get_and_send_violation_category_data(call, state=state)
+        await get_and_send_violation_category_data(call, state=state, context='this_level')
 
     elif callback_data['pre_val'] == "general_contractors":
-        await get_and_send_general_contractor_data(call, state=state)
+        await get_and_send_general_contractor_data(call, state=state, context='this_level')
 
     elif callback_data['pre_val'] == "incident_level":
-        await get_and_send_incident_level_data(call, state=state)
+        await get_and_send_incident_level_data(call, state=state, context='this_level')
 
     elif callback_data['pre_val'] == "act_required":
-        await get_and_send_act_required_data(call, state=state)
+        await get_and_send_act_required_data(call, state=state, context='this_level')
 
     elif callback_data['pre_val'] == "elimination_time":
-        await get_and_send_elimination_time_data(call, state=state)
+        await get_and_send_elimination_time_data(call, state=state, context='this_level')
 
     elif callback_data['pre_val'] == 'call_catalog_lna_catalog_answer':
         await call_catalog_lna_catalog_answer(call, callback_data, state=state)

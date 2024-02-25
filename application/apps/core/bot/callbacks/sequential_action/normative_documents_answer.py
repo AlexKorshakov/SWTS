@@ -22,7 +22,7 @@ async def normative_documents_answer(call: types.CallbackQuery, state: FSMContex
     v_data: dict = await state.get_data()
 
     if call.data == _PREFIX_ND + "0":
-        await get_and_send_null_normative_documents_data(call)
+        await get_and_send_null_normative_documents_data(call, state=state)
 
         await set_violation_atr_data("normative_documents", 'Нет нужной записи', state=state)
         await set_violation_atr_data("normative_documents_normative", 'укажите НД', state=state)

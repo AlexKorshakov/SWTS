@@ -53,19 +53,26 @@ async def admin_add_user_role_update_role(call: types.CallbackQuery):
     return True if 'hse_role_item_' in call.data else False
 
 
-async def message_not_media_group(message: types.Message):
-    return True if not message.media_group_id else False
-
-
 async def is_lna_text_answer(call: types.CallbackQuery):
     return True if '_lna_file_' in call.data else False
 
 
-async def is_private(message: types.Message):
+async def filter_message_not_media_group(message: types.Message):
+    return True if not message.media_group_id else False
+
+
+async def filter_is_group(message: types.Message):
+    return message.chat.type in ['group', 'supergroup']
+
+    # if message.from_user.id not in [member.user.id for member in await message.chat.get_administrators()]:
+    #     return
+
+
+async def filter_is_private(message: types.Message):
     return ChatTypeFilter(types.ChatType.PRIVATE)
 
 
-async def is_channel(message: types.Message):
+async def filter_is_channel(message: types.Message):
     return ChatTypeFilter(types.ChatType.CHANNEL)
 
 
@@ -204,15 +211,18 @@ async def filter_sub_location(call: types.CallbackQuery) -> bool:
 
 async def filter_normativedocuments(call: types.CallbackQuery) -> bool:
     if 'fabnum' in call.data: return False
+    if call.data == 'nrm_doc_0': return True
+
     call_data = call.data
     state = MyBot.dp.current_state(user=call.from_user.id)
 
     v_data: dict = asyncio.run(state.get_data())
-    result: bool = call_data in await get_filter_data_list(category_in_db='core_normativedocuments',
-                                                           category=v_data.get("category", None),
-                                                           condition='short_title',
-                                                           coll_func=await fanc_name()
-                                                           )
+    result = call_data in await get_filter_data_list(category_in_db='core_normativedocuments',
+                                                     category=v_data.get("category", None),
+                                                     condition='short_title',
+                                                     coll_func=await fanc_name()
+                                                     )
+
     return result
 
 

@@ -23,7 +23,7 @@ async def sub_location_answer(call: types.CallbackQuery, state: FSMContext = Non
     v_data: dict = await state.get_data()
 
     if call.data == _PREFIX_POZ + "0":
-        await get_and_send_null_sub_locations_data(call)
+        await get_and_send_null_sub_locations_data(call, state=state)
         await set_violation_atr_data("sub_location", 'Площадка в целом', state=state)
         return
 
