@@ -3,6 +3,7 @@ import typing
 
 from aiogram.dispatcher import FSMContext
 
+from apps.core.bot.filters.custom_filters import filter_is_private
 from apps.core.bot.messages.messages_test import msg
 from apps.core.settyngs import get_sett
 from loader import logger
@@ -34,13 +35,16 @@ logger.debug(f"{__name__} finish import")
 
 
 @rate_limit(limit=10)
-@MyBot.dp.message_handler(Command('correct_entries'), state='*')
+@MyBot.dp.message_handler(Command('correct_entries'), filter_is_private, state='*')
 async def correct_entries_handler(message: types.Message = None, *, hse_user_id=None, state: FSMContext = None):
     """Корректирование уже введённых значений на локальном pc и на google drive
 
     :return:
     """
-
+    if message.chat.type in ['group', 'supergroup']:
+        return
+    # if message.from_user.id not in [member.user.id for member in await message.chat.get_administrators()]:
+    #     return
     chat_id = message.chat.id if message else hse_user_id
 
     if not await check_user_access(chat_id=chat_id):

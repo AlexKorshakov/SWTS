@@ -9,7 +9,7 @@ from pandas import DataFrame
 import apps.xxx
 from apps.MyBot import bot_send_message, MyBot
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
-from apps.core.bot.filters.custom_filters import is_private
+from apps.core.bot.filters.custom_filters import filter_is_private
 from apps.core.bot.handlers.correct_entries.correct_non_act_item_item_correct import RESULT_DICT, COLUMNS_DICT
 from apps.core.bot.handlers.correct_entries.correct_support import check_dataframe, create_lite_dataframe_from_query, \
     spotter_data, check_spotter_data, get_violations_df
@@ -97,7 +97,7 @@ async def text_processor_character_text(violations_dataframe: DataFrame, charact
 
 
 @MyBot.dp.callback_query_handler(posts_cb.filter(action=['correct_text_meaning_act_cancel']))
-@MyBot.dp.message_handler(is_private, Text(equals=Messages.correct_cancel), state=CorrectViolationsState.all_states)
+@MyBot.dp.message_handler(filter_is_private, Text(equals=Messages.correct_cancel), state=CorrectViolationsState.all_states)
 async def cancel(message: types.Message, state: FSMContext, user_id: int | str = None):
     """Отмена изменений
 
@@ -112,7 +112,7 @@ async def cancel(message: types.Message, state: FSMContext, user_id: int | str =
     await bot_send_message(chat_id=hse_user_id, text=Messages.Violations.canceled)
 
 
-@MyBot.dp.message_handler(is_private, state=CorrectViolationsState.all_states)
+@MyBot.dp.message_handler(filter_is_private, state=CorrectViolationsState.all_states)
 async def correct_violations_data_all_states_answer(message: types.Message, state: FSMContext):
     """Обработка изменений
 

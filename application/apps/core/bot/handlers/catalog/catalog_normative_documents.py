@@ -12,7 +12,7 @@ from loader import logger
 from apps.MyBot import MyBot, bot_send_message
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.bot.data.board_config import BoardConfig as board_config
-from apps.core.bot.filters.custom_filters import is_private
+from apps.core.bot.filters.custom_filters import filter_is_private
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard, posts_cb
 from apps.core.bot.messages.messages import Messages, LogMessage
 from apps.core.bot.messages.messages_test import msg
@@ -87,7 +87,7 @@ async def call_catalog_normative_documents_catalog_answer(call: types.CallbackQu
     await bot_send_message(chat_id=hse_user_id, text=item_txt)
 
 
-@MyBot.dp.message_handler(is_private, state=CatalogState.all_states)
+@MyBot.dp.message_handler(filter_is_private, state=CatalogState.all_states)
 async def catalog_data_all_states_answer(message: types.Message, state: FSMContext, user_id: int | str = None):
     """Обработка изменений
 

@@ -16,7 +16,7 @@ from config.config import Udocan_Bagration_subcontractor_employee_DB, Udocan_med
 from loader import logger
 from apps.core.bot.bot_utils.check_user_registration import get_hse_user_data
 from apps.core.bot.data.board_config import BoardConfig as board_config
-from apps.core.bot.filters.custom_filters import is_private
+from apps.core.bot.filters.custom_filters import filter_is_private
 from apps.core.bot.handlers.photo.qr_support_paths import qr_check_path, qr_get_file_path, qr_check_or_create_dir
 from apps.core.bot.states import PersonalIdHuntingState
 from apps.core.database.query_constructor import QueryConstructor
@@ -137,7 +137,7 @@ async def qr_personal_id_processing(hse_user_id: str | int, data: list, message,
     await bot_send_message(chat_id=hse_user_id, text=item_txt)
 
 
-@MyBot.dp.message_handler(is_private, state=PersonalIdHuntingState.all_states)
+@MyBot.dp.message_handler(filter_is_private, state=PersonalIdHuntingState.all_states)
 async def persona_id_hunting_all_states_answer(message: types.Message = None, user_id: int | str = None,
                                                data: list = None, state: FSMContext = None):
     """Обработка изменений

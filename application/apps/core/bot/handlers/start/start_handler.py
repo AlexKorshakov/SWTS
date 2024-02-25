@@ -10,7 +10,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command
 
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
-from apps.core.bot.filters.custom_filters import is_private
+from apps.core.bot.filters.custom_filters import filter_is_private
 from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import build_inlinekeyboard
 from apps.core.bot.messages.messages_test import msg
 from apps.core.bot.messages.messages import Messages
@@ -25,7 +25,7 @@ logger.debug(f"{__name__} finish import")
 
 
 @rate_limit(limit=20)
-@MyBot.dp.message_handler(Command('start'), is_private, state='*')
+@MyBot.dp.message_handler(Command('start'), filter_is_private, state='*')
 async def start(message: types.Message, user_id: int | str = None, state: FSMContext = None):
     """Начало регистрации пользователя
 
@@ -34,8 +34,11 @@ async def start(message: types.Message, user_id: int | str = None, state: FSMCon
     :param message:
     :return:
     """
+    if message.chat.type in ['group', 'supergroup']:
+        return
+    # if message.from_user.id not in [member.user.id for member in await message.chat.get_administrators()]:
+    #     return
     hse_user_id = message.chat.id if message else user_id
-    logger.debug(f'{hse_user_id = }')
     logger.info(f'User @{message.from_user.username} : {hse_user_id} start work')
 
     if not await check_user_access(chat_id=hse_user_id, message=message):

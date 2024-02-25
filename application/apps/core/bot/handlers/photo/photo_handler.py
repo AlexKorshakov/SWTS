@@ -10,7 +10,7 @@ from apps.core.settyngs import get_sett
 from apps.MyBot import MyBot, bot_send_message
 
 from apps.core.utils.misc import rate_limit
-from apps.core.bot.filters.custom_filters import message_not_media_group
+from apps.core.bot.filters.custom_filters import filter_message_not_media_group, filter_is_private
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.messages.messages_test import msg
 from apps.core.bot.data.board_config import BoardConfig as board_config
@@ -24,10 +24,15 @@ logger.debug("message_handler 'photo'")
 
 
 @rate_limit(limit=5)
-@MyBot.dp.message_handler(message_not_media_group, content_types=["photo"], state='*')
+@MyBot.dp.message_handler(filter_message_not_media_group, filter_is_private, content_types=["photo"], state='*')
 async def photo_handler(message: types.Message, state: FSMContext, chat_id: str = None):
     """Обработчик сообщений с фото
     """
+    if message.chat.type in ['group', 'supergroup']:
+        return
+    # if message.from_user.id not in [member.user.id for member in await message.chat.get_administrators()]:
+    #     return
+
     hse_user_id = chat_id if chat_id else message.chat.id
 
     if not await check_user_access(chat_id=hse_user_id):

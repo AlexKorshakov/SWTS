@@ -13,7 +13,7 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 
 from apps.MyBot import MyBot, bot_send_message
-from apps.core.bot.filters.custom_filters import is_private
+from apps.core.bot.filters.custom_filters import filter_is_private
 from apps.core.bot.handlers.catalog.catalog_support import DataBaseCatalogEmployee
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.messages.messages_test import msg
@@ -26,7 +26,7 @@ from loader import logger
 list_number = 0
 
 
-@MyBot.dp.message_handler(is_private, state=CatalogStateEmployee.all_states)
+@MyBot.dp.message_handler(filter_is_private, state=CatalogStateEmployee.all_states)
 async def catalog_data_all_states_answer(message: types.Message = None, state: FSMContext = None,
                                          user_id: int | str = None, text: str = None):
     """Обработка изменений

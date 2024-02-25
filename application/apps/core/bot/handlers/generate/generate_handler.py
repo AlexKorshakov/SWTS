@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from aiogram.dispatcher import FSMContext
 
+from apps.core.bot.filters.custom_filters import filter_is_private
 from apps.core.settyngs import get_sett
 from apps.core.utils.json_worker.writer_json_file import write_json_file
 from loader import logger
@@ -30,12 +31,17 @@ logger.debug(f"{__name__} finish import")
 
 
 @rate_limit(limit=10)
-@MyBot.dp.message_handler(Command('generate'), state='*')
+@MyBot.dp.message_handler(Command('generate'), filter_is_private, state='*')
 async def generate_handler(message: types.Message, state: FSMContext = None):
     """Обработка команд генерации документов
 
     :return:
     """
+    if message.chat.type in ['group', 'supergroup']:
+        return
+    # if message.from_user.id not in [member.user.id for member in await message.chat.get_administrators()]:
+    #     return
+
     chat_id = message.chat.id
     if not await check_user_access(chat_id=chat_id):
         return

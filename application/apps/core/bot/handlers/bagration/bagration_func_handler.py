@@ -4,6 +4,7 @@ import asyncio
 
 from aiogram.dispatcher import FSMContext
 
+from apps.core.bot.filters.custom_filters import filter_is_private
 from loader import logger
 
 logger.debug(f"{__name__} start import")
@@ -29,14 +30,17 @@ logger.debug(f"{__name__} finish import")
 
 
 @rate_limit(limit=10)
-@MyBot.dp.message_handler(Command('bagration'), state='*')
+@MyBot.dp.message_handler(Command('bagration'), filter_is_private, state='*')
 async def bagration_func_handler(message: types.Message, state: FSMContext = None):
     """Административные функции
 
     :param message:
     :param state:
     """
-
+    if message.chat.type in ['group', 'supergroup']:
+        return
+    # if message.from_user.id not in [member.user.id for member in await message.chat.get_administrators()]:
+    #     return
     chat_id = message.chat.id
 
     current_state = await state.get_state()

@@ -4,6 +4,7 @@ import traceback
 
 from aiogram.dispatcher import FSMContext
 
+from apps.core.bot.filters.custom_filters import filter_is_private
 from loader import logger
 
 logger.debug(f"{__name__} start import")
@@ -52,12 +53,16 @@ catalog_spot_data = CatalogSpot().catalog_spot_data
 
 
 @rate_limit(limit=10)
-@MyBot.dp.message_handler(Command('catalog'), state='*')
+@MyBot.dp.message_handler(Command('catalog'), filter_is_private, state='*')
 async def catalog_func_handler(message: types.Message = None, user_id: str | int = None, state: FSMContext = None):
     """Обработка команд генерации документов
 
     :return:
     """
+    if message.chat.type in ['group', 'supergroup']:
+        return
+    # if message.from_user.id not in [member.user.id for member in await message.chat.get_administrators()]:
+    #     return
     try:
         hse_user_id = message.chat.id if message else user_id
     except AttributeError as err:

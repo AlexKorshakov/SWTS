@@ -15,7 +15,7 @@
 # from aiogram import types
 # from aiogram.dispatcher.filters import Command
 # from apps.core.bot.bot_utils.check_user_registration import check_user_access
-# from apps.core.bot.callbacks.sequential_action.category import get_data_list
+# from apps.core.bot.callbacks.sequential_action.category import get_filter_data_list
 # from apps.core.bot.messages.messages import Messages
 # from apps.core.bot.handlers.generate.generate_report.get_file_list import (
 #     get_registration_json_file_list, get_report_file_list)
@@ -28,7 +28,7 @@
 #
 #
 # @rate_limit(limit=360)
-# @MyBot.dp.message_handler(Command('send_mail'), state = '*')
+# @MyBot.dp.message_handler(Command('send_mail'),is_private,  state = '*')
 # async def send_mail(message: types.Message, file_list: list = None, registration_data: dict = None) -> None:
 #     """Проверка доступа, получение файлов для отправки, получение списка адресатов для отправки писем
 #     формирование тела письма, добавление вложений
@@ -40,7 +40,10 @@
 #     :param registration_data: (опционально)регистрационные данные,
 #     :return: сообщение об успешной отправке письма / сообщение об ошибке
 #     """
-#
+#    if message.chat.type in ['group', 'supergroup']:
+#         return
+    # if message.from_user.id not in [member.user.id for member in await message.chat.get_administrators()]:
+    #     return
 #     chat_id = message.chat.id
 #     if not await check_user_access(chat_id=chat_id):
 #         return
@@ -80,9 +83,9 @@
 #
 #     sent_to = []
 #     sent_to_cc = []
-#     if location in [list(item.keys())[0] for item in get_data_list("METRO_STATION")]:
+#     if location in [list(item.keys())[0] for item in get_filter_data_list("METRO_STATION")]:
 #
-#         for item in get_data_list("METRO_STATION"):
+#         for item in get_filter_data_list("METRO_STATION"):
 #             if list(item.keys())[0] == location:
 #
 #                 for item_to in item.get(location):
@@ -110,7 +113,7 @@
 #         await bot_send_message(chat_id=chat_id, text=Messages.Error.list_too_send_not_found)
 #         return
 #
-#     sent_to_cc = sent_to_cc + get_data_list("SENT_TO_СС")
+#     sent_to_cc = sent_to_cc + get_filter_data_list("SENT_TO_СС")
 #     if not sent_to_cc:
 #         logger.error(f"SENT_TO_CC is empty")
 #         return
@@ -201,7 +204,7 @@
 #             server.ehlo()
 #             server.login(SENDER_ACCOUNT_GMAIL, password=SENDER_ACCOUNT_PASSWORD)
 #             server.sendmail(SENDER_ACCOUNT_GMAIL,
-#                             to_addrs=sent_to + get_data_list("SENT_TO_СС"),
+#                             to_addrs=sent_to + get_filter_data_list("SENT_TO_СС"),
 #                             msg=msg_full)
 #             await bot_send_message(chat_id=chat_id, text=Messages.Successfully.mail_send)
 #             logger.info(Messages.Successfully.mail_send)

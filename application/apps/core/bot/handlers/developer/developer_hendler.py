@@ -2,6 +2,7 @@ import traceback
 
 from aiogram.dispatcher import FSMContext
 
+from apps.core.bot.filters.custom_filters import filter_is_private
 from apps.core.bot.messages.messages import Messages
 from apps.core.bot.messages.messages_test import msg
 from apps.core.settyngs import get_sett
@@ -20,7 +21,7 @@ logger.debug(f"{__name__} finish import")
 
 
 @rate_limit(limit=10)
-@MyBot.dp.message_handler(Command('developer'), state='*')
+@MyBot.dp.message_handler(Command('developer'), filter_is_private, state='*')
 async def send_msg_from_developer(message: types.Message, state: FSMContext = None):
     """Отправка сообщения разработчику
 
@@ -28,6 +29,11 @@ async def send_msg_from_developer(message: types.Message, state: FSMContext = No
     :param message:
     :return:
     """
+    if message.chat.type in ['group', 'supergroup']:
+        return
+    # if message.from_user.id not in [member.user.id for member in await message.chat.get_administrators()]:
+    #     return
+
     chat_id = message.chat.id
     logger.info(f'User @{message.from_user.username}:{message.from_user.id} send message from developer')
 
@@ -42,27 +48,6 @@ async def send_msg_from_developer(message: types.Message, state: FSMContext = No
 
     answer_text: str = "Для связи с разработчиком напишите https://t.me/AlexKor_MSK"
     await bot_send_message(chat_id=chat_id, text=answer_text)
-
-
-@MyBot.dp.message_handler(content_types=['text'])
-async def text_message_handler(message: types.Message):
-    """
-
-    :param message:
-    :return:
-    """
-
-    chat_id = message.chat.id
-    if not await check_user_access(chat_id=chat_id):
-        return
-
-    if "@dev" in message.text.strip().lower():
-        logger.info(f'message from developer user {message.from_user.id} name {message.from_user.full_name}')
-
-        text = f"Message from user {message.from_user.id} name {message.chat.full_name} \n" \
-               f"https://t.me/{message.from_user.mention.replace('@', '')} \n" \
-               f"message: {message.text.replace('@dev', '')}"
-        await bot_send_message(chat_id=DEVELOPER_ID, text=text)
 
 
 async def fanc_name() -> str:

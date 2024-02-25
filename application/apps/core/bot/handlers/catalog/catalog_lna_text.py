@@ -8,7 +8,7 @@ from pandas import DataFrame
 
 from apps.MyBot import MyBot, bot_send_message
 from apps.core.bot.data.board_config import BoardConfig as board_config
-from apps.core.bot.filters.custom_filters import is_private
+from apps.core.bot.filters.custom_filters import filter_is_private
 from apps.core.bot.handlers.catalog.catalog_support import (list_number,
                                                             get_dataframe_from_local_files,
                                                             notify_user_for_choice)
@@ -19,7 +19,7 @@ from apps.core.bot.states.CatalogState import CatalogStateLNA
 from loader import logger
 
 
-@MyBot.dp.message_handler(is_private, state=CatalogStateLNA.all_states)
+@MyBot.dp.message_handler(filter_is_private, state=CatalogStateLNA.all_states)
 async def catalog_data_all_states_answer(message: types.Message = None, user_id: int | str = None, text: str = None,
                                          state: FSMContext = None):
     """Обработка изменений

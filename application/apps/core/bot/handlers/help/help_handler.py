@@ -29,12 +29,8 @@ async def help_command_handler(message: types.Message, state: FSMContext = None)
     if not await check_user_access(chat_id=chat_id):
         return
 
-    # pprint(f'before after {state =  }', width=200)
-    # pprint(f'before after {await state.get_data() = }', width=200)
     current_state = await state.get_state()
     await state.finish()
-    # pprint(f'state after {await fanc_name()} state is finish {current_state = }')
-    # pprint(f'state after {state =  }', width=200)
 
     if not get_sett(cat='enable_features', param='use_help_command_handler').get_set():
         msg_text: str = f"{await msg(chat_id, cat='error', msge='features_disabled', default=Messages.Error.features_disabled).g_mas()}"

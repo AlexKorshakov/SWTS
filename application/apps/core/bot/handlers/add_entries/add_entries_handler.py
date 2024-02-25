@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-from aiogram.dispatcher import FSMContext
-
-from apps.core.settyngs import get_sett
 from loader import logger
 
 logger.debug(f"{__name__} start import")
@@ -11,28 +8,35 @@ import traceback
 from pandas import DataFrame
 from aiogram import types
 from aiogram.dispatcher.filters import Command
+from aiogram.dispatcher import FSMContext
 
 from apps.MyBot import MyBot, bot_send_message
+from apps.core.settyngs import get_sett
 from apps.core.utils.misc import rate_limit
+from apps.core.bot.filters.custom_filters import filter_is_private
 from apps.core.bot.messages.messages_test import msg
 from apps.core.bot.messages.messages import Messages
+from apps.core.bot.bot_utils.bot_admin_notify import admin_notify
+from apps.core.bot.bot_utils.check_user_registration import check_user_access
+from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
 from apps.core.database.db_utils import (db_get_data_list,
                                          db_get_clean_headers)
 from apps.core.database.query_constructor import QueryConstructor
-from apps.core.bot.bot_utils.bot_admin_notify import admin_notify
-from apps.core.bot.bot_utils.check_user_registration import check_user_access
-
-from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
 
 logger.debug(f"{__name__} finish import")
 
 
 @rate_limit(limit=10)
-@MyBot.dp.message_handler(Command('add_entries'), state='*')
+@MyBot.dp.message_handler(Command('add_entries'), filter_is_private, state='*')
 async def add_entries_handler(message: types.Message, state: FSMContext = None):
     """Обработка команд добавления данных
 
     """
+    if message.chat.type in ['group', 'supergroup']:
+        return
+    # if message.from_user.id not in [member.user.id for member in await message.chat.get_administrators()]:
+    #     return
+
     chat_id = message.chat.id
     if not await check_user_access(chat_id=chat_id):
         logger.error(f'access fail {chat_id = }')

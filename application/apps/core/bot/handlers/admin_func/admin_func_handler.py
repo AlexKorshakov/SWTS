@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from aiogram.dispatcher import FSMContext
 
+from apps.core.bot.filters.custom_filters import filter_is_private
 from loader import logger
 
 logger.debug(f"{__name__} start import")
@@ -25,7 +26,7 @@ from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
 
 
 @rate_limit(limit=10)
-@MyBot.dp.message_handler(Command('admin_func'), state='*')
+@MyBot.dp.message_handler(Command('admin_func'), filter_is_private, state='*')
 async def admin_func_handler(message: types.Message = None, *, hse_user_id: int | str = None, state: FSMContext = None):
     """Административные функции
 
@@ -34,7 +35,10 @@ async def admin_func_handler(message: types.Message = None, *, hse_user_id: int 
     :param message:
     :return: None
     """
-
+    if message.chat.type in ['group', 'supergroup']:
+        return
+    # if message.from_user.id not in [member.user.id for member in await message.chat.get_administrators()]:
+    #     return
     chat_id = message.chat.id
     if not await check_user_access(chat_id=chat_id):
         logger.error(f'access fail {chat_id = }')

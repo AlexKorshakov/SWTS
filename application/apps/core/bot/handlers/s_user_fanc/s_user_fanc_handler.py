@@ -13,7 +13,7 @@ from aiogram import types
 from aiogram.dispatcher.filters import Command
 
 from apps.MyBot import MyBot, bot_send_message
-from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb
+from apps.core.bot.keyboards.inline.build_castom_inlinekeyboard import posts_cb, is_private
 from apps.core.bot.bot_utils.check_user_registration import check_user_access
 from apps.core.bot.bot_utils.check_access import check_super_user_access, check_admin_access, check_developer_access, \
     get_hse_role_receive_df
@@ -23,7 +23,7 @@ logger.debug(f"{__name__} finish import")
 
 
 @rate_limit(limit=10)
-@MyBot.dp.message_handler(Command('super_user_fanc'), state='*')
+@MyBot.dp.message_handler(Command('super_user_fanc'), is_private, state='*')
 async def super_user_fanc_handler(message: types.Message = None, *, hse_user_id: int | str = None,
                                   state: FSMContext = None) -> None:
     """Проверка доступа, получение файлов для отправки, получение списка адресатов для отправки писем
@@ -36,6 +36,10 @@ async def super_user_fanc_handler(message: types.Message = None, *, hse_user_id:
     :param message: объект сообщения от бота,
     :return: сообщение об успешной отправке письма / сообщение об ошибке
     """
+    if message.chat.type in ['group', 'supergroup']:
+        return
+    # if message.from_user.id not in [member.user.id for member in await message.chat.get_administrators()]:
+    #     return
 
     chat_id = message.chat.id if message else hse_user_id
 
